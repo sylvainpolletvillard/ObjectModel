@@ -1,0 +1,162 @@
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@-moz-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+  }
+  to {
+    -moz-transform: rotate(360deg);
+  }
+}
+@-o-keyframes spin {
+  from {
+    -o-transform: rotate(0deg);
+  }
+  to {
+    -o-transform: rotate(360deg);
+  }
+}
+@-ms-keyframes spin {
+  from {
+    -ms-transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+  }
+}
+@keyframes spin-inv {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+@-webkit-keyframes spin-inv {
+  from {
+    -webkit-transform: rotate(360deg);
+  }
+  to {
+    -webkit-transform: rotate(0deg);
+  }
+}
+@-moz-keyframes spin-inv {
+  from {
+    -moz-transform: rotate(360deg);
+  }
+  to {
+    -moz-transform: rotate(0deg);
+  }
+}
+@-o-keyframes spin-inv {
+  from {
+    -o-transform: rotate(360deg);
+  }
+  to {
+    -o-transform: rotate(0deg);
+  }
+}
+@-ms-keyframes spin-inv {
+  from {
+    -ms-transform: rotate(360deg);
+  }
+  to {
+    -ms-transform: rotate(0deg);
+  }
+}
+.header {
+  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 1em 2em;
+  text-align: center;
+  background: #fff;
+  letter-spacing: 0.05em;
+}
+@media (max-width: 480px) {
+  .header {
+    font-size: 3em;
+  }
+}
+.header h1 {
+  font-size: 300%;
+  font-weight: 100;
+  margin: 0;
+}
+.header h2 {
+  font-size: 125%;
+  font-weight: 100;
+  line-height: 1.5;
+  margin: 0;
+  color: #666;
+  letter-spacing: -0.02em;
+}
+section > h2 {
+  font-size: 1.5em;
+  font-weight: bolder;
+  margin: -1.5em 0 0.5em 0;
+  padding-top: 2.5em;
+}
+table {
+  width: 100%;
+}
+table th,
+table td {
+  border: 1px solid gray;
+  padding: .5em;
+  text-align: center;
+}
+table th {
+  background: #f0f0f0;
+}
+.panels {
+  display: table;
+  width: 100%;
+}
+.panels .panel {
+  display: table-cell;
+  vertical-align: top;
+  background: #f5f2f0;
+  border: 1px solid #DEDEDE;
+  position: relative;
+}
+.panels .panel pre {
+  margin: 0;
+}
+.panels .panel .legend {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: #eeeeee;
+  color: #909090;
+  text-shadow: 0 -1px 0 #ffffff;
+  padding: 2px 4px;
+}
+.panels .panel textarea {
+  width: 100%;
+  min-height: 5em;
+}
+.panels.two .panel {
+  width: 50%;
+}
+.panels.three .panel {
+  width: 33.3%;
+}

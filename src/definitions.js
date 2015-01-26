@@ -18,7 +18,7 @@ function matchDefinitionPart(obj, def){
 	if(obj == null){
 		return obj === def;
 	}
-	if(isFunction(def) && (def instanceof ObjectModel || def instanceof ArrayModel || def instanceof FunctionModel)){
+	if(isFunction(def) && isFunction(def.isValidModelFor)){
 		return def.isValidModelFor(obj);
 	}
 	if(def instanceof RegExp){

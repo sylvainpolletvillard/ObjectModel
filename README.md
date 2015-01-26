@@ -1,4 +1,4 @@
-Object.Model
+Object Model
 ============
 
 Runtime Type Checking and Data Model Definition for JavaScript

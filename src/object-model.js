@@ -1,37 +1,50 @@
 function ObjectModel(def, proto){
-  var Constructor = function(obj) {
-    if(!(this instanceof Constructor)){
-      return new Constructor(obj);
-    }
-    merge(this, obj, true);
-    var proxy = getProxy(this, def);
-    validateModel(proxy, def);
-    return proxy;
-  };
-  Constructor.toString = objToString.bind(this, def);
-  Constructor.defaults = function(p){ Constructor.prototype = p; return this };
-  Constructor.isValidModelFor = function isValidModelFor(obj){
-    try {
-      new this(obj);
-      return true;
-    }
-    catch(e){
-      if(e instanceof TypeError){
-        return false;
+  var isCustomTest = isFunction(def);
+  var Constructor;
+  if(isCustomTest){
+    Constructor = function (obj) {
+      if (def(obj)) {
+        return obj;
       }
-      throw e;
-    }
-  };
-  Constructor.extend = function(ext){
-    return new ObjectModel(merge(ext || {}, def), Constructor.prototype);
-  };
+      throw new TypeError("validity test " + objToString(def) + " failed for value " + objToString(obj));
+    };
+  } else {
+    Constructor = function(obj) {
+      if(!(this instanceof Constructor)){
+        return new Constructor(obj);
+      }
+      merge(this, obj, true);
+      var proxy = getProxy(this, def);
+      validateModel(proxy, def);
+      return proxy;
+    };
 
-  Constructor.prototype = Object.create(proto || Object.prototype); /* inherits from native object */
+    Constructor.extend = function(ext){
+      return new ObjectModel(merge(ext || {}, def), Constructor.prototype);
+    };
+    Constructor.defaults = function(p){ Constructor.prototype = p; return this };
+  }
+
+  Constructor.toString = objToString.bind(this, def);
+  Constructor.isValidModelFor = ObjectModel.isValidModelFor;
+  Constructor.prototype = Object.create(proto || (isCustomTest ? Function.prototype : Object.prototype));
   Constructor.prototype.constructor = Constructor;
   Object.setPrototypeOf(Constructor, ObjectModel.prototype);
   return Constructor;
 }
 ObjectModel.prototype = Object.create(Function.prototype);
+ObjectModel.isValidModelFor = function isValidModelFor(obj){
+  try {
+    new this(obj);
+    return true;
+  }
+  catch(e){
+    if(e instanceof TypeError){
+      return false;
+    }
+    throw e;
+  }
+};
 
 function isLeaf(def){
   return typeof def != "object" || Array.isArray(def) || def instanceof RegExp;
@@ -80,5 +93,3 @@ function validateModel(obj, def, path){
     });
   }
 }
-
-Object.Model = ObjectModel;

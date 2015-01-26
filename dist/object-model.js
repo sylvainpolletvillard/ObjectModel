@@ -1,4 +1,4 @@
-;(function(){
+;(function(global){
 function isFunction(o){
 	return typeof o === "function";
 }
@@ -13,7 +13,6 @@ function objToString(obj, ndeep){
 				return objToString(item, ndeep);
 			}).join(', ') + ']';
 	}
-	if(obj instanceof ArrayModel){ return obj.toString(ndeep); }
 	if(obj && typeof obj == "object"){
 		var indent = (new Array(ndeep)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
@@ -69,7 +68,7 @@ function matchDefinitionPart(obj, def){
 	if(obj == null){
 		return obj === def;
 	}
-	if(isFunction(def) && (def instanceof ObjectModel || def instanceof ArrayModel || def instanceof FunctionModel)){
+	if(isFunction(def) && isFunction(def.isValidModelFor)){
 		return def.isValidModelFor(obj);
 	}
 	if(def instanceof RegExp){
@@ -80,39 +79,52 @@ function matchDefinitionPart(obj, def){
 		|| obj.constructor === def;
 }
 function ObjectModel(def, proto){
-  var Constructor = function(obj) {
-    if(!(this instanceof Constructor)){
-      return new Constructor(obj);
-    }
-    merge(this, obj, true);
-    var proxy = getProxy(this, def);
-    validateModel(proxy, def);
-    return proxy;
-  };
-  Constructor.toString = objToString.bind(this, def);
-  Constructor.defaults = function(p){ Constructor.prototype = p; return this };
-  Constructor.isValidModelFor = function isValidModelFor(obj){
-    try {
-      new this(obj);
-      return true;
-    }
-    catch(e){
-      if(e instanceof TypeError){
-        return false;
+  var isCustomTest = isFunction(def);
+  var Constructor;
+  if(isCustomTest){
+    Constructor = function (obj) {
+      if (def(obj)) {
+        return obj;
       }
-      throw e;
-    }
-  };
-  Constructor.extend = function(ext){
-    return new ObjectModel(merge(ext || {}, def), Constructor.prototype);
-  };
+      throw new TypeError("validity test " + objToString(def) + " failed for value " + objToString(obj));
+    };
+  } else {
+    Constructor = function(obj) {
+      if(!(this instanceof Constructor)){
+        return new Constructor(obj);
+      }
+      merge(this, obj, true);
+      var proxy = getProxy(this, def);
+      validateModel(proxy, def);
+      return proxy;
+    };
 
-  Constructor.prototype = Object.create(proto || Object.prototype); /* inherits from native object */
+    Constructor.extend = function(ext){
+      return new ObjectModel(merge(ext || {}, def), Constructor.prototype);
+    };
+    Constructor.defaults = function(p){ Constructor.prototype = p; return this };
+  }
+
+  Constructor.toString = objToString.bind(this, def);
+  Constructor.isValidModelFor = ObjectModel.isValidModelFor;
+  Constructor.prototype = Object.create(proto || (isCustomTest ? Function.prototype : Object.prototype));
   Constructor.prototype.constructor = Constructor;
   Object.setPrototypeOf(Constructor, ObjectModel.prototype);
   return Constructor;
 }
 ObjectModel.prototype = Object.create(Function.prototype);
+ObjectModel.isValidModelFor = function isValidModelFor(obj){
+  try {
+    new this(obj);
+    return true;
+  }
+  catch(e){
+    if(e instanceof TypeError){
+      return false;
+    }
+    throw e;
+  }
+};
 
 function isLeaf(def){
   return typeof def != "object" || Array.isArray(def) || def instanceof RegExp;
@@ -161,8 +173,6 @@ function validateModel(obj, def, path){
     });
   }
 }
-
-Object.Model = ObjectModel;
 var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
 function ArrayModel(itemDef){
@@ -204,7 +214,7 @@ function ArrayModel(itemDef){
 		}
 	};
 	Constructor.toString = function(ndeep){
-		var out= 'Array.Model('+objToString(itemDef, ndeep)+')';
+		var out= 'ArrayModel('+objToString(itemDef, ndeep)+')';
 		if(def.min < 0){
 			out += '.min('+def.min+')';
 		}
@@ -269,8 +279,6 @@ function validateArrayModel(obj, def, path){
 		);
 	}
 }
-
-Array.Model = ArrayModel;
 function FunctionModel(){
 
 	var def = {
@@ -304,7 +312,7 @@ function FunctionModel(){
 	Constructor.defaults = function(){ def.defaults = arrayCopy(arguments); return this };
 	Constructor.isValidModelFor = isFunction;
 	Constructor.toString = function(ndeep){
-		var out = 'Function.Model('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
+		var out = 'FunctionModel('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
 		if("return" in def) {
 			out += ".return(" + objToString(def.return) + ")";
 		}
@@ -317,5 +325,8 @@ function FunctionModel(){
 }
 
 FunctionModel.prototype = Object.create(Function.prototype);
-Function.Model = FunctionModel;
-})();
+
+global.ObjectModel = ObjectModel;
+global.ArrayModel = ArrayModel;
+global.FunctionModel = FunctionModel;
+})(this);

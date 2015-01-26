@@ -4,10 +4,10 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="Object.Model : Runtime Type Checking and Data Model Definition for JavaScript">
+	<meta name="description" content="ObjectModel : Runtime Type Checking and Data Model Definition for JavaScript">
 	<meta name="author" content="Sylvain Pollet-Villard">
 
-	<title>Object.Model</title>
+	<title>Object Model</title>
 
 	<link rel="stylesheet" href="site/style/main.css"/>
 	<link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Raleway:300|Roboto:400,900'>
@@ -67,7 +67,7 @@
 
 	<section id="introduction">
 		<header class="header">
-			<h1>Object.Model</h1>
+			<h1>Object Model</h1>
 			<hr>
 			<p class="description">Runtime Type Checking and Data Model Definition for JavaScript</p>
 		</header>
@@ -76,7 +76,7 @@
 			<div class="panel">
 				<span class="legend">Define typed models</span>
             <pre><code class="language-javascript">
-   var User = new Object.Model({
+   var User = new ObjectModel({
       name: String,
       female: Boolean,
       birth: Date
@@ -109,7 +109,7 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Typed arrays with length control</li>
 			<li>Typed functions checking arguments and return value</li>
-			<li>all in 5.1 kB minified (1.1 kB gzipped)</li>
+			<li>all in 5.2 kB minified (1.1 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">What browsers are supported ?</h2>
@@ -120,10 +120,10 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v0.6.0</h3>
+		<h3>Current version: v0.7.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (5.1 kB)</li>
-			<li><a href="dist/object-model-0.6.0.zip">object-model-0.6.0.zip</a> source files</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (5.2 kB)</li>
+			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
@@ -136,18 +136,18 @@
 				<dd>constants and private properties by name convention</dd>
 				<dd>unit tests</dd>
 				<dt>v0.4</dt>
-				<dd>Object.Model.defaults, Function.Model.defaults</dd>
-				<dd>Object.Model.extend, Array.Model.extend</dd>
+				<dd>ObjectModel.defaults, FunctionModel.defaults</dd>
+				<dd>ObjectModel.extend, ArrayModel.extend</dd>
 				<dd>Model.isValidModelFor</dd>
 				<dt>v0.3</dt>
-				<dd>Function.Model</dd>
+				<dd>FunctionModel</dd>
 				<dd>arguments and return value validation</dd>
 				<dt>v0.2</dt>
-				<dd>Array.Model</dd>
+				<dd>ArrayModel</dd>
 				<dd>Optional & mandatory parameters</dd>
 				<dd>Multi-types parameters</dd>
 				<dt>v0.1</dt>
-				<dd>Object.Model</dd>
+				<dd>ObjectModel</dd>
 				<dd>null-safe traversing</dd>
 				<dd>validation by constructor or equality</dd>
 			</dl>
@@ -171,12 +171,12 @@
 	<hr>
 
 	<section id="doc-object-model">
-		<h2>Object.Model</h2>
+		<h2>ObjectModel</h2>
 		<p>Object models are typed definitions for your objects. You can view them as definitions of classes with advanced validation options. Models provide automatic validation at initial and future assignments of the properties of the instance objects. Type validation works with any constructor by using the <code>instanceof</code> operator:</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Order = Object.Model({ // 'new' keyword is optional
+            <pre><code class="language-javascript">var Order = ObjectModel({ // 'new' keyword is optional
 	product: {
 		name: String,
 		quantity: Number,
@@ -206,7 +206,7 @@ myOrder.product.quantity = "10"; //try to assign a String</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var UserInfo = new Object.Model({
+            <pre><code class="language-javascript">var UserInfo = new ObjectModel({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
@@ -228,7 +228,7 @@ var roger = new UserInfo({ name: "Roger" }); // email is mandatory</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Animation = new Object.Model({
+            <pre><code class="language-javascript">var Animation = new ObjectModel({
 	delay: [Number, String], // can be a Number or a String
 	easing: [Boolean, String, undefined]
 	// optional property which can be a Boolean or a String
@@ -255,7 +255,7 @@ opening.easing = 1;</code>
 		<div class="panels">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Shirt = new Object.Model({
+            <pre><code class="language-javascript">var Shirt = new ObjectModel({
 	category: "clothes", // the only acceptable value is "clothes"
 	size: [Number, "M", /^X{0,2}[SL]$/], // valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
 	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined] // valid values: "black", "#FF0000", undefined...
@@ -270,7 +270,7 @@ opening.easing = 1;</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Config = new Object.Model({
+            <pre><code class="language-javascript">var Config = new ObjectModel({
 	local: {
 		time: {
 			format: ["12h","24h", undefined]
@@ -309,7 +309,7 @@ if(modelConfig.local.time.format === "12h"){ hour %= 12; }
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var FileInfo = Object.Model({
+            <pre><code class="language-javascript">var FileInfo = ObjectModel({
 	name: String,
 	size: [Number],
 	creationDate: [Date],
@@ -346,12 +346,12 @@ if(modelConfig.local.time.format === "12h"){ hour %= 12; }
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Object.Model({
+            <pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	age: [Number]
 });
 
-var Lovers = Object.Model({
+var Lovers = ObjectModel({
 	man: Person,
 	woman: Person
 });</code></pre>
@@ -380,7 +380,7 @@ var joe_and_ann = Lovers({
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Object.Model({
+            <pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	female: Boolean
 });
@@ -420,7 +420,7 @@ ann instanceof Mother && ann instanceof Person</code>
 	<div class="panels two">
 		<div class="panel">
 			<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Circle = Object.Model({
+            <pre><code class="language-javascript">var Circle = ObjectModel({
 	radius: Number, // public
 	_diameter: [Number], // private
 	UNIT: ["px","cm","mm"], // constant
@@ -446,11 +446,11 @@ c.UNIT = "cm";</code>
 		<div class="panels">
 			<div class="panel">
 				<span class="legend">Models</span>
-            <pre><code class="language-javascript">var Family = Object.Model({
+            <pre><code class="language-javascript">var Family = ObjectModel({
 	father: Person,
 	mother: Person,
-	children: Array.Model(Person), // array of Persons
-	grandparents: [Array.Model(Person).max(4)] // optional, maximum 4
+	children: ArrayModel(Person), // array of Persons
+	grandparents: [ArrayModel(Person).max(4)] // optional, maximum 4
 });
 
 var joefamily = new Family({
@@ -458,9 +458,9 @@ var joefamily = new Family({
 	mother: ann,
 	children: [joanna, "dog"]
 });</code>
-<code class="language-none exception">TypeError: expecting children to be Array.Model({	name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
+<code class="language-none exception">TypeError: expecting children to be ArrayModel({	name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
 <code class="language-javascript">
-var Cards = Array.Model([Number, "J","Q","K"]); // array of Numbers, J, Q or K
+var Cards = ArrayModel([Number, "J","Q","K"]); // array of Numbers, J, Q or K
 var Hand = Cards.extend("Joker").min(2).max(2); // array of exactly 2 Cards or Joker
 var myHand = new Hand("Q", "Joker");
 myHand.push(7);</code>
@@ -474,17 +474,17 @@ myHand.push(7);</code>
 
 	<section id="doc-function-model">
 		<h2>Function models</h2>
-		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Function.Model</code> are the types of the arguments the function will receive. </code>The <code>defaults</code> method of Function models let you specify default values for missing arguments at call. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>FunctionModel</code> are the types of the arguments the function will receive. </code>The <code>defaults</code> method of Function models let you specify default values for missing arguments at call. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
 		<p>In Object Oriented Programming, we often use model methods that are common to all instances. You can define these methods in the model prototype as you would do with classic JavaScript OOP programming. You can also use the Object model <code>defaults</code> method. <a href="#doc-default-values">See the 'Default values' section</a>.</p>
 
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Object.Model({
+            <pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	age: Number,
 	// function without arguments returning a String
-	sayMyName: Function.Model().return(String)
+	sayMyName: FunctionModel().return(String)
 }).defaults({
    sayMyName: function(){
 		return "my name is " + this.name;
@@ -492,12 +492,12 @@ myHand.push(7);</code>
 });
 
 // takes one argument of type Person, returns a String
-var greetFnModel = Function.Model(Person).return(String);
+var greetFnModel = FunctionModel(Person).return(String);
 Person.prototype.greet = greetFnModel(function(otherguy){
 	return "Hello "+ otherguy.name + ", " + this.sayMyName();
 });
 
-var Calculator = Function.Model(Number, ["+","-","*","/"], Number)
+var Calculator = FunctionModel(Number, ["+","-","*","/"], Number)
 	            .defaults(0,"+",1)
 	            .return(Number);</code></pre>
 			</div>
@@ -514,7 +514,7 @@ joe.sayMyName();</code>
 <code class="language-none exception">TypeError: expecting arguments[0] to be {
 	name: String,
 	age: Number,
-	sayMyName: Function.Model().return(String)
+	sayMyName: FunctionModel().return(String)
 }, got String "dog"</code>
 <code class="language-javascript">
 var calc = new Calculator(function(a,operator,b){

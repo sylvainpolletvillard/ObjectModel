@@ -1,6 +1,6 @@
 var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
-function ArrayModel(itemDef){
+Model.Array = function ArrayModel(itemDef){
 
 	var def = {
 		item: itemDef,
@@ -9,11 +9,11 @@ function ArrayModel(itemDef){
 	};
 
 	var Constructor = function() {
+		var array = arrayCopy(arguments);
 		if(!(this instanceof Constructor)){
-			return new (Function.prototype.bind.apply(Constructor, [null].concat(arrayCopy(arguments))));
+			return new (Function.prototype.bind.apply(Constructor, [null].concat(array)));
 		}
 
-		var array = arrayCopy(arguments);
 		validateArrayModel(array, def);
 		return getArrayProxy(this, array, def);
 	};
@@ -53,8 +53,8 @@ function ArrayModel(itemDef){
 	Constructor.prototype.constructor = Constructor;
 	Object.setPrototypeOf(Constructor, ArrayModel.prototype);
 	return Constructor;
-}
-ArrayModel.prototype = Object.create(Function.prototype);
+};
+Model.Array.prototype = Object.create(Model.prototype);
 
 function getArrayProxy(proto, array, def){
 	var proxy = Object.create(proto);

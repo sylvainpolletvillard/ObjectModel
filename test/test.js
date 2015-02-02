@@ -1,9 +1,10 @@
+function testSuite(Model){
 
 QUnit.test( "basic Object Model", function( assert ) {
 
-  assert.ok(ObjectModel instanceof Function);
+  assert.ok(Model instanceof Function);
 
-  var Person = ObjectModel({
+  var Person = Model({
     name: String,
     age: Number,
     birth: Date,
@@ -33,7 +34,7 @@ QUnit.test( "basic Object Model", function( assert ) {
   assert.equal(+joe.birth, +(new Date(1990,3,25)));
   assert.strictEqual(joe.address.work.city, "Lille");
   assert.ok(joe instanceof Person && joe instanceof Object);
-  assert.ok(Person instanceof ObjectModel && Person instanceof Function);
+  assert.ok(Person instanceof Model && Person instanceof Function);
 
   joe.name = "Big Joe";
   joe.age++;
@@ -62,7 +63,7 @@ QUnit.test( "basic Object Model", function( assert ) {
 });
 
 QUnit.test("optional and multiple parameters", function(assert){
-  var Person = ObjectModel({
+  var Person = Model({
     name: [String],
     age: [Number, Date, String, Boolean, undefined],
     female: [Boolean, Number, String],
@@ -96,7 +97,7 @@ QUnit.test("optional and multiple parameters", function(assert){
 });
 
 QUnit.test("fixed values", function(assert){
-  var Model = ObjectModel({
+  var myModel = Model({
     a: [1,2,3],
     b: 42,
     c: ["",false,null,0],
@@ -105,7 +106,7 @@ QUnit.test("fixed values", function(assert){
     x: [Number, true]
   });
 
-  var model = Model({
+  var model = myModel({
     a:1,
     b:42,
     c: 0,
@@ -128,11 +129,11 @@ QUnit.test("fixed values", function(assert){
 
 QUnit.test("Array models", function(assert){
 
-  assert.equal(typeof ArrayModel, "function");
-  var Arr= ArrayModel(Number);
+  assert.equal(typeof Model.Array, "function");
+  var Arr= Model.Array(Number);
   var a, b, c, d;
 
-  assert.ok(Arr instanceof ArrayModel && Arr instanceof Function);
+  assert.ok(Arr instanceof Model.Array && Arr instanceof Function);
   a = Arr();
   assert.ok(a instanceof Arr && a instanceof Array);
 
@@ -156,12 +157,12 @@ QUnit.test("Array models", function(assert){
   }, /TypeError/);
 
 
-  var Question = ObjectModel({
+  var Question = Model({
     answer: Number
   });
 
 
-  Arr = ArrayModel([Question,String,Boolean]);
+  Arr = Model.Array([Question,String,Boolean]);
   a = Arr("test");
   a.unshift(true);
   a.push(Question({ answer: 42 }));
@@ -169,10 +170,10 @@ QUnit.test("Array models", function(assert){
   assert.throws(function(){a.unshift(42); }, /TypeError/, "unshift multiple types");
   assert.throws(function(){a[0] = null; }, /TypeError/, "set index multiple types");
 
-  Arr = ArrayModel([true,2,"3"]);
-  assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError.*Array\[3]/, "arrayModel fixed values");
+  Arr = Model.Array([true,2,"3"]);
+  assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError.*Array\[3]/, "Model.Array fixed values");
 
-  var Cards = ArrayModel([Number, "J","Q","K"]); // array of Numbers, J, Q or K
+  var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
   var Hand = Cards.extend().min(2).max(2);
   var pokerHand = new Hand("K",10);
 
@@ -189,11 +190,11 @@ QUnit.test("Array models", function(assert){
 
 QUnit.test("Function models", function(assert){
 
-  assert.equal(typeof FunctionModel, "function");
+  assert.equal(typeof Model.Function, "function");
 
-  var op = new FunctionModel(Number, Number).return(Number);
+  var op = new Model.Function(Number, Number).return(Number);
 
-  assert.ok(op instanceof FunctionModel && op instanceof Function);
+  assert.ok(op instanceof Model.Function && op instanceof Function);
 
   var add = op(function(a,b){ return a + b; });
   var add3 = op(function(a,b,c){ return a + b + c; });
@@ -208,11 +209,11 @@ QUnit.test("Function models", function(assert){
   assert.throws(function(){ noop(15,25) }, /TypeError/, "no return");
   assert.throws(function(){ addStr(15,25) }, /TypeError/, "incorrect return type");
 
-  var Person = ObjectModel({
+  var Person = Model({
     name: String,
     age: Number,
     // function without arguments returning a String
-    sayMyName: FunctionModel().return(String)
+    sayMyName: Model.Function().return(String)
   }).defaults({
     sayMyName: function(){
       return "my name is " + this.name;
@@ -224,7 +225,7 @@ QUnit.test("Function models", function(assert){
    declarations of the model and method. */
 
 // takes one argument of type Person, returns a String
-  var greetFnModel = FunctionModel(Person).return(String);
+  var greetFnModel = Model.Function(Person).return(String);
   Person.prototype.greet = greetFnModel(function(otherguy){
     return "Hello "+ otherguy.name + ", " + this.sayMyName();
   });
@@ -238,7 +239,7 @@ QUnit.test("Function models", function(assert){
 
   assert.throws(function(){ joe.greet("dog"); }, /TypeError/, "invalid argument type");
 
-  var Calculator = FunctionModel(Number, ["+","-","*","/"], Number)
+  var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
      .defaults(0,"+",1)
      .return(Number);
 
@@ -255,7 +256,7 @@ QUnit.test("Function models", function(assert){
 
 QUnit.test("Default values", function(assert){
 
-  var Model = new ObjectModel({
+  var myModel = new Model({
     name: String,
     foo: {
       bar: {
@@ -270,15 +271,15 @@ QUnit.test("Default values", function(assert){
       }
     }
   });
-  var model = Model();
+  var model = myModel();
   assert.strictEqual(model.name,"joe");
   assert.strictEqual(model.foo.bar.buz, 0);
 
-  var model2 = Model({ name: "jim", foo:{ bar: { buz: 1 }}});
+  var model2 = myModel({ name: "jim", foo:{ bar: { buz: 1 }}});
   assert.strictEqual(model2.name,"jim");
   assert.strictEqual(model2.foo.bar.buz, 1);
 
-  var op = new FunctionModel(Number, Number).return(Number).defaults(11,31);
+  var op = new Model.Function(Number, Number).return(Number).defaults(11,31);
   var add = op(function(a,b){ return a + b; });
   assert.equal(add(), 42);
 
@@ -286,12 +287,12 @@ QUnit.test("Default values", function(assert){
 
 QUnit.test("RegExp values", function(assert){
 
-  var Model = ObjectModel({
+  var myModel = Model({
     phonenumber: /^[0-9]{10}$/,
     voyels: [/^[aeiouy]+$/]
   });
 
-  var m = Model({
+  var m = myModel({
     phonenumber: "0612345678"
   });
 
@@ -303,13 +304,13 @@ QUnit.test("RegExp values", function(assert){
 
 QUnit.test("Non-enumerable and non-writable properties", function(assert){
 
-  var Model = ObjectModel({
+  var myModel = Model({
     CONST: Number,
     _private: Number,
     normal: Number
   });
 
-  var m = Model({
+  var m = myModel({
     CONST: 42,
     _private: 43,
     normal: 44
@@ -325,7 +326,7 @@ QUnit.test("Non-enumerable and non-writable properties", function(assert){
 
 QUnit.test("Extensions", function(assert){
 
-  var Person = ObjectModel({
+  var Person = Model({
     name: String,
     age: Number,
     birth: Date,
@@ -421,7 +422,7 @@ QUnit.test("Extensions", function(assert){
 QUnit.test("Composition", function(assert){
 
 
-var Person = ObjectModel({
+var Person = Model({
   name: String,
   age: [Number, Date],
   female: [Boolean],
@@ -432,11 +433,11 @@ var Person = ObjectModel({
   }
 });
 
-var Family = ObjectModel({
+var Family = Model({
   father: Person,
   mother: Person.extend({ female: true }),
-  children: ArrayModel(Person),
-  grandparents: [ArrayModel(Person).max(4)]
+  children: Model.Array(Person),
+  grandparents: [Model.Array(Person).max(4)]
 });
 
 var joe = Person({
@@ -485,3 +486,5 @@ assert.ok(joefamily.mother instanceof Person, "mother instanceof Person");
   }, /TypeError.*mother*/, "validation of submodel");
 
 });
+
+}

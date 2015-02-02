@@ -1,4 +1,8 @@
-;(function(global){
+(function (globals, factory) {
+ if (typeof define === 'function' && define.amd) define(factory); // AMD
+ else if (typeof exports === 'object') module.exports = factory(); // Node
+ else globals['Model'] = factory(); // globals
+}(this, function () {
 function isFunction(o){
 	return typeof o === "function";
 }
@@ -319,6 +323,5 @@ Model.Function = function FunctionModel(){
 };
 
 Model.Function.prototype = Object.create(Model.prototype);
-
-global.Model = Model;
-})(this);
+return Model;
+}));

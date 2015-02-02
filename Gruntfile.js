@@ -10,22 +10,27 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: pkg,
 		concat: {
-			options: {
-				banner: ";(function(global){\n",
-				footer: "\n\n"
-				+"global.ObjectModel = ObjectModel;\n"
-				+"global.ArrayModel = ArrayModel;\n"
-				+"global.FunctionModel = FunctionModel;\n"
-				+"})(this);"
-			},
 			dist: {
 				src: ['src/helpers.js', 'src/definitions.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
-				dest: 'dist/object-model.js'
+				dest: 'dist/object-model.js',
+				options: {
+					banner: ";(function(global){\n",
+					footer: "\n\nglobal.Model = Model;\n})(this);"
+				}
 			},
-			coremodule: {
-				src: ['src/helpers.js', 'src/definitions.js', 'src/object-model.js'],
-				dest: 'dist/object-model.core.js'
+			dist_umd: {
+				src: ['src/helpers.js', 'src/definitions.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
+				dest: 'dist/object-model.umd.js',
+				options: {
+					banner: "(function (globals, factory) {\n"
+					+" if (typeof define === 'function' && define.amd) define(factory); // AMD\n"
+					+" else if (typeof exports === 'object') module.exports = factory(); // Node\n"
+					+" else globals['Model'] = factory(); // globals\n"
+					+"}(this, function () {\n",
+					footer: "\nreturn Model;\n}));"
+				}
 			}
+
 		},
 		uglify: {
 			dist: {
@@ -90,49 +95,6 @@ module.exports = function(grunt) {
 					}
 				]
 			}
-		},
-		umd: {
-			ObjectModel: {
-				options: {
-					src: 'dist/object-model.core.js',
-					dest: 'dist/modules/object-model.js', // optional, if missing the src will be used
-					objectToExport: 'ObjectModel', // optional, internal object that will be exported
-					amdModuleId: 'ObjectModel' // optional, if missing the AMD module will be anonymous
-				}
-			},
-			ArrayModel: {
-				options: {
-					src: 'src/array-model.js',
-					dest: 'dist/modules/array-model.js', // optional, if missing the src will be used
-					objectToExport: 'ArrayModel', // optional, internal object that will be exported
-					amdModuleId: 'ArrayModel', // optional, if missing the AMD module will be anonymous
-					deps: { // optional
-						'default': ['ObjectModel']
-					}
-				}
-			},
-			FunctionModel: {
-				options: {
-					src: 'src/function-model.js',
-					dest: 'dist/modules/function-model.js', // optional, if missing the src will be used
-					objectToExport: 'FunctionModel', // optional, internal object that will be exported
-					amdModuleId: 'FunctionModel', // optional, if missing the AMD module will be anonymous
-					deps: { // optional
-						'default': ['ObjectModel']
-					}
-				}
-			},
-			Constraint: {
-				options: {
-					src: 'src/constraint.js',
-					dest: 'dist/modules/constraint.js', // optional, if missing the src will be used
-					objectToExport: 'Constraint', // optional, internal object that will be exported
-					amdModuleId: 'Constraint', // optional, if missing the AMD module will be anonymous
-					deps: { // optional
-						'default': ['ObjectModel']
-					}
-				}
-			}
 		}
 	});
 
@@ -143,11 +105,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-compress');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
-	grunt.loadNpmTasks('grunt-umd');
 
-	grunt.registerTask('dist-modules', ['concat:coremodule','umd:ObjectModel','umd:ArrayModel','umd:FunctionModel'/*,'umd:Constraint'*/]);
-	grunt.registerTask('dist-build', ['concat:dist','uglify:dist','file_info:dist','compress:source_files']);
-	grunt.registerTask('dist', ['dist-build','dist-modules','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','uglify:dist','file_info:dist','compress:source_files','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

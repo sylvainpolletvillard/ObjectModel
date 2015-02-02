@@ -1,4 +1,4 @@
-function FunctionModel(){
+Model.Function = function FunctionModel(){
 
 	var def = {
 		args: arrayCopy(arguments)
@@ -31,7 +31,7 @@ function FunctionModel(){
 	Constructor.defaults = function(){ def.defaults = arrayCopy(arguments); return this };
 	Constructor.isValidModelFor = isFunction;
 	Constructor.toString = function(ndeep){
-		var out = 'FunctionModel('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
+		var out = 'Model.Function('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
 		if("return" in def) {
 			out += ".return(" + objToString(def.return) + ")";
 		}
@@ -41,6 +41,6 @@ function FunctionModel(){
 	Constructor.prototype.constructor = Constructor;
 	Object.setPrototypeOf(Constructor, FunctionModel.prototype);
 	return Constructor;
-}
+};
 
-FunctionModel.prototype = Object.create(Function.prototype);
+Model.Function.prototype = Object.create(Model.prototype);

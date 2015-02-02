@@ -31,7 +31,7 @@ function FunctionModel(){
 	Constructor.defaults = function(){ def.defaults = arrayCopy(arguments); return this };
 	Constructor.isValidModelFor = isFunction;
 	Constructor.toString = function(ndeep){
-		var out = 'Function.Model('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
+		var out = 'FunctionModel('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
 		if("return" in def) {
 			out += ".return(" + objToString(def.return) + ")";
 		}
@@ -44,4 +44,3 @@ function FunctionModel(){
 }
 
 FunctionModel.prototype = Object.create(Function.prototype);
-Function.Model = FunctionModel;

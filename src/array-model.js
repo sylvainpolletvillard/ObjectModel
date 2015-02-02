@@ -39,7 +39,7 @@ function ArrayModel(itemDef){
 		}
 	};
 	Constructor.toString = function(ndeep){
-		var out= 'Array.Model('+objToString(itemDef, ndeep)+')';
+		var out= 'ArrayModel('+objToString(itemDef, ndeep)+')';
 		if(def.min < 0){
 			out += '.min('+def.min+')';
 		}
@@ -104,5 +104,3 @@ function validateArrayModel(obj, def, path){
 		);
 	}
 }
-
-Array.Model = ArrayModel;

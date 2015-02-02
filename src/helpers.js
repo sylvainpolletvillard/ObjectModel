@@ -12,7 +12,6 @@ function objToString(obj, ndeep){
 				return objToString(item, ndeep);
 			}).join(', ') + ']';
 	}
-	if(obj instanceof ArrayModel){ return obj.toString(ndeep); }
 	if(obj && typeof obj == "object"){
 		var indent = (new Array(ndeep)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){

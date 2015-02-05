@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 		pkg: pkg,
 		concat: {
 			dist: {
-				src: ['src/helpers.js', 'src/definitions.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
+				src: ['src/helpers.js', 'src/model.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
 				dest: 'dist/object-model.js',
 				options: {
 					banner: ";(function(global){\n",
@@ -19,7 +19,7 @@ module.exports = function(grunt) {
 				}
 			},
 			dist_umd: {
-				src: ['src/helpers.js', 'src/definitions.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
+				src: ['src/helpers.js', 'src/model.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
 				dest: 'dist/object-model.umd.js',
 				options: {
 					banner: "(function (globals, factory) {\n"

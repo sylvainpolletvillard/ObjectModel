@@ -12,7 +12,7 @@ Model.Function = function FunctionModel(){
 		var proxyFn = function () {
 			var args = merge(arrayCopy(arguments), def.defaults);
 			if (args.length !== def.args.length) {
-				throw new TypeError("expecting " + objToString(fn) + " to be called with " + def.args.length + " arguments, got " + args.length);
+				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.args.length + " arguments, got " + args.length);
 			}
 			def.args.forEach(function (argDef, i) {
 				matchDefinition(args[i], argDef, 'arguments[' + i + ']');
@@ -31,9 +31,9 @@ Model.Function = function FunctionModel(){
 	Constructor.defaults = function(){ def.defaults = arrayCopy(arguments); return this };
 	Constructor.isValidModelFor = isFunction;
 	Constructor.toString = function(ndeep){
-		var out = 'Model.Function('+def.args.map(function(argDef) { return objToString(argDef, ndeep); }).join(",") +')';
+		var out = 'Model.Function('+def.args.map(function(argDef) { return toString(argDef, ndeep); }).join(",") +')';
 		if("return" in def) {
-			out += ".return(" + objToString(def.return) + ")";
+			out += ".return(" + toString(def.return) + ")";
 		}
 		return out;
 	};

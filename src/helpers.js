@@ -2,20 +2,24 @@ function isFunction(o){
 	return typeof o === "function";
 }
 
-function objToString(obj, ndeep){
+var isArray = Array.isArray || function(a){
+	return a instanceof Array
+};
+
+function toString(obj, ndeep){
 	if(ndeep === undefined){ ndeep = 1; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
 	if(typeof obj == "function"){ return obj.name || obj.toString(ndeep); }
-	if(Array.isArray(obj)){
+	if(isArray(obj)){
 		return '[' + obj.map(function(item) {
-				return objToString(item, ndeep);
+				return toString(item, ndeep);
 			}).join(', ') + ']';
 	}
 	if(obj && typeof obj == "object"){
 		var indent = (new Array(ndeep)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
-				return '\n\t' + indent + key + ': ' + objToString(obj[key], ndeep+1);
+				return '\n\t' + indent + key + ': ' + toString(obj[key], ndeep+1);
 			}).join(',') + '\n' + indent + '}';
 	}
 	return String(obj)

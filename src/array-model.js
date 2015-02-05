@@ -32,15 +32,13 @@ Model.Array = function ArrayModel(itemDef){
 			return true;
 		}
 		catch(e){
-			if(e instanceof TypeError){
-				return false;
-			}
+			if(e instanceof TypeError) return false;
 			throw e;
 		}
 	};
 	Constructor.toString = function(ndeep){
-		var out= 'ArrayModel('+objToString(itemDef, ndeep)+')';
-		if(def.min < 0){
+		var out= 'ArrayModel(' + toString(itemDef, ndeep) + ')';
+		if(def.min > 0){
 			out += '.min('+def.min+')';
 		}
 		if(def.max < Infinity){
@@ -92,15 +90,13 @@ function proxifyKeys(proxy, array, indexes, itemDef){
 	});
 }
 
-function validateArrayModel(obj, def, path){
+function validateArrayModel(obj, def){
 	obj.forEach(function(o, i){
 		matchDefinition(o, def.item, 'Array['+i+']');
 	});
 	if(obj.length < def.min || obj.length > def.max){
-		throw new TypeError(
-			"expecting "+(path || "Array")+" to have "
-		+(def.min === def.max ? def.min : "between" + def.min + " and " + def.max)
-		+" items, got "+obj.length
-		);
+		throw new TypeError("expecting Array to have "
+			+ (def.min === def.max ? def.min : "between" + def.min + " and " + def.max)
+			+ " items, got " + obj.length);
 	}
 }

@@ -29,7 +29,7 @@ function bettertypeof(obj){
 	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
 }
 
-function arrayCopy(arr){
+function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
@@ -51,3 +51,13 @@ function merge(base, ext, replace){
 	}
 	return base
 }
+
+Number.isInteger = Number.isInteger || function(value) {
+	return typeof value === "number" &&
+		isFinite(value) &&
+		Math.floor(value) === value;
+};
+
+Object.setPrototypeOf = Object.setPrototypeOf || ({__proto__:[]} instanceof Array
+	? function(o, p){ o.__proto__ = p; }
+	: function(o, p){ for(var k in p){ o[k] = p[k]; } });

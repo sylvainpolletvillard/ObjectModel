@@ -1,102 +1,77 @@
 var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
-Model.Array = function ArrayModel(itemDef){
+Model.Array = function ArrayModel(def){
 
-	var def = {
-		item: itemDef,
-		min: 0,
-		max: Infinity
-	};
-
-	var Constructor = function() {
-		var array = arrayCopy(arguments);
-		if(!(this instanceof Constructor)){
-			return new (Function.prototype.bind.apply(Constructor, [null].concat(array)));
+	var model = function() {
+		var array = cloneArray(arguments);
+		if(!(this instanceof model)){
+			return new (Function.prototype.bind.apply(model, [null].concat(array)));
 		}
 
-		validateArrayModel(array, def);
-		return getArrayProxy(this, array, def);
+		model.validate(array);
+		var proxy = this;
+
+		ARRAY_MUTATOR_METHODS.forEach(function (method) {
+			Object.defineProperty(proxy, method, { configurable: true, value: function() {
+				var testArray = array.slice();
+				Array.prototype[method].apply(testArray, arguments);
+				model.validate(testArray);
+				var newKeys = Object.keys(testArray).filter(function(key){ return !(key in proxy) });
+				proxifyKeys(proxy, array, newKeys, model.definition);
+				return Array.prototype[method].apply(array, arguments);
+			}});
+		});
+
+		proxifyKeys(proxy, array, Object.keys(array), model.definition);
+		Object.defineProperty(proxy, "length", {
+			enumerable: false,
+			get: function(){ return array.length; }
+		});
+		return proxy;
 	};
 
-	Constructor.min = function(val){ def.min = val; return this };
-	Constructor.max = function(val){ def.max = val; return this };
-	Constructor.extend = function(itemDef){
-		var Ext = new ArrayModel([].concat(def.item).concat(itemDef || []));
-		Ext.prototype = Object.create(Constructor.prototype);
-		Ext.prototype.constructor = Ext;
-		return Ext;
-	};
-	Constructor.isValidModelFor = function(arr){
-		try {
-			this.apply(null, arr);
-			return true;
-		}
-		catch(e){
-			if(e instanceof TypeError) return false;
-			throw e;
-		}
-	};
-	Constructor.toString = function(ndeep){
-		var out= 'ArrayModel(' + toString(itemDef, ndeep) + ')';
-		if(def.min > 0){
-			out += '.min('+def.min+')';
-		}
-		if(def.max < Infinity){
-			out += '.max('+def.max+')';
-		}
-		return out;
-	};
-
-	Constructor.prototype = Object.create(Array.prototype); /* inherits from native array */
-	Constructor.prototype.constructor = Constructor;
-	Object.setPrototypeOf(Constructor, ArrayModel.prototype);
-	return Constructor;
+	Object.setPrototypeOf(model, ArrayModel.prototype);
+	model.prototype = Object.create(Array.prototype);
+	model.prototype.constructor = model;
+	model.definition = parseDefinition(def);
+	model.assertions = [];
+	return model;
 };
+
 Model.Array.prototype = Object.create(Model.prototype);
 
-function getArrayProxy(proto, array, def){
-	var proxy = Object.create(proto);
+Model.Array.prototype.validate = function(arr){
+	if(!isArray(arr)){
+		throw new TypeError("expecting an array, got: " + toString(arr));
+	}
+	for(var i=0, l=arr.length; i<l; i++){
+		matchDefinitions(arr[i], this.definition, 'Array['+i+']');
+	}
+	matchAssertions(arr, this.assertions);
+};
 
-	ARRAY_MUTATOR_METHODS.forEach(function (method) {
-		Object.defineProperty(proxy, method, { configurable: true, value: function() {
-			var testArray = array.slice();
-			Array.prototype[method].apply(testArray, arguments);
-			validateArrayModel(testArray, def);
-			var newKeys = Object.keys(testArray).filter(function(key){ return !(key in proxy) });
-			proxifyKeys(proxy, array, newKeys, def.item);
-			return Array.prototype[method].apply(array, arguments);
-		}});
-	});
+Model.Array.prototype.toString = function(ndeep){
+	return 'Model.Array(' + toString(this.definition, ndeep) + ')';
+};
 
-	proxifyKeys(proxy, array, Object.keys(array), def.item);
-	Object.defineProperty(proxy, "length", {
-		enumerable: false,
-		get: function(){ return array.length; }
-	});
-	return proxy;
-}
+Model.Array.prototype.extend = function(ext){
+	var subModel = new Model.Array(this.definition.concat(parseDefinition(ext)));
+	subModel.prototype = Object.create(this.prototype);
+	subModel.prototype.constructor = subModel;
+	subModel.assertions = cloneArray(this.assertions);
+	return subModel;
+};
 
-function proxifyKeys(proxy, array, indexes, itemDef){
+function proxifyKeys(proxy, array, indexes, def){
 	indexes.forEach(function(index){
 		Object.defineProperty(proxy, index, {
 			get: function () {
 				return array[index];
 			},
 			set: function (val) {
-				matchDefinition(val, itemDef, 'Array['+index+']');
+				matchDefinitions(val, def, 'Array['+index+']');
 				array[index] = val;
 			}
 		});
 	});
-}
-
-function validateArrayModel(obj, def){
-	obj.forEach(function(o, i){
-		matchDefinition(o, def.item, 'Array['+i+']');
-	});
-	if(obj.length < def.min || obj.length > def.max){
-		throw new TypeError("expecting Array to have "
-			+ (def.min === def.max ? def.min : "between" + def.min + " and " + def.max)
-			+ " items, got " + obj.length);
-	}
 }

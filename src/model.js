@@ -1,56 +1,75 @@
-function Model(def, proto){
+function Model(def){
+	if(!isLeaf(def)) return new Model.Object(def);
 
-	if(!isLeaf(def)) return new Model.Object(def, proto);
-
-	var Constructor = function(obj) {
-		matchDefinition(obj, def);
+	var model = function(obj) {
+		model.validate(obj);
 		return obj;
-	};
-	Constructor.toString = toString.bind(this, def);
-	Object.setPrototypeOf(Constructor, Model.prototype);
-	return Constructor;
+	}.bind(this);
+
+	Object.setPrototypeOf(model, Model.prototype);
+	model.constructor = Model;
+	model.prototype = Object.create(isFunction(def) ? def.prototype : null);
+	model.prototype.constructor = model;
+	model.definition = parseDefinition(def);
+	model.assertions = [];
+	return model;
 }
 
 Model.prototype = Object.create(Function.prototype);
+
+Model.prototype.toString = function(ndeep){
+	return toString(this.definition, ndeep);
+};
+
+Model.prototype.validate = function(obj){
+	matchDefinitions(obj, this.definition);
+	matchAssertions(obj, this.assertions);
+};
+
 Model.prototype.isValidModelFor = function(obj){
-	try {
-		new this(obj);
-		return true;
+	try { this.validate(obj); return true; }
+	catch(e){ return false; }
+};
+
+Model.prototype.extend = function(ext){
+	var submodel = new Model(this.definition.concat(parseDefinition(ext)));
+	submodel.prototype = Object.create(this.prototype);
+	submodel.prototype.constructor = submodel;
+	submodel.assertions = this.assertions;
+	return submodel;
+};
+
+Model.prototype.assert = function(assertion){
+	if(isFunction(assertion)){
+		this.assertions.push(assertion);
 	}
-	catch(e){
-		if(e instanceof TypeError) return false;
-		throw e;
-	}
+	return this;
 };
 
 function isLeaf(def){
 	return typeof def != "object" || isArray(def) || def instanceof RegExp;
 }
 
-function validateModel(obj, def, path){
+function parseDefinition(def){
 	if(isLeaf(def)){
-		matchDefinition(obj, def, path);
+		if(!isArray(def)) {
+			return [def];
+		} else if(def.length < 2){
+			return def.concat(undefined);
+		}
 	} else {
 		Object.keys(def).forEach(function(key) {
-			var newPath = (path ? [path,key].join('.') : key);
-			validateModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
+			def[key] = parseDefinition(def[key]);
 		});
 	}
+	return def;
 }
 
-function matchDefinition(obj, _def, path){
-	var def = _def;
-	if(!isArray(_def)) {
-		def = [_def];
-	} else if(def.length < 2){
-		def = _def.concat(undefined);
-	}
-
-	if (!def.some(function(part){ return matchDefinitionPart(obj, part) })){
+function matchDefinitions(obj, def, path){
+	if (!def.some(function(part){ return matchDefinitionPart(obj, part) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
-			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj)
-		);
+			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	}
 }
 
@@ -58,7 +77,7 @@ function matchDefinitionPart(obj, def){
 	if(obj == null){
 		return obj === def;
 	}
-	if(isFunction(def) && isFunction(def.isValidModelFor)){
+	if(def instanceof Model){
 		return def.isValidModelFor(obj);
 	}
 	if(def instanceof RegExp){
@@ -67,4 +86,12 @@ function matchDefinitionPart(obj, def){
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
 		|| obj.constructor === def;
+}
+
+function matchAssertions(obj, assertions){
+	for(var i=0, l=assertions.length; i<l ; i++ ){
+		if(!assertions[i](obj)){
+			throw new TypeError("an assertion of the model is not respected: "+toString(assertions[i]));
+		}
+	}
 }

@@ -1,8 +1,31 @@
 function testSuite(Model){
 
-QUnit.test( "basic Object Model", function( assert ) {
+QUnit.test( "basic models", function( assert ) {
 
-  assert.ok(Model instanceof Function);
+	assert.ok(Model instanceof Function);
+
+	var NumberModel = Model(Number);
+	NumberModel(0);
+	assert.ok(typeof NumberModel(42) === "number", "should return the original type");
+	assert.ok(NumberModel(17) === 17, "should return the original value");
+	assert.throws(function(){ NumberModel("12") }, /TypeError/, "test invalid type");
+
+	var OptionalNumberModel = NumberModel.extend(undefined);
+	assert.throws(function(){ NumberModel() }, /TypeError/, "test undefined value");
+	OptionalNumberModel();
+
+	var myModel = Model([String, Boolean, Date]);
+	myModel("test");
+	myModel(true);
+	myModel(new Date());
+	assert.throws(function(){ myModel() }, /TypeError/, "test undefined value");
+	assert.throws(function(){ myModel(0) }, /TypeError/, "test invalid type");
+
+});
+
+QUnit.test( "Object models", function( assert ) {
+
+  assert.ok(Model.Object instanceof Function);
 
   var Person = Model({
     name: String,
@@ -129,8 +152,9 @@ QUnit.test("fixed values", function(assert){
 
 QUnit.test("Array models", function(assert){
 
-  assert.equal(typeof Model.Array, "function");
-  var Arr= Model.Array(Number);
+  assert.ok(Model.Array instanceof Function);
+
+  var Arr = Model.Array(Number);
   var a, b, c, d;
 
   assert.ok(Arr instanceof Model.Array && Arr instanceof Function);
@@ -140,9 +164,9 @@ QUnit.test("Array models", function(assert){
   a.push(1);
   a[0] = 42;
   a.splice(1,0,5,6,Infinity);
-  assert.throws(function(){a.push("toto"); }, /TypeError/, "push");
+  assert.throws(function(){ a.push("toto"); }, /TypeError/, "push");
   assert.throws(function(){ a[0] = {}; }, /TypeError/, "set index");
-  assert.throws(function(){a.splice(1,0,7,'oups',9); }, /TypeError/, "splice");
+  assert.throws(function(){ a.splice(1,0,7,'oups',9); }, /TypeError/, "splice");
   assert.equal(a.length, 4);
 
   b = Arr(1,2,3);
@@ -174,14 +198,16 @@ QUnit.test("Array models", function(assert){
   assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError.*Array\[3]/, "Model.Array fixed values");
 
   var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
-  var Hand = Cards.extend().min(2).max(2);
+  var Hand = Cards.extend().assert(function(cards){
+	  return cards.length === 2;
+  });
   var pokerHand = new Hand("K",10);
 
   assert.ok(pokerHand instanceof Hand && pokerHand instanceof Cards, "array model inheritance");
   Cards("K",10).push(7);
   assert.throws(function(){ Hand("K",10).push(7); }, /TypeError/, "min/max of inherit array model");
 
-  var CheaterHand = Hand.extend("joker");
+  var CheaterHand = Cards.extend("joker");
   CheaterHand("K",10,"joker");
   assert.throws(function(){ Hand("K",10, "joker"); }, /TypeError/, "array model type extension");
 
@@ -437,7 +463,7 @@ var Family = Model({
   father: Person,
   mother: Person.extend({ female: true }),
   children: Model.Array(Person),
-  grandparents: [Model.Array(Person).max(4)]
+  grandparents: [Model.Array(Person).assert(function(persons){ return persons.length <= 4 })]
 });
 
 var joe = Person({
@@ -485,6 +511,14 @@ assert.ok(joefamily.mother instanceof Person, "mother instanceof Person");
     });
   }, /TypeError.*mother*/, "validation of submodel");
 
+});
+
+QUnit.test("Assertions", function(assert){
+
+	function isOdd(n){ return n%2 === 1; }
+	var OddNumber = Model(Number).assert(isOdd);
+	OddNumber(17);
+	assert.throws(function(){ OddNumber(18) }, /TypeError.*isOdd/, "test basic assertion");
 });
 
 }

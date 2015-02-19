@@ -69,7 +69,7 @@
 		<header class="header">
 			<h1>Object Model</h1>
 			<hr>
-			<p class="description">Runtime Type Checking and Data Model Definition for JavaScript</p>
+			<p class="description">Model Definition and Runtime Type Checking for JavaScript</p>
 		</header>
 
 		<div class="panels two">
@@ -95,21 +95,22 @@
 		</div>
 
 		<h2 id="what-is-it">What is this library ?</h2>
-		<p>A recurring criticism of JavaScript is that it is a weakly typed language. To bring stronger typing to JavaScript, new languages that compile to JavaScript have been invented like TypeScript from Microsoft. The purpose of this library is to get this type validation at runtime without requiring a new language or a compilation step. </p>
+		<p>A recurring criticism of JavaScript is that it is a weakly typed language. New typed languages that compile to JavaScript have been invented like TypeScript from Microsoft. We also have static type checking tools like Flow from Facebook. This library is about dynamic type checking: it aims to get this type validation at runtime without requiring a new language or a compilation step.</p>
+		<p>Validate at runtime allows you to define more specific tests that can change depending on your application state. You can also control unpredictable data sources like external JS dependencies or JSON data from web services .</p>
 
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too little:</p>
 		<ul>
 			<li>Advanced model definition trying to reconcile prototypes and classes</li>
-			<li>Type/value checking at assignment with explicit error messages</li>
-			<li>Union types and enumerations</li>
+			<li>Typed object properties, typed arrays, typed functions</li>
+			<li>Validation at instancing and future assignments</li>
+			<li>Union types, enumerations and custom assertions</li>
 			<li>Optional properties and default values</li>
 			<li>Null-safe object traversal</li>
 			<li>Easy inheritance and model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
-			<li>Typed arrays with length control</li>
-			<li>Typed functions checking arguments and return value</li>
-			<li>all in 6.6 kB minified (1.2 kB gzipped)</li>
+			<li>Explicit error messages</li>
+			<li>all in 6 kB minified (1.2 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -122,7 +123,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v0.7.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.6 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6 kB)</li>
 			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
 		</ul>
 		<details>

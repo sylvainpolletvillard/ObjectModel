@@ -30,12 +30,7 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	Object.setPrototypeOf(model, ArrayModel.prototype);
-	model.prototype = Object.create(Array.prototype);
-	model.prototype.constructor = model;
-	model.definition = parseDefinition(def);
-	model.assertions = [];
-	return model;
+	return initModel(model, ArrayModel, Object.create(Array.prototype), def);
 };
 
 Model.Array.prototype = Object.create(Model.prototype);
@@ -45,21 +40,13 @@ Model.Array.prototype.validate = function(arr){
 		throw new TypeError("expecting an array, got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		matchDefinitions(arr[i], this.definition, 'Array['+i+']');
+		checkDefinitions(arr[i], this.definition, 'Array['+i+']');
 	}
 	matchAssertions(arr, this.assertions);
 };
 
 Model.Array.prototype.toString = function(ndeep){
 	return 'Model.Array(' + toString(this.definition, ndeep) + ')';
-};
-
-Model.Array.prototype.extend = function(ext){
-	var subModel = new Model.Array(this.definition.concat(parseDefinition(ext)));
-	subModel.prototype = Object.create(this.prototype);
-	subModel.prototype.constructor = subModel;
-	subModel.assertions = cloneArray(this.assertions);
-	return subModel;
 };
 
 function proxifyKeys(proxy, array, indexes, def){
@@ -69,7 +56,7 @@ function proxifyKeys(proxy, array, indexes, def){
 				return array[index];
 			},
 			set: function (val) {
-				matchDefinitions(val, def, 'Array['+index+']');
+				checkDefinitions(val, def, 'Array['+index+']');
 				array[index] = val;
 			}
 		});

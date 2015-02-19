@@ -12,11 +12,12 @@ Model.Function = function FunctionModel(){
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}
 			def.arguments.forEach(function (argDef, i) {
-				matchDefinitions(args[i], argDef, 'arguments[' + i + ']');
+				checkDefinitions(args[i], argDef, 'arguments[' + i + ']');
 			});
+			matchAssertions(args, model.assertions);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				matchDefinitions(returnValue, def.return, 'return value');
+				checkDefinitions(returnValue, def.return, 'return value');
 			}
 			return returnValue;
 		};
@@ -25,15 +26,10 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
-	model.definition = {	arguments: Array.prototype.map.call(arguments, parseDefinition) };
-	model.prototype = Object.create(Function.prototype);
-	model.prototype.constructor = model;
-	Object.setPrototypeOf(model, FunctionModel.prototype);
-	return model;
+	return initModel(model, FunctionModel, Object.create(Function.prototype), { arguments: cloneArray(arguments) });
 };
 
 Model.Function.prototype = Object.create(Model.prototype);
-Model.Function.prototype.isValidModelFor = isFunction; // nothing else to check, validation is done on function call
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){
 		throw new TypeError("expecting a function, got: " + toString(f));
@@ -49,7 +45,7 @@ Model.Function.prototype.toString = function(ndeep){
 };
 
 Model.Function.prototype.return = function(def){
-	this.definition.return = parseDefinition(def);
+	this.definition.return = def;
 	return this;
 };
 

@@ -33,6 +33,10 @@ function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
+function onlyUnique(value, index, self) {
+	return self.indexOf(value) === index;
+}
+
 function merge(base, ext, replace){
 	if(ext instanceof Object){
 		for(var p in ext){

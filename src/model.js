@@ -4,15 +4,9 @@ function Model(def){
 	var model = function(obj) {
 		model.validate(obj);
 		return obj;
-	}.bind(this);
+	};
 
-	Object.setPrototypeOf(model, Model.prototype);
-	model.constructor = Model;
-	model.prototype = Object.create(isFunction(def) ? def.prototype : null);
-	model.prototype.constructor = model;
-	model.definition = parseDefinition(def);
-	model.assertions = [];
-	return model;
+	return initModel(model, Model, Object.create(isFunction(def) ? def.prototype : null), def);
 }
 
 Model.prototype = Object.create(Function.prototype);
@@ -22,7 +16,7 @@ Model.prototype.toString = function(ndeep){
 };
 
 Model.prototype.validate = function(obj){
-	matchDefinitions(obj, this.definition);
+	checkModel(obj, this.definition);
 	matchAssertions(obj, this.assertions);
 };
 
@@ -31,23 +25,40 @@ Model.prototype.isValidModelFor = function(obj){
 	catch(e){ return false; }
 };
 
-Model.prototype.extend = function(ext){
-	var submodel = new Model(this.definition.concat(parseDefinition(ext)));
+Model.prototype.extend = function(){
+	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
 	submodel.prototype = Object.create(this.prototype);
 	submodel.prototype.constructor = submodel;
-	submodel.assertions = this.assertions;
+	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
 };
 
-Model.prototype.assert = function(assertion){
-	if(isFunction(assertion)){
-		this.assertions.push(assertion);
-	}
+Model.prototype.assert = function(){
+	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
 	return this;
 };
 
+function initModel(model, constructor, proto, def){
+	model.constructor = constructor;
+	model.prototype = proto;
+	model.prototype.constructor = model;
+	model.definition = def;
+	model.assertions = [];
+	Object.setPrototypeOf(model, constructor.prototype);
+	return model;
+}
+
 function isLeaf(def){
-	return typeof def != "object" || isArray(def) || def instanceof RegExp;
+	return bettertypeof(def) != "Object";
+}
+
+function mergeDefinitions(base, exts){
+	if(exts.length === 0) return base;
+	if(isLeaf(base)){
+		return cloneArray(exts).reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base)).filter(onlyUnique);
+	} else {
+		return cloneArray(exts).reduce(function(def, ext){ return merge(ext || {}, def); }, base);
+	}
 }
 
 function parseDefinition(def){
@@ -65,15 +76,27 @@ function parseDefinition(def){
 	return def;
 }
 
-function matchDefinitions(obj, def, path){
-	if (!def.some(function(part){ return matchDefinitionPart(obj, part) }) ){
+function checkModel(obj, def, path){
+	if(isLeaf(def)){
+		checkDefinitions(obj, def, path);
+	} else {
+		Object.keys(def).forEach(function(key) {
+			var newPath = (path ? [path,key].join('.') : key);
+			checkModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
+		});
+	}
+}
+
+function checkDefinitions(obj, _def, path){
+	var def = parseDefinition(_def);
+	if (!def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
 			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	}
 }
 
-function matchDefinitionPart(obj, def){
+function checkDefinitionPart(obj, def){
 	if(obj == null){
 		return obj === def;
 	}

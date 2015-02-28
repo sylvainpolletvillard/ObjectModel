@@ -39,6 +39,10 @@ function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
+function onlyUnique(value, index, self) {
+	return self.indexOf(value) === index;
+}
+
 function merge(base, ext, replace){
 	if(ext instanceof Object){
 		for(var p in ext){
@@ -73,15 +77,9 @@ function Model(def){
 	var model = function(obj) {
 		model.validate(obj);
 		return obj;
-	}.bind(this);
+	};
 
-	Object.setPrototypeOf(model, Model.prototype);
-	model.constructor = Model;
-	model.prototype = Object.create(isFunction(def) ? def.prototype : null);
-	model.prototype.constructor = model;
-	model.definition = parseDefinition(def);
-	model.assertions = [];
-	return model;
+	return initModel(model, Model, Object.create(isFunction(def) ? def.prototype : null), def);
 }
 
 Model.prototype = Object.create(Function.prototype);
@@ -91,7 +89,7 @@ Model.prototype.toString = function(ndeep){
 };
 
 Model.prototype.validate = function(obj){
-	matchDefinitions(obj, this.definition);
+	checkModel(obj, this.definition);
 	matchAssertions(obj, this.assertions);
 };
 
@@ -100,23 +98,40 @@ Model.prototype.isValidModelFor = function(obj){
 	catch(e){ return false; }
 };
 
-Model.prototype.extend = function(ext){
-	var submodel = new Model(this.definition.concat(parseDefinition(ext)));
+Model.prototype.extend = function(){
+	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
 	submodel.prototype = Object.create(this.prototype);
 	submodel.prototype.constructor = submodel;
-	submodel.assertions = this.assertions;
+	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
 };
 
-Model.prototype.assert = function(assertion){
-	if(isFunction(assertion)){
-		this.assertions.push(assertion);
-	}
+Model.prototype.assert = function(){
+	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
 	return this;
 };
 
+function initModel(model, constructor, proto, def){
+	model.constructor = constructor;
+	model.prototype = proto;
+	model.prototype.constructor = model;
+	model.definition = def;
+	model.assertions = [];
+	Object.setPrototypeOf(model, constructor.prototype);
+	return model;
+}
+
 function isLeaf(def){
-	return typeof def != "object" || isArray(def) || def instanceof RegExp;
+	return bettertypeof(def) != "Object";
+}
+
+function mergeDefinitions(base, exts){
+	if(exts.length === 0) return base;
+	if(isLeaf(base)){
+		return cloneArray(exts).reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base)).filter(onlyUnique);
+	} else {
+		return cloneArray(exts).reduce(function(def, ext){ return merge(ext || {}, def); }, base);
+	}
 }
 
 function parseDefinition(def){
@@ -134,15 +149,27 @@ function parseDefinition(def){
 	return def;
 }
 
-function matchDefinitions(obj, def, path){
-	if (!def.some(function(part){ return matchDefinitionPart(obj, part) }) ){
+function checkModel(obj, def, path){
+	if(isLeaf(def)){
+		checkDefinitions(obj, def, path);
+	} else {
+		Object.keys(def).forEach(function(key) {
+			var newPath = (path ? [path,key].join('.') : key);
+			checkModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
+		});
+	}
+}
+
+function checkDefinitions(obj, _def, path){
+	var def = parseDefinition(_def);
+	if (!def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
 			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	}
 }
 
-function matchDefinitionPart(obj, def){
+function checkDefinitionPart(obj, def){
 	if(obj == null){
 		return obj === def;
 	}
@@ -171,75 +198,44 @@ Model.Object = function ObjectModel(def){
 			return new model(obj);
 		}
 		merge(this, obj, true);
-		var proxy = getProxy(this, model.definition);
-		validateObjectModel(proxy, model.definition);
+		var proxy = getProxy(model, this, model.definition);
+        model.validate(proxy);
 		return proxy;
 	};
 
-	Object.setPrototypeOf(model, ObjectModel.prototype);
-	model.constructor = ObjectModel;
-	model.prototype = Object.create(Object.prototype);
-	model.prototype.constructor = model;
-	model.definition = parseDefinition(def);
-	model.assertions = [];
-	return model;
+	return initModel(model, ObjectModel, Object.create(Object.prototype), def);
 };
 
 Model.Object.prototype = Object.create(Model.prototype);
-
-Model.Object.prototype.validate = function(obj){
-	validateObjectModel(obj, this.definition);
-	matchAssertions(obj, this.assertions);
-};
-
-Model.Object.prototype.extend = function(extendedDefinition){
-	var submodel = new Model.Object(merge(extendedDefinition || {}, this.definition));
-	submodel.prototype = Object.create(this.prototype);
-	submodel.prototype.constructor = submodel;
-	submodel.assertions = cloneArray(this.assertions);
-	return submodel;
-};
 
 Model.Object.prototype.defaults = function(p){
 	merge(this.prototype, p);
 	return this;
 };
 
-function validateObjectModel(obj, def, path){
-	if(isLeaf(def)){
-		matchDefinitions(obj, def, path);
-	} else {
-		Object.keys(def).forEach(function(key) {
-			var newPath = (path ? [path,key].join('.') : key);
-			validateObjectModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
-		});
-	}
-}
-
-function getProxy(obj, def, path) {
-	if(def instanceof Model.Function){
-		return def(obj);
-	} else if(isLeaf(def)){
-		matchDefinitions(obj, def, path);
+function getProxy(model, obj, defNode, path) {
+	if(defNode instanceof Model.Function){
+		return defNode(obj);
+	} else if(isLeaf(defNode)){
+		checkDefinitions(obj, defNode, path);
 		return obj;
 	} else {
 		var wrapper = obj instanceof Object ? obj : Object.create(null);
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
-		Object.keys(def).forEach(function(key) {
+		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? [path,key].join('.') : key);
 			var isWritable = (key.toUpperCase() != key);
 			Object.defineProperty(proxy, key, {
 				get: function () {
-					return getProxy(wrapper[key], def[key], newPath);
+					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
 				set: function (val) {
 					if(!isWritable && wrapper[key] !== undefined){
 						throw new TypeError("cannot redefine constant "+key);
 					}
-					var newProxy = getProxy(val, def[key], newPath);
-					if(!isLeaf(def[key])){
-						validateObjectModel(newProxy, def[key], newPath);
-					}
+					var newProxy = getProxy(model, val, defNode[key], newPath);
+					checkModel(newProxy, defNode[key], newPath);
+                    matchAssertions(obj, model.assertions);
 					wrapper[key] = newProxy;
 				},
 				enumerable: (key[0] !== "_")
@@ -267,12 +263,12 @@ Model.Array = function ArrayModel(def){
 				Array.prototype[method].apply(testArray, arguments);
 				model.validate(testArray);
 				var newKeys = Object.keys(testArray).filter(function(key){ return !(key in proxy) });
-				proxifyKeys(proxy, array, newKeys, model.definition);
+				proxifyKeys(proxy, array, newKeys, model);
 				return Array.prototype[method].apply(array, arguments);
 			}});
 		});
 
-		proxifyKeys(proxy, array, Object.keys(array), model.definition);
+		proxifyKeys(proxy, array, Object.keys(array), model);
 		Object.defineProperty(proxy, "length", {
 			enumerable: false,
 			get: function(){ return array.length; }
@@ -280,12 +276,7 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	Object.setPrototypeOf(model, ArrayModel.prototype);
-	model.prototype = Object.create(Array.prototype);
-	model.prototype.constructor = model;
-	model.definition = parseDefinition(def);
-	model.assertions = [];
-	return model;
+	return initModel(model, ArrayModel, Object.create(Array.prototype), def);
 };
 
 Model.Array.prototype = Object.create(Model.prototype);
@@ -295,7 +286,7 @@ Model.Array.prototype.validate = function(arr){
 		throw new TypeError("expecting an array, got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		matchDefinitions(arr[i], this.definition, 'Array['+i+']');
+		checkDefinitions(arr[i], this.definition, 'Array['+i+']');
 	}
 	matchAssertions(arr, this.assertions);
 };
@@ -304,22 +295,17 @@ Model.Array.prototype.toString = function(ndeep){
 	return 'Model.Array(' + toString(this.definition, ndeep) + ')';
 };
 
-Model.Array.prototype.extend = function(ext){
-	var subModel = new Model.Array(this.definition.concat(parseDefinition(ext)));
-	subModel.prototype = Object.create(this.prototype);
-	subModel.prototype.constructor = subModel;
-	subModel.assertions = cloneArray(this.assertions);
-	return subModel;
-};
-
-function proxifyKeys(proxy, array, indexes, def){
+function proxifyKeys(proxy, array, indexes, model){
 	indexes.forEach(function(index){
 		Object.defineProperty(proxy, index, {
 			get: function () {
 				return array[index];
 			},
 			set: function (val) {
-				matchDefinitions(val, def, 'Array['+index+']');
+				checkDefinitions(val, model.definition, 'Array['+index+']');
+                var testArray = array.slice();
+                testArray[index] = val;
+                matchAssertions(testArray, model.assertions);
 				array[index] = val;
 			}
 		});
@@ -339,11 +325,12 @@ Model.Function = function FunctionModel(){
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}
 			def.arguments.forEach(function (argDef, i) {
-				matchDefinitions(args[i], argDef, 'arguments[' + i + ']');
+				checkDefinitions(args[i], argDef, 'arguments[' + i + ']');
 			});
+			matchAssertions(args, model.assertions);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				matchDefinitions(returnValue, def.return, 'return value');
+				checkDefinitions(returnValue, def.return, 'return value');
 			}
 			return returnValue;
 		};
@@ -352,15 +339,10 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
-	model.definition = {	arguments: Array.prototype.map.call(arguments, parseDefinition) };
-	model.prototype = Object.create(Function.prototype);
-	model.prototype.constructor = model;
-	Object.setPrototypeOf(model, FunctionModel.prototype);
-	return model;
+	return initModel(model, FunctionModel, Object.create(Function.prototype), { arguments: cloneArray(arguments) });
 };
 
 Model.Function.prototype = Object.create(Model.prototype);
-Model.Function.prototype.isValidModelFor = isFunction; // nothing else to check, validation is done on function call
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){
 		throw new TypeError("expecting a function, got: " + toString(f));
@@ -376,7 +358,7 @@ Model.Function.prototype.toString = function(ndeep){
 };
 
 Model.Function.prototype.return = function(def){
-	this.definition.return = parseDefinition(def);
+	this.definition.return = def;
 	return this;
 };
 

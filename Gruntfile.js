@@ -30,7 +30,6 @@ module.exports = function(grunt) {
 					footer: "\nreturn Model;\n}));"
 				}
 			}
-
 		},
 		uglify: {
 			dist: {
@@ -95,7 +94,14 @@ module.exports = function(grunt) {
 					}
 				]
 			}
-		}
+		},
+        browserify: {
+            dist: {
+                files: {
+                    'test/modules/browserify-build.js': ['test/modules/browserify-main.js']
+                }
+            }
+        }
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
@@ -105,8 +111,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-compress');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
+	grunt.loadNpmTasks('grunt-browserify');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','uglify:dist','file_info:dist','compress:source_files','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','uglify:dist','file_info:dist','compress:source_files','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

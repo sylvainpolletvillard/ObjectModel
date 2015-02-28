@@ -518,7 +518,47 @@ QUnit.test("Assertions", function(assert){
 	function isOdd(n){ return n%2 === 1; }
 	var OddNumber = Model(Number).assert(isOdd);
 	OddNumber(17);
-	assert.throws(function(){ OddNumber(18) }, /TypeError.*isOdd/, "test basic assertion");
+	assert.throws(function(){ OddNumber(18) }, /TypeError.*isOdd/, "test basic assertion new function");
+
+    var RealNumber = Model(Number).assert(isFinite);
+
+    assert.equal(RealNumber(Math.sqrt(1)), 1);
+    assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError.*isFinite/, "test basic assertion native function");
+
+    function isPrime(n) {
+        for (var i=2, m=Math.sqrt(n); i <= m ; i++){
+            if(n%i === 0) return false;
+        }
+        return true;
+    }
+
+    var PrimeNumber = RealNumber
+        .extend() // to not add next assertions to RealNumber model
+        .assert(Number.isInteger)
+        .assert(isPrime);
+
+    PrimeNumber(83);
+    assert.throws(function(){ PrimeNumber(87); }, /TypeError.*isPrime/, "test multiple assertions 1");
+    assert.throws(function(){ PrimeNumber(7.77); }, /TypeError.*isInteger/, "test multiple assertions 2");
+
+    var ArrayMax3 = Model.Array(Number).assert(function maxRange(arr){ return arr.length <= 3; });
+    var arr = ArrayMax3(1,2);
+    arr.push(3);
+    assert.throws(function(){ arr.push(4); }, /TypeError.*maxRange/, "test assertion after array method");
+
+    var ArraySumMax10 = Model.Array(Number).assert(function(arr){
+        return arr.reduce(function(a,b){ return a+b; },0) <= 10;
+    });
+
+    arr = ArraySumMax10(2,3,4);
+    assert.throws(function(){ arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
+
+    var NestedModel = Model.Object({ foo: { bar: { baz: Boolean }}}).assert(function(o){
+        return o.foo.bar.baz === true;
+    });
+    var nestedModel = NestedModel({ foo: { bar: { baz: true }}});
+    assert.throws(function(){ nestedModel.foo.bar.baz = false; }, /TypeError/, "test assertion after nested property assignment");
+
 });
 
 }

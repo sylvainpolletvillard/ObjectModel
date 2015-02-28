@@ -17,12 +17,12 @@ Model.Array = function ArrayModel(def){
 				Array.prototype[method].apply(testArray, arguments);
 				model.validate(testArray);
 				var newKeys = Object.keys(testArray).filter(function(key){ return !(key in proxy) });
-				proxifyKeys(proxy, array, newKeys, model.definition);
+				proxifyKeys(proxy, array, newKeys, model);
 				return Array.prototype[method].apply(array, arguments);
 			}});
 		});
 
-		proxifyKeys(proxy, array, Object.keys(array), model.definition);
+		proxifyKeys(proxy, array, Object.keys(array), model);
 		Object.defineProperty(proxy, "length", {
 			enumerable: false,
 			get: function(){ return array.length; }
@@ -49,14 +49,17 @@ Model.Array.prototype.toString = function(ndeep){
 	return 'Model.Array(' + toString(this.definition, ndeep) + ')';
 };
 
-function proxifyKeys(proxy, array, indexes, def){
+function proxifyKeys(proxy, array, indexes, model){
 	indexes.forEach(function(index){
 		Object.defineProperty(proxy, index, {
 			get: function () {
 				return array[index];
 			},
 			set: function (val) {
-				checkDefinitions(val, def, 'Array['+index+']');
+				checkDefinitions(val, model.definition, 'Array['+index+']');
+                var testArray = array.slice();
+                testArray[index] = val;
+                matchAssertions(testArray, model.assertions);
 				array[index] = val;
 			}
 		});

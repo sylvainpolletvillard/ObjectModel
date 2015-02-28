@@ -57,6 +57,7 @@
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
+			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 		</ul>
 	</div>
 	<hr>
@@ -110,7 +111,7 @@
 			<li>Easy inheritance and model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in 6 kB minified (1.2 kB gzipped)</li>
+			<li>all in 6.1 kB minified (1.2 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -123,7 +124,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v0.7.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.1 kB)</li>
 			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -175,13 +176,31 @@
 
 	<hr>
 
+    <section id="models">
+        <h2>Models</h2>
+        <p><code>Model</code> is the library namespace, and also the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>.
+            Basic model constructors validate the argumeent passed against the model definition, and return the validated value.</p>
+
+        <div class="panels two">
+            <div class="panel">
+                <span class="legend">Model</span>
+            <pre><code class="language-javascript">var NumberModel = Model(Number); // 'new' keyword is optional</code></pre>
+            </div>
+            <div class="panel">
+                <span class="legend">Instance</span>
+				<pre><code class="language-javascript">var x = NumberModel("42"); // 'new' keyword is optional</code>
+<code class="language-none exception">TypeError: expecting Number, got String "42"</code></pre>
+            </div>
+        </div>
+    </section>
+
 	<section id="doc-object-model">
 		<h2>Object Model</h2>
-		<p>Object models are typed definitions for your objects. You can view them as definitions of classes with advanced validation options. Models provide automatic validation at initial and future assignments of the properties of the instance objects. Type validation works with any constructor by using the <code>instanceof</code> operator:</p>
+		<p>Object models validate nested object properties against a definition tree. You may consider them as definitions of classes with advanced validation options. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Order = Model({ // 'new' keyword is optional
+            <pre><code class="language-javascript">var Order = Model({ // or Model.Object
 	product: {
 		name: String,
 		quantity: Number,
@@ -191,14 +210,14 @@
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-				<pre><code class="language-javascript">var myOrder = Order({ // 'new' keyword is optional
-	product: { name: "Apple Pie", quantity: 1 },
+				<pre><code class="language-javascript">var myOrder = Order({
+	product: { name: "Apple Pie", quantity: 0 },
 	orderDate: new Date()
 });
 
 myOrder.product.quantity = 2; // no exceptions thrown
-myOrder.product.quantity = "10"; //try to assign a String</code>
-<code class="language-none exception">TypeError: expecting product.quantity to be Number, got String "10"</code></pre>
+myOrder.product.quantity = false; //try to assign a Boolean</code>
+<code class="language-none exception">TypeError: expecting product.quantity to be Number, got Boolean false</code></pre>
 			</div>
 		</div>
 	</section>
@@ -268,6 +287,8 @@ opening.easing = 1;</code>
 			</div>
 		</div>
 	</section>
+
+    <hr>
 
 	<section id="doc-null-safe">
 		<h2>Null-safe object traversal</h2>
@@ -536,6 +557,47 @@ calc(3,"+") // use default value for 3rd argument</code>
 	</section>
 
 	<hr>
+
+    <section id="doc-assertions">
+        <h2>Assertions for custom validation tests</h2>
+        <p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes
+            <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add a simple assertion to get rid of them.</p>
+        <div class="panels two">
+            <div class="panel">
+                <span class="legend">Model</span>
+<pre><code class="language-javascript">var RealNumber = Model(Number).assert(isFinite);
+
+function isPrime(n) {
+    for (var i=2, m=Math.sqrt(n); i <= m ; i++){
+        if(n%i === 0) return false;
+    }
+    return true;
+}
+
+var PrimeNumber = RealNumber
+    .extend() // to not add next assertions to RealNumber model
+    .assert(Number.isInteger)
+    .assert(isPrime);
+</code></pre>
+            </div>
+            <div class="panel">
+                <span class="legend">Instance</span>
+                <pre><code class="language-javascript">RealNumber(Math.sqrt(1));</code>
+<code class="language-none log">1</code>
+<code class="language-javascript">RealNumber(Math.sqrt(-1));</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: isFinite</code>
+
+<code class="language-javascript">PrimeNumber(83);</code>
+<code class="language-none log">83</code>
+<code class="language-javascript">PrimeNumber(87);</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: isPrime</code>
+                    </code></pre>
+            </div>
+        </div>
+    </section>
+
+    <hr>
+
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>
 		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues">Github repository</a></p>

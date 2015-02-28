@@ -140,6 +140,8 @@ table th {
 }
 .panels .panel pre {
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .panels .panel .legend {
   position: absolute;

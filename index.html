@@ -675,7 +675,7 @@ var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
    loved: [] // Sweetie not yet declared
 }).assert(function(honey){
    //assertions will be executed once Sweetie is defined;
-   return honey.loved === undefined || honey.loved instanceof Sweetie;
+   return honey.loved === "will be set after" || honey.loved instanceof Sweetie;
 });
 
 var Sweetie = Model({

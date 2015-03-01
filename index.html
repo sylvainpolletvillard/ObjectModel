@@ -46,6 +46,7 @@
 	<div>
 		<a href="#doc-object-model" class="title">Documentation</a>
 		<ul>
+			<li><a href="#doc-basic-model">Basic models</a></li>
 			<li><a href="#doc-object-model">Object models</a></li>
 			<li><a href="#doc-optional-properties">Optional properties</a></li>
 			<li><a href="#doc-multiple-types">Multiple types</a></li>
@@ -58,6 +59,7 @@
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
 			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
+			<li><a href="#api">Full API</a></li>
 		</ul>
 	</div>
 	<hr>
@@ -166,7 +168,6 @@
 			<ul>
 				<li>API changes based on feedback</li>
 				<li>JSDoc parsing to automatic model definition</li>
-				<li>Custom validity functions</li>
 			</ul>
 		</details>
 
@@ -176,10 +177,10 @@
 
 	<hr>
 
-    <section id="models">
-        <h2>Models</h2>
-        <p><code>Model</code> is the library namespace, and also the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>.
-            Basic model constructors validate the argumeent passed against the model definition, and return the validated value.</p>
+    <section id="doc-basic-model">
+        <h2>Basic Models</h2>
+        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>.
+            Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
 
         <div class="panels two">
             <div class="panel">
@@ -195,7 +196,7 @@
     </section>
 
 	<section id="doc-object-model">
-		<h2>Object Model</h2>
+		<h2>Object Models</h2>
 		<p>Object models validate nested object properties against a definition tree. You may consider them as definitions of classes with advanced validation options. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
 		<div class="panels two">
 			<div class="panel">
@@ -594,6 +595,57 @@ var PrimeNumber = RealNumber
                     </code></pre>
             </div>
         </div>
+    </section>
+
+    <hr>
+
+    <section id="api">
+        <h2>Full API</h2>
+        <dl>
+            <dt><a href="#doc-basic-model">Model</a> <code>new Model(definition)</code></dt>
+            <dd>Constructor for basic models. If a litteral object is passed, return an object model.</dd>
+
+            <dt><a href="#doc-object-model">Model.Object</a> <code>new Model.Object(definition)</code></dt>
+            <dd>Constructor for object models</dd>
+
+            <dt><a href="#doc-array-model">Model.Array</a> <code>new Model.Array(itemDefinition)</code></dt>
+            <dd>Constructor for array models</dd>
+
+            <dt><a href="#doc-function-model">Model.Function</a> <code>new Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
+            <dd>Constructor for function models</dd>
+        </dl>
+        <h3>Model methods and properties</h3>
+        <dl>
+            <dt>definition <code>model.definition</code></dt>
+            <dd>Returns the model definition</dd>
+
+            <dt>assertions <code>model.assertions</code></dt>
+            <dd>Returns the list of model assertions</dd>
+
+            <dt>isValidModelFor <code>model.isValidModelFor(value)</code></dt>
+            <dd>Returns <code>true</code> if the value passed validate the model definition. Does not necessarily mean value has been instanciated through the model constructor, otherwise use
+                <code class="language-javascript">value instanceof model</code>.
+            </dd>
+
+            <dt><a href="#doc-extensions">extend</a> <code>model.extend(otherDefinition1, otherDefinition2...)</code></dt>
+            <dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
+
+            <dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion1, assertion2...)</code></dt>
+            <dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
+        </dl>
+        <h3>Object models</h3>
+        <dl>
+            <dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
+            <dd>Merge the object passed with the model prototype to set defaults values for some model properties.</dd>
+        </dl>
+        <h3>Function models</h3>
+        <dl>
+            <dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2...)</code></dt>
+            <dd>Set a default value for function arguments.</dd>
+
+            <dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
+            <dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>
+        </dl>
     </section>
 
     <hr>

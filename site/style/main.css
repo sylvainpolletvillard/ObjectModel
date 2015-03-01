@@ -432,7 +432,8 @@ body {
   margin: 0 2em 0.5em 2em;
 }
 h1,
-h2 {
+h2,
+h3 {
   color: #4b4b4b;
   font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -515,6 +516,20 @@ dt {
 }
 dt:before {
   content: "\21E8 \ ";
+}
+dt code {
+  margin-left: 1em;
+  font-weight: normal;
+  font-family: Consolas, Monaco, 'Andale Mono', monospace;
+  color: #666;
+  text-shadow: 1px 1px white;
+}
+#api a {
+  text-decoration: none;
+  color: inherit;
+}
+#api a:hover {
+  text-decoration: underline;
 }
 .hidden {
   display: none;

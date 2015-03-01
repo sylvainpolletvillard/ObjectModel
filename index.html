@@ -60,6 +60,7 @@
 			<li><a href="#doc-function-model">Function models</a></li>
 			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 			<li><a href="#api">Full API</a></li>
+			<li><a href="#common-questions">Common questions</a></li>
 		</ul>
 	</div>
 	<hr>
@@ -649,6 +650,42 @@ var PrimeNumber = RealNumber
     </section>
 
     <hr>
+
+    <section id="common-questions">
+        <h2>Common questions</h2>
+        <h3>I need a constructor function to be called before validating my model</h3>
+        <p>Just declare it as a model method:</p>
+        <pre><code class="language-javascript">var User = Model.Object({
+    firstName: String,
+    lastName: String,
+    fullName: String
+});
+
+User.create = function(properties){
+    properties.fullName = properties.firstName + " " + properties.lastName;
+    return new User(properties);
+};
+
+var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
+
+        <h3>How should I deal with circular references in my model definitions ?</h3>
+        <p>You can't refer to a model constructor or model instance that is not yet defined, so the trick to deal with circular references is to set the not-yet-defined property to an empty array, then use
+            assertions to validate the property value. Empty array means the property is watched for changes but can be of any type.</p>
+          <pre><code class="language-javascript">var Honey = Model({
+   loved: [] // Sweetie not yet declared
+}).assert(function(honey){
+   //assertions will be executed once Sweetie is defined;
+   return honey.loved === undefined || honey.loved instanceof Sweetie;
+});
+
+var Sweetie = Model({
+   loved: Honey
+});
+
+var joe = Honey({ loved: "will be set after" });
+var ann = Sweetie({ loved: joe });
+joe.loved = ann;</code></pre>
+    </section>
 
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>

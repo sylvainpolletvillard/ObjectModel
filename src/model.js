@@ -65,7 +65,7 @@ function parseDefinition(def){
 	if(isLeaf(def)){
 		if(!isArray(def)) {
 			return [def];
-		} else if(def.length < 2){
+		} else if(def.length === 1){
 			return def.concat(undefined);
 		}
 	} else {
@@ -89,7 +89,7 @@ function checkModel(obj, def, path){
 
 function checkDefinitions(obj, _def, path){
 	var def = parseDefinition(_def);
-	if (!def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
+	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
 			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );

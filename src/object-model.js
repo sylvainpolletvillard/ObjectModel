@@ -42,8 +42,10 @@ function getProxy(model, obj, defNode, path) {
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
 					checkModel(newProxy, defNode[key], newPath);
-                    matchAssertions(obj, model.assertions);
+                    var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
+                    try { matchAssertions(obj, model.assertions); }
+                    catch(e){ wrapper[key] = oldValue; throw e; }
 				},
 				enumerable: (key[0] !== "_")
 			});

@@ -55,10 +55,10 @@
 			<li><a href="#doc-default-values">Default values</a></li>
 			<li><a href="#doc-composition">Composition</a></li>
 			<li><a href="#doc-extensions">Inheritance by extensions</a></li>
+			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
-			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 			<li><a href="#api">Full API</a></li>
 			<li><a href="#common-questions">Common questions</a></li>
 		</ul>
@@ -404,7 +404,8 @@ var joe_and_ann = Lovers({
 
 	<section id="doc-extensions">
 		<h2>Inheritance by extensions</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify prevous ones. Therefore, it is an easy way to reproduce the class inheritance principle.</p>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify prevous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.
+		But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -440,9 +441,48 @@ ann instanceof Mother && ann instanceof Person</code>
 
 	<hr>
 
+	<section id="doc-assertions">
+		<h2>Assertions for custom validation tests</h2>
+		<p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes
+			<code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add a simple assertion to get rid of them.</p>
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
+<pre><code class="language-javascript">var Integer = Model(Number).assert(Number.isFinite, Number.isInteger);
+
+function isPrime(n) {
+	for (var i=2, m=Math.sqrt(n); i <= m ; i++){
+		if(n%i === 0) return false;
+	}
+	return true;
+}
+
+var PrimeNumber = Integer.extend().assert(isPrime);
+// extend to not add isPrime assertion to the Integer model
+</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+                <pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
+<code class="language-none log">1</code>
+<code class="language-javascript">Integer(Math.sqrt(2));</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: isInteger</code>
+<code class="language-javascript">Integer(Math.sqrt(-1));</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: isFinite</code>
+
+<code class="language-javascript">PrimeNumber(83);</code>
+<code class="language-none log">83</code>
+<code class="language-javascript">PrimeNumber(87);</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: isPrime</code></pre>
+			</div>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="doc-private-and-constants">
 		<h2>Private and constant properties</h2>
-		<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Object Model definition follow these conventions by making <i>_underscored</i> properties not enumerable and <i>CONSTANT</i> properties not writable.</p>
+		<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Object Model definition follow these conventions by making <i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
 	</section>
 
 	<div class="panels two">
@@ -470,32 +510,47 @@ c.UNIT = "cm";</code>
 
 	<section id="doc-array-model">
 		<h2>Array models</h2>
-		<p>Array models are, in short, typed arrays with optional length control. All the validation options for Object models are also available for Array model elements: type/value checking, optional properties, union types, enumerations...</p>
-		<div class="panels">
+		<p>Array models validate the array elements types. All the validation options for object models are also available for array model elements: type/value checking, optional properties, union types, enumerations, assertions...</p>
+		<div class="panels two">
 			<div class="panel">
-				<span class="legend">Models</span>
+				<span class="legend">Model</span>
             <pre><code class="language-javascript">var Family = Model({
-	father: Person,
-	mother: Person,
+	father: Father,
+	mother: Mother,
 	children: Model.Array(Person), // array of Persons
-	grandparents: [Model.Array(Person).max(4)] // optional, maximum 4
-});
-
-var joefamily = new Family({
+	grandparents: [Model.Array([Mother, Father])]
+	            // optional array of Mothers or Fathers
+});</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+				<pre><code class="language-javascript">var joefamily = new Family({
 	father: joe,
 	mother: ann,
 	children: [joanna, "dog"]
 });</code>
 <code class="language-none exception">TypeError: expecting children to be Model.Array({	name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
-<code class="language-javascript">
-var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
-var Hand = Cards.extend("Joker").min(2).max(2); // array of exactly 2 Cards or Joker
-var myHand = new Hand("Q", "Joker");
-myHand.push(7);</code>
-<code class="language-none exception">TypeError: expecting Array to have 2 items, got 3</code></pre>
+</pre>
+		</div>
+	</div>
+		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added through mutator methods. Mutator methods are
+			these native functions in the Array prototype that modify the array content: <code>pop</code>, <code>push</code>, <code>reverse</code>, <code>shift</code>,
+			<code>sort</code>, <code>splice</code> and <code>unshift</code>. Note that if you expand the array by storing an element at an index greater than the
+			current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated.
+			Use the <code>push</code> method instead.</p>
+		<div class="panels two">
+			<div class="panel">
+<pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);
+var Hand = Cards.extend("Joker").assert(function(cards){
+	return cards.length === 2;
+}); // array of 2 Numbers, J, Q, K or Joker</code></pre></div>
+			<div class="panel">
+<pre><code class="language-javascript">var myHand = new Hand(7, "Joker");
+myHand[2] = "K"; // will not trigger validation this way
+myHand.push("K"); // use this instead</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: function (cards){ return cards.length === 2; }</code></pre>
 			</div>
 		</div>
-		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added through mutator methods. Mutator methods are these native functions in the Array prototype that modify the array content: <code>pop</code>, <code>push</code>, <code>reverse</code>, <code>shift</code>, <code>sort</code>, <code>splice</code> and <code>unshift</code>. Note that if you expand the array by storing an element at an index greater than the current array length, the length control and the validation of the new element may not work. Use the <code>push</code> method instead.</p>
 	</section>
 
 	<hr>
@@ -503,6 +558,27 @@ myHand.push(7);</code>
 	<section id="doc-function-model">
 		<h2>Function models</h2>
 		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments at call. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
+            <pre><code class="language-javascript">var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
+	            .defaults(0, "+", 1)
+	            .return(Number);</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+            <pre><code class="language-javascript">var calc = new Calculator(function(a, operator, b){
+	return eval(a + operator + b);
+});
+
+calc(3, "+"); // use default value for 3rd argument</code>
+<code class="language-none log">4</code>
+<code class="language-javascript">calc(6, "*", null);</code>
+<code class="language-none exception">TypeError: expecting arguments[2] to be Number, got null</code></pre>
+			</div>
+		</div>
+
 		<p>In Object Oriented Programming, we often use model methods that are common to all instances. You can define these methods in the model prototype as you would do with classic JavaScript OOP programming. You can also use the <code>defaults</code> method of the object model that sets the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>.</p>
 
 		<div class="panels two">
@@ -510,24 +586,19 @@ myHand.push(7);</code>
 				<span class="legend">Model</span>
             <pre><code class="language-javascript">var Person = Model({
 	name: String,
-	age: Number,
-	// function without arguments returning a String
-	sayMyName: Model.Function().return(String)
+	age: Number
 }).defaults({
-   sayMyName: function(){
+	// function without arguments returning a String
+	sayMyName: Model.Function().return(String)(function(){
 		return "my name is " + this.name;
-	}
+	})
 });
 
 // takes one argument of type Person, returns a String
 var greetFnModel = Model.Function(Person).return(String);
 Person.prototype.greet = greetFnModel(function(otherguy){
 	return "Hello "+ otherguy.name + ", " + this.sayMyName();
-});
-
-var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
-	            .defaults(0,"+",1)
-	            .return(Number);</code></pre>
+});</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
@@ -543,62 +614,13 @@ joe.sayMyName();</code>
 	name: String,
 	age: Number,
 	sayMyName: Model.Function().return(String)
-}, got String "dog"</code>
-<code class="language-javascript">
-var calc = new Calculator(function(a,operator,b){
-	return eval(a+operator+b);
-});
-
-calc(3,"+") // use default value for 3rd argument</code>
-<code class="language-none log">4</code>
-<code class="language-javascript">calc(6,"*",null)</code>
-<code class="language-none exception">TypeError: expecting arguments[2] to be Number, got null</code></pre>
+}, got String "dog"</code></pre>
 			</div>
 		</div>
 
 	</section>
 
 	<hr>
-
-    <section id="doc-assertions">
-        <h2>Assertions for custom validation tests</h2>
-        <p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes
-            <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add a simple assertion to get rid of them.</p>
-        <div class="panels two">
-            <div class="panel">
-                <span class="legend">Model</span>
-<pre><code class="language-javascript">var RealNumber = Model(Number).assert(isFinite);
-
-function isPrime(n) {
-    for (var i=2, m=Math.sqrt(n); i <= m ; i++){
-        if(n%i === 0) return false;
-    }
-    return true;
-}
-
-var PrimeNumber = RealNumber
-    .extend() // to not add next assertions to RealNumber model
-    .assert(Number.isInteger)
-    .assert(isPrime);
-</code></pre>
-            </div>
-            <div class="panel">
-                <span class="legend">Instance</span>
-                <pre><code class="language-javascript">RealNumber(Math.sqrt(1));</code>
-<code class="language-none log">1</code>
-<code class="language-javascript">RealNumber(Math.sqrt(-1));</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: isFinite</code>
-
-<code class="language-javascript">PrimeNumber(83);</code>
-<code class="language-none log">83</code>
-<code class="language-javascript">PrimeNumber(87);</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: isPrime</code>
-                    </code></pre>
-            </div>
-        </div>
-    </section>
-
-    <hr>
 
     <section id="api">
         <h2>Full API</h2>
@@ -653,8 +675,9 @@ var PrimeNumber = RealNumber
 
     <section id="common-questions">
         <h2>Common questions</h2>
-        <h3>I need a constructor function to be called before validating my model</h3>
-        <p>Just declare it as a model method:</p>
+        <h3>How do I declare a constructor function to be called on instanciation before validating my model ?</h3>
+        <p>The easiest way is to declare this function as a property of your model constructor, then use it to instanciate your models instead of the model
+	        constructor itself:</p>
         <pre><code class="language-javascript">var User = Model.Object({
     firstName: String,
     lastName: String,

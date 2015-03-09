@@ -114,7 +114,7 @@
 			<li>Easy inheritance and model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in 6.1 kB minified (1.2 kB gzipped)</li>
+			<li>all in 6 kB minified (1.2 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -127,7 +127,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v0.7.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.1 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6 kB)</li>
 			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -695,17 +695,17 @@ var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
         <p>You can't refer to a model constructor or model instance that is not yet defined, so the trick to deal with circular references is to set the not-yet-defined property to an empty array, then use
             assertions to validate the property value. Empty array means the property is watched for changes but can be of any type.</p>
           <pre><code class="language-javascript">var Honey = Model({
-   loved: [] // Sweetie not yet declared
-}).assert(function(honey){
-   //assertions will be executed once Sweetie is defined;
-   return honey.loved === "will be set after" || honey.loved instanceof Sweetie;
+   loved: [] // Sweetie is not yet defined
+}).assert(function loveSweetie(honey){
+   // when this assertion is called, Sweetie is defined
+   return honey.loved instanceof Sweetie || honey.loved === undefined;
 });
 
 var Sweetie = Model({
    loved: Honey
 });
 
-var joe = Honey({ loved: "will be set after" });
+var joe = Honey({ loved: undefined }); // ann is not yet defined
 var ann = Sweetie({ loved: joe });
 joe.loved = ann;</code></pre>
     </section>

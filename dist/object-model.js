@@ -57,12 +57,6 @@ function merge(base, ext, replace){
 	return base
 }
 
-Number.isInteger = Number.isInteger || function(value) {
-	return typeof value === "number" &&
-		isFinite(value) &&
-		Math.floor(value) === value;
-};
-
 Object.setPrototypeOf = Object.setPrototypeOf || ({__proto__:[]} instanceof Array
 	? function(o, p){ o.__proto__ = p; }
 	: function(o, p){ for(var k in p){ o[k] = p[k]; } });

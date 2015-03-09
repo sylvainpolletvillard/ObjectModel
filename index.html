@@ -114,7 +114,7 @@
 			<li>Easy inheritance and model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in 6 kB minified (1.2 kB gzipped)</li>
+			<li>all in 6.1 kB minified (1.3 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -127,7 +127,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v0.7.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.1 kB)</li>
 			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -250,7 +250,7 @@ var roger = new UserInfo({ name: "Roger" }); // email is mandatory</code>
 
 	<section id="doc-multiple-types">
 		<h2>Multiple types</h2>
-		<p>Several valid types can be specified for one property, aka union types. So optional properties are actually union types between the original type and the value <code>undefined</code>. To declare an optional union type, add <code>undefined</code> to the list.</p>
+		<p>Several valid types can be specified for one property, aka union types. So optional properties are actually union types between the original type and the value <code>undefined</code>. To declare an optional union type, add <code>undefined</code> to the list. If you pass an empty array, it means the property is watched for changes but can be of any type.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -692,22 +692,20 @@ User.create = function(properties){
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 
         <h3>How should I deal with circular references in my model definitions ?</h3>
-        <p>You can't refer to a model constructor or model instance that is not yet defined, so the trick to deal with circular references is to set the not-yet-defined property to an empty array, then use
-            assertions to validate the property value. Empty array means the property is watched for changes but can be of any type.</p>
+        <p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards.</p>
           <pre><code class="language-javascript">var Honey = Model({
-   loved: [] // Sweetie is not yet defined
-}).assert(function loveSweetie(honey){
-   // when this assertion is called, Sweetie is defined
-   return honey.loved instanceof Sweetie || honey.loved === undefined;
+   sweetie: [] // Sweetie is not yet defined
 });
 
 var Sweetie = Model({
-   loved: Honey
+   honey: Honey
 });
 
-var joe = Honey({ loved: undefined }); // ann is not yet defined
-var ann = Sweetie({ loved: joe });
-joe.loved = ann;</code></pre>
+Honey.definition.sweetie = [Sweetie];
+
+var joe = Honey({ sweetie: undefined }); // ann is not yet defined
+var ann = Sweetie({ honey: joe });
+joe.sweetie = ann;</code></pre>
     </section>
 
 	<section>

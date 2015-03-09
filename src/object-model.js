@@ -41,6 +41,7 @@ function getProxy(model, obj, defNode, path) {
 						throw new TypeError("cannot redefine constant "+key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
+					_recursion_stack = [];
 					checkModel(newProxy, defNode[key], newPath);
                     var oldValue = wrapper[key];
 					wrapper[key] = newProxy;

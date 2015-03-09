@@ -15,9 +15,12 @@ Model.prototype.toString = function(ndeep){
 	return toString(this.definition, ndeep);
 };
 
+var _recursion_stack = [];
 Model.prototype.validate = function(obj){
+	var isStackTop = (_recursion_stack.length === 0);
 	checkModel(obj, this.definition);
 	matchAssertions(obj, this.assertions);
+	if(isStackTop){ _recursion_stack = []; } // clean stack after validation
 };
 
 Model.prototype.isValidModelFor = function(obj){
@@ -77,6 +80,8 @@ function parseDefinition(def){
 }
 
 function checkModel(obj, def, path){
+	if(_recursion_stack.indexOf(def) !== -1) return; //if cycle detected, skip validation
+	_recursion_stack.push(def);
 	if(isLeaf(def)){
 		checkDefinitions(obj, def, path);
 	} else {

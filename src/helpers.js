@@ -8,6 +8,7 @@ var isArray = Array.isArray || function(a){
 
 function toString(obj, ndeep){
 	if(ndeep === undefined){ ndeep = 1; }
+	if(ndeep > 15){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
 	if(typeof obj == "function"){ return obj.name || obj.toString(ndeep); }

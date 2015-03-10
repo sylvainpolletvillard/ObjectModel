@@ -14,6 +14,7 @@ var isArray = Array.isArray || function(a){
 
 function toString(obj, ndeep){
 	if(ndeep === undefined){ ndeep = 1; }
+	if(ndeep > 15){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
 	if(typeof obj == "function"){ return obj.name || obj.toString(ndeep); }
@@ -69,7 +70,7 @@ function Model(def){
 	if(!isLeaf(def)) return new Model.Object(def);
 
 	var model = function(obj) {
-		model.validate(obj);
+		model.validate(obj, []);
 		return obj;
 	};
 
@@ -82,14 +83,9 @@ Model.prototype.toString = function(ndeep){
 	return toString(this.definition, ndeep);
 };
 
-Model.prototype.validate = function(obj){
-	checkModel(obj, this.definition);
+Model.prototype.validate = function(obj, called){
+	checkModel(obj, this.definition, undefined, called);
 	matchAssertions(obj, this.assertions);
-};
-
-Model.prototype.isValidModelFor = function(obj){
-	try { this.validate(obj); return true; }
-	catch(e){ return false; }
 };
 
 Model.prototype.extend = function(){
@@ -143,32 +139,38 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkModel(obj, def, path){
+function checkModel(obj, def, path, called){
 	if(isLeaf(def)){
-		checkDefinitions(obj, def, path);
+		checkDefinitions(obj, def, path, called.concat(def));
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var newPath = (path ? [path,key].join('.') : key);
-			checkModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
+			var val = obj instanceof Object ? obj[key] : undefined;
+			checkModel(val, def[key], newPath, called.concat(val));
 		});
 	}
 }
 
-function checkDefinitions(obj, _def, path){
+function checkDefinitions(obj, _def, path, called){
 	var def = parseDefinition(_def);
-	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
+	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part, called) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
 			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	}
 }
 
-function checkDefinitionPart(obj, def){
+function checkDefinitionPart(obj, def, called){
 	if(obj == null){
 		return obj === def;
 	}
 	if(def instanceof Model){
-		return def.isValidModelFor(obj);
+		var indexFound = called.indexOf(def);
+		if(indexFound !== -1 && called.slice(indexFound+1).indexOf(def) !== -1){
+			return true; //if found twice in call stack, cycle detected, skip validation
+		}
+		try { def.validate(obj, called.concat(def)); return true; }
+		catch(e){ return false; }
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);
@@ -193,7 +195,7 @@ Model.Object = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-        model.validate(proxy);
+        model.validate(proxy, []);
 		return proxy;
 	};
 
@@ -211,7 +213,7 @@ function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model.Function){
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
-		checkDefinitions(obj, defNode, path);
+		//checkDefinitions(obj, defNode, path, []);
 		return obj;
 	} else {
 		var wrapper = obj instanceof Object ? obj : Object.create(null);
@@ -228,7 +230,7 @@ function getProxy(model, obj, defNode, path) {
 						throw new TypeError("cannot redefine constant "+key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkModel(newProxy, defNode[key], newPath);
+					checkModel(newProxy, defNode[key], newPath, []);
                     var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
                     try { matchAssertions(obj, model.assertions); }
@@ -282,7 +284,7 @@ Model.Array.prototype.validate = function(arr){
 		throw new TypeError("expecting an array, got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinitions(arr[i], this.definition, 'Array['+i+']');
+		checkDefinitions(arr[i], this.definition, 'Array['+i+']', []);
 	}
 	matchAssertions(arr, this.assertions);
 };
@@ -298,7 +300,7 @@ function proxifyKeys(proxy, array, indexes, model){
 				return array[index];
 			},
 			set: function (val) {
-				checkDefinitions(val, model.definition, 'Array['+index+']');
+				checkDefinitions(val, model.definition, 'Array['+index+']', []);
                 var testArray = array.slice();
                 testArray[index] = val;
                 matchAssertions(testArray, model.assertions);
@@ -321,12 +323,12 @@ Model.Function = function FunctionModel(){
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}
 			def.arguments.forEach(function (argDef, i) {
-				checkDefinitions(args[i], argDef, 'arguments[' + i + ']');
+				checkDefinitions(args[i], argDef, 'arguments[' + i + ']', []);
 			});
 			matchAssertions(args, model.assertions);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				checkDefinitions(returnValue, def.return, 'return value');
+				checkDefinitions(returnValue, def.return, 'return value', []);
 			}
 			return returnValue;
 		};

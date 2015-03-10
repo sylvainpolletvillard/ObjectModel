@@ -378,8 +378,9 @@ QUnit.test("Extensions", function(assert){
 
   var Woman = Person.extend({ female: true });
 
-  assert.equal(Person.isValidModelFor(joe), true, "Person valid model for joe");
-  assert.equal(Woman.isValidModelFor(joe), false, "Woman invalid model for joe");
+  assert.ok(Person(joe), "Person valid model for joe");
+
+  assert.throws(function(){ Woman(joe); }, /TypeError.*female/, "Woman invalid model for joe");
 
   assert.throws(function(){
     var _joe = Woman({
@@ -419,11 +420,10 @@ QUnit.test("Extensions", function(assert){
     }
   });
 
-  assert.equal(Woman.isValidModelFor(ann), true, "Woman valid model for ann");
-  assert.equal(UnemployedWoman.isValidModelFor(ann), false, "UnemployedWoman invalid model for ann");
+  assert.ok(Woman(ann), "Woman valid model for ann");
 
   assert.throws(function(){
-    var _ann = UnemployedWoman(ann);
+	  UnemployedWoman(ann);
   }, /TypeError.*city/, "ann cant be UnemployedWoman;  model extension nested undefined property");
 
 
@@ -560,5 +560,53 @@ QUnit.test("Assertions", function(assert){
     assert.throws(function(){ nestedModel.foo.bar.baz = false; }, /TypeError/, "test assertion after nested property assignment");
 
 });
+
+	QUnit.test("Cyclic detection", function(assert){
+
+		var A, B, a, b;
+
+		A = Model({ b: [] });
+		B = Model({ a: A });
+		A.definition.b = [B];
+
+		a = A();
+		b = B({ a: a });
+
+		assert.ok(a.b = b, "valid cyclic value assignment");
+		assert.throws(function(){a.b = a; }, /TypeError/, "invalid cyclic value assignment");
+
+		A = Model({ b: [] });
+		B = Model({ a: A });
+
+		A.definition.b = {
+			c: {
+				d: [B]
+			}
+		};
+
+		a = A();
+		b = B({ a: a });
+
+		assert.ok(a.b = { c: { d: b } }, "valid deep cyclic value assignment");
+		assert.throws(function(){ a.b = { c: { d: a } }; }, /TypeError/, "invalid deep cyclic value assignment");
+
+		var Honey = Model({
+			sweetie: [] // Sweetie is not yet defined
+		});
+
+		var Sweetie = Model({
+			honey: Honey
+		});
+
+		Honey.definition.sweetie = [Sweetie];
+
+		var joe = Honey({ sweetie: undefined }); // ann is not yet defined
+		var ann = Sweetie({ honey: joe });
+		assert.ok(joe.sweetie = ann, "website example valid assignment");
+		assert.throws(function(){ joe.sweetie = "dog" }, /TypeError/, "website example invalid assignment 1");
+		assert.throws(function(){ joe.sweetie = joe }, /TypeError/, "website example invalid assignment 2");
+
+
+	});
 
 }

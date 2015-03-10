@@ -40,7 +40,7 @@ Model.Array.prototype.validate = function(arr){
 		throw new TypeError("expecting an array, got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinitions(arr[i], this.definition, 'Array['+i+']');
+		checkDefinitions(arr[i], this.definition, 'Array['+i+']', []);
 	}
 	matchAssertions(arr, this.assertions);
 };
@@ -56,7 +56,7 @@ function proxifyKeys(proxy, array, indexes, model){
 				return array[index];
 			},
 			set: function (val) {
-				checkDefinitions(val, model.definition, 'Array['+index+']');
+				checkDefinitions(val, model.definition, 'Array['+index+']', []);
                 var testArray = array.slice();
                 testArray[index] = val;
                 matchAssertions(testArray, model.assertions);

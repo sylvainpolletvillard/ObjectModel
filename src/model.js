@@ -2,7 +2,7 @@ function Model(def){
 	if(!isLeaf(def)) return new Model.Object(def);
 
 	var model = function(obj) {
-		model.validate(obj);
+		model.validate(obj, []);
 		return obj;
 	};
 
@@ -15,17 +15,9 @@ Model.prototype.toString = function(ndeep){
 	return toString(this.definition, ndeep);
 };
 
-var _recursion_stack = [];
-Model.prototype.validate = function(obj){
-	var isStackTop = (_recursion_stack.length === 0);
-	checkModel(obj, this.definition);
+Model.prototype.validate = function(obj, called){
+	checkModel(obj, this.definition, undefined, called);
 	matchAssertions(obj, this.assertions);
-	if(isStackTop){ _recursion_stack = []; } // clean stack after validation
-};
-
-Model.prototype.isValidModelFor = function(obj){
-	try { this.validate(obj); return true; }
-	catch(e){ return false; }
 };
 
 Model.prototype.extend = function(){
@@ -79,34 +71,38 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkModel(obj, def, path){
-	if(_recursion_stack.indexOf(def) !== -1) return; //if cycle detected, skip validation
-	_recursion_stack.push(def);
+function checkModel(obj, def, path, called){
 	if(isLeaf(def)){
-		checkDefinitions(obj, def, path);
+		checkDefinitions(obj, def, path, called.concat(def));
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var newPath = (path ? [path,key].join('.') : key);
-			checkModel(obj instanceof Object ? obj[key] : undefined, def[key], newPath);
+			var val = obj instanceof Object ? obj[key] : undefined;
+			checkModel(val, def[key], newPath, called.concat(val));
 		});
 	}
 }
 
-function checkDefinitions(obj, _def, path){
+function checkDefinitions(obj, _def, path, called){
 	var def = parseDefinition(_def);
-	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part) }) ){
+	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part, called) }) ){
 		throw new TypeError(
 			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
 			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	}
 }
 
-function checkDefinitionPart(obj, def){
+function checkDefinitionPart(obj, def, called){
 	if(obj == null){
 		return obj === def;
 	}
 	if(def instanceof Model){
-		return def.isValidModelFor(obj);
+		var indexFound = called.indexOf(def);
+		if(indexFound !== -1 && called.slice(indexFound+1).indexOf(def) !== -1){
+			return true; //if found twice in call stack, cycle detected, skip validation
+		}
+		try { def.validate(obj, called.concat(def)); return true; }
+		catch(e){ return false; }
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);

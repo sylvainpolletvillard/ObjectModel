@@ -6,7 +6,7 @@ Model.Object = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-        model.validate(proxy);
+        model.validate(proxy, []);
 		return proxy;
 	};
 
@@ -24,7 +24,7 @@ function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model.Function){
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
-		checkDefinitions(obj, defNode, path);
+		//checkDefinitions(obj, defNode, path, []);
 		return obj;
 	} else {
 		var wrapper = obj instanceof Object ? obj : Object.create(null);
@@ -41,8 +41,7 @@ function getProxy(model, obj, defNode, path) {
 						throw new TypeError("cannot redefine constant "+key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					_recursion_stack = [];
-					checkModel(newProxy, defNode[key], newPath);
+					checkModel(newProxy, defNode[key], newPath, []);
                     var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
                     try { matchAssertions(obj, model.assertions); }

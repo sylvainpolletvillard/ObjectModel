@@ -12,12 +12,12 @@ Model.Function = function FunctionModel(){
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}
 			def.arguments.forEach(function (argDef, i) {
-				checkDefinitions(args[i], argDef, 'arguments[' + i + ']');
+				checkDefinitions(args[i], argDef, 'arguments[' + i + ']', []);
 			});
 			matchAssertions(args, model.assertions);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				checkDefinitions(returnValue, def.return, 'return value');
+				checkDefinitions(returnValue, def.return, 'return value', []);
 			}
 			return returnValue;
 		};

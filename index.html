@@ -125,14 +125,16 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v0.7.0</h3>
+		<h3>Current version: v0.8.0</h3>
 		<ul>
 			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.1 kB)</li>
-			<li><a href="dist/object-model-0.7.0.zip">object-model-0.7.0.zip</a> source files</li>
+			<li><a href="dist/object-model-0.8.0.zip">object-model-0.8.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v0.8</dt>
+				<dd>cycle detection and validation of circular object structures</dd>
 				<dt>v0.7</dt>
 				<dd>API redesign to get a single namespace</dd>
 				<dd>UMD version</dd>
@@ -149,7 +151,6 @@
 				<dt>v0.4</dt>
 				<dd>Model.defaults, Model.Function.defaults</dd>
 				<dd>Model.extend, Model.Array.extend</dd>
-				<dd>Model.isValidModelFor</dd>
 				<dt>v0.3</dt>
 				<dd>Model.Function</dd>
 				<dd>arguments and return value validation</dd>
@@ -425,12 +426,8 @@ var Mother = Person.extend({
 var ann = new Person({ name: "Joe's wife", female: true });
 var joanna = new Person({ name: "Joe's daughter", female: true });
 
-Mother.isValidModelFor(ann);</code>
-<code class="language-none log">false</code>
-<code class="language-javascript">ann.child = joanna;
-Mother.isValidModelFor(ann);</code>
-<code class="language-none log">true</code>
-<code class="language-javascript">ann = Mother(ann); // cast ann to Mother model
+ann.child = joanna;
+ann = Mother(ann); // cast ann to Mother model
 ann instanceof Mother && ann instanceof Person</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>

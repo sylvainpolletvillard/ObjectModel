@@ -7,7 +7,7 @@ var isArray = Array.isArray || function(a){
 };
 
 function toString(obj, ndeep){
-	if(ndeep === undefined){ ndeep = 1; }
+	if(ndeep === undefined){ ndeep = 0; }
 	if(ndeep > 15){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }

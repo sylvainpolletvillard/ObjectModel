@@ -15,8 +15,8 @@ Model.prototype.toString = function(ndeep){
 	return toString(this.definition, ndeep);
 };
 
-Model.prototype.validate = function(obj, called){
-	checkModel(obj, this.definition, undefined, called);
+Model.prototype.validate = function(obj, stack){
+	checkModel(obj, this.definition, undefined, stack);
 	matchAssertions(obj, this.assertions);
 };
 
@@ -71,37 +71,37 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkModel(obj, def, path, called){
+function checkModel(obj, def, path, stack){
 	if(isLeaf(def)){
-		checkDefinitions(obj, def, path, called.concat(def));
+		checkDefinitions(obj, def, path, stack.concat(def));
 	} else {
 		Object.keys(def).forEach(function(key) {
-			var newPath = (path ? [path,key].join('.') : key);
 			var val = obj instanceof Object ? obj[key] : undefined;
-			checkModel(val, def[key], newPath, called.concat(val));
+			checkModel(val, def[key], path ? path + '.' + key : key, stack.concat(val));
 		});
 	}
 }
 
-function checkDefinitions(obj, _def, path, called){
+function checkDefinitions(obj, _def, path, stack){
 	var def = parseDefinition(_def);
-	if (def.length > 0 && !def.some(function(part){ return checkDefinitionPart(obj, part, called) }) ){
-		throw new TypeError(
-			"expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
-			+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
+	for(var i= 0, l=def.length; i<l; i++){
+		if(checkDefinitionPart(obj, def[i], stack)){ return; }
 	}
+	throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
+					+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
+
 }
 
-function checkDefinitionPart(obj, def, called){
+function checkDefinitionPart(obj, def, stack){
 	if(obj == null){
 		return obj === def;
 	}
 	if(def instanceof Model){
-		var indexFound = called.indexOf(def);
-		if(indexFound !== -1 && called.slice(indexFound+1).indexOf(def) !== -1){
+		var indexFound = stack.indexOf(def);
+		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation
 		}
-		try { def.validate(obj, called.concat(def)); return true; }
+		try { def.validate(obj, stack.concat(def)); return true; }
 		catch(e){ return false; }
 	}
 	if(def instanceof RegExp){

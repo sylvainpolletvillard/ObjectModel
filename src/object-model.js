@@ -30,7 +30,7 @@ function getProxy(model, obj, defNode, path) {
 		var wrapper = obj instanceof Object ? obj : Object.create(null);
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
 		Object.keys(defNode).forEach(function(key) {
-			var newPath = (path ? [path,key].join('.') : key);
+			var newPath = (path ? path + '.' + key : key);
 			var isWritable = (key.toUpperCase() != key);
 			Object.defineProperty(proxy, key, {
 				get: function () {
@@ -38,7 +38,7 @@ function getProxy(model, obj, defNode, path) {
 				},
 				set: function (val) {
 					if(!isWritable && wrapper[key] !== undefined){
-						throw new TypeError("cannot redefine constant "+key);
+						throw new TypeError("cannot redefine constant " + key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
 					checkModel(newProxy, defNode[key], newPath, []);

@@ -195,7 +195,7 @@ QUnit.test("Array models", function(assert){
   assert.throws(function(){a[0] = null; }, /TypeError/, "set index multiple types");
 
   Arr = Model.Array([true,2,"3"]);
-  assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError.*Array\[3]/, "Model.Array fixed values");
+  assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError[\s\S]*Array\[3]/, "Model.Array fixed values");
 
   var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
   var Hand = Cards.extend().assert(function(cards){
@@ -344,7 +344,7 @@ QUnit.test("Non-enumerable and non-writable properties", function(assert){
 
   m.normal++;
   m._private++;
-  assert.throws(function(){ m.CONST++; }, /TypeError.*constant/, "try to redefine constant");
+  assert.throws(function(){ m.CONST++; }, /TypeError[\s\S]*constant/, "try to redefine constant");
   assert.equal(Object.keys(m).length, 2, "non enumerable key not counted by Object.keys");
   assert.equal(Object.keys(m).indexOf("_private"), -1, "non enumerable key not found in Object.keys");
 
@@ -380,7 +380,7 @@ QUnit.test("Extensions", function(assert){
 
   assert.ok(Person(joe), "Person valid model for joe");
 
-  assert.throws(function(){ Woman(joe); }, /TypeError.*female/, "Woman invalid model for joe");
+  assert.throws(function(){ Woman(joe); }, /TypeError[\s\S]*female/, "Woman invalid model for joe");
 
   assert.throws(function(){
     var _joe = Woman({
@@ -394,11 +394,11 @@ QUnit.test("Extensions", function(assert){
         }
       }
     });
-  }, /TypeError.*female/, "cant be woman from joe parameters");
+  }, /TypeError[\s\S]*female/, "cant be woman from joe parameters");
 
   assert.throws(function(){
     var _joe = Woman(joe);
-  }, /TypeError.*female/, "cant be woman from Person joe");
+  }, /TypeError[\s\S]*female/, "cant be woman from Person joe");
 
   var ann = Woman({
     name: "Joe's wife",
@@ -424,7 +424,7 @@ QUnit.test("Extensions", function(assert){
 
   assert.throws(function(){
 	  UnemployedWoman(ann);
-  }, /TypeError.*city/, "ann cant be UnemployedWoman;  model extension nested undefined property");
+  }, /TypeError[\s\S]*city/, "ann cant be UnemployedWoman;  model extension nested undefined property");
 
 
   var jane = UnemployedWoman({
@@ -509,7 +509,7 @@ assert.ok(joefamily.mother instanceof Person, "mother instanceof Person");
       },
       children: []
     });
-  }, /TypeError.*mother*/, "validation of submodel");
+  }, /TypeError[\s\S]*mother*/, "validation of submodel");
 
 });
 
@@ -518,12 +518,12 @@ QUnit.test("Assertions", function(assert){
 	function isOdd(n){ return n%2 === 1; }
 	var OddNumber = Model(Number).assert(isOdd);
 	OddNumber(17);
-	assert.throws(function(){ OddNumber(18) }, /TypeError.*isOdd/, "test basic assertion new function");
+	assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "test basic assertion new function");
 
     var RealNumber = Model(Number).assert(isFinite);
 
     assert.equal(RealNumber(Math.sqrt(1)), 1);
-    assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError.*isFinite/, "test basic assertion native function");
+    assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "test basic assertion native function");
 
     function isPrime(n) {
         for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -532,19 +532,26 @@ QUnit.test("Assertions", function(assert){
         return true;
     }
 
+	// polyfill for IE
+	Number.isInteger = Number.isInteger || function isInteger(value) {
+		return typeof value === "number" &&
+			isFinite(value) &&
+			Math.floor(value) === value;
+	};
+
     var PrimeNumber = RealNumber
         .extend() // to not add next assertions to RealNumber model
         .assert(Number.isInteger)
         .assert(isPrime);
 
     PrimeNumber(83);
-    assert.throws(function(){ PrimeNumber(87); }, /TypeError.*isPrime/, "test multiple assertions 1");
-    assert.throws(function(){ PrimeNumber(7.77); }, /TypeError.*isInteger/, "test multiple assertions 2");
+    assert.throws(function(){ PrimeNumber(87); }, /TypeError[\s\S]*isPrime/, "test multiple assertions 1");
+    assert.throws(function(){ PrimeNumber(7.77); }, /TypeError[\s\S]*isInteger/, "test multiple assertions 2");
 
     var ArrayMax3 = Model.Array(Number).assert(function maxRange(arr){ return arr.length <= 3; });
     var arr = ArrayMax3(1,2);
     arr.push(3);
-    assert.throws(function(){ arr.push(4); }, /TypeError.*maxRange/, "test assertion after array method");
+    assert.throws(function(){ arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
 
     var ArraySumMax10 = Model.Array(Number).assert(function(arr){
         return arr.reduce(function(a,b){ return a+b; },0) <= 10;

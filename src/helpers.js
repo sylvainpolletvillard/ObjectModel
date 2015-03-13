@@ -57,6 +57,7 @@ function merge(base, ext, replace){
 	return base
 }
 
-Object.setPrototypeOf = Object.setPrototypeOf || ({__proto__:[]} instanceof Array
-	? function(o, p){ o.__proto__ = p; }
-	: function(o, p){ for(var k in p){ o[k] = p[k]; } });
+var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
+Object.setPrototypeOf = Object.setPrototypeOf || canSetProto
+    ? function(o, p){ o.__proto__ = p; }
+    : function(o, p){ for(var k in p){ o[k] = p[k]; } };

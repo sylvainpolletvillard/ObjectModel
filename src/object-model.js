@@ -21,10 +21,10 @@ Model.Object.prototype.defaults = function(p){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model.Function){
+	if(defNode instanceof Model.Function
+    || (!canSetProto && defNode && defNode.hasOwnProperty("__function_model__"))){
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
-		//checkDefinitions(obj, defNode, path, []);
 		return obj;
 	} else {
 		var wrapper = obj instanceof Object ? obj : Object.create(null);

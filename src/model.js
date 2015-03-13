@@ -40,6 +40,9 @@ function initModel(model, constructor, proto, def){
 	model.definition = def;
 	model.assertions = [];
 	Object.setPrototypeOf(model, constructor.prototype);
+    if(!canSetProto && Object.defineProperty){ // ugly fallback for Object.setPrototypeOf
+        Object.defineProperty(model, "__model__", { enumerable: false });
+    }
 	return model;
 }
 
@@ -96,7 +99,7 @@ function checkDefinitionPart(obj, def, stack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(def instanceof Model){
+	if(def instanceof Model || (def && def.hasOwnProperty("__model__"))){
 		var indexFound = stack.indexOf(def);
 		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation

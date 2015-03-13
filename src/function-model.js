@@ -26,6 +26,9 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
+    if(!canSetProto && Object.defineProperty){ // ugly fallback for Object.setPrototypeOf
+        Object.defineProperty(model, "__function_model__", { enumerable: false });
+    }
 	return initModel(model, FunctionModel, Object.create(Function.prototype), { arguments: cloneArray(arguments) });
 };
 

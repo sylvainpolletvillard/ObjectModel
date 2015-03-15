@@ -13,7 +13,9 @@ Model.Object = function ObjectModel(def){
 	return initModel(model, ObjectModel, Object.create(Object.prototype), def);
 };
 
+
 Model.Object.prototype = Object.create(Model.prototype);
+Model.Object.prototype.constructor = Model;
 
 Model.Object.prototype.defaults = function(p){
 	merge(this.prototype, p);
@@ -21,13 +23,12 @@ Model.Object.prototype.defaults = function(p){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model.Function
-    || (!canSetProto && defNode && defNode.hasOwnProperty("__function_model__"))){
+	if(instanceofsham(defNode, Model.Function)){
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {
-		var wrapper = obj instanceof Object ? obj : Object.create(null);
+		var wrapper = obj instanceof Object ? obj : Object.create(Object.prototype);
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);

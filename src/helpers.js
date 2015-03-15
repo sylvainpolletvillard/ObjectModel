@@ -1,6 +1,9 @@
 function isFunction(o){
 	return typeof o === "function";
 }
+function isObject(o){
+    return typeof o === "object";
+}
 
 var isArray = Array.isArray || function(a){
 	return a instanceof Array
@@ -11,13 +14,13 @@ function toString(obj, ndeep){
 	if(ndeep > 15){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
-	if(typeof obj == "function"){ return obj.name || obj.toString(ndeep); }
+	if(isFunction(obj)){ return obj.name || obj.toString(ndeep); }
 	if(isArray(obj)){
 		return '[' + obj.map(function(item) {
 				return toString(item, ndeep);
 			}).join(', ') + ']';
 	}
-	if(obj && typeof obj == "object"){
+	if(obj && isObject(obj)){
 		var indent = (new Array(ndeep)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
 				return '\n\t' + indent + key + ': ' + toString(obj[key], ndeep+1);
@@ -58,6 +61,23 @@ function merge(base, ext, replace){
 }
 
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
-Object.setPrototypeOf = Object.setPrototypeOf || canSetProto
+Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
     ? function(o, p){ o.__proto__ = p; }
-    : function(o, p){ for(var k in p){ o[k] = p[k]; } };
+    : function(o, p){ for(var k in p){ o[k] = p[k]; } });
+
+Object.getPrototypeOf = Object.getPrototypeOf || (canSetProto
+    ? function(o){ return typeof o.__proto__  === "object" ? o.__proto__ : null; }
+    : function(o){ // may break if the constructor has been tampered with
+        return isObject(o) && o.constructor && o.constructor.prototype ? o.constructor.prototype : null;
+    });
+
+function instanceofsham(obj, Constructor){
+    return canSetProto
+        ? obj instanceof Constructor
+        : (function recursive(o){
+            if(o == null || !isObject(o)) return false;
+            var proto = Object.getPrototypeOf(o);
+            return proto === Constructor.prototype || (proto !== o && recursive(proto));
+        })(obj)
+}
+

@@ -6,7 +6,7 @@ function Model(def){
 		return obj;
 	};
 
-	return initModel(model, Model, Object.create(isFunction(def) ? def.prototype : null), def);
+	return initModel(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype), def);
 }
 
 Model.prototype = Object.create(Function.prototype);
@@ -40,11 +40,10 @@ function initModel(model, constructor, proto, def){
 	model.definition = def;
 	model.assertions = [];
 	Object.setPrototypeOf(model, constructor.prototype);
-    if(!canSetProto && Object.defineProperty){ // ugly fallback for Object.setPrototypeOf
-        Object.defineProperty(model, "__model__", { enumerable: false });
-    }
 	return model;
 }
+
+Model.instanceOf = instanceofsham;
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
@@ -79,7 +78,7 @@ function checkModel(obj, def, path, stack){
 		checkDefinitions(obj, def, path, stack.concat(def));
 	} else {
 		Object.keys(def).forEach(function(key) {
-			var val = obj instanceof Object ? obj[key] : undefined;
+			var val = obj != null ? obj[key] : undefined;
 			checkModel(val, def[key], path ? path + '.' + key : key, stack.concat(val));
 		});
 	}
@@ -99,7 +98,7 @@ function checkDefinitionPart(obj, def, stack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(def instanceof Model || (def && def.hasOwnProperty("__model__"))){
+	if(instanceofsham(def, Model)){
 		var indexFound = stack.indexOf(def);
 		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation

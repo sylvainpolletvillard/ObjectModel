@@ -34,6 +34,7 @@ Model.Array = function ArrayModel(def){
 };
 
 Model.Array.prototype = Object.create(Model.prototype);
+Model.Array.prototype.constructor = Model;
 
 Model.Array.prototype.validate = function(arr){
 	if(!isArray(arr)){

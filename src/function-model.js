@@ -26,13 +26,12 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
-    if(!canSetProto && Object.defineProperty){ // ugly fallback for Object.setPrototypeOf
-        Object.defineProperty(model, "__function_model__", { enumerable: false });
-    }
 	return initModel(model, FunctionModel, Object.create(Function.prototype), { arguments: cloneArray(arguments) });
 };
 
 Model.Function.prototype = Object.create(Model.prototype);
+Model.Function.prototype.constructor = Model;
+
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){
 		throw new TypeError("expecting a function, got: " + toString(f));

@@ -65,19 +65,14 @@ Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
     ? function(o, p){ o.__proto__ = p; }
     : function(o, p){ for(var k in p){ o[k] = p[k]; } });
 
-Object.getPrototypeOf = Object.getPrototypeOf || (canSetProto
-    ? function(o){ return typeof o.__proto__  === "object" ? o.__proto__ : null; }
-    : function(o){ // may break if the constructor has been tampered with
-        return isObject(o) && o.constructor && o.constructor.prototype ? o.constructor.prototype : null;
-    });
-
 function instanceofsham(obj, Constructor){
     return canSetProto
         ? obj instanceof Constructor
-        : (function recursive(o){
-            if(o == null || !isObject(o)) return false;
-            var proto = Object.getPrototypeOf(o);
-            return proto === Constructor.prototype || (proto !== o && recursive(proto));
-        })(obj)
+        : (function recursive(o, stack){
+            if(o == null || !o.constructor || stack.indexOf(o) !== -1){ return false; }
+            var proto = o.constructor.prototype;
+            stack.push(o);
+            return proto === Constructor.prototype || recursive(proto, stack);
+        })(obj, [])
 }
 

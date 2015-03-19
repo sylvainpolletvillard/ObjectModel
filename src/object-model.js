@@ -6,13 +6,14 @@ Model.Object = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-        model.validate(proxy, []);
+		model.validate(proxy, []);
+		ensureProto(proxy, model.prototype);
 		return proxy;
 	};
 
-    inherits(model, ObjectModel, Object.create(Object.prototype));
-    model.definition = def;
-    model.assertions = [];
+	inherits(model, ObjectModel, Object.create(Object.prototype));
+	model.definition = def;
+	model.assertions = [];
 	return model;
 };
 
@@ -46,10 +47,10 @@ function getProxy(model, obj, defNode, path) {
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
 					checkModel(newProxy, defNode[key], newPath, []);
-                    var oldValue = wrapper[key];
+					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-                    try { matchAssertions(obj, model.assertions); }
-                    catch(e){ wrapper[key] = oldValue; throw e; }
+					try { matchAssertions(obj, model.assertions); }
+					catch(e){ wrapper[key] = oldValue; throw e; }
 				},
 				enumerable: (key[0] !== "_")
 			});

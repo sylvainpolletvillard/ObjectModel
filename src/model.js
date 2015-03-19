@@ -1,14 +1,14 @@
 function Model(def){
-	if(!isLeaf(def)) return new Model.Object(def);
+	if(!isLeaf(def)) return Model.Object(def);
 
 	var model = function(obj) {
 		model.validate(obj, []);
 		return obj;
 	};
 
-    inherits(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype));
-    model.definition = def;
-    model.assertions = [];
+	inherits(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype));
+	model.definition = def;
+	model.assertions = [];
 	return model;
 }
 
@@ -26,6 +26,7 @@ Model.prototype.validate = function(obj, stack){
 Model.prototype.extend = function(){
 	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
 	submodel.prototype = Object.create(this.prototype);
+	ensureProto(submodel.prototype, this.prototype);
 	submodel.prototype.constructor = submodel;
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;

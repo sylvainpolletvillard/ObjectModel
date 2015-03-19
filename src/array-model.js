@@ -3,13 +3,11 @@ var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice"
 Model.Array = function ArrayModel(def){
 
 	var model = function() {
-		var array = cloneArray(arguments);
-		if(!(this instanceof model)){
-			return new (Function.prototype.bind.apply(model, [null].concat(array)));
-		}
+
+		var array = cloneArray(arguments),
+			 proxy = [];
 
 		model.validate(array);
-		var proxy = this;
 
 		ARRAY_MUTATOR_METHODS.forEach(function (method) {
 			Object.defineProperty(proxy, method, { configurable: true, value: function() {
@@ -23,11 +21,8 @@ Model.Array = function ArrayModel(def){
 		});
 
 		proxifyKeys(proxy, array, Object.keys(array), model);
-		Object.defineProperty(proxy, "length", {
-			enumerable: false,
-			get: function(){ return array.length; }
-		});
-        inherits(proxy, model);
+      inherits(proxy, model, model.prototype);
+
 		return proxy;
 	};
 

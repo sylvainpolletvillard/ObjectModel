@@ -63,17 +63,27 @@ function merge(base, ext, replace){
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
 Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
     ? function(o, p){ o.__proto__ = p; }
-    : function(o, p){ for(var k in p){ o[k] = p[k]; } });
+    : function(o, p){ for(var k in p){ o[k] = p[k]; } ensureProto(o, p); });
+
+Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
+    return o.__proto__ || (o.constructor ? o.constructor.prototype : null);
+};
 
 function instanceofsham(obj, Constructor){
     return canSetProto
         ? obj instanceof Constructor
         : (function recursive(o, stack){
-            if(o == null || !o.constructor || stack.indexOf(o) !== -1){ return false; }
-            var proto = o.constructor.prototype;
+            if(o == null || stack.indexOf(o) !== -1){ return false; }
+            var proto = Object.getPrototypeOf(o);
             stack.push(o);
             return proto === Constructor.prototype || recursive(proto, stack);
         })(obj, [])
+}
+
+function ensureProto(o, p){
+	if(!canSetProto){
+		Object.defineProperty(o, "__proto__", { enumerable: false, writable: true, value: p });
+	}
 }
 
 function inherits(model, constructor, proto){

@@ -21,16 +21,19 @@ Model.Function = function FunctionModel(){
 			}
 			return returnValue;
 		};
-		Object.setPrototypeOf(proxyFn, model.prototype);
-		proxyFn.constructor = FunctionModel;
+        inherits(proxyFn, model);
 		return proxyFn;
 	};
 
-	return initModel(model, FunctionModel, Object.create(Function.prototype), { arguments: cloneArray(arguments) });
+    inherits(model, FunctionModel, Object.create(Function.prototype));
+    model.definition = { arguments: cloneArray(arguments) };
+    model.assertions = [];
+    return model;
 };
 
 Model.Function.prototype = Object.create(Model.prototype);
-Model.Function.prototype.constructor = Model;
+Model.Function.prototype.constructor = Model.Function;
+Model.Function.constructor.prototype = Model;
 
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){

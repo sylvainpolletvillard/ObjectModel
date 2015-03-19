@@ -6,7 +6,10 @@ function Model(def){
 		return obj;
 	};
 
-	return initModel(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype), def);
+    inherits(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype));
+    model.definition = def;
+    model.assertions = [];
+	return model;
 }
 
 Model.prototype = Object.create(Function.prototype);
@@ -32,16 +35,6 @@ Model.prototype.assert = function(){
 	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
 	return this;
 };
-
-function initModel(model, constructor, proto, def){
-	model.constructor = constructor;
-	model.prototype = proto;
-	model.prototype.constructor = model;
-	model.definition = def;
-	model.assertions = [];
-	Object.setPrototypeOf(model, constructor.prototype);
-	return model;
-}
 
 Model.instanceOf = instanceofsham;
 

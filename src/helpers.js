@@ -76,3 +76,9 @@ function instanceofsham(obj, Constructor){
         })(obj, [])
 }
 
+function inherits(model, constructor, proto){
+    model.prototype = proto || model.prototype || {};
+    model.prototype.constructor = model;
+    Object.setPrototypeOf(model, constructor.prototype);
+    Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
+}

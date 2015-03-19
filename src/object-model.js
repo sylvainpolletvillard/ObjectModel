@@ -10,7 +10,10 @@ Model.Object = function ObjectModel(def){
 		return proxy;
 	};
 
-	return initModel(model, ObjectModel, Object.create(Object.prototype), def);
+    inherits(model, ObjectModel, Object.create(Object.prototype));
+    model.definition = def;
+    model.assertions = [];
+	return model;
 };
 
 

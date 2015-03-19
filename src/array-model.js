@@ -27,10 +27,14 @@ Model.Array = function ArrayModel(def){
 			enumerable: false,
 			get: function(){ return array.length; }
 		});
+        inherits(proxy, model);
 		return proxy;
 	};
 
-	return initModel(model, ArrayModel, Object.create(Array.prototype), def);
+    inherits(model, ArrayModel, Object.create(Array.prototype));
+    model.definition = def;
+    model.assertions = [];
+    return model;
 };
 
 Model.Array.prototype = Object.create(Model.prototype);

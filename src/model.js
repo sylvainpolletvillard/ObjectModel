@@ -6,28 +6,27 @@ function Model(def){
 		return obj;
 	};
 
-	inherits(model, Model, Object.create(isFunction(def) ? def.prototype : Object.prototype));
+	setConstructor(model, Model);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 }
 
-Model.prototype = Object.create(Function.prototype);
+setProto(Model, Object.create(Function.prototype));
 
 Model.prototype.toString = function(ndeep){
 	return toString(this.definition, ndeep);
 };
 
 Model.prototype.validate = function(obj, stack){
-	checkModel(obj, this.definition, undefined, stack);
+	checkDefinition(obj, this.definition, undefined, stack);
 	matchAssertions(obj, this.assertions);
 };
 
 Model.prototype.extend = function(){
 	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
-	submodel.prototype = Object.create(this.prototype);
+	setProto(submodel, Object.create(this.prototype));
 	ensureProto(submodel.prototype, this.prototype);
-	submodel.prototype.constructor = submodel;
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
 };
@@ -37,7 +36,14 @@ Model.prototype.assert = function(){
 	return this;
 };
 
-Model.instanceOf = instanceofsham;
+Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
+	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
+		if(o == null || stack.indexOf(o) !== -1){ return false; }
+		var proto = Object.getPrototypeOf(o);
+		stack.push(o);
+		return proto === Constructor.prototype || recursive(proto, stack);
+	})(obj, [])
+};
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
@@ -67,32 +73,29 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkModel(obj, def, path, stack){
+function checkDefinition(obj, def, path, stack){
 	if(isLeaf(def)){
-		checkDefinitions(obj, def, path, stack.concat(def));
+		def = parseDefinition(def);
+		var l = def.length;
+		if(!l){ return; }
+		for(var i= 0; i<l; i++){
+			if(checkDefinitionPart(obj, def[i], stack)){ return; }
+		}
+		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
+		+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkModel(val, def[key], path ? path + '.' + key : key, stack.concat(val));
+			checkDefinition(val, def[key], path ? path + '.' + key : key, stack.concat(val));
 		});
 	}
-}
-
-function checkDefinitions(obj, _def, path, stack){
-	var def = parseDefinition(_def);
-	for(var i= 0, l=def.length; i<l; i++){
-		if(checkDefinitionPart(obj, def[i], stack)){ return; }
-	}
-	throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
-					+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
-
 }
 
 function checkDefinitionPart(obj, def, stack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(instanceofsham(def, Model)){
+	if(Model.instanceOf(def, Model)){
 		var indexFound = stack.indexOf(def);
 		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation

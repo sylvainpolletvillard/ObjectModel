@@ -69,26 +69,18 @@ Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototy
     return o.__proto__ || (o.constructor ? o.constructor.prototype : null);
 };
 
-function instanceofsham(obj, Constructor){
-    return canSetProto
-        ? obj instanceof Constructor
-        : (function recursive(o, stack){
-            if(o == null || stack.indexOf(o) !== -1){ return false; }
-            var proto = Object.getPrototypeOf(o);
-            stack.push(o);
-            return proto === Constructor.prototype || recursive(proto, stack);
-        })(obj, [])
-}
-
 function ensureProto(o, p){
 	if(!canSetProto){
 		Object.defineProperty(o, "__proto__", { enumerable: false, writable: true, value: p });
 	}
 }
 
-function inherits(model, constructor, proto){
-    model.prototype = proto || model.prototype || {};
+function setProto(model, proto){
+    model.prototype = proto;
     model.prototype.constructor = model;
-    Object.setPrototypeOf(model, constructor.prototype);
-    Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
+}
+
+function setConstructor(model, constructor){
+	Object.setPrototypeOf(model, constructor.prototype);
+	Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
 }

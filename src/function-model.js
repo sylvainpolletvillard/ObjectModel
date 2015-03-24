@@ -1,9 +1,6 @@
 Model.Function = function FunctionModel(){
 
 	var model = function(fn) {
-		if(!(this instanceof model)) {
-			return new model(fn);
-		}
 
 		var def = model.definition;
 		var proxyFn = function () {
@@ -12,27 +9,27 @@ Model.Function = function FunctionModel(){
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}
 			def.arguments.forEach(function (argDef, i) {
-				checkDefinitions(args[i], argDef, 'arguments[' + i + ']', []);
+				checkDefinition(args[i], argDef, 'arguments[' + i + ']', []);
 			});
 			matchAssertions(args, model.assertions);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				checkDefinitions(returnValue, def.return, 'return value', []);
+				checkDefinition(returnValue, def.return, 'return value', []);
 			}
 			return returnValue;
 		};
-        inherits(proxyFn, model);
+		setConstructor(proxyFn, model);
 		return proxyFn;
 	};
 
-    inherits(model, FunctionModel, Object.create(Function.prototype));
-    model.definition = { arguments: cloneArray(arguments) };
-    model.assertions = [];
-    return model;
+	setProto(model, Object.create(Function.prototype));
+	setConstructor(model, FunctionModel);
+	model.definition = { arguments: cloneArray(arguments) };
+	model.assertions = [];
+	return model;
 };
 
-Model.Function.prototype = Object.create(Model.prototype);
-Model.Function.prototype.constructor = Model.Function;
+setProto(Model.Function, Object.create(Model.prototype));
 Model.Function.constructor.prototype = Model;
 
 Model.Function.prototype.validate = function (f) {

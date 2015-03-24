@@ -5,7 +5,7 @@ Model.Array = function ArrayModel(def){
 	var model = function() {
 
 		var array = cloneArray(arguments),
-			 proxy = [];
+			proxy = [];
 
 		model.validate(array);
 
@@ -21,15 +21,15 @@ Model.Array = function ArrayModel(def){
 		});
 
 		proxifyKeys(proxy, array, Object.keys(array), model);
-      inherits(proxy, model, model.prototype);
-
+		setConstructor(proxy, model);
 		return proxy;
 	};
 
-    inherits(model, ArrayModel, Object.create(Array.prototype));
-    model.definition = def;
-    model.assertions = [];
-    return model;
+	setProto(model, Object.create(Array.prototype));
+	setConstructor(model, ArrayModel);
+	model.definition = def;
+	model.assertions = [];
+	return model;
 };
 
 Model.Array.prototype = Object.create(Model.prototype);
@@ -40,7 +40,7 @@ Model.Array.prototype.validate = function(arr){
 		throw new TypeError("expecting an array, got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinitions(arr[i], this.definition, 'Array['+i+']', []);
+		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
 	}
 	matchAssertions(arr, this.assertions);
 };
@@ -56,10 +56,10 @@ function proxifyKeys(proxy, array, indexes, model){
 				return array[index];
 			},
 			set: function (val) {
-				checkDefinitions(val, model.definition, 'Array['+index+']', []);
-                var testArray = array.slice();
-                testArray[index] = val;
-                matchAssertions(testArray, model.assertions);
+				checkDefinition(val, model.definition, 'Array['+index+']', []);
+				var testArray = array.slice();
+				testArray[index] = val;
+				matchAssertions(testArray, model.assertions);
 				array[index] = val;
 			}
 		});

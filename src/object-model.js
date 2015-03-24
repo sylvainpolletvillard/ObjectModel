@@ -11,12 +11,11 @@ Model.Object = function ObjectModel(def){
 		return proxy;
 	};
 
-	inherits(model, ObjectModel, Object.create(Object.prototype));
+	setConstructor(model, ObjectModel);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 };
-
 
 Model.Object.prototype = Object.create(Model.prototype);
 Model.Object.prototype.constructor = Model;
@@ -27,7 +26,7 @@ Model.Object.prototype.defaults = function(p){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(instanceofsham(defNode, Model.Function)){
+	if(Model.instanceOf(defNode, Model.Function)){
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
@@ -46,7 +45,7 @@ function getProxy(model, obj, defNode, path) {
 						throw new TypeError("cannot redefine constant " + key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkModel(newProxy, defNode[key], newPath, []);
+					checkDefinition(newProxy, defNode[key], newPath, []);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
 					try { matchAssertions(obj, model.assertions); }

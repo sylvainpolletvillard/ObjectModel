@@ -114,7 +114,7 @@
 			<li>Easy inheritance and model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in 6.1 kB minified (1.3 kB gzipped)</li>
+			<li>all in 6.5 kB minified (1.3 kB gzipped)</li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -127,7 +127,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v0.8.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.1 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.5 kB)</li>
 			<li><a href="dist/object-model-0.8.0.zip">object-model-0.8.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -180,7 +180,7 @@
 	<hr>
 
     <section id="doc-basic-model">
-        <h2>Basic Models</h2>
+        <h2>Basic models</h2>
         <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>.
             Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
 
@@ -198,12 +198,12 @@
     </section>
 
 	<section id="doc-object-model">
-		<h2>Object Models</h2>
+		<h2>Object models</h2>
 		<p>Object models validate nested object properties against a definition tree. You may consider them as definitions of classes with advanced validation options. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Order = Model({ // or Model.Object
+            <pre><code class="language-javascript">var Order = new Model({ // or Model.Object
 	product: {
 		name: String,
 		quantity: Number,
@@ -213,8 +213,8 @@
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-				<pre><code class="language-javascript">var myOrder = Order({
-	product: { name: "Apple Pie", quantity: 0 },
+				<pre><code class="language-javascript">var myOrder = new Order({
+	product: { name: "Apple Pie", quantity: 1 },
 	orderDate: new Date()
 });
 
@@ -233,15 +233,15 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var UserInfo = new Model({
+            <pre><code class="language-javascript">var UserInfo = Model({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-<pre><code class="language-javascript">var stan = new UserInfo({ email: "stan@smith.com" }); // no exceptions
-var roger = new UserInfo({ name: "Roger" }); // email is mandatory</code>
+<pre><code class="language-javascript">var stan = UserInfo({ email: "stan@smith.com" }); // no exceptions
+var roger = UserInfo({ name: "Roger" }); // email is mandatory</code>
 <code class="language-none exception">TypeError: expecting email to be String, got undefined</code></pre>
 			</div>
 		</div>
@@ -428,7 +428,7 @@ var joanna = new Person({ name: "Joe's daughter", female: true });
 
 ann.child = joanna;
 ann = Mother(ann); // cast ann to Mother model
-ann instanceof Mother && ann instanceof Person</code>
+Model.instanceOf(ann, Mother) && Model.instanceOf(ann, Person)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false</code></pre>
@@ -479,7 +479,9 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 
 	<section id="doc-private-and-constants">
 		<h2>Private and constant properties</h2>
-		<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Object Model definition follow these conventions by making <i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
+		<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which
+			should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making
+			<i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
 	</section>
 
 	<div class="panels two">
@@ -609,8 +611,7 @@ joe.sayMyName();</code>
 <code class="language-javascript">joe.greet("dog");</code>
 <code class="language-none exception">TypeError: expecting arguments[0] to be {
 	name: String,
-	age: Number,
-	sayMyName: Model.Function().return(String)
+	age: Number
 }, got String "dog"</code></pre>
 			</div>
 		</div>
@@ -633,6 +634,10 @@ joe.sayMyName();</code>
 
             <dt><a href="#doc-function-model">Model.Function</a> <code>new Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
             <dd>Constructor for function models</dd>
+
+	        <dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
+            <dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
+	            For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
         </dl>
         <h3>Model methods and properties</h3>
         <dl>

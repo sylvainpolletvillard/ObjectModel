@@ -38,7 +38,7 @@ Model.prototype.assert = function(){
 
 Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
-		if(o == null || stack.indexOf(o) !== -1){ return false; }
+		if(o == null || stack.indexOf(o) !== -1) return false;
 		var proto = Object.getPrototypeOf(o);
 		stack.push(o);
 		return proto === Constructor.prototype || recursive(proto, stack);
@@ -50,21 +50,23 @@ function isLeaf(def){
 }
 
 function mergeDefinitions(base, exts){
-	if(exts.length === 0) return base;
+	if(!exts.length) return base;
 	if(isLeaf(base)){
-		return cloneArray(exts).reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base)).filter(onlyUnique);
+		return cloneArray(exts)
+			.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base))
+			.filter(function(value, index, self) { // remove duplicates
+				return self.indexOf(value) === index;
+			});
 	} else {
-		return cloneArray(exts).reduce(function(def, ext){ return merge(ext || {}, def); }, base);
+		return cloneArray(exts)
+			.reduce(function(def, ext){ return merge(ext || {}, def); }, base);
 	}
 }
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!isArray(def)) {
-			return [def];
-		} else if(def.length === 1){
-			return def.concat(undefined);
-		}
+		if(!isArray(def)) return [def];
+		else if(def.length === 1) return def.concat(undefined);
 	} else {
 		Object.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);

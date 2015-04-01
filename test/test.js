@@ -10,6 +10,11 @@ function testSuite(Model){
 		assert.ok(NumberModel(17) === 17, "should return the original value");
 		assert.throws(function(){ NumberModel("12") }, /TypeError/, "test invalid type");
 
+		assert.ok(typeof NumberModel.extend === "function", "test model method extend");
+		assert.ok(typeof NumberModel.assert === "function", "test model method assert");
+		assert.ok(NumberModel.definition === Number, "test model prop definition");
+		assert.ok(typeof NumberModel.assertions === "object", "test model prop assertions");
+
 		var OptionalNumberModel = NumberModel.extend(undefined);
 		assert.throws(function(){ NumberModel() }, /TypeError/, "test undefined value");
 		OptionalNumberModel();
@@ -247,11 +252,6 @@ function testSuite(Model){
 			}
 		});
 
-		// To use a model in the argument validation of one
-		// of its own methods, we have to separate the
-		// declarations of the model and method.
-
-// takes one argument of type Person, returns a String
 		var greetFnModel = Model.Function(Person).return(String);
 		Person.prototype.greet = greetFnModel(function(otherguy){
 			return "Hello "+ otherguy.name + ", " + this.sayMyName();

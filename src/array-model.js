@@ -5,9 +5,10 @@ Model.Array = function ArrayModel(def){
 	var model = function() {
 
 		var array = cloneArray(arguments),
-			proxy = [];
-
+			proxy = Object.create(Array.prototype);
 		model.validate(array);
+		proxifyKeys(proxy, array, Object.keys(array), model);
+		Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
 
 		ARRAY_MUTATOR_METHODS.forEach(function (method) {
 			Object.defineProperty(proxy, method, { configurable: true, value: function() {
@@ -20,7 +21,6 @@ Model.Array = function ArrayModel(def){
 			}});
 		});
 
-		proxifyKeys(proxy, array, Object.keys(array), model);
 		setConstructor(proxy, model);
 		return proxy;
 	};

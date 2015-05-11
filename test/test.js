@@ -113,8 +113,8 @@ function testSuite(Model){
 		joe.female = 2;
 		joe.female = false;
 		assert.throws(function(){ joe.female = undefined; }, /TypeError/);
-		joe.address.city = "Lille";
-		joe.address.city = undefined;
+		joe.address.work.city = "Lille";
+		joe.address.work.city = undefined;
 		joe.haircolor = "blond";
 		joe.haircolor = undefined;
 		assert.throws(function(){ joe.name = false; }, /TypeError/);

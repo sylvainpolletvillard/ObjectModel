@@ -4,22 +4,32 @@ Model.Array = function ArrayModel(def){
 
 	var model = function() {
 
-		var array = cloneArray(arguments),
-			proxy = Object.create(Array.prototype);
+		var array = cloneArray(arguments), proxy;
 		model.validate(array);
-		proxifyKeys(proxy, array, Object.keys(array), model);
-		Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
-
-		ARRAY_MUTATOR_METHODS.forEach(function (method) {
-			Object.defineProperty(proxy, method, { configurable: true, value: function() {
-				var testArray = array.slice();
-				Array.prototype[method].apply(testArray, arguments);
-				model.validate(testArray);
-				var newKeys = Object.keys(testArray).filter(function(key){ return !(key in proxy) });
-				proxifyKeys(proxy, array, newKeys, model);
-				return Array.prototype[method].apply(array, arguments);
-			}});
-		});
+		if(isProxySupported){
+			proxy = new Proxy(array, {
+				get: function (arr, key) {
+					return (ARRAY_MUTATOR_METHODS.indexOf(key) >= 0 ? proxifyArrayMethod(arr, key, model) : arr[key]);
+				},
+				set: function (arr, key, val) {
+					setArrayKey(arr, key, val, model);
+				}
+			});
+		} else {
+			proxy = Object.create(Array.prototype);
+			for(var key in array){
+				if(array.hasOwnProperty(key)){
+					proxifyArrayKey(proxy, array, key, model);
+				}
+			}
+			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			ARRAY_MUTATOR_METHODS.forEach(function (method) {
+				Object.defineProperty(proxy, method, {
+					configurable: true,
+					value: proxifyArrayMethod(array, method, model, proxy)
+				});
+			});
+		}
 
 		setConstructor(proxy, model);
 		return proxy;
@@ -45,23 +55,43 @@ Model.Array.prototype.validate = function(arr){
 	matchAssertions(arr, this.assertions);
 };
 
-Model.Array.prototype.toString = function(ndeep){
-	return 'Model.Array(' + toString(this.definition, ndeep) + ')';
+Model.Array.prototype.toString = function(stack){
+	return 'Model.Array(' + toString(this.definition, stack) + ')';
 };
 
-function proxifyKeys(proxy, array, indexes, model){
-	indexes.forEach(function(index){
-		Object.defineProperty(proxy, index, {
-			get: function () {
-				return array[index];
-			},
-			set: function (val) {
-				checkDefinition(val, model.definition, 'Array['+index+']', []);
-				var testArray = array.slice();
-				testArray[index] = val;
-				matchAssertions(testArray, model.assertions);
-				array[index] = val;
-			}
-		});
+function proxifyArrayKey(proxy, array, key, model){
+	Object.defineProperty(proxy, key, {
+		get: function () {
+			return array[key];
+		},
+		set: function (val) {
+			setArrayKey(array, key, val, model);
+		}
 	});
+}
+
+function proxifyArrayMethod(array, method, model, proxy){
+	return function() {
+		var testArray = array.slice();
+		Array.prototype[method].apply(testArray, arguments);
+		model.validate(testArray);
+		if(!isProxySupported){
+			for(var key in testArray){
+				if(testArray.hasOwnProperty(key) && !(key in proxy)){
+					proxifyArrayKey(proxy, array, key, model);
+				}
+			}
+		}
+		return Array.prototype[method].apply(array, arguments);
+	};
+}
+
+function setArrayKey(array, key, value, model){
+	if(parseInt(key) === +key && key >= 0){
+		checkDefinition(value, model.definition, 'Array['+key+']', []);
+	}
+	var testArray = array.slice();
+	testArray[key] = value;
+	matchAssertions(testArray, model.assertions);
+	array[key] = value;
 }

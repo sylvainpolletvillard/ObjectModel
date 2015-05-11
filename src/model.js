@@ -14,8 +14,8 @@ function Model(def){
 
 setProto(Model, Object.create(Function.prototype));
 
-Model.prototype.toString = function(ndeep){
-	return toString(this.definition, ndeep);
+Model.prototype.toString = function(stack){
+	return toString(this.definition, stack);
 };
 
 Model.prototype.validate = function(obj, stack){
@@ -83,7 +83,7 @@ function checkDefinition(obj, def, path, stack){
 		for(var i= 0; i<l; i++){
 			if(checkDefinitionPart(obj, def[i], stack)){ return; }
 		}
-		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(toString).join(" or ")
+		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(function(d){ return toString(d); }).join(" or ")
 		+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
 	} else {
 		Object.keys(def).forEach(function(key) {

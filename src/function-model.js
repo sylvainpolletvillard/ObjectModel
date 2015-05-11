@@ -38,8 +38,8 @@ Model.Function.prototype.validate = function (f) {
 	}
 };
 
-Model.Function.prototype.toString = function(ndeep){
-	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){ return toString(argDef, ndeep); }).join(",") +')';
+Model.Function.prototype.toString = function(stack){
+	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){ return toString(argDef, stack); }).join(",") +')';
 	if("return" in this.definition) {
 		out += ".return(" + toString(this.definition.return) + ")";
 	}

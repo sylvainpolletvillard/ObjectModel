@@ -9,21 +9,21 @@ var isArray = Array.isArray || function(a){
 	return a instanceof Array
 };
 
-function toString(obj, ndeep){
-	if(ndeep === undefined){ ndeep = 0; }
-	if(ndeep > 15){ return '...'; }
+function toString(obj, stack){
+	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
-	if(isFunction(obj)){ return obj.name || obj.toString(ndeep); }
+	stack = [obj].concat(stack);
+	if(isFunction(obj)){ return obj.name || obj.toString(stack); }
 	if(isArray(obj)){
 		return '[' + obj.map(function(item) {
-				return toString(item, ndeep);
+				return toString(item, stack);
 			}).join(', ') + ']';
 	}
 	if(obj && isObject(obj)){
-		var indent = (new Array(ndeep)).join('\t');
+		var indent = (new Array(stack.length)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
-				return '\n\t' + indent + key + ': ' + toString(obj[key], ndeep+1);
+				return '\n\t' + indent + key + ': ' + toString(obj[key], stack);
 			}).join(',') + '\n' + indent + '}';
 	}
 	return String(obj)
@@ -80,3 +80,5 @@ function setConstructor(model, constructor){
 	Object.setPrototypeOf(model, constructor.prototype);
 	Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
 }
+
+var isProxySupported = (typeof Proxy === "function");

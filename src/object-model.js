@@ -30,8 +30,46 @@ function getProxy(model, obj, defNode, path) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
-	} else {
-		var wrapper = obj instanceof Object ? obj : Object.create(Object.prototype);
+	}
+	/* // perf improvement is not worth it for object models at the moment
+	else if(isProxySupported) {
+		return new Proxy(obj || {}, {
+			get: function (o, key) {
+				var newPath = (path ? path + '.' + key : key);
+				return getProxy(model, o[key], defNode[key], newPath);
+			},
+			set: function (o, key, val) {
+				var newPath = (path ? path + '.' + key : key);
+				var isWritable = (key.toUpperCase() != key);
+				if (!isWritable && o[key] !== undefined) {
+					throw new TypeError("cannot redefine constant " + key);
+				}
+				var newProxy = getProxy(model, val, defNode[key], newPath);
+				checkDefinition(newProxy, defNode[key], newPath, []);
+				var oldValue = o[key];
+				o[key] = newProxy;
+				try {
+					matchAssertions(o, model.assertions);
+				}
+				catch (e) {
+					o[key] = oldValue;
+					throw e;
+				}
+			},
+			enumerate: function (o) {
+				return Object.keys(o).filter(function (key) {
+					return !(key in defNode && key[0] === "_");
+				})[Symbol.iterator]();
+			},
+			ownKeys: function (o) {
+				return Object.keys(o).filter(function (key) {
+					return !(key in defNode && key[0] === "_");
+				});
+			}
+		});
+	} */
+	else {
+		var wrapper = obj instanceof Object ? obj : {};
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);

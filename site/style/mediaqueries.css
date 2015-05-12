@@ -1,8 +1,0 @@
-@media (max-width: 960px) {
-  .panels .panel,
-  .panels.two .panel,
-  .panels.three .panel {
-    display: block;
-    width: 100%;
-  }
-}

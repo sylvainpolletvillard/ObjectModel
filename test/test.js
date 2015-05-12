@@ -631,7 +631,6 @@ function testSuite(Model){
 		assert.throws(function(){ joe.sweetie = "dog" }, /TypeError/, "website example invalid assignment 1");
 		assert.throws(function(){ joe.sweetie = joe }, /TypeError/, "website example invalid assignment 2");
 
-
 	});
 
 }

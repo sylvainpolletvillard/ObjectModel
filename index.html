@@ -10,7 +10,6 @@
 	<title>Object Model</title>
 
 	<link rel="stylesheet" href="site/style/main.css"/>
-	<link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Raleway:300|Roboto:400,900'>
 	<script src="site/lib/jquery-2.1.0.min.js"></script>
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -79,7 +78,7 @@
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Define typed models</span>
-            <pre><code class="language-javascript">
+<pre><code class="language-javascript">
    var User = new Model({
       name: String,
       female: Boolean,
@@ -88,7 +87,7 @@
 			</div>
 			<div class="panel">
 				<span class="legend left">Validate at runtime</span>
-            <pre><code class="language-javascript">
+<pre><code class="language-javascript">
    var joe = new User({
       name: "Joe",
       female: false,
@@ -100,7 +99,7 @@
 
 		<h2 id="what-is-it">What is this library ?</h2>
 		<p>A recurring criticism of JavaScript is that it is a weakly typed language. New typed languages that compile to JavaScript have been invented like TypeScript from Microsoft. We also have static type checking tools like Flow from Facebook. This library is about dynamic type checking: it aims to get this type validation at runtime without requiring a new language or a compilation step.</p>
-		<p>Validate at runtime allows you to define more specific tests that can change depending on your application state. You can also control unpredictable data sources like external JS dependencies or JSON data from web services .</p>
+		<p>Validate at runtime allows you to define more specific tests that can change depending on your application state. You can also control unpredictable data sources like external JS dependencies or JSON data from web services.</p>
 
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
@@ -118,7 +117,7 @@
 			<li>Easy inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in 6.6 kB minified (1.3 kB gzipped)</li>
+			<li>all in <strong>6.8 kB minified (1.4 kB gzipped)</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -129,14 +128,17 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v0.8.0</h3>
+		<h3>Current version: v0.9.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.6 kB)</li>
-			<li><a href="dist/object-model-0.8.0.zip">object-model-0.8.0.zip</a> source files</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.8 kB)</li>
+			<li><a href="dist/object-model-0.9.0.zip">object-model-0.9.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v0.9</dt>
+				<dd>use of ECMAScript 6 proxies if available</dd>
+				<dd>performance improvements, especially on Array models</dd>
 				<dt>v0.8</dt>
 				<dd>cycle detection and validation of circular object structures</dd>
 				<dd>support for IE9 with Model.instanceOf</dd>
@@ -176,6 +178,7 @@
 			<ul>
 				<li>API changes based on feedback</li>
 				<li>JSDoc parsing to automatic model definition</li>
+				<li>ECMAScript 6 only version</li>
 			</ul>
 		</details>
 
@@ -187,17 +190,16 @@
 
     <section id="doc-basic-model">
         <h2>Basic models</h2>
-        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>.
-            Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
+        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>. Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
 
         <div class="panels two">
             <div class="panel">
                 <span class="legend">Model</span>
-            <pre><code class="language-javascript">var NumberModel = Model(Number); // 'new' keyword is optional</code></pre>
+<pre><code class="language-javascript">var NumberModel = Model(Number); // 'new' keyword is optional</code></pre>
             </div>
             <div class="panel">
                 <span class="legend">Instance</span>
-				<pre><code class="language-javascript">var x = NumberModel("42"); // 'new' keyword is optional</code>
+<pre><code class="language-javascript">var x = NumberModel("42"); // 'new' keyword is optional</code>
 <code class="language-none exception">TypeError: expecting Number, got String "42"</code></pre>
             </div>
         </div>
@@ -209,7 +211,7 @@
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Order = new Model({ // or Model.Object
+<pre><code class="language-javascript">var Order = new Model({ // or Model.Object
 	product: {
 		name: String,
 		quantity: Number,
@@ -219,7 +221,7 @@
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-				<pre><code class="language-javascript">var myOrder = new Order({
+<pre><code class="language-javascript">var myOrder = new Order({
 	product: { name: "Apple Pie", quantity: 1 },
 	orderDate: new Date()
 });
@@ -239,7 +241,7 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var UserInfo = Model({
+<pre><code class="language-javascript">var UserInfo = Model({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
@@ -261,7 +263,7 @@ var roger = UserInfo({ name: "Roger" }); // email is mandatory</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Animation = new Model({
+<pre><code class="language-javascript">var Animation = new Model({
 	delay: [Number, String], // can be a Number or a String
 	easing: [Boolean, String, undefined]
 	// optional property which can be a Boolean or a String
@@ -288,7 +290,7 @@ opening.easing = 1;</code>
 		<div class="panels">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Shirt = new Model({
+<pre><code class="language-javascript">var Shirt = new Model({
 	category: "clothes", // the only acceptable value is "clothes"
 	size: [Number, "M", /^X{0,2}[SL]$/], // valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
 	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined] // valid values: "black", "#FF0000", undefined...
@@ -305,7 +307,7 @@ opening.easing = 1;</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Config = new Model({
+<pre><code class="language-javascript">var Config = new Model({
 	local: {
 		time: {
 			format: ["12h","24h", undefined]
@@ -318,7 +320,7 @@ var model_config = Config(config); // object model</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Traversal</span>
-            <pre><code class="language-javascript">if(config.local.time.format === "12h"){ hour %= 12; }</code>
+<pre><code class="language-javascript">if(config.local.time.format === "12h"){ hour %= 12; }</code>
 <code class="language-none exception">TypeError: Cannot read property 'time' of undefined</code>
 
 <code class="language-javascript">// so to prevent this exception, we have to check this way:
@@ -344,7 +346,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var FileInfo = Model({
+<pre><code class="language-javascript">var FileInfo = Model({
 	name: String,
 	size: [Number],
 	creationDate: [Date],
@@ -381,7 +383,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = Model({
 	name: String,
 	age: [Number]
 });
@@ -393,7 +395,7 @@ var Lovers = Model({
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-            <pre><code class="language-javascript">var joe = { name: "Joe", age: 42 };
+<pre><code class="language-javascript">var joe = { name: "Joe", age: 42 };
 var ann = new Person({
 	name: joe.name + "'s wife",
 	age: joe.age - 5
@@ -411,12 +413,11 @@ var joe_and_ann = Lovers({
 
 	<section id="doc-extensions">
 		<h2>Inheritance by extensions</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify prevous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.
-		But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify prevous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.	But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = Model({
 	name: String,
 	female: Boolean
 });
@@ -428,7 +429,7 @@ var Mother = Person.extend({
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-            <pre><code class="language-javascript">var joe = new Person({ name: "Joe", female: false });
+<pre><code class="language-javascript">var joe = new Person({ name: "Joe", female: false });
 var ann = new Person({ name: "Joe's wife", female: true });
 var joanna = new Person({ name: "Joe's daughter", female: true });
 
@@ -446,8 +447,7 @@ Model.instanceOf(ann, Mother) && Model.instanceOf(ann, Person)</code>
 
 	<section id="doc-assertions">
 		<h2>Assertions for custom validation tests</h2>
-		<p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes
-			<code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add a simple assertion to get rid of them.</p>
+		<p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -466,7 +466,7 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-                <pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
+<pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
 <code class="language-none log">1</code>
 <code class="language-javascript">Integer(Math.sqrt(2));</code>
 <code class="language-none exception">TypeError: an assertion of the model is not respected: isInteger</code>
@@ -493,17 +493,16 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 	<div class="panels two">
 		<div class="panel">
 			<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Circle = Model({
+<pre><code class="language-javascript">var Circle = Model({
 	radius: Number, // public
 	_diameter: [Number], // private
 	UNIT: ["px","cm","mm"], // constant
 	_ID: [Number], // private and constant
-});
-</code></pre>
+});</code></pre>
 		</div>
 		<div class="panel">
 			<span class="legend">Instance</span>
-            <pre><code class="language-javascript">var c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
+<pre><code class="language-javascript">var c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
 c.radius = 100;
 c.UNIT = "cm";</code>
 <code class="language-none exception">TypeError: cannot redefine constant UNIT</code>
@@ -519,7 +518,7 @@ c.UNIT = "cm";</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Family = Model({
+<pre><code class="language-javascript">var Family = Model({
 	father: Father,
 	mother: Mother,
 	children: Model.Array(Person), // array of Persons
@@ -529,7 +528,7 @@ c.UNIT = "cm";</code>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-				<pre><code class="language-javascript">var joefamily = new Family({
+<pre><code class="language-javascript">var joefamily = new Family({
 	father: joe,
 	mother: ann,
 	children: [joanna, "dog"]
@@ -538,11 +537,8 @@ c.UNIT = "cm";</code>
 </pre>
 		</div>
 	</div>
-		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added through mutator methods. Mutator methods are
-			these native functions in the Array prototype that modify the array content: <code>pop</code>, <code>push</code>, <code>reverse</code>, <code>shift</code>,
-			<code>sort</code>, <code>splice</code> and <code>unshift</code>. Note that if you expand the array by storing an element at an index greater than the
-			current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated.
-			Use the <code>push</code> method instead.</p>
+		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added or modified afterwards.</p>
+		<p class="note">Note that for <a href="http://kangax.github.io/compat-table/es6/#Proxy" target="_blank">browsers which do not support ES6 proxies</a>, if you expand the array by storing an element at an index greater than the current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated. Use a mutator method like <code>push</code> or <code>splice</code> instead.</p>
 		<div class="panels two">
 			<div class="panel">
 <pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);
@@ -551,7 +547,7 @@ var Hand = Cards.extend("Joker").assert(function(cards){
 }); // array of 2 Numbers, J, Q, K or Joker</code></pre></div>
 			<div class="panel">
 <pre><code class="language-javascript">var myHand = new Hand(7, "Joker");
-myHand[2] = "K"; // will not trigger validation this way
+myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
 <code class="language-none exception">TypeError: an assertion of the model is not respected: function (cards){ return cards.length === 2; }</code></pre>
 			</div>
@@ -567,13 +563,13 @@ myHand.push("K"); // use this instead</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
+<pre><code class="language-javascript">var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
 	            .defaults(0, "+", 1)
 	            .return(Number);</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-            <pre><code class="language-javascript">var calc = new Calculator(function(a, operator, b){
+<pre><code class="language-javascript">var calc = new Calculator(function(a, operator, b){
 	return eval(a + operator + b);
 });
 
@@ -589,7 +585,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-            <pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = Model({
 	name: String,
 	age: Number
 }).defaults({
@@ -607,7 +603,7 @@ Person.prototype.greet = greetFnModel(function(otherguy){
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-            <pre><code class="language-javascript">var joe = new Person({ name: "Joe", age: 28 });
+<pre><code class="language-javascript">var joe = new Person({ name: "Joe", age: 28 });
 var ann = new Person({ name: "Ann", age: 23 });
 
 joe.sayMyName();</code>
@@ -626,62 +622,64 @@ joe.sayMyName();</code>
 
 	<hr>
 
-    <section id="api">
-        <h2>Full API</h2>
-        <dl>
-            <dt><a href="#doc-basic-model">Model</a> <code>new Model(definition)</code></dt>
-            <dd>Constructor for basic models. If a litteral object is passed, return an object model.</dd>
+	<section id="api">
+		<h2>Full API</h2>
+		<dl>
+			<dt><a href="#doc-basic-model">Model</a> <code>new Model(definition)</code></dt>
+			<dd>Constructor for basic models. If a litteral object is passed, return an object model.</dd>
 
-            <dt><a href="#doc-object-model">Model.Object</a> <code>new Model.Object(definition)</code></dt>
-            <dd>Constructor for object models</dd>
+			<dt><a href="#doc-object-model">Model.Object</a> <code>new Model.Object(definition)</code></dt>
+			<dd>Constructor for object models</dd>
 
-            <dt><a href="#doc-array-model">Model.Array</a> <code>new Model.Array(itemDefinition)</code></dt>
-            <dd>Constructor for array models</dd>
+			<dt><a href="#doc-array-model">Model.Array</a> <code>new Model.Array(itemDefinition)</code></dt>
+			<dd>Constructor for array models</dd>
 
-            <dt><a href="#doc-function-model">Model.Function</a> <code>new Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
-            <dd>Constructor for function models</dd>
+			<dt><a href="#doc-function-model">Model.Function</a> <code>new Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
+			<dd>Constructor for function models</dd>
 
-	        <dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
-            <dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
-	            For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
-        </dl>
-        <h3>Model methods and properties</h3>
-        <dl>
-            <dt>definition <code>model.definition</code></dt>
-            <dd>Returns the model definition</dd>
+			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
+			<dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
+				For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
+		</dl>
+		<h3>Model methods and properties</h3>
+		<dl>
+			<dt>definition <code>model.definition</code></dt>
+			<dd>Returns the model definition</dd>
 
-            <dt>assertions <code>model.assertions</code></dt>
-            <dd>Returns the list of model assertions</dd>
+			<dt>assertions <code>model.assertions</code></dt>
+			<dd>Returns the list of model assertions</dd>
 
-            <dt><a href="#doc-extensions">extend</a> <code>model.extend(otherDefinition1, otherDefinition2...)</code></dt>
-            <dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
+			<dt><a href="#doc-extensions">extend</a> <code>model.extend(otherDefinition1, otherDefinition2...)</code></dt>
+			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
 
-            <dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion1, assertion2...)</code></dt>
-            <dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
-        </dl>
-        <h3>Object models</h3>
-        <dl>
-            <dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
-            <dd>Merge the object passed with the model prototype to set defaults values for some model properties.</dd>
-        </dl>
-        <h3>Function models</h3>
-        <dl>
-            <dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2...)</code></dt>
-            <dd>Set a default value for function arguments.</dd>
+			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion1, assertion2...)</code></dt>
+			<dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
+		</dl>
+		<h3>Object models</h3>
+		<dl>
+			<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
+			<dd>Merge the object passed with the model prototype to set defaults values for some model properties.</dd>
+		</dl>
+		<h3>Function models</h3>
+		<dl>
+			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2...)</code></dt>
+			<dd>Set a default value for function arguments.</dd>
 
-            <dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
-            <dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>
-        </dl>
-    </section>
+			<dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
+			<dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>
+		</dl>
+	</section>
 
-    <hr>
+	<hr>
 
-    <section id="common-questions">
-        <h2>Common questions</h2>
-        <h3>How do I declare a constructor function to be called on instanciation before validating my model ?</h3>
-        <p>The easiest way is to declare this function as a property of your model constructor, then use it to instanciate your models instead of the model
-	        constructor itself:</p>
-        <pre><code class="language-javascript">var User = Model.Object({
+	<section id="common-questions">
+		<h2>Common questions</h2>
+		<h3>What is the impact on performance ?</h3>
+		<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
+
+		<h3>How do I declare a constructor function to be called on instanciation before validating my model ?</h3>
+		<p>The easiest way is to declare this function as a property of your model constructor, then use it to instanciate your models instead of the model constructor itself:</p>
+<pre><code class="language-javascript">var User = Model.Object({
     firstName: String,
     lastName: String,
     fullName: String
@@ -694,10 +692,10 @@ User.create = function(properties){
 
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 
-        <h3>How should I deal with circular references in my model definitions ?</h3>
-        <p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards.</p>
-          <pre><code class="language-javascript">var Honey = Model({
-   sweetie: [] // Sweetie is not yet defined
+		<h3>How should I deal with circular references in my model definitions ?</h3>
+		<p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards:</p>
+<pre><code class="language-javascript">var Honey = Model({
+   sweetie: undefined // Sweetie is not yet defined
 });
 
 var Sweetie = Model({
@@ -709,7 +707,7 @@ Honey.definition.sweetie = [Sweetie];
 var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
-    </section>
+	</section>
 
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>

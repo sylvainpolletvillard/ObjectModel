@@ -59,7 +59,7 @@ module.exports = function(grunt) {
 					inject: [
 						{
 							dest: 'index.html',
-							text: 'all in <u>{{= sizeText(size(src[1])) }} minified ({{= sizeText(gzipSize(src[1])) }} gzipped)</u>'
+							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified ({{= sizeText(gzipSize(src[1])) }} gzipped)</strong>'
 						},
 						{
 							dest: 'index.html',

@@ -259,7 +259,7 @@ var roger = UserInfo({ name: "Roger" }); // email is mandatory</code>
 
 	<section id="doc-multiple-types">
 		<h2>Multiple types</h2>
-		<p>Several valid types can be specified for one property, aka union types. So optional properties are actually union types between the original type and the value <code>undefined</code>. To declare an optional union type, add <code>undefined</code> to the list. If you pass an empty array, it means the property is watched for changes but can be of any type.</p>
+		<p>Several valid types can be specified for one property, aka union types. So optional properties are actually union types between the original type and the value <code>undefined</code>. To declare an optional union type, add <code>undefined</code> to the list.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -413,7 +413,7 @@ var joe_and_ann = Lovers({
 
 	<section id="doc-extensions">
 		<h2>Inheritance by extensions</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify prevous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.	But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.	But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>

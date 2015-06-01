@@ -45,8 +45,6 @@ Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 	})(obj, [])
 };
 
-Model.Any = [];
-
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }
@@ -80,9 +78,7 @@ function parseDefinition(def){
 function checkDefinition(obj, def, path, stack){
 	if(isLeaf(def)){
 		def = parseDefinition(def);
-		var l = def.length;
-		if(!l){ return; }
-		for(var i= 0; i<l; i++){
+		for(var i= 0, l=def.length; i<l; i++){
 			if(checkDefinitionPart(obj, def[i], stack)){ return; }
 		}
 		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(function(d){ return toString(d); }).join(" or ")

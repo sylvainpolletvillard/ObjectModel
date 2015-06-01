@@ -45,6 +45,8 @@ Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 	})(obj, [])
 };
 
+Model.Any = [];
+
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }

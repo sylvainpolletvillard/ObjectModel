@@ -43,7 +43,7 @@
 	</div>
 	<hr>
 	<div>
-		<a href="#doc-object-model" class="title">Documentation</a>
+		<a href="#doc-basic-model" class="title">Documentation</a>
 		<ul>
 			<li><a href="#doc-basic-model">Basic models</a></li>
 			<li><a href="#doc-object-model">Object models</a></li>
@@ -63,18 +63,17 @@
 		</ul>
 	</div>
 	<hr>
-	<p class="footer">© 2015 syllab.fr</p>
 </nav>
 
 <div id="page">
 
-	<section id="introduction">
-		<header class="header">
-			<h1>Object Model</h1>
-			<hr>
-			<p class="description">Model Definition and Runtime Type Checking for JavaScript</p>
-		</header>
+	<header class="header">
+		<h1>Object Model</h1>
+		<hr>
+		<p class="description">Model Definition and Runtime Type Checking for JavaScript</p>
+	</header>
 
+	<section id="introduction">
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Define typed models</span>
@@ -98,8 +97,13 @@
 		</div>
 
 		<h2 id="what-is-it">What is this library ?</h2>
-		<p>A recurring criticism of JavaScript is that it is a weakly typed language. New typed languages that compile to JavaScript have been invented like TypeScript from Microsoft. We also have static type checking tools like Flow from Facebook. This library is about dynamic type checking: it aims to get this type validation at runtime without requiring a new language or a compilation step.</p>
-		<p>Validate at runtime allows you to define more specific tests that can change depending on your application state. You can also control unpredictable data sources like external JS dependencies or JSON data from web services.</p>
+		<p>A recurring criticism of JavaScript is that it is a weakly typed language. The lack of strong typing is still responsible for numerous bugs in web applications. As an attempt to get rid of these issues, new typed languages that compile to JavaScript have been invented, like TypeScript from Microsoft. We also have static analysis tools like Flow from Facebook. These solutions bring static typing, which means that it only validate your code at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the right type.</p>
+
+		<p>From my own experience, static typing is insufficient to prevent most of bugs caused by type errors. This is because as part of JavaScript applications, we rely heavily on <strong>unreliable data sources</strong>:  user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their code variables that are under their control.</p>
+
+		<p>That's why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get this type validation at runtime without requiring a new language or a compilation step. Whenever a property of your model is modified, the whole model is validated against its typed definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a micro-library.</p>
+
+		<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.</p>
 
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
@@ -117,7 +121,7 @@
 			<li>Easy inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in <strong>6.8 kB minified (1.4 kB gzipped)</strong></li>
+			<li>all in <strong>7 kB minified (1.4 kB gzipped)</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -128,14 +132,19 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v0.9.0</h3>
+		<h3>Current version: v1.0.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.8 kB)</li>
-			<li><a href="dist/object-model-0.9.0.zip">object-model-0.9.0.zip</a> source files</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7 kB)</li>
+			<li><a href="dist/object-model-1.0.0.zip">object-model-1.0.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v1.0</dt>
+				<dd>added model.validate and model.test</dd>
+				<dd>moved conventions to overridable exposed functions</dd>
+				<dd>preserve object properties out of model definition at instanciation</dd>
+				<dd>aligned array models constructors with other models behaviour</dd>
 				<dt>v0.9</dt>
 				<dd>use of ECMAScript 6 proxies if available</dd>
 				<dd>performance improvements, especially on Array models</dd>
@@ -195,11 +204,12 @@
         <div class="panels two">
             <div class="panel">
                 <span class="legend">Model</span>
-<pre><code class="language-javascript">var NumberModel = Model(Number); // 'new' keyword is optional</code></pre>
+<pre><code class="language-javascript">var NumberModel = Model(Number);
+// 'new' keyword is always optional</code></pre>
             </div>
             <div class="panel">
                 <span class="legend">Instance</span>
-<pre><code class="language-javascript">var x = NumberModel("42"); // 'new' keyword is optional</code>
+<pre><code class="language-javascript">var x = NumberModel("42");</code>
 <code class="language-none exception">TypeError: expecting Number, got String "42"</code></pre>
             </div>
         </div>
@@ -315,7 +325,7 @@ opening.easing = 1;</code>
 	}
 });
 
-var config = { local: undefined }; // classic object
+var config = { local: undefined }; // object duck typed
 var model_config = Config(config); // object model</code></pre>
 			</div>
 			<div class="panel">
@@ -378,7 +388,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 	<section id="doc-composition">
 		<h2>Composition</h2>
-		<p>Models declared can also be used for type checking, allowing you to compose structures of objects. Note that the sub-models do not necessarily need to be instantiated through the model constructor to be considered valid: only the definition of the sub-model must be respected. This allows you, for example, to parse composed objects from JSON in one step.</p>
+		<p>Models declared can also be used for type checking, so you can compose structures of objects. Note that the sub-models do not necessarily need to be instantiated through the model constructor to be considered valid: only the definition of the sub-model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>. This naive approach is much more flexible and allows you, for example, to parse composed objects from JSON in one step.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -402,7 +412,7 @@ var ann = new Person({
 });
 
 var joe_and_ann = Lovers({
-   man: joe,  // classic object
+   man: joe,  // object duck typed
    woman: ann // object model
 });</code></pre>
 			</div>
@@ -488,28 +498,30 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 		<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which
 			should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making
 			<i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
-	</section>
 
-	<div class="panels two">
-		<div class="panel">
-			<span class="legend">Model</span>
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
 <pre><code class="language-javascript">var Circle = Model({
 	radius: Number, // public
 	_diameter: [Number], // private
 	UNIT: ["px","cm","mm"], // constant
 	_ID: [Number], // private and constant
 });</code></pre>
-		</div>
-		<div class="panel">
-			<span class="legend">Instance</span>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
 <pre><code class="language-javascript">var c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
 c.radius = 100;
 c.UNIT = "cm";</code>
 <code class="language-none exception">TypeError: cannot redefine constant UNIT</code>
 <code class="language-javascript">Object.keys(c); // private variables are not enumerated</code>
 <code class="language-none log">["radius", "UNIT"]</code></pre>
+			</div>
 		</div>
-	</div>
+
+		<p>You can modify or remove these conventions by overriding <code>Model.conventionForPrivate</code> and <code>Model.conventionForConstant</code> functions.</p>
+	</section>
 	<hr>
 
 	<section id="doc-array-model">
@@ -533,7 +545,7 @@ c.UNIT = "cm";</code>
 	mother: ann,
 	children: [joanna, "dog"]
 });</code>
-<code class="language-none exception">TypeError: expecting children to be Model.Array({	name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
+<code class="language-none exception">TypeError: expecting children to be Model.Array({ name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
 </pre>
 		</div>
 	</div>
@@ -546,7 +558,7 @@ var Hand = Cards.extend("Joker").assert(function(cards){
 	return cards.length === 2;
 }); // array of 2 Numbers, J, Q, K or Joker</code></pre></div>
 			<div class="panel">
-<pre><code class="language-javascript">var myHand = new Hand(7, "Joker");
+<pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
 <code class="language-none exception">TypeError: an assertion of the model is not respected: function (cards){ return cards.length === 2; }</code></pre>
@@ -640,6 +652,12 @@ joe.sayMyName();</code>
 			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
 			<dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
 				For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
+
+			<dt><a href="#doc-private-and-constants">Model.conventionForConstant</a> <code>function(variableName)</code></dt>
+			<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit your needs.</dd>
+
+			<dt><a href="#doc-private-and-constants">Model.conventionForPrivate</a> <code>function(variableName)</code></dt>
+			<dd>Internal function used to identify a non-enumerable property based on naming convention. You can override it to suit your needs.</dd>
 		</dl>
 		<h3>Model methods and properties</h3>
 		<dl>
@@ -654,6 +672,12 @@ joe.sayMyName();</code>
 
 			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion1, assertion2...)</code></dt>
 			<dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
+
+			<dt>validate <code>model.validate(object)</code></dt>
+			<dd>Manually trigger the validation of an object over the model definition. It is automatically done whenever a property in the model definition is changed.</dd>
+
+			<dt><a href="#doc-composition">test</a> <code>model.test(object)</code></dt>
+			<dd>Returns <code>true</code> if the object passed validates the model definition, without necessarily being instantiated through the model constructor (a.k.a. duck-typing).</dd>
 		</dl>
 		<h3>Object models</h3>
 		<dl>
@@ -707,6 +731,26 @@ Honey.definition.sweetie = [Sweetie];
 var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
+
+		<h3>I use an object like a map with any number of key-value pairs. How can I check the type of all values ?</h3>
+		<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
+<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
+	var valueModel = Model(valueType);
+	return Model({}).assert(function checkValueTypes(map){
+		return Object.keys(map).every(function(key){
+			return valueModel.test(map[key]);
+		});
+	});
+}
+
+var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])/(3[01]|[12][0-9]|0[1-9])/[0-9]{4}$/;
+var BirthdayList = Model.ObjectMap([Date, REGEX_MMDDYYYY]);
+var friendsBirthday = BirthdayList({
+	"Joe": new Date(1985,6,3),
+	"Jim": "02/22/1987",
+	"Jack": null
+});</code>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: checkValueTypes</code></pre>
 	</section>
 
 	<section>

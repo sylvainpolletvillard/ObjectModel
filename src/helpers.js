@@ -69,9 +69,10 @@ function ensureProto(o, p){
 	}
 }
 
-function setProto(model, proto){
-    model.prototype = proto;
-    model.prototype.constructor = model;
+function setProto(constructor, proto, protoConstructor){
+	constructor.prototype = Object.create(proto);
+	constructor.prototype.constructor = protoConstructor || constructor;
+	ensureProto(constructor.prototype, proto);
 }
 
 function setConstructor(model, constructor){

@@ -35,15 +35,14 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Object.create(Array.prototype));
-	setConstructor(model, ArrayModel);
+	setProto(model, Array.prototype);
+	setConstructor(model, Model.Array);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 };
 
-Model.Array.prototype = Object.create(Model.prototype);
-Model.Array.prototype.constructor = Model;
+setProto(Model.Array, Model.prototype, Model);
 
 Model.Array.prototype.validate = function(arr){
 	if(!isArray(arr)){

@@ -12,7 +12,7 @@ function Model(def){
 	return model;
 }
 
-setProto(Model, Object.create(Function.prototype));
+setProto(Model, Function.prototype);
 
 Model.prototype.toString = function(stack){
 	return toString(this.definition, stack);
@@ -30,8 +30,7 @@ Model.prototype.test = function(obj, stack){
 
 Model.prototype.extend = function(){
 	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
-	setProto(submodel, Object.create(this.prototype));
-	ensureProto(submodel.prototype, this.prototype);
+	setProto(submodel, this.prototype);
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
 };

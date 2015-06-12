@@ -22,15 +22,14 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
-	setProto(model, Object.create(Function.prototype));
-	setConstructor(model, FunctionModel);
+	setProto(model, Function.prototype);
+	setConstructor(model, Model.Function);
 	model.definition = { arguments: cloneArray(arguments) };
 	model.assertions = [];
 	return model;
 };
 
-setProto(Model.Function, Object.create(Model.prototype));
-Model.Function.constructor.prototype = Model;
+setProto(Model.Function, Model.prototype, Model);
 
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){

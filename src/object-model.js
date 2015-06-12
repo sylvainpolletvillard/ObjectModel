@@ -11,14 +11,13 @@ Model.Object = function ObjectModel(def){
 		return proxy;
 	};
 
-	setConstructor(model, ObjectModel);
+	setConstructor(model, Model.Object);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 };
 
-Model.Object.prototype = Object.create(Model.prototype);
-Model.Object.prototype.constructor = Model;
+setProto(Model.Object, Model.prototype, Model);
 
 Model.Object.prototype.defaults = function(p){
 	merge(this.prototype, p);

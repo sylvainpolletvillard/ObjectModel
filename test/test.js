@@ -1,6 +1,6 @@
 function testSuite(Model){
 
-	QUnit.test( "basic models", function( assert ) {
+	QUnit.test( "Basic models", function( assert ) {
 
 		assert.ok(Model instanceof Function);
 
@@ -12,6 +12,8 @@ function testSuite(Model){
 
 		assert.ok(typeof NumberModel.extend === "function", "test model method extend");
 		assert.ok(typeof NumberModel.assert === "function", "test model method assert");
+		assert.ok(typeof NumberModel.test === "function", "test model method test");
+		assert.ok(typeof NumberModel.validate === "function", "test model method validate");
 		assert.ok(NumberModel.definition === Number, "test model prop definition");
 		assert.ok(typeof NumberModel.assertions === "object", "test model prop assertions");
 
@@ -25,6 +27,12 @@ function testSuite(Model){
 		myModel(new Date());
 		assert.throws(function(){ myModel() }, /TypeError/, "test undefined value");
 		assert.throws(function(){ myModel(0) }, /TypeError/, "test invalid type");
+
+		assert.ok(myModel.test("666"), "model.test 1/2");
+		assert.notOk(myModel.test(666), "model.test 2/2");
+
+		myModel.validate("666");
+		assert.throws(function(){ myModel.validate(666) }, /TypeError/, "test undefined value");
 
 	});
 
@@ -88,9 +96,24 @@ function testSuite(Model){
 				&& /null/.test(err.toString())
 		});
 
+		joe = Person({
+			name: "Joe",
+			age: 42,
+			birth: new Date(1990,3,25),
+			female: false,
+			address: {
+				work: {
+					city: "Lille"
+				}
+			},
+			job: "Taxi"
+		});
+
+		assert.strictEqual(joe.job, "Taxi", "Properties out of model definition are kept but are not validated");
+
 	});
 
-	QUnit.test("optional and multiple parameters", function(assert){
+	QUnit.test("Optional and multiple parameters", function(assert){
 		var Person = Model({
 			name: [String],
 			age: [Number, Date, String, Boolean, undefined],
@@ -124,7 +147,7 @@ function testSuite(Model){
 		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
 	});
 
-	QUnit.test("fixed values", function(assert){
+	QUnit.test("Fixed values", function(assert){
 		var myModel = Model({
 			a: [1,2,3],
 			b: 42,
@@ -163,7 +186,7 @@ function testSuite(Model){
 		var a, b, c, d;
 
 		assert.ok(Model.instanceOf(Arr, Model.Array) && Arr instanceof Function);
-		a = Arr();
+		a = Arr([]);
 		assert.ok(Model.instanceOf(a, Arr) && a instanceof Array);
 
 		a.push(1);
@@ -174,15 +197,15 @@ function testSuite(Model){
 		assert.throws(function(){ a.splice(1,0,7,'oups',9); }, /TypeError/, "splice");
 		assert.equal(a.length, 4);
 
-		b = Arr(1,2,3);
+		b = Arr([1,2,3]);
 		assert.equal(b.length, 3);
 
 		assert.throws(function(){
-			c = Arr(1,false,3);
+			c = Arr([1,false,3]);
 		}, /TypeError/);
 
 		assert.throws(function(){
-			d = Arr(1,2,3,function(){});
+			d = Arr([1,2,3,function(){}]);
 		}, /TypeError/);
 
 
@@ -192,7 +215,7 @@ function testSuite(Model){
 
 
 		Arr = Model.Array([Question,String,Boolean]);
-		a = Arr("test");
+		a = Arr(["test"]);
 		a.unshift(true);
 		a.push(Question({ answer: 42 }));
 		//a.push({ answer: 43 });
@@ -200,21 +223,21 @@ function testSuite(Model){
 		assert.throws(function(){a[0] = null; }, /TypeError/, "set index multiple types");
 
 		Arr = Model.Array([true,2,"3"]);
-		assert.throws(function(){ a = Arr("3",2,true,1); }, /TypeError[\s\S]*Array\[3]/, "Model.Array fixed values");
+		assert.throws(function(){ a = Arr(["3",2,true,1]); }, /TypeError[\s\S]*Array\[3]/, "Model.Array fixed values");
 
 		var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
 		var Hand = Cards.extend().assert(function(cards){
 			return cards.length === 2;
 		});
-		var pokerHand = new Hand("K",10);
+		var pokerHand = new Hand(["K",10]);
 
 		assert.ok(Object.getPrototypeOf(Hand.prototype) === Cards.prototype, "extension respect prototypal chain");
 		assert.ok(Model.instanceOf(pokerHand, Hand) && Model.instanceOf(pokerHand, Cards), "array model inheritance");
-		Cards("K",10).push(7);
-		assert.throws(function(){ Hand("K",10).push(7); }, /TypeError/, "min/max of inherit array model");
+		Cards(["K",10]).push(7);
+		assert.throws(function(){ Hand(["K",10]).push(7); }, /TypeError/, "min/max of inherit array model");
 
 		var CheaterHand = Cards.extend("joker");
-		CheaterHand("K",10,"joker");
+		CheaterHand(["K",10,"joker"]);
 		assert.throws(function(){ Hand("K",10, "joker"); }, /TypeError/, "array model type extension");
 
 
@@ -507,15 +530,25 @@ function testSuite(Model){
 		assert.ok(Model.instanceOf(joefamily.father, Person), "father instanceof Person");
 		assert.ok(Model.instanceOf(joefamily.mother, Person), "mother instanceof Person");
 
+		var duckmother = {
+			female: true,
+			age: joe.age - 5,
+			name: joe.name+"'s wife"
+		};
+
 		var joefamily = new Family({
 			father: joe,
-			mother: {
-				female: true,
-				age: joe.age - 5,
-				name: joe.name+"'s wife"
-			},
+			mother: duckmother,
 			children: []
 		});
+
+		assert.ok(Person.test(duckmother), "Duck typing for object properties 1/2");
+		assert.notOk(Model.instanceOf(duckmother, Person), "Duck typing for object properties 2/2");
+
+		joefamily.mother.name = "Daisy";
+		assert.throws(function(){
+			joefamily.mother.female = "Quack !";
+		}, /TypeError[\s\S]*female/, "validation of submodel duck typed at modification");
 
 		assert.throws(function(){
 			var joefamily = new Family({
@@ -527,7 +560,7 @@ function testSuite(Model){
 				},
 				children: []
 			});
-		}, /TypeError[\s\S]*mother/, "validation of submodel");
+		}, /TypeError[\s\S]*female/, "validation of submodel duck typed at instanciation");
 
 	});
 
@@ -567,7 +600,7 @@ function testSuite(Model){
 		assert.throws(function(){ PrimeNumber(7.77); }, /TypeError[\s\S]*isInteger/, "test multiple assertions 2");
 
 		var ArrayMax3 = Model.Array(Number).assert(function maxRange(arr){ return arr.length <= 3; });
-		var arr = ArrayMax3(1,2);
+		var arr = ArrayMax3([1,2]);
 		arr.push(3);
 		assert.throws(function(){ arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
 
@@ -575,7 +608,7 @@ function testSuite(Model){
 			return arr.reduce(function(a,b){ return a+b; },0) <= 10;
 		});
 
-		arr = ArraySumMax10(2,3,4);
+		arr = ArraySumMax10([2,3,4]);
 		assert.throws(function(){ arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
 
 		var NestedModel = Model.Object({ foo: { bar: { baz: Boolean }}}).assert(function(o){

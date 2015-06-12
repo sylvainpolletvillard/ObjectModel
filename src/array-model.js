@@ -2,9 +2,9 @@ var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice"
 
 Model.Array = function ArrayModel(def){
 
-	var model = function() {
+	var model = function(array) {
 
-		var array = cloneArray(arguments), proxy;
+		var proxy;
 		model.validate(array);
 		if(isProxySupported){
 			proxy = new Proxy(array, {

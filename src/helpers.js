@@ -5,9 +5,7 @@ function isObject(o){
     return typeof o === "object";
 }
 
-var isArray = Array.isArray || function(a){
-	return a instanceof Array
-};
+var isArray = function(a){	return a instanceof Array; };
 
 function toString(obj, stack){
 	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }

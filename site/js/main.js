@@ -4,12 +4,11 @@ $(document).ready(function(){
 		$(document.body).toggleClass("menu-opened");
 	});
 
-	var sections = [],
+	var $sections = [],
 		$links = $("#menu a[href^='#']");
 
 	$links.each(function(){
-		var id = this.getAttribute("href").slice(1);
-		sections.push({ id: id, pos: $("#"+id).offset().top+1 });
+		$sections.push($(this.getAttribute("href")));
 	});
 
 	$links.on("focus", function(){
@@ -29,12 +28,12 @@ $(document).ready(function(){
 	$(document).scroll(function(){
 		var i,
 			delta,
-			nearest = { id: sections[0].id, delta: Infinity },
+			nearest = { id: $sections[0].attr("id"), delta: Infinity },
 			pos = $(this).scrollTop() + $(window).height() / 6;
-		for(i=0; i<sections.length; i++){
-			delta = Math.abs(pos - sections[i].pos);
+		for(i=0; i<$sections.length; i++){
+			delta = Math.abs(pos - $sections[i].offset().top);
 			if(delta < nearest.delta){
-				nearest.id = sections[i].id;
+				nearest.id = $sections[i].attr("id");
 				nearest.delta = delta;
 			}
 		}

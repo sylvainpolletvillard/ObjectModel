@@ -11,9 +11,7 @@ function isObject(o){
     return typeof o === "object";
 }
 
-var isArray = Array.isArray || function(a){
-	return a instanceof Array
-};
+var isArray = function(a){	return a instanceof Array; };
 
 function toString(obj, stack){
 	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
@@ -92,7 +90,7 @@ function Model(def){
 	if(!isLeaf(def)) return Model.Object(def);
 
 	var model = function(obj) {
-		model.validate(obj, []);
+		model.validate(obj);
 		return obj;
 	};
 
@@ -109,7 +107,7 @@ Model.prototype.toString = function(stack){
 };
 
 Model.prototype.validate = function(obj, stack){
-	checkDefinition(obj, this.definition, undefined, stack);
+	checkDefinition(obj, this.definition, undefined, stack || []);
 	matchAssertions(obj, this.assertions);
 };
 
@@ -126,6 +124,11 @@ Model.prototype.assert = function(){
 	return this;
 };
 
+Model.prototype.test = function(obj, stack){
+	try { this.validate(obj, stack); return true; }
+	catch(e){ return false; }
+};
+
 Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
 		if(o == null || stack.indexOf(o) !== -1) return false;
@@ -134,6 +137,9 @@ Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 		return proto === Constructor.prototype || recursive(proto, stack);
 	})(obj, [])
 };
+
+Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
+Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
@@ -168,9 +174,7 @@ function parseDefinition(def){
 function checkDefinition(obj, def, path, stack){
 	if(isLeaf(def)){
 		def = parseDefinition(def);
-		var l = def.length;
-		if(!l){ return; }
-		for(var i= 0; i<l; i++){
+		for(var i= 0, l=def.length; i<l; i++){
 			if(checkDefinitionPart(obj, def[i], stack)){ return; }
 		}
 		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(function(d){ return toString(d); }).join(" or ")
@@ -192,12 +196,12 @@ function checkDefinitionPart(obj, def, stack){
 		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation
 		}
-		try { def.validate(obj, stack.concat(def)); return true; }
-		catch(e){ return false; }
+		return def.test(obj, stack.concat(def));
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);
 	}
+
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
 		|| obj.constructor === def;
@@ -218,7 +222,7 @@ Model.Object = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-		model.validate(proxy, []);
+		model.validate(proxy);
 		ensureProto(proxy, model.prototype);
 		return proxy;
 	};
@@ -238,60 +242,30 @@ Model.Object.prototype.defaults = function(p){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(Model.instanceOf(defNode, Model.Function)){
+	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
 	}
-	/* // perf improvement is not worth it for object models at the moment
-	else if(isProxySupported) {
-		return new Proxy(obj || {}, {
-			get: function (o, key) {
-				var newPath = (path ? path + '.' + key : key);
-				return getProxy(model, o[key], defNode[key], newPath);
-			},
-			set: function (o, key, val) {
-				var newPath = (path ? path + '.' + key : key);
-				var isWritable = (key.toUpperCase() != key);
-				if (!isWritable && o[key] !== undefined) {
-					throw new TypeError("cannot redefine constant " + key);
-				}
-				var newProxy = getProxy(model, val, defNode[key], newPath);
-				checkDefinition(newProxy, defNode[key], newPath, []);
-				var oldValue = o[key];
-				o[key] = newProxy;
-				try {
-					matchAssertions(o, model.assertions);
-				}
-				catch (e) {
-					o[key] = oldValue;
-					throw e;
-				}
-			},
-			enumerate: function (o) {
-				return Object.keys(o).filter(function (key) {
-					return !(key in defNode && key[0] === "_");
-				})[Symbol.iterator]();
-			},
-			ownKeys: function (o) {
-				return Object.keys(o).filter(function (key) {
-					return !(key in defNode && key[0] === "_");
-				});
-			}
-		});
-	} */
 	else {
 		var wrapper = obj instanceof Object ? obj : {};
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+
+		for(var key in wrapper){
+			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
+				proxy[key] = wrapper[key]; // properties out of model definition are kept
+			}
+		}
+
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
-			var isWritable = (key.toUpperCase() != key);
+			var isConstant = Model.conventionForConstant(key);
 			Object.defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
 				set: function (val) {
-					if(!isWritable && wrapper[key] !== undefined){
+					if(isConstant && wrapper[key] !== undefined){
 						throw new TypeError("cannot redefine constant " + key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
@@ -301,7 +275,7 @@ function getProxy(model, obj, defNode, path) {
 					try { matchAssertions(obj, model.assertions); }
 					catch(e){ wrapper[key] = oldValue; throw e; }
 				},
-				enumerable: (key[0] !== "_")
+				enumerable: !Model.conventionForPrivate(key)
 			});
 		});
 		return proxy;
@@ -311,9 +285,9 @@ var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice"
 
 Model.Array = function ArrayModel(def){
 
-	var model = function() {
+	var model = function(array) {
 
-		var array = cloneArray(arguments), proxy;
+		var proxy;
 		model.validate(array);
 		if(isProxySupported){
 			proxy = new Proxy(array, {

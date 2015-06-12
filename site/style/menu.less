@@ -120,7 +120,7 @@ body.menu-opened .lines-button.arrow .lines{
 #menu {
 	position: fixed;
 	margin: 0;
-	padding: @menu-button-size*2 0 0 0;
+	padding: @menu-button-size*1.6 0 0 0;
 	height: 100%;
 	background: @bg-secondary;
 	box-shadow: 0 0 15px #ccc;
@@ -132,6 +132,7 @@ body.menu-opened .lines-button.arrow .lines{
 	width: @menuWidth;
 	.transition(left @menu-transition ease);
 	text-align: left;
+	.hardware-accelerated();
 
 	a {
 		padding: .25em 0 .25em 1em;
@@ -195,7 +196,7 @@ body.menu-opened .lines-button.arrow .lines{
 			a {
 				display: block;
 				padding-left: 2em;
-				line-height: 1.2em;
+				line-height: 1.1em;
 
 				&.active::before {
 					content: "→";
@@ -207,12 +208,6 @@ body.menu-opened .lines-button.arrow .lines{
 		}
 
 	}
-
-  .footer {
-    color: gray;
-    font-size: 0.8em;
-    text-align: center;
-  }
 
 }
 

@@ -1,5 +1,11 @@
 .hidden { display: none; visibility: hidden; }
 
+.hardware-accelerated() {
+	-moz-transform: translate3d(0,0,0);
+	-webkit-transform: translate3d(0,0,0);
+	transform: translate3d(0,0,0);
+}
+
 .border-radius ( @radius: 5px ) {
   -webkit-border-radius: @radius;
   -moz-border-radius: @radius;

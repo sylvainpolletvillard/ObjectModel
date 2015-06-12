@@ -670,6 +670,9 @@ dt code {
   color: #666;
   letter-spacing: -0.02em;
 }
+section p {
+  text-align: justify;
+}
 section > h2 {
   font-size: 1.5em;
   font-weight: bolder;
@@ -941,7 +944,7 @@ body.menu-opened .lines-button.arrow .lines:after {
 #menu {
   position: fixed;
   margin: 0;
-  padding: 72px 0 0 0;
+  padding: 57.6px 0 0 0;
   height: 100%;
   background: #f0f0f0;
   box-shadow: 0 0 15px #ccc;
@@ -959,6 +962,9 @@ body.menu-opened .lines-button.arrow .lines:after {
   -o-transition: left 0.4s ease;
   transition: left 0.4s ease;
   text-align: left;
+  -moz-transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 #menu a {
   padding: .25em 0 .25em 1em;
@@ -1019,18 +1025,13 @@ body.menu-opened .lines-button.arrow .lines:after {
 #menu ul li a {
   display: block;
   padding-left: 2em;
-  line-height: 1.2em;
+  line-height: 1.1em;
 }
 #menu ul li a.active::before {
   content: "→";
   width: 1.5em;
   display: inline-block;
   margin-left: -1.5em;
-}
-#menu .footer {
-  color: gray;
-  font-size: 0.8em;
-  text-align: center;
 }
 body.menu-opened {
   left: 300px;

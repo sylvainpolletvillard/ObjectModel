@@ -6,7 +6,7 @@ Model.Object = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-		model.validate(proxy, []);
+		model.validate(proxy);
 		ensureProto(proxy, model.prototype);
 		return proxy;
 	};
@@ -26,60 +26,30 @@ Model.Object.prototype.defaults = function(p){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(Model.instanceOf(defNode, Model.Function)){
+	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
 	}
-	/* // perf improvement is not worth it for object models at the moment
-	else if(isProxySupported) {
-		return new Proxy(obj || {}, {
-			get: function (o, key) {
-				var newPath = (path ? path + '.' + key : key);
-				return getProxy(model, o[key], defNode[key], newPath);
-			},
-			set: function (o, key, val) {
-				var newPath = (path ? path + '.' + key : key);
-				var isWritable = (key.toUpperCase() != key);
-				if (!isWritable && o[key] !== undefined) {
-					throw new TypeError("cannot redefine constant " + key);
-				}
-				var newProxy = getProxy(model, val, defNode[key], newPath);
-				checkDefinition(newProxy, defNode[key], newPath, []);
-				var oldValue = o[key];
-				o[key] = newProxy;
-				try {
-					matchAssertions(o, model.assertions);
-				}
-				catch (e) {
-					o[key] = oldValue;
-					throw e;
-				}
-			},
-			enumerate: function (o) {
-				return Object.keys(o).filter(function (key) {
-					return !(key in defNode && key[0] === "_");
-				})[Symbol.iterator]();
-			},
-			ownKeys: function (o) {
-				return Object.keys(o).filter(function (key) {
-					return !(key in defNode && key[0] === "_");
-				});
-			}
-		});
-	} */
 	else {
 		var wrapper = obj instanceof Object ? obj : {};
 		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+
+		for(var key in wrapper){
+			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
+				proxy[key] = wrapper[key]; // properties out of model definition are kept
+			}
+		}
+
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
-			var isWritable = (key.toUpperCase() != key);
+			var isConstant = Model.conventionForConstant(key);
 			Object.defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
 				set: function (val) {
-					if(!isWritable && wrapper[key] !== undefined){
+					if(isConstant && wrapper[key] !== undefined){
 						throw new TypeError("cannot redefine constant " + key);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
@@ -89,7 +59,7 @@ function getProxy(model, obj, defNode, path) {
 					try { matchAssertions(obj, model.assertions); }
 					catch(e){ wrapper[key] = oldValue; throw e; }
 				},
-				enumerable: (key[0] !== "_")
+				enumerable: !Model.conventionForPrivate(key)
 			});
 		});
 		return proxy;

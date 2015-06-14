@@ -75,9 +75,10 @@ function ensureProto(o, p){
 	}
 }
 
-function setProto(model, proto){
-    model.prototype = proto;
-    model.prototype.constructor = model;
+function setProto(constructor, proto, protoConstructor){
+	constructor.prototype = Object.create(proto);
+	constructor.prototype.constructor = protoConstructor || constructor;
+	ensureProto(constructor.prototype, proto);
 }
 
 function setConstructor(model, constructor){
@@ -100,7 +101,7 @@ function Model(def){
 	return model;
 }
 
-setProto(Model, Object.create(Function.prototype));
+setProto(Model, Function.prototype);
 
 Model.prototype.toString = function(stack){
 	return toString(this.definition, stack);
@@ -111,10 +112,14 @@ Model.prototype.validate = function(obj, stack){
 	matchAssertions(obj, this.assertions);
 };
 
+Model.prototype.test = function(obj, stack){
+	try { this.validate(obj, stack); return true; }
+	catch(e){ return false; }
+};
+
 Model.prototype.extend = function(){
 	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
-	setProto(submodel, Object.create(this.prototype));
-	ensureProto(submodel.prototype, this.prototype);
+	setProto(submodel, this.prototype);
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
 };
@@ -122,11 +127,6 @@ Model.prototype.extend = function(){
 Model.prototype.assert = function(){
 	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
 	return this;
-};
-
-Model.prototype.test = function(obj, stack){
-	try { this.validate(obj, stack); return true; }
-	catch(e){ return false; }
 };
 
 Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
@@ -227,14 +227,13 @@ Model.Object = function ObjectModel(def){
 		return proxy;
 	};
 
-	setConstructor(model, ObjectModel);
+	setConstructor(model, Model.Object);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 };
 
-Model.Object.prototype = Object.create(Model.prototype);
-Model.Object.prototype.constructor = Model;
+setProto(Model.Object, Model.prototype, Model);
 
 Model.Object.prototype.defaults = function(p){
 	merge(this.prototype, p);
@@ -318,15 +317,14 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Object.create(Array.prototype));
-	setConstructor(model, ArrayModel);
+	setProto(model, Array.prototype);
+	setConstructor(model, Model.Array);
 	model.definition = def;
 	model.assertions = [];
 	return model;
 };
 
-Model.Array.prototype = Object.create(Model.prototype);
-Model.Array.prototype.constructor = Model;
+setProto(Model.Array, Model.prototype, Model);
 
 Model.Array.prototype.validate = function(arr){
 	if(!isArray(arr)){
@@ -402,15 +400,14 @@ Model.Function = function FunctionModel(){
 		return proxyFn;
 	};
 
-	setProto(model, Object.create(Function.prototype));
-	setConstructor(model, FunctionModel);
+	setProto(model, Function.prototype);
+	setConstructor(model, Model.Function);
 	model.definition = { arguments: cloneArray(arguments) };
 	model.assertions = [];
 	return model;
 };
 
-setProto(Model.Function, Object.create(Model.prototype));
-Model.Function.constructor.prototype = Model;
+setProto(Model.Function, Model.prototype, Model);
 
 Model.Function.prototype.validate = function (f) {
 	if(!isFunction(f)){

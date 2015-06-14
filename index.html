@@ -121,11 +121,11 @@
 			<li>Easy inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in <strong>7 kB minified (1.4 kB gzipped)</strong></li>
+			<li>all in <strong>6.9 kB minified (1.4 kB gzipped)</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library is <a href="test">unit tested</a> with latest versions of Chrome, Firefox and Internet Explorer. It should work on any browser implementing ECMAScript 5 specifications.</p>
+		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome and Firefox, on Internet Explorer 9/10/11, on Opera 20, Safari 5.1 and preview version of Microsoft Edge. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
 	</section>
 
 	<hr>
@@ -134,7 +134,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v1.0.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7 kB)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.9 kB)</li>
 			<li><a href="dist/object-model-1.0.0.zip">object-model-1.0.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -199,7 +199,7 @@
 
     <section id="doc-basic-model">
         <h2>Basic models</h2>
-        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as argument a <i>model definition</i>, and returns a <i>model constructor</i>. Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
+        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as an argument a <i>model definition</i>, and returns a <i>model constructor</i>. Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
 
         <div class="panels two">
             <div class="panel">
@@ -554,14 +554,14 @@ c.UNIT = "cm";</code>
 		<div class="panels two">
 			<div class="panel">
 <pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);
-var Hand = Cards.extend("Joker").assert(function(cards){
+var Hand = Cards.extend("Joker").assert(function hasTwoCards(cards){
 	return cards.length === 2;
 }); // array of 2 Numbers, J, Q, K or Joker</code></pre></div>
 			<div class="panel">
 <pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: function (cards){ return cards.length === 2; }</code></pre>
+<code class="language-none exception">TypeError: an assertion of the model is not respected: hasTwoCards</code></pre>
 			</div>
 		</div>
 	</section>
@@ -592,19 +592,20 @@ calc(3, "+"); // use default value for 3rd argument</code>
 			</div>
 		</div>
 
-		<p>In Object Oriented Programming, we often use model methods that are common to all instances. You can define these methods in the model prototype as you would do with classic JavaScript OOP programming. You can also use the <code>defaults</code> method of the object model that sets the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>.</p>
+		<p>To declare methods with classical JavaScript OOP programming, functions are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method of the object model to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
 
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
 <pre><code class="language-javascript">var Person = Model({
 	name: String,
-	age: Number
-}).defaults({
+	age: Number,
 	// function without arguments returning a String
-	sayMyName: Model.Function().return(String)(function(){
+	sayMyName: Model.Function().return(String)
+}).defaults({
+	sayMyName: function(){
 		return "my name is " + this.name;
-	})
+	}
 });
 
 // takes one argument of type Person, returns a String
@@ -625,7 +626,8 @@ joe.sayMyName();</code>
 <code class="language-javascript">joe.greet("dog");</code>
 <code class="language-none exception">TypeError: expecting arguments[0] to be {
 	name: String,
-	age: Number
+	age: Number,
+	sayMyName: Model.Function().return(String)
 }, got String "dog"</code></pre>
 			</div>
 		</div>
@@ -637,16 +639,16 @@ joe.sayMyName();</code>
 	<section id="api">
 		<h2>Full API</h2>
 		<dl>
-			<dt><a href="#doc-basic-model">Model</a> <code>new Model(definition)</code></dt>
+			<dt><a href="#doc-basic-model">Model</a> <code>Model(definition)</code></dt>
 			<dd>Constructor for basic models. If a litteral object is passed, return an object model.</dd>
 
-			<dt><a href="#doc-object-model">Model.Object</a> <code>new Model.Object(definition)</code></dt>
+			<dt><a href="#doc-object-model">Model.Object</a> <code>Model.Object(definition)</code></dt>
 			<dd>Constructor for object models</dd>
 
-			<dt><a href="#doc-array-model">Model.Array</a> <code>new Model.Array(itemDefinition)</code></dt>
+			<dt><a href="#doc-array-model">Model.Array</a> <code>Model.Array(itemDefinition)</code></dt>
 			<dd>Constructor for array models</dd>
 
-			<dt><a href="#doc-function-model">Model.Function</a> <code>new Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
+			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
 			<dd>Constructor for function models</dd>
 
 			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
@@ -732,7 +734,7 @@ var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
 
-		<h3>I use an object like a map with any number of key-value pairs. How can I check the type of all values ?</h3>
+		<h3>I use an object like a map with a number of key-value pairs. How do I check the type of all the values ?</h3>
 		<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
 <pre><code class="language-javascript">Model.ObjectMap = function(valueType){
 	var valueModel = Model(valueType);

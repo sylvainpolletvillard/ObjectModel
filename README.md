@@ -19,5 +19,5 @@ grunt
 
 Bug reports and pull requests are welcome
 
-[1]:http://syllab.fr/projets/web/ObjectModel/
+[1]:http://objectmodel.js.org
 [Grunt]:http://gruntjs.com/getting-started

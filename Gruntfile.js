@@ -56,10 +56,11 @@ module.exports = function(grunt) {
 			dist: {
 				src: ['dist/object-model.js','dist/object-model.min.js'],
 				options: {
+					stdout: false,
 					inject: [
 						{
 							dest: 'index.html',
-							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified ({{= sizeText(gzipSize(src[1])) }} gzipped)</strong>'
+							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified</strong>'
 						},
 						{
 							dest: 'index.html',

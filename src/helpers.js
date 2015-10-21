@@ -35,23 +35,17 @@ function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
-function merge(base, ext, replace){
-	if(ext instanceof Object){
-		for(var p in ext){
-			if(ext.hasOwnProperty(p)){
-				if(base.hasOwnProperty(p)){
-					if(base[p] instanceof Object){
-						merge(base[p], ext[p], replace);
-					} else if(replace){
-						base[p] = ext[p];
-					}
-				} else {
-					base[p] = ext[p];
-				}
-			}
+function merge(target, src, deep) {
+	Object.keys(src || {}).forEach(function(key){
+		if(deep && bettertypeof(src[key]) === "Object"){
+			var o = {};
+			merge(o, target[key], deep);
+			merge(o, src[key], deep);
+			target[key] = o;
+		} else {
+			target[key] = src[key]
 		}
-	}
-	return base
+	});
 }
 
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;

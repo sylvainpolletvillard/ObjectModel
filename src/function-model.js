@@ -4,7 +4,9 @@ Model.Function = function FunctionModel(){
 
 		var def = model.definition;
 		var proxyFn = function () {
-			var args = merge(cloneArray(arguments), def.defaults);
+			var args = [];
+			merge(args, def.defaults);
+			merge(args, cloneArray(arguments));
 			if (args.length !== def.arguments.length) {
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}

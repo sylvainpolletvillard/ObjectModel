@@ -7,7 +7,7 @@ Runtime Type Checking and Data Model Definition for JavaScript
 
 ##Documentation, examples, questions
 
-Please refer to the [project website] [1]
+Please refer to the project website: [objectmodel.js.org] [1]
 
 ##Fork, build, test
 

@@ -1,6 +1,7 @@
 {
 	"name": "ObjectModel",
 	"version": "1.0.0",
+	"description": "Runtime Type Checking and Data Model Definition for JavaScript",
 	"author": "Sylvain Pollet-Villard",
 	"license": "MIT",
 	"homepage": "http://objectmodel.js.org",
@@ -19,5 +20,6 @@
 		"grunt-contrib-watch": "~0.6.1",
 		"grunt-file-info": "1.0.7",
 		"grunt-regex-replace": "~0.2.6"
-	}
+	},
+	"keywords": [ "typed", "types", "typing", "dynamic", "strong", "model", "definition", "object", "assertion", "inheritance", "composition", "structures", "proxy"]
 }

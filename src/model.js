@@ -29,7 +29,18 @@ Model.prototype.test = function(obj, stack){
 };
 
 Model.prototype.extend = function(){
-	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
+	var def, args = cloneArray(arguments);
+	if(Model.instanceOf(this, Model.Object)){
+		def = {};
+		merge(def, this.definition);
+		args.forEach(function(arg){
+			merge(def, Model.instanceOf(arg, Model) ? arg.definition : arg, true)
+		})
+	} else {
+		def = args.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(this.definition))
+			      .filter(function(value, index, self) { return self.indexOf(value) === index; }); // remove duplicates
+	}
+	var submodel = new this.constructor(def);
 	setProto(submodel, this.prototype);
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
@@ -54,20 +65,6 @@ Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
-}
-
-function mergeDefinitions(base, exts){
-	if(!exts.length) return base;
-	if(isLeaf(base)){
-		return cloneArray(exts)
-			.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base))
-			.filter(function(value, index, self) { // remove duplicates
-				return self.indexOf(value) === index;
-			});
-	} else {
-		return cloneArray(exts)
-			.reduce(function(def, ext){ return merge(ext || {}, def); }, base);
-	}
 }
 
 function parseDefinition(def){

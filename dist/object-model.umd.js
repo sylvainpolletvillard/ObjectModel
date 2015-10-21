@@ -341,6 +341,7 @@ Model.Array.prototype.toString = function(stack){
 
 function proxifyArrayKey(proxy, array, key, model){
 	Object.defineProperty(proxy, key, {
+		enumerable: true,
 		get: function () {
 			return array[key];
 		},

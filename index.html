@@ -17,6 +17,10 @@
 	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
+
+	<script defer src="site/lib/prism.js"></script>
+	<script defer src="site/js/main.js"></script>
+	<script defer src="dist/object-model.js"></script>
 </head>
 
 <body>
@@ -54,6 +58,7 @@
 			<li><a href="#doc-default-values">Default values</a></li>
 			<li><a href="#doc-composition">Composition</a></li>
 			<li><a href="#doc-extensions">Inheritance by extensions</a></li>
+			<li><a href="#doc-multiple-inheritance">Multiple inheritance</a></li>
 			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
@@ -132,14 +137,18 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v1.0.0</h3>
+		<h3>Current version: v1.1.0</h3>
 		<ul>
 			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (6.9 kB)</li>
-			<li><a href="dist/object-model-1.0.0.zip">object-model-1.0.0.zip</a> source files</li>
+			<li><a href="dist/object-model-1.1.0.zip">object-model-1.1.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v1.1</dt>
+				<dd>model.extend can now take models and/or models definitions as arguments</dd>
+				<dd>fixed some issues with object deep merging on model extensions</dd>
+				<dd>make array models keys enumerable</dd>
 				<dt>v1.0</dt>
 				<dd>added model.validate and model.test</dd>
 				<dd>moved conventions to overridable exposed functions</dd>
@@ -251,15 +260,15 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-<pre><code class="language-javascript">var UserInfo = Model({
+<pre><code class="language-javascript">var User = Model({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-<pre><code class="language-javascript">var stan = UserInfo({ email: "stan@smith.com" }); // no exceptions
-var roger = UserInfo({ name: "Roger" }); // email is mandatory</code>
+<pre><code class="language-javascript">var stan = User({ email: "stan@smith.com" }); // no exceptions
+var roger = User({ name: "Roger" }); // email is mandatory</code>
 <code class="language-none exception">TypeError: expecting email to be String, got undefined</code></pre>
 			</div>
 		</div>
@@ -387,7 +396,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 	<hr>
 
 	<section id="doc-composition">
-		<h2>Composition</h2>
+		<h2>Composition with models as types</h2>
 		<p>Models declared can also be used for type checking, so you can compose structures of objects. Note that the sub-models do not necessarily need to be instantiated through the model constructor to be considered valid: only the definition of the sub-model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>. This naive approach is much more flexible and allows you, for example, to parse composed objects from JSON in one step.</p>
 
 		<div class="panels two">
@@ -422,8 +431,8 @@ var joe_and_ann = Lovers({
 	<hr>
 
 	<section id="doc-extensions">
-		<h2>Inheritance by extensions</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.	But it goes further: unlike classical inheritance, extensions can mix any number of parent models definitions and assertions.</p>
+		<h2>Inheritance by extension</h2>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -445,10 +454,46 @@ var joanna = new Person({ name: "Joe's daughter", female: true });
 
 ann.child = joanna;
 ann = Mother(ann); // cast ann to Mother model
-Model.instanceOf(ann, Mother) && Model.instanceOf(ann, Person)</code>
+Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false</code></pre>
+			</div>
+		</div>
+	</section>
+
+	<hr>
+
+	<section id="doc-multiple-inheritance">
+		<h2>Multiple inheritance</h2>
+		<p>But it goes further: you can do multiple inheritance and mix any number of parent models definitions and assertions. If some properties have the same name, those of the last object overrides the others.</p>
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
+<pre><code class="language-javascript">var Client = Person.extend(User, Order, { store: String });
+
+Client.prototype.sendConfirmationMail = function(){
+	return this.email + ": Dear " + this.name
+	+ ", thank you for ordering "
+	+ this.product.quantity + " " + this.product.name
+	+ " on " + this.store;
+};
+
+Object.keys(Client.definition);</code>
+<code class="language-none log">["name", "age", "email", "product", "orderDate", "store"]</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+<pre><code class="language-javascript">var joe = new Client({
+	name: "Joe",
+	email: "joe@email.net",
+	product: { name: "diapers", quantity: 100 },
+	orderDate: new Date(),
+	store: "daddy.net"
+});
+
+joe.sendConfirmationMail();</code>
+<code class="language-none log">joe@email.net: Dear Joe, thank you for ordering 100 diapers on daddy.net</code></pre>
 			</div>
 		</div>
 	</section>
@@ -648,7 +693,7 @@ joe.sayMyName();</code>
 			<dt><a href="#doc-array-model">Model.Array</a> <code>Model.Array(itemDefinition)</code></dt>
 			<dd>Constructor for array models</dd>
 
-			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2...)</code></dt>
+			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2, ...)</code></dt>
 			<dd>Constructor for function models</dd>
 
 			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
@@ -669,10 +714,10 @@ joe.sayMyName();</code>
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
 
-			<dt><a href="#doc-extensions">extend</a> <code>model.extend(otherDefinition1, otherDefinition2...)</code></dt>
+			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
 			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
 
-			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion1, assertion2...)</code></dt>
+			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, ...otherAssertions)</code></dt>
 			<dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
 
 			<dt>validate <code>model.validate(object)</code></dt>
@@ -688,7 +733,7 @@ joe.sayMyName();</code>
 		</dl>
 		<h3>Function models</h3>
 		<dl>
-			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2...)</code></dt>
+			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2, ...)</code></dt>
 			<dd>Set a default value for function arguments.</dd>
 
 			<dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
@@ -763,10 +808,6 @@ var friendsBirthday = BirthdayList({
 	<hr>
 	<footer><a href="LICENSE">MIT licensed</a> - &copy; 2015 syllab.fr</footer>
 </div>
-
-<script src="site/js/main.js"></script>
-<script src="site/lib/prism.js"></script>
-<script src="dist/object-model.js"></script>
 
 </body>
 </html>

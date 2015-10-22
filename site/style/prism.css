@@ -1,4 +1,4 @@
-/* http://prismjs.com/download.html?themes=prism&languages=markup+css+clike+javascript&plugins=autolinker+file-highlight */
+/* http://prismjs.com/download.html?themes=prism&languages=markup+css+clike+javascript */
 /**
  * prism.js default theme for JavaScript, CSS and HTML
  * Based on dabblet (http://dabblet.com)
@@ -8,13 +8,14 @@
 code[class*="language-"],
 pre[class*="language-"] {
 	color: black;
-	text-shadow: 1px 1px white;
-	font-family: Consolas, Monaco, 'Andale Mono', monospace;
+	text-shadow: 0 1px white;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	direction: ltr;
 	text-align: left;
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
+	word-wrap: normal;
 	line-height: 1.5;
 
 	-moz-tab-size: 4;
@@ -104,7 +105,7 @@ pre[class*="language-"] {
 .language-css .token.string,
 .style .token.string {
 	color: #a67f59;
-	background: hsla(0, 0%, 100%, .25);
+	background: hsla(0, 0%, 100%, .5);
 }
 
 .token.atrule,
@@ -123,14 +124,15 @@ pre[class*="language-"] {
 	color: #e90;
 }
 
-.token.important {
+.token.important,
+.token.bold {
 	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
 }
 
 .token.entity {
 	cursor: help;
 }
 
-.token a {
-	color: inherit;
-}

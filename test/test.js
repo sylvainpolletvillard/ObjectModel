@@ -483,11 +483,78 @@ function testSuite(Model){
 		assert.equal(Model.instanceOf(joe, Woman), false, "joe not instanceof Woman");
 		assert.equal(Model.instanceOf(joe, UnemployedWoman), false, "joe not instanceof UnemployedWoman");
 		assert.equal(Model.instanceOf(ann, UnemployedWoman), false, "ann not instanceof UnemployedWoman");
+	});
+
+	QUnit.test("Multiple inheritance", function(assert){
+
+		var A = new Model({ // or Model.Object
+			a: Boolean,
+			b: Boolean
+		});
+
+		var B = Model({
+			b: Number,
+			c: Number
+		});
+
+		var C = Model({
+			c: String,
+			d: {
+				d1: Boolean,
+				d2: Boolean
+			}
+		});
+
+		var D = Model({
+			a: String,
+			d: {
+				d2: Number,
+				d3: Number
+			}
+		});
+
+		var M1 = A.extend(B,C,D);
+		var M2 = D.extend(C,B,A);
+
+		assert.equal(Object.keys(M1.definition).sort().join(','), "a,b,c,d", "definition merge for multiple inheritance 1/4");
+		assert.equal(Object.keys(M2.definition).sort().join(','), "a,b,c,d", "definition merge for multiple inheritance 2/4");
+		assert.equal(Object.keys(M1.definition.d).sort().join(','), "d1,d2,d3", "definition merge for multiple inheritance 3/4");
+		assert.equal(Object.keys(M2.definition.d).sort().join(','), "d1,d2,d3", "definition merge for multiple inheritance 4/4");
+
+		var m1 = M1({
+			a: "",
+			b: 42,
+			c: "test",
+			d: {
+				d1: true,
+				d2: 2,
+				d3: 3
+			}
+		});
+
+		var m2 = M2({
+			a: false,
+			b: false,
+			c: 666,
+			d: {
+				d1: false,
+				d2: false,
+				d3: 0
+			}
+		});
+
+		assert.throws(function(){ m1.a = true; }, /TypeError[\s\S]*a/, "type checking multiple inheritance 1/8");
+		assert.throws(function(){ m2.a = "nope"; }, /TypeError[\s\S]*a/, "type checking multiple inheritance 2/8");
+		assert.throws(function(){ m1.b = !m1.b; }, /TypeError[\s\S]*b/, "type checking multiple inheritance 3/8");
+		assert.throws(function(){ m2.b += 7; }, /TypeError[\s\S]*b/, "type checking multiple inheritance 4/8");
+		assert.throws(function(){ m1.c = undefined; }, /TypeError[\s\S]*c/, "type checking multiple inheritance 5/8");
+		assert.throws(function(){ m2.c = null; }, /TypeError[\s\S]*c/, "type checking multiple inheritance 6/8");
+		assert.throws(function(){ m1.d.d2 = true; }, /TypeError[\s\S]*d2/, "type checking multiple inheritance 7/8");
+		assert.throws(function(){ m2.d.d2 = 1; }, /TypeError[\s\S]*d2/, "type checking multiple inheritance 8/8");
 
 	});
 
 	QUnit.test("Composition", function(assert){
-
 
 		var Person = Model({
 			name: String,

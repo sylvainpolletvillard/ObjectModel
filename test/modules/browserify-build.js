@@ -41,23 +41,17 @@ function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
-function merge(base, ext, replace){
-	if(ext instanceof Object){
-		for(var p in ext){
-			if(ext.hasOwnProperty(p)){
-				if(base.hasOwnProperty(p)){
-					if(base[p] instanceof Object){
-						merge(base[p], ext[p], replace);
-					} else if(replace){
-						base[p] = ext[p];
-					}
-				} else {
-					base[p] = ext[p];
-				}
-			}
+function merge(target, src, deep) {
+	Object.keys(src || {}).forEach(function(key){
+		if(deep && bettertypeof(src[key]) === "Object"){
+			var o = {};
+			merge(o, target[key], deep);
+			merge(o, src[key], deep);
+			target[key] = o;
+		} else {
+			target[key] = src[key]
 		}
-	}
-	return base
+	});
 }
 
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
@@ -118,7 +112,18 @@ Model.prototype.test = function(obj, stack){
 };
 
 Model.prototype.extend = function(){
-	var submodel = new this.constructor(mergeDefinitions(this.definition, arguments));
+	var def, args = cloneArray(arguments);
+	if(Model.instanceOf(this, Model.Object)){
+		def = {};
+		merge(def, this.definition);
+		args.forEach(function(arg){
+			merge(def, Model.instanceOf(arg, Model) ? arg.definition : arg, true)
+		})
+	} else {
+		def = args.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(this.definition))
+			      .filter(function(value, index, self) { return self.indexOf(value) === index; }); // remove duplicates
+	}
+	var submodel = new this.constructor(def);
 	setProto(submodel, this.prototype);
 	submodel.assertions = cloneArray(this.assertions);
 	return submodel;
@@ -143,20 +148,6 @@ Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
-}
-
-function mergeDefinitions(base, exts){
-	if(!exts.length) return base;
-	if(isLeaf(base)){
-		return cloneArray(exts)
-			.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(base))
-			.filter(function(value, index, self) { // remove duplicates
-				return self.indexOf(value) === index;
-			});
-	} else {
-		return cloneArray(exts)
-			.reduce(function(def, ext){ return merge(ext || {}, def); }, base);
-	}
 }
 
 function parseDefinition(def){
@@ -383,7 +374,9 @@ Model.Function = function FunctionModel(){
 
 		var def = model.definition;
 		var proxyFn = function () {
-			var args = merge(cloneArray(arguments), def.defaults);
+			var args = [];
+			merge(args, def.defaults);
+			merge(args, cloneArray(arguments));
 			if (args.length !== def.arguments.length) {
 				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
 			}

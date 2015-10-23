@@ -552,6 +552,54 @@ function testSuite(Model){
 		assert.throws(function(){ m1.d.d2 = true; }, /TypeError[\s\S]*d2/, "type checking multiple inheritance 7/8");
 		assert.throws(function(){ m2.d.d2 = 1; }, /TypeError[\s\S]*d2/, "type checking multiple inheritance 8/8");
 
+		A.defaults({
+			a: false,
+			b: false
+		});
+
+		B.defaults({
+			b: 0,
+			c: 0
+		});
+
+		C.defaults({
+			c: "",
+			d: {
+				d1: false,
+				d2: false
+			}
+		});
+
+		D.defaults({
+			a: "",
+			d: {
+				d2: 0,
+				d3: 0
+			}
+		});
+
+		M1 = A.extend(B,C,D);
+		M2 = D.extend(C,B,A);
+		m1 = M1();
+		m2 = M2();
+
+		assert.ok(m1.a === "" && m1.b === 0 && m1.c === "" && m1.d.d1 === false && m1.d.d2 === 0 && m1.d.d3 === 0, "defaults checking multiple inheritance 1/2");
+		assert.ok(m2.a === false && m2.b === false && m2.c === 0 && m2.d.d1 === false && m2.d.d2 === false && m2.d.d3 === 0, "defaults checking multiple inheritance 2/2");
+
+		function dummyAssert(){ return true; }
+		A.assert(dummyAssert);
+		B.assert(dummyAssert);
+		C.assert(dummyAssert);
+		D.assert(dummyAssert);
+
+		M1 = A.extend(B,C,D);
+		M2 = D.extend(C,B,A);
+		m1 = M1();
+		m2 = M2();
+
+		assert.ok(M1.assertions.length === 4, "assertions checking multiple inheritance 1/2");
+		assert.ok(M2.assertions.length === 4, "assertions checking multiple inheritance 2/2");
+
 	});
 
 	QUnit.test("Composition", function(assert){

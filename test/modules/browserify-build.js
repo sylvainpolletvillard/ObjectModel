@@ -112,20 +112,38 @@ Model.prototype.test = function(obj, stack){
 };
 
 Model.prototype.extend = function(){
-	var def, args = cloneArray(arguments);
+	var def, proto,
+		assertions = cloneArray(this.assertions),
+		args = cloneArray(arguments);
+
 	if(Model.instanceOf(this, Model.Object)){
 		def = {};
+		proto = {};
 		merge(def, this.definition);
+		merge(proto, this.prototype);
 		args.forEach(function(arg){
-			merge(def, Model.instanceOf(arg, Model) ? arg.definition : arg, true)
+			if(Model.instanceOf(arg, Model)){
+				merge(def, arg.definition, true);
+				merge(proto, arg.prototype, true);
+			} else {
+				merge(def, arg, true);
+			}
 		})
 	} else {
 		def = args.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(this.definition))
 			      .filter(function(value, index, self) { return self.indexOf(value) === index; }); // remove duplicates
 	}
+
+	args.forEach(function(arg){
+		if(Model.instanceOf(arg, Model)){
+			assertions = assertions.concat(arg.assertions);
+		}
+	});
+
 	var submodel = new this.constructor(def);
 	setProto(submodel, this.prototype);
-	submodel.assertions = cloneArray(this.assertions);
+	merge(submodel.prototype, proto);
+	submodel.assertions = assertions;
 	return submodel;
 };
 

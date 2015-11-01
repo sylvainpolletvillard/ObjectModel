@@ -15,7 +15,7 @@ function Model(def){
 setProto(Model, Function.prototype);
 
 Model.prototype.toString = function(stack){
-	return toString(this.definition, stack);
+	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
 };
 
 Model.prototype.validate = function(obj, stack){

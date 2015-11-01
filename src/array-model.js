@@ -46,7 +46,7 @@ setProto(Model.Array, Model.prototype, Model);
 
 Model.Array.prototype.validate = function(arr){
 	if(!isArray(arr)){
-		throw new TypeError("expecting an array, got: " + toString(arr));
+		throw new TypeError("expecting "+this.toString()+", got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
 		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
@@ -55,7 +55,7 @@ Model.Array.prototype.validate = function(arr){
 };
 
 Model.Array.prototype.toString = function(stack){
-	return 'Model.Array(' + toString(this.definition, stack) + ')';
+	return 'Array of ' + toString(this.definition, stack);
 };
 
 function proxifyArrayKey(proxy, array, key, model){

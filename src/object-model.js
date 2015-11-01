@@ -24,6 +24,10 @@ Model.Object.prototype.defaults = function(p){
 	return this;
 };
 
+Model.Object.prototype.toString = function(stack){
+	return toString(this.definition, stack);
+};
+
 function getProxy(model, obj, defNode, path) {
 	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
 		return defNode(obj);

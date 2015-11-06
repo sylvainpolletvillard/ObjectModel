@@ -590,12 +590,12 @@ c.UNIT = "cm";</code>
 	mother: ann,
 	children: [joanna, "dog"]
 });</code>
-<code class="language-none exception">TypeError: expecting children to be Model.Array({ name: String, female: Boolean }), got Array [{ name: "Joe's daughter", female: true}, "dog"]</code>
+<code class="language-none exception">TypeError: expecting Array[1] to be { name: String, female: Boolean }, got String "dog"]</code>
 </pre>
 		</div>
 	</div>
 		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added or modified afterwards.</p>
-		<p class="note">Note that for <a href="http://kangax.github.io/compat-table/es6/#Proxy" target="_blank">browsers which do not support ES6 proxies</a>, if you expand the array by storing an element at an index greater than the current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated. Use a mutator method like <code>push</code> or <code>splice</code> instead.</p>
+		<p class="note">Note that for <a href="http://kangax.github.io/compat-table/es6/#test-Proxy" target="_blank">browsers which do not support ES6 proxies</a>, if you expand the array by storing an element at an index greater than the current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated. Use a mutator method like <code>push</code> or <code>splice</code> instead.</p>
 		<div class="panels two">
 			<div class="panel">
 <pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);

@@ -4,6 +4,9 @@ function isFunction(o){
 function isObject(o){
     return typeof o === "object";
 }
+function isPlainObject(o){
+	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+}
 
 var isArray = function(a){	return a instanceof Array; };
 
@@ -37,7 +40,7 @@ function cloneArray(arr){
 
 function merge(target, src, deep) {
 	Object.keys(src || {}).forEach(function(key){
-		if(deep && bettertypeof(src[key]) === "Object"){
+		if(deep && isPlainObject(src[key])){
 			var o = {};
 			merge(o, target[key], deep);
 			merge(o, src[key], deep);
@@ -71,7 +74,7 @@ function setProto(constructor, proto, protoConstructor){
 
 function setConstructor(model, constructor){
 	Object.setPrototypeOf(model, constructor.prototype);
-	Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
+	Object.defineProperty(model, "constructor", { enumerable: false, writable: true, value: constructor });
 }
 
 var isProxySupported = (typeof Proxy === "function");

@@ -240,7 +240,13 @@ function testSuite(Model){
 		CheaterHand(["K",10,"joker"]);
 		assert.throws(function(){ Hand("K",10, "joker"); }, /TypeError/, "array model type extension");
 
+		var ChildO = Model.Object({ arr: Model.Array(String) });
+		var ParentO = Model.Object({ child: ChildO });
 
+		var childO = ChildO({ arr: ["a","b","c"] });
+		assert.ok(childO.arr instanceof Array);
+		var parentO = ParentO({ child: childO });
+		assert.ok(parentO.child.arr instanceof Array);
 	});
 
 	QUnit.test("Function models", function(assert){

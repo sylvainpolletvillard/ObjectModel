@@ -1,3 +1,4 @@
+// ObjectModel v1.1.3 - http://objectmodel.js.org
 ;(function(global){
 function isFunction(o){
 	return typeof o === "function";

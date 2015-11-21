@@ -5,6 +5,7 @@ module.exports = function(grunt) {
 	}
 
 	var pkg = grunt.file.readJSON('package.json');
+	var BANNER = "// ObjectModel v"+pkg.version+" - "+pkg.homepage + "\n";
 
 	// Project configuration.
 	grunt.initConfig({
@@ -14,7 +15,7 @@ module.exports = function(grunt) {
 				src: ['src/helpers.js', 'src/model.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
 				dest: 'dist/object-model.js',
 				options: {
-					banner: ";(function(global){\n",
+					banner: BANNER + ";(function(global){\n",
 					footer: "\n\nglobal.Model = Model;\n})(this);"
 				}
 			},
@@ -33,6 +34,9 @@ module.exports = function(grunt) {
 		},
 		uglify: {
 			dist: {
+				options: {
+					banner: BANNER
+				},
 				files: {
 					'dist/object-model.min.js': ['dist/object-model.js']
 				}

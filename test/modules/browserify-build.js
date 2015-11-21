@@ -10,6 +10,9 @@ function isFunction(o){
 function isObject(o){
     return typeof o === "object";
 }
+function isPlainObject(o){
+	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+}
 
 var isArray = function(a){	return a instanceof Array; };
 
@@ -43,7 +46,7 @@ function cloneArray(arr){
 
 function merge(target, src, deep) {
 	Object.keys(src || {}).forEach(function(key){
-		if(deep && bettertypeof(src[key]) === "Object"){
+		if(deep && isPlainObject(src[key])){
 			var o = {};
 			merge(o, target[key], deep);
 			merge(o, src[key], deep);
@@ -77,7 +80,7 @@ function setProto(constructor, proto, protoConstructor){
 
 function setConstructor(model, constructor){
 	Object.setPrototypeOf(model, constructor.prototype);
-	Object.defineProperty(model, "constructor", {enumerable: false, writable: true, value: constructor});
+	Object.defineProperty(model, "constructor", { enumerable: false, writable: true, value: constructor });
 }
 
 var isProxySupported = (typeof Proxy === "function");
@@ -98,7 +101,7 @@ function Model(def){
 setProto(Model, Function.prototype);
 
 Model.prototype.toString = function(stack){
-	return toString(this.definition, stack);
+	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
 };
 
 Model.prototype.validate = function(obj, stack){
@@ -249,6 +252,10 @@ Model.Object.prototype.defaults = function(p){
 	return this;
 };
 
+Model.Object.prototype.toString = function(stack){
+	return toString(this.definition, stack);
+};
+
 function getProxy(model, obj, defNode, path) {
 	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
 		return defNode(obj);
@@ -337,7 +344,7 @@ setProto(Model.Array, Model.prototype, Model);
 
 Model.Array.prototype.validate = function(arr){
 	if(!isArray(arr)){
-		throw new TypeError("expecting an array, got: " + toString(arr));
+		throw new TypeError("expecting "+this.toString()+", got: " + toString(arr));
 	}
 	for(var i=0, l=arr.length; i<l; i++){
 		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
@@ -346,7 +353,7 @@ Model.Array.prototype.validate = function(arr){
 };
 
 Model.Array.prototype.toString = function(stack){
-	return 'Model.Array(' + toString(this.definition, stack) + ')';
+	return 'Array of ' + toString(this.definition, stack);
 };
 
 function proxifyArrayKey(proxy, array, key, model){

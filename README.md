@@ -7,10 +7,8 @@ Runtime Type Checking and Data Model Definition for JavaScript
 
 ## Installation
 
-There is currently no npm module available for this repo, but you can install it via Github
-
 ```bash
-$ npm install sylvainpolletvillard/ObjectModel
+$ npm install objectmodel
 ```
 
 ##Documentation, examples, questions

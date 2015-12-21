@@ -21,5 +21,6 @@
 		"grunt-file-info": "1.0.7",
 		"grunt-regex-replace": "~0.2.6"
 	},
+	"main": "dist/object-model.umd.js",
 	"keywords": [ "typed", "types", "typing", "dynamic", "strong", "model", "definition", "object", "assertion", "inheritance", "composition", "structures", "proxy"]
 }

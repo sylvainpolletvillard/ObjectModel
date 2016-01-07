@@ -3,7 +3,7 @@
 Model.Primitive = Model([Boolean, Number, String, Symbol]);
 
 // Booleans-like
-Model.Falsy = Model([Model.Primitive, Object]).assert(function isFalsy(val){ return !val });
+Model.Falsy = Model([Model.Primitive, null, undefined]).assert(function isFalsy(val){ return !val });
 Model.Truthy = Model([Model.Primitive, Object]).assert(function isTruthy(val){ return !!val });
 
 // Numbers

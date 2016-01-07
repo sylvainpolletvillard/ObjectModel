@@ -40,4 +40,8 @@ $(document).ready(function(){
 		selectLink(nearest.id);
 	});
 
+	$("code[data-source]").each(function(){
+		$(this).load($(this).data("source"), function(){ Prism.highlightElement(this); });
+	});
+
 });

@@ -33,12 +33,6 @@ Model.Function = function FunctionModel(){
 
 setProto(Model.Function, Model.prototype, Model);
 
-Model.Function.prototype.validate = function (f) {
-	if(!isFunction(f)){
-		throw new TypeError("expecting a function, got: " + toString(f));
-	}
-};
-
 Model.Function.prototype.toString = function(stack){
 	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){ return toString(argDef, stack); }).join(",") +')';
 	if("return" in this.definition) {
@@ -56,3 +50,10 @@ Model.Function.prototype.defaults = function(){
 	this.definition.defaults = cloneArray(arguments);
 	return this;
 };
+
+// private methods
+define(Model.Function.prototype, "validator", function(f){
+	if(!isFunction(f)){
+		throw new TypeError("expecting a function, got: " + toString(f));
+	}
+});

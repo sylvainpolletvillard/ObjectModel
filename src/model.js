@@ -18,14 +18,12 @@ Model.prototype.toString = function(stack){
 	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
 };
 
-Model.prototype.validate = function(obj, stack){
-	checkDefinition(obj, this.definition, undefined, stack || []);
-	matchAssertions(obj, this.assertions);
+Model.prototype.validate = function(obj){
+	return this.validator(obj, []);
 };
 
-Model.prototype.test = function(obj, stack){
-	try { this.validate(obj, stack); return true; }
-	catch(e){ return false; }
+Model.prototype.test = function(obj){
+	return test.call(this, obj, []);
 };
 
 Model.prototype.extend = function(){
@@ -81,6 +79,12 @@ Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
 Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
+// private methods
+define(Model.prototype, "validator", function(obj, stack){
+	checkDefinition(obj, this.definition, undefined, stack || []);
+	matchAssertions(obj, this.assertions);
+});
+
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }
@@ -122,7 +126,7 @@ function checkDefinitionPart(obj, def, stack){
 		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation
 		}
-		return def.test(obj, stack.concat(def));
+		return test.call(def, obj, stack.concat(def));
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);
@@ -131,6 +135,16 @@ function checkDefinitionPart(obj, def, stack){
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
 		|| obj.constructor === def;
+}
+
+function test(obj, stack){
+	try {
+		this.validator(obj, stack);
+		return true;
+	}
+	catch(e){
+		return false;
+	}
 }
 
 function matchAssertions(obj, assertions){

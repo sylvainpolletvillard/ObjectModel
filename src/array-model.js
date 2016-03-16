@@ -24,10 +24,7 @@ Model.Array = function ArrayModel(def){
 			}
 			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
-				Object.defineProperty(proxy, method, {
-					configurable: true,
-					value: proxifyArrayMethod(array, method, model, proxy)
-				});
+				def(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
 		}
 
@@ -44,7 +41,12 @@ Model.Array = function ArrayModel(def){
 
 setProto(Model.Array, Model.prototype, Model);
 
-Model.Array.prototype.validate = function(arr){
+Model.Array.prototype.toString = function(stack){
+	return 'Array of ' + toString(this.definition, stack);
+};
+
+// private methods
+define(Model.Array.prototype, "validator", function(arr){
 	if(!isArray(arr)){
 		throw new TypeError("expecting "+this.toString()+", got: " + toString(arr));
 	}
@@ -52,11 +54,7 @@ Model.Array.prototype.validate = function(arr){
 		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
 	}
 	matchAssertions(arr, this.assertions);
-};
-
-Model.Array.prototype.toString = function(stack){
-	return 'Array of ' + toString(this.definition, stack);
-};
+});
 
 function proxifyArrayKey(proxy, array, key, model){
 	Object.defineProperty(proxy, key, {

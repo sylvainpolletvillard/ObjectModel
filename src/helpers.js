@@ -51,6 +51,15 @@ function merge(target, src, deep) {
 	});
 }
 
+function define(obj, key, val, enumerable) {
+	Object.defineProperty(obj, key, {
+		value: val,
+		enumerable: !!enumerable,
+		writable: true,
+		configurable: true
+	});
+}
+
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
 Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
     ? function(o, p){ o.__proto__ = p; }
@@ -62,7 +71,7 @@ Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototy
 
 function ensureProto(o, p){
 	if(!canSetProto){
-		Object.defineProperty(o, "__proto__", { enumerable: false, writable: true, value: p });
+		define(o, "__proto__", p);
 	}
 }
 
@@ -74,7 +83,7 @@ function setProto(constructor, proto, protoConstructor){
 
 function setConstructor(model, constructor){
 	Object.setPrototypeOf(model, constructor.prototype);
-	Object.defineProperty(model, "constructor", { enumerable: false, writable: true, value: constructor });
+	define(model, "constructor", constructor);
 }
 
 var isProxySupported = (typeof Proxy === "function");

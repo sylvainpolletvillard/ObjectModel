@@ -88,12 +88,12 @@ function testSuite(Model){
 				name: "Joe",
 				age: 42,
 				birth: new Date(1990,3,25),
-				female: null
+				female: "false"
 			});
 		}, function(err){
 			return /TypeError/.test(err.toString())
 				&& /female/.test(err.toString())
-				&& /null/.test(err.toString())
+				&& /false/.test(err.toString())
 		});
 
 		joe = Person({
@@ -117,7 +117,7 @@ function testSuite(Model){
 		var Person = Model({
 			name: [String],
 			age: [Number, Date, String, Boolean, undefined],
-			female: [Boolean, Number, String],
+			female: [Boolean, Number, String, null],
 			haircolor: ["blond","brown","black", undefined],
 			address: {
 				work: {
@@ -130,8 +130,10 @@ function testSuite(Model){
 		assert.ok(Model.instanceOf(joe, Person));
 		joe.name = "joe";
 		joe.name = undefined;
+		joe.name = null;
 		joe.age = new Date(1995,1,23);
 		joe.age = undefined;
+		assert.throws(function(){ joe.age = null; }, /TypeError/);
 		joe.female = "ann";
 		joe.female = 2;
 		joe.female = false;

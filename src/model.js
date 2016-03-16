@@ -88,7 +88,7 @@ function isLeaf(def){
 function parseDefinition(def){
 	if(isLeaf(def)){
 		if(!isArray(def)) return [def];
-		else if(def.length === 1) return def.concat(undefined);
+		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
 		Object.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);

@@ -48,12 +48,12 @@ Model.Array.prototype.toString = function(stack){
 // private methods
 define(Model.Array.prototype, "validator", function(arr){
 	if(!isArray(arr)){
-		throw new TypeError("expecting "+this.toString()+", got: " + toString(arr));
+		this.errorCollector({ expected: [this], received: arr });
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
+		checkDefinition(arr[i], this.definition, 'Array['+i+']', [], this.errorCollector);
 	}
-	matchAssertions(arr, this.assertions);
+	matchAssertions(arr, this.assertions, this.errorCollector);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -86,10 +86,10 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model.definition, 'Array['+key+']', []);
+		checkDefinition(value, model.definition, 'Array['+key+']', [], model.errorCollector);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model.assertions);
+	matchAssertions(testArray, model.assertions, model.errorCollector);
 	array[key] = value;
 }

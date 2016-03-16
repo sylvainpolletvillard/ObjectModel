@@ -8,15 +8,18 @@ Model.Function = function FunctionModel(){
 			merge(args, def.defaults);
 			merge(args, cloneArray(arguments));
 			if (args.length !== def.arguments.length) {
-				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
+				model.errorCollector({
+					expected: [toString(fn) + " to be called with " + def.arguments.length + " arguments"],
+					received: args.length
+				});
 			}
 			def.arguments.forEach(function (argDef, i) {
-				checkDefinition(args[i], argDef, 'arguments[' + i + ']', []);
+				checkDefinition(args[i], argDef, 'arguments[' + i + ']', [], model.errorCollector);
 			});
-			matchAssertions(args, model.assertions);
+			matchAssertions(args, model.assertions, model.errorCollector);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				checkDefinition(returnValue, def.return, 'return value', []);
+				checkDefinition(returnValue, def.return, 'return value', [], model.errorCollector);
 			}
 			return returnValue;
 		};
@@ -54,6 +57,6 @@ Model.Function.prototype.defaults = function(){
 // private methods
 define(Model.Function.prototype, "validator", function(f){
 	if(!isFunction(f)){
-		throw new TypeError("expecting a function, got: " + toString(f));
+		this.errorCollector({ expected: ["Function"], received: f });
 	}
 });

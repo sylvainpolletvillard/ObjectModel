@@ -4,6 +4,9 @@ Model.Object = function ObjectModel(def){
 		if(!(this instanceof model)){
 			return new model(obj);
 		}
+		if(obj != null && !isObject(obj)){
+			model.errorCollector({ expected: model, received: obj });
+		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
 		model.validate(proxy);
@@ -53,13 +56,13 @@ function getProxy(model, obj, defNode, path) {
 				},
 				set: function (val) {
 					if(isConstant && wrapper[key] !== undefined){
-						throw new TypeError("cannot redefine constant " + key);
+						model.errorCollector({ message: "cannot redefine constant " + key });
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, []);
+					checkDefinition(newProxy, defNode[key], newPath, [], model.errorCollector);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-					try { matchAssertions(obj, model.assertions); }
+					try { matchAssertions(obj, model.assertions, model.errorCollector); }
 					catch(e){ wrapper[key] = oldValue; throw e; }
 				},
 				enumerable: !Model.conventionForPrivate(key)

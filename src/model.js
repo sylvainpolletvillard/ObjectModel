@@ -67,6 +67,15 @@ Model.prototype.assert = function(){
 	return this;
 };
 
+Model.prototype.errorCollector = function(err){
+	var message = err.message ||
+		("expecting " + (err.path ? err.path + " to be " : "")
+		+ err.expected.map(function(d){ return toString(d); }).join(" or ")
+		+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "")
+		+ toString(err.received))
+	throw new TypeError(message);
+};
+
 Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
 	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
 		if(o == null || stack.indexOf(o) !== -1) return false;
@@ -81,8 +90,8 @@ Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 // private methods
 define(Model.prototype, "validator", function(obj, stack){
-	checkDefinition(obj, this.definition, undefined, stack || []);
-	matchAssertions(obj, this.assertions);
+	checkDefinition(obj, this.definition, undefined, stack || [], this.errorCollector);
+	matchAssertions(obj, this.assertions, this.errorCollector);
 });
 
 function isLeaf(def){
@@ -101,18 +110,21 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, stack){
+function checkDefinition(obj, def, path, stack, errorCollector){
 	if(isLeaf(def)){
 		def = parseDefinition(def);
 		for(var i= 0, l=def.length; i<l; i++){
 			if(checkDefinitionPart(obj, def[i], stack)){ return; }
 		}
-		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(function(d){ return toString(d); }).join(" or ")
-		+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
+		errorCollector({
+			expected: def,
+			received: obj,
+			path: path
+		});
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, stack.concat(val));
+			checkDefinition(val, def[key], path ? path + '.' + key : key, stack.concat(val), errorCollector);
 		});
 	}
 }
@@ -147,10 +159,10 @@ function test(obj, stack){
 	}
 }
 
-function matchAssertions(obj, assertions){
+function matchAssertions(obj, assertions, errorCollector){
 	for(var i=0, l=assertions.length; i<l ; i++ ){
 		if(!assertions[i](obj)){
-			throw new TypeError("an assertion of the model is not respected: "+toString(assertions[i]));
+			errorCollector({ message: "an assertion of the model is not respected: "+toString(assertions[i]) });
 		}
 	}
 }

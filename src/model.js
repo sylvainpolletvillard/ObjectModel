@@ -18,8 +18,8 @@ Model.prototype.toString = function(stack){
 	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
 };
 
-Model.prototype.validate = function(obj){
-	return this.validator(obj, []);
+Model.prototype.validate = function(obj, errorCollector){
+	return this.validator(obj, errorCollector || this.errorCollector, []);
 };
 
 Model.prototype.test = function(obj){
@@ -89,9 +89,9 @@ Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
 Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 // private methods
-define(Model.prototype, "validator", function(obj, stack){
-	checkDefinition(obj, this.definition, undefined, stack || [], this.errorCollector);
-	matchAssertions(obj, this.assertions, this.errorCollector);
+define(Model.prototype, "validator", function(obj, errorCollector, stack){
+	checkDefinition(obj, this.definition, null, stack || [], errorCollector);
+	matchAssertions(obj, this.assertions, errorCollector);
 });
 
 function isLeaf(def){
@@ -151,7 +151,9 @@ function checkDefinitionPart(obj, def, stack){
 
 function test(obj, stack){
 	try {
-		this.validator(obj, stack);
+		this.validator(obj, function(){
+			throw new TypeError();
+		}, stack);
 		return true;
 	}
 	catch(e){
@@ -162,7 +164,7 @@ function test(obj, stack){
 function matchAssertions(obj, assertions, errorCollector){
 	for(var i=0, l=assertions.length; i<l ; i++ ){
 		if(!assertions[i](obj)){
-			errorCollector({ message: "an assertion of the model is not respected: "+toString(assertions[i]) });
+			errorCollector({ message: "assertion failed: "+toString(assertions[i]) });
 		}
 	}
 }

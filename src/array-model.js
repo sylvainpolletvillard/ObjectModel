@@ -46,14 +46,14 @@ Model.Array.prototype.toString = function(stack){
 };
 
 // private methods
-define(Model.Array.prototype, "validator", function(arr){
+define(Model.Array.prototype, "validator", function(arr, errorCollector, stack){
 	if(!isArray(arr)){
-		this.errorCollector({ expected: [this], received: arr });
+		errorCollector({ expected: [this], received: arr });
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this.definition, 'Array['+i+']', [], this.errorCollector);
+		checkDefinition(arr[i], this.definition, 'Array['+i+']', stack, errorCollector);
 	}
-	matchAssertions(arr, this.assertions, this.errorCollector);
+	matchAssertions(arr, this.assertions, errorCollector);
 });
 
 function proxifyArrayKey(proxy, array, key, model){

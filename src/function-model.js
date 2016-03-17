@@ -55,8 +55,8 @@ Model.Function.prototype.defaults = function(){
 };
 
 // private methods
-define(Model.Function.prototype, "validator", function(f){
+define(Model.Function.prototype, "validator", function(f, errorCollector){
 	if(!isFunction(f)){
-		this.errorCollector({ expected: ["Function"], received: f });
+		errorCollector({ expected: ["Function"], received: f });
 	}
 });

@@ -134,9 +134,9 @@ function parseDefinition(def){
 
 function checkDefinition(obj, def, path, callStack, errorStack){
 	if(isLeaf(def)){
-		def = parseDefinition(def);
-		for(var i= 0, l=def.length; i<l; i++){
-			if(checkDefinitionPart(obj, def[i], path, callStack)){ return; }
+		var pdef = parseDefinition(def);
+		for(var i= 0, l=pdef.length; i<l; i++){
+			if(checkDefinitionPart(obj, pdef[i], path, callStack)){ return; }
 		}
 		errorStack.push({
 			expected: def,

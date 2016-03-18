@@ -5,18 +5,20 @@ Model.Object = function ObjectModel(def){
 			return new model(obj);
 		}
 		if(obj != null && !isObject(obj)){
-			model.errorCollector({ expected: model, received: obj });
+			model.errorStack.push({ expected: model, result: obj });
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model.definition);
-		model.validate(proxy);
 		ensureProto(proxy, model.prototype);
+		model.validate(proxy);
+		model.unstack();
 		return proxy;
 	};
 
 	setConstructor(model, Model.Object);
 	model.definition = def;
 	model.assertions = [];
+	model.errorStack = [];
 	return model;
 };
 
@@ -56,14 +58,17 @@ function getProxy(model, obj, defNode, path) {
 				},
 				set: function (val) {
 					if(isConstant && wrapper[key] !== undefined){
-						model.errorCollector({ message: "cannot redefine constant " + key });
+						model.errorStack.push({ message: "cannot redefine constant " + key });
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, [], model.errorCollector);
+					checkDefinition(newProxy, defNode[key], newPath, [], model.errorStack);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-					try { matchAssertions(obj, model.assertions, model.errorCollector); }
-					catch(e){ wrapper[key] = oldValue; throw e; }
+					matchAssertions(obj, model.assertions, model.errorStack);
+					if(model.errorStack.length){
+						wrapper[key] = oldValue;
+						model.unstack();
+					}
 				},
 				enumerable: !Model.conventionForPrivate(key)
 			});

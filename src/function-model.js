@@ -8,19 +8,20 @@ Model.Function = function FunctionModel(){
 			merge(args, def.defaults);
 			merge(args, cloneArray(arguments));
 			if (args.length > def.arguments.length) {
-				model.errorCollector({
-					expected: [toString(fn) + " to be called with " + def.arguments.length + " arguments"],
-					received: args.length
+				model.errorStack.push({
+					expected: toString(fn) + " to be called with " + def.arguments.length + " arguments",
+					result: args.length
 				});
 			}
 			def.arguments.forEach(function (argDef, i) {
-				checkDefinition(args[i], argDef, 'arguments[' + i + ']', [], model.errorCollector);
+				checkDefinition(args[i], argDef, 'arguments[' + i + ']', [], model.errorStack);
 			});
-			matchAssertions(args, model.assertions, model.errorCollector);
+			matchAssertions(args, model.assertions, model.errorStack);
 			var returnValue = fn.apply(this, args);
 			if ("return" in def) {
-				checkDefinition(returnValue, def.return, 'return value', [], model.errorCollector);
+				checkDefinition(returnValue, def.return, 'return value', [], model.errorStack);
 			}
+			model.unstack();
 			return returnValue;
 		};
 		setConstructor(proxyFn, model);
@@ -31,13 +32,16 @@ Model.Function = function FunctionModel(){
 	setConstructor(model, Model.Function);
 	model.definition = { arguments: cloneArray(arguments) };
 	model.assertions = [];
+	model.errorStack = [];
 	return model;
 };
 
 setProto(Model.Function, Model.prototype, Model);
 
 Model.Function.prototype.toString = function(stack){
-	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){ return toString(argDef, stack); }).join(",") +')';
+	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){
+			return toString(argDef, stack);
+		}).join(",") +')';
 	if("return" in this.definition) {
 		out += ".return(" + toString(this.definition.return) + ")";
 	}
@@ -55,8 +59,8 @@ Model.Function.prototype.defaults = function(){
 };
 
 // private methods
-define(Model.Function.prototype, "validator", function(f, errorCollector){
+define(Model.Function.prototype, "validator", function(f){
 	if(!isFunction(f)){
-		errorCollector({ expected: ["Function"], received: f });
+		this.errorStack.push({ expected: "Function", result: f });
 	}
 });

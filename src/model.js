@@ -9,17 +9,21 @@ function Model(def){
 	setConstructor(model, Model);
 	model.definition = def;
 	model.assertions = [];
+	model.errorStack = [];
 	return model;
 }
 
 setProto(Model, Function.prototype);
 
 Model.prototype.toString = function(stack){
-	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
+	return parseDefinition(this.definition).map(function(d){
+		return toString(d, stack);
+	}).join(" or ");
 };
 
 Model.prototype.validate = function(obj, errorCollector){
-	return this.validator(obj, errorCollector || this.errorCollector, []);
+	this.validator(obj, []);
+	this.unstack(errorCollector);
 };
 
 Model.prototype.test = function(obj){
@@ -62,18 +66,14 @@ Model.prototype.extend = function(){
 	return submodel;
 };
 
-Model.prototype.assert = function(){
-	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
+Model.prototype.assert = function(assertion, message){
+	define(assertion, "description", message);
+	this.assertions.push(assertion);
 	return this;
 };
 
-Model.prototype.errorCollector = function(err){
-	var message = err.message ||
-		("expecting " + (err.path ? err.path + " to be " : "")
-		+ err.expected.map(function(d){ return toString(d); }).join(" or ")
-		+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "")
-		+ toString(err.received))
-	throw new TypeError(message);
+Model.prototype.errorCollector = function(errors){
+	throw new TypeError(errors.map(function(e){ return e.message; }).join('\n'));
 };
 
 Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
@@ -89,10 +89,32 @@ Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
 Model.conventionForPrivate = function(key){ return key[0] === "_" };
 
 // private methods
-define(Model.prototype, "validator", function(obj, errorCollector, stack){
-	checkDefinition(obj, this.definition, null, stack || [], errorCollector);
-	matchAssertions(obj, this.assertions, errorCollector);
+define(Model.prototype, "validator", function(obj, stack){
+	checkDefinition(obj, this.definition, null, stack || [], this.errorStack);
+	matchAssertions(obj, this.assertions, this.errorStack);
 });
+
+// throw all errors collected
+define(Model.prototype, "unstack", function(errorCollector){
+	if(this.errorStack.length === 0){
+		return;
+	}
+	if(!errorCollector){
+		errorCollector = this.errorCollector;
+	}
+	var errors = this.errorStack.map(function(err){
+		if(!err.message){
+			var expected = isArray(err.expected) ? err.expected : [err.expected];
+			err.message = ("expecting " + (err.path ? err.path + " to be " : "")
+			+ expected.map(function(d){ return toString(d); }).join(" or ")
+			+ ", got " + (err.result != null ? bettertypeof(err.result) + " " : "")
+			+ toString(err.result))
+		}
+		return err;
+	});
+	this.errorStack = [];
+	errorCollector.call(this, errors);
+})
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
@@ -110,35 +132,40 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, stack, errorCollector){
+function checkDefinition(obj, def, path, callStack, errorStack){
 	if(isLeaf(def)){
 		def = parseDefinition(def);
 		for(var i= 0, l=def.length; i<l; i++){
-			if(checkDefinitionPart(obj, def[i], stack)){ return; }
+			if(checkDefinitionPart(obj, def[i], path, callStack)){ return; }
 		}
-		errorCollector({
+		errorStack.push({
 			expected: def,
-			received: obj,
+			result: obj,
 			path: path
 		});
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, stack.concat(val), errorCollector);
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack.concat(val), errorStack);
 		});
 	}
 }
 
-function checkDefinitionPart(obj, def, stack){
+function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
+	if(!isLeaf(def)){
+		var errorStack=[];
+		checkDefinition(obj, def, path, callStack, errorStack);
+		return errorStack.length === 0;
+	}
 	if(Model.instanceOf(def, Model)){
-		var indexFound = stack.indexOf(def);
-		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
+		var indexFound = callStack.indexOf(def);
+		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation
 		}
-		return test.call(def, obj, stack.concat(def));
+		return test.call(def, obj, callStack.concat(def));
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);
@@ -149,22 +176,19 @@ function checkDefinitionPart(obj, def, stack){
 		|| obj.constructor === def;
 }
 
-function test(obj, stack){
-	try {
-		this.validator(obj, function(){
-			throw new TypeError();
-		}, stack);
-		return true;
-	}
-	catch(e){
-		return false;
-	}
+function test(obj, callStack){
+	var ok = true;
+	this.validator(obj, callStack);
+	this.unstack(function(){ ok = false; });
+	return ok;
 }
 
-function matchAssertions(obj, assertions, errorCollector){
+function matchAssertions(obj, assertions, errorStack){
 	for(var i=0, l=assertions.length; i<l ; i++ ){
 		if(!assertions[i](obj)){
-			errorCollector({ message: "assertion failed: "+toString(assertions[i]) });
+			errorStack.push({
+				message: "assertion failed: "+ (assertions[i].description || toString(assertions[i]))
+			});
 		}
 	}
 }

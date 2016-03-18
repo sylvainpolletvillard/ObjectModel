@@ -36,6 +36,7 @@ Model.Array = function ArrayModel(def){
 	setConstructor(model, Model.Array);
 	model.definition = def;
 	model.assertions = [];
+	model.errorStack = [];
 	return model;
 };
 
@@ -46,14 +47,14 @@ Model.Array.prototype.toString = function(stack){
 };
 
 // private methods
-define(Model.Array.prototype, "validator", function(arr, errorCollector, stack){
+define(Model.Array.prototype, "validator", function(arr, callStack){
 	if(!isArray(arr)){
-		errorCollector({ expected: [this], received: arr });
+		this.errorStack.push({ expected: this, result: arr });
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this.definition, 'Array['+i+']', stack, errorCollector);
+		checkDefinition(arr[i], this.definition, 'Array['+i+']', callStack, this.errorStack);
 	}
-	matchAssertions(arr, this.assertions, errorCollector);
+	matchAssertions(arr, this.assertions, this.errorStack);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -86,10 +87,11 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model.definition, 'Array['+key+']', [], model.errorCollector);
+		checkDefinition(value, model.definition, 'Array['+key+']', [], model.errorStack);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model.assertions, model.errorCollector);
+	matchAssertions(testArray, model.assertions, model.errorStack);
+	model.unstack();
 	array[key] = value;
 }

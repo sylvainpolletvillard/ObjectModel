@@ -7,7 +7,7 @@ Model.Function = function FunctionModel(){
 			var args = [];
 			merge(args, def.defaults);
 			merge(args, cloneArray(arguments));
-			if (args.length !== def.arguments.length) {
+			if (args.length > def.arguments.length) {
 				model.errorCollector({
 					expected: [toString(fn) + " to be called with " + def.arguments.length + " arguments"],
 					received: args.length

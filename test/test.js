@@ -133,7 +133,7 @@ function testSuite(Model){
 		joe.name = null;
 		joe.age = new Date(1995,1,23);
 		joe.age = undefined;
-		assert.throws(function(){ joe.age = null; }, /TypeError/);
+        assert.throws(function(){ joe.age = null; }, /TypeError/);
 		joe.female = "ann";
 		joe.female = 2;
 		joe.female = false;
@@ -182,45 +182,44 @@ function testSuite(Model){
 
 	QUnit.test("Array models", function(assert){
 
-		assert.ok(Model.Array instanceof Function);
+		assert.ok(Model.Array instanceof Function, "Model.Array is declared");
 
 		var Arr = Model.Array(Number);
 		var a, b, c, d;
 
-		assert.ok(Model.instanceOf(Arr, Model.Array) && Arr instanceof Function);
+		assert.ok(Model.instanceOf(Arr, Model.Array) && Arr instanceof Function, "Array models can be declared");
 		a = Arr([]);
-		assert.ok(Model.instanceOf(a, Arr) && a instanceof Array);
+		assert.ok(Model.instanceOf(a, Arr) && a instanceof Array, "Array models can be instanciated");
 
 		a.push(1);
 		a[0] = 42;
 		a.splice(1,0,5,6,Infinity);
-		assert.throws(function(){ a.push("toto"); }, /TypeError/, "push");
-		assert.throws(function(){ a[0] = {}; }, /TypeError/, "set index");
-		assert.throws(function(){ a.splice(1,0,7,'oups',9); }, /TypeError/, "splice");
-		assert.equal(a.length, 4);
+		assert.throws(function(){ a.push("toto"); }, /TypeError/, "push calls are catched");
+		assert.throws(function(){ a[0] = {}; }, /TypeError/, "array keys set are catched");
+		assert.throws(function(){ a.splice(1,0,7,'oups',9); }, /TypeError/, "splice calls are catched");
+		assert.equal(a.length, 4, "array length change is ok");
 
 		b = Arr([1,2,3]);
-		assert.equal(b.length, 3);
+		assert.equal(b.length, 3, "array.length is ok");
 
 		assert.throws(function(){
 			c = Arr([1,false,3]);
-		}, /TypeError/);
+		}, /TypeError/, "validation in array model constructor 1/2");
 
 		assert.throws(function(){
 			d = Arr([1,2,3,function(){}]);
-		}, /TypeError/);
+		}, /TypeError/, "validation in array model constructor 2/2");
 
 
 		var Question = Model({
 			answer: Number
 		});
 
-
 		Arr = Model.Array([Question,String,Boolean]);
 		a = Arr(["test"]);
 		a.unshift(true);
 		a.push(Question({ answer: 42 }));
-		//a.push({ answer: 43 });
+		a.push({ answer: 43 });
 		assert.throws(function(){a.unshift(42); }, /TypeError/, "unshift multiple types");
 		assert.throws(function(){a[0] = null; }, /TypeError/, "set index multiple types");
 
@@ -246,9 +245,9 @@ function testSuite(Model){
 		var ParentO = Model.Object({ child: ChildO });
 
 		var childO = ChildO({ arr: ["a","b","c"] });
-		assert.ok(childO.arr instanceof Array);
+		assert.ok(childO.arr instanceof Array, "child array model is array");
 		var parentO = ParentO({ child: childO });
-		assert.ok(parentO.child.arr instanceof Array);
+		assert.ok(parentO.child.arr instanceof Array, "child array model from parent is array");
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -786,6 +785,92 @@ function testSuite(Model){
 		assert.ok(joe.sweetie = ann, "website example valid assignment");
 		assert.throws(function(){ joe.sweetie = "dog" }, /TypeError/, "website example invalid assignment 1");
 		assert.throws(function(){ joe.sweetie = joe }, /TypeError/, "website example invalid assignment 2");
+
+	});
+
+	QUnit.test("Custom error collectors", function(assert) {
+
+		assert.expect( 23 );
+
+		var defaultErrorCollector = Model.prototype.errorCollector;
+		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
+
+		Model.prototype.errorCollector = function(errors){
+			assert.ok(errors.length === 1);
+			var err = errors[0];
+			assert.equal(err.expected, Number);
+			assert.equal(err.result, "nope");
+			assert.equal(err.message, 'expecting Number, got String "nope"');
+		}
+
+		Model(Number)("nope");
+
+		Model.prototype.errorCollector = function(errors){
+			assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
+			assert.equal(errors[0].message, 'assertion failed: shouldnt be nope', 'global custom collector assertion error catch 2/2');
+		}
+		
+		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")("nope");
+
+		Model.prototype.errorCollector = function(errors){
+			assert.ok(errors.length === 1);
+			var err = errors[0];
+			assert.equal(err.expected, true);
+			assert.equal(err.result, false);
+			assert.equal(err.path, "a.b.c");
+			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false');
+		}
+
+		Model.Object({
+			a: {
+				b: {
+					c: true
+				}
+			}
+		})({
+			a: {
+				b: {
+					c: false
+				}
+			}
+		})
+
+		Model(Number).validate("nope", function(errors){
+			assert.ok(errors.length === 1);
+			var err = errors[0];
+			assert.equal(err.expected, Number);
+			assert.equal(err.result, "nope");
+			assert.equal(err.message, 'expecting Number, got String "nope"');
+		});
+
+		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
+			.validate("nope", function(errors){
+				assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
+				assert.equal(errors[0].message, 'assertion failed: shouldnt be nope', 'local custom collector assertion error catch 2/2');
+			});
+
+		Model.Object({
+			d: {
+				e: {
+					f: null
+				}
+			}
+		}).validate({
+			d: {
+				e: {
+					f: undefined
+				}
+			}
+		}, function(errors){
+			assert.ok(errors.length === 1);
+			var err = errors[0];
+			assert.deepEqual(err.expected, null);
+			assert.deepEqual(err.result, undefined);
+			assert.equal(err.path, "d.e.f");
+			assert.equal(err.message, 'expecting d.e.f to be null, got undefined');
+		})
+
+		Model.prototype.errorCollector = defaultErrorCollector;
 
 	});
 

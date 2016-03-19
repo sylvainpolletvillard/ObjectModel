@@ -12,7 +12,14 @@ module.exports = function(grunt) {
 		pkg: pkg,
 		concat: {
 			dist: {
-				src: ['src/helpers.js', 'src/model.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
+				src: [
+					'src/constants.js',
+					'src/helpers.js',
+					'src/model.js',
+					'src/object-model.js',
+					'src/array-model.js',
+					'src/function-model.js'
+				],
 				dest: 'dist/object-model.js',
 				options: {
 					banner: BANNER + ";(function(global){\n",

@@ -1,66 +1,71 @@
-Model.Function = function FunctionModel(){
+Model[FUNCTION] = function FunctionModel(){
 
 	var model = function(fn) {
 
-		var def = model.definition;
+		var def = model[DEFINITION];
 		var proxyFn = function () {
 			var args = [];
-			merge(args, def.defaults);
+			merge(args, def[DEFAULTS]);
 			merge(args, cloneArray(arguments));
-			if (args.length > def.arguments.length) {
-				model.errorStack.push({
-					expected: toString(fn) + " to be called with " + def.arguments.length + " arguments",
-					result: args.length
-				});
+			if (args.length > def[ARGS].length) {
+				var err = {};
+				err[EXPECTED] = toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS;
+				err[RESULT] = args.length;
+				model[ERROR_STACK].push(err);
 			}
-			def.arguments.forEach(function (argDef, i) {
-				checkDefinition(args[i], argDef, 'arguments[' + i + ']', [], model.errorStack);
+			def[ARGS].forEach(function (argDef, i) {
+				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
-			matchAssertions(args, model.assertions, model.errorStack);
+			matchAssertions(args, model[ASSERTIONS], model[ERROR_STACK]);
 			var returnValue = fn.apply(this, args);
-			if ("return" in def) {
-				checkDefinition(returnValue, def.return, 'return value', [], model.errorStack);
+			if (RETURN in def) {
+				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
 			}
-			model.unstack();
+			model[UNSTACK]();
 			return returnValue;
 		};
 		setConstructor(proxyFn, model);
 		return proxyFn;
 	};
 
-	setProto(model, Function.prototype);
-	setConstructor(model, Model.Function);
-	model.definition = { arguments: cloneArray(arguments) };
-	model.assertions = [];
-	model.errorStack = [];
+	setProto(model, Function[PROTO]);
+	setConstructor(model, Model[FUNCTION]);
+	model[DEFINITION] = {};
+	model[DEFINITION][ARGS] = cloneArray(arguments);
+	model[ASSERTIONS] = [];
+	model[ERROR_STACK] = [];
 	return model;
 };
 
-setProto(Model.Function, Model.prototype, Model);
+setProto(Model[FUNCTION], Model[PROTO], Model);
+var FunctionModelProto = Model[FUNCTION][PROTO];
 
-Model.Function.prototype.toString = function(stack){
-	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){
+FunctionModelProto.toString = function(stack){
+	var out = 'Model.' + FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
 			return toString(argDef, stack);
 		}).join(",") +')';
-	if("return" in this.definition) {
-		out += ".return(" + toString(this.definition.return) + ")";
+	if(RETURN in this[DEFINITION]) {
+		out += "." + RETURN + "(" + toString(this[DEFINITION][RETURN]) + ")";
 	}
 	return out;
 };
 
-Model.Function.prototype.return = function(def){
-	this.definition.return = def;
+FunctionModelProto[RETURN] = function(def){
+	this[DEFINITION][RETURN] = def;
 	return this;
 };
 
-Model.Function.prototype.defaults = function(){
-	this.definition.defaults = cloneArray(arguments);
+FunctionModelProto[DEFAULTS] = function(){
+	this[DEFINITION][DEFAULTS] = cloneArray(arguments);
 	return this;
 };
 
 // private methods
-define(Model.Function.prototype, "validator", function(f){
+define(FunctionModelProto, VALIDATOR, function(f){
 	if(!isFunction(f)){
-		this.errorStack.push({ expected: "Function", result: f });
+		var err = {};
+		err[EXPECTED] = FUNCTION;
+		err[RESULT] = f;
+		this[ERROR_STACK].push(err);
 	}
 });

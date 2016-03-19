@@ -1,11 +1,9 @@
-var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
-
-Model.Array = function ArrayModel(def){
+Model[ARRAY] = function ArrayModel(def){
 
 	var model = function(array) {
 
 		var proxy;
-		model.validate(array);
+		model[VALIDATE](array);
 		if(isProxySupported){
 			proxy = new Proxy(array, {
 				get: function (arr, key) {
@@ -16,7 +14,7 @@ Model.Array = function ArrayModel(def){
 				}
 			});
 		} else {
-			proxy = Object.create(Array.prototype);
+			proxy = Object.create(Array[PROTO]);
 			for(var key in array){
 				if(array.hasOwnProperty(key)){
 					proxifyArrayKey(proxy, array, key, model);
@@ -32,29 +30,33 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Array.prototype);
-	setConstructor(model, Model.Array);
-	model.definition = def;
-	model.assertions = [];
-	model.errorStack = [];
+	setProto(model, Array[PROTO]);
+	setConstructor(model, Model[ARRAY]);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	model[ERROR_STACK] = [];
 	return model;
 };
 
-setProto(Model.Array, Model.prototype, Model);
+setProto(Model[ARRAY], Model[PROTO], Model);
+var ArrayModelProto = Model[ARRAY][PROTO];
 
-Model.Array.prototype.toString = function(stack){
-	return 'Array of ' + toString(this.definition, stack);
+ArrayModelProto.toString = function(stack){
+	return 'Array of ' + toString(this[DEFINITION], stack);
 };
 
 // private methods
-define(Model.Array.prototype, "validator", function(arr, callStack){
+define(ArrayModelProto, VALIDATOR, function(arr, callStack){
 	if(!isArray(arr)){
-		this.errorStack.push({ expected: this, result: arr });
+		var err = {};
+		err[EXPECTED] = this;
+		err[RESULT] = arr;
+		this[ERROR_STACK].push(err);
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this.definition, 'Array['+i+']', callStack, this.errorStack);
+		checkDefinition(arr[i], this[DEFINITION], 'Array['+i+']', callStack, this[ERROR_STACK]);
 	}
-	matchAssertions(arr, this.assertions, this.errorStack);
+	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -72,8 +74,8 @@ function proxifyArrayKey(proxy, array, key, model){
 function proxifyArrayMethod(array, method, model, proxy){
 	return function() {
 		var testArray = array.slice();
-		Array.prototype[method].apply(testArray, arguments);
-		model.validate(testArray);
+		Array[PROTO][method].apply(testArray, arguments);
+		model[VALIDATE](testArray);
 		if(!isProxySupported){
 			for(var key in testArray){
 				if(testArray.hasOwnProperty(key) && !(key in proxy)){
@@ -81,17 +83,17 @@ function proxifyArrayMethod(array, method, model, proxy){
 				}
 			}
 		}
-		return Array.prototype[method].apply(array, arguments);
+		return Array[PROTO][method].apply(array, arguments);
 	};
 }
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model.definition, 'Array['+key+']', [], model.errorStack);
+		checkDefinition(value, model[DEFINITION], 'Array['+key+']', [], model[ERROR_STACK]);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model.assertions, model.errorStack);
-	model.unstack();
+	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK]);
+	model[UNSTACK]();
 	array[key] = value;
 }

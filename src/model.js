@@ -1,118 +1,124 @@
 function Model(def){
-	if(!isLeaf(def)) return Model.Object(def);
+	if(!isLeaf(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
-		model.validate(obj);
+		model[VALIDATE](obj);
 		return obj;
 	};
 
 	setConstructor(model, Model);
-	model.definition = def;
-	model.assertions = [];
-	model.errorStack = [];
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	model[ERROR_STACK] = [];
 	return model;
 }
 
-setProto(Model, Function.prototype);
+setProto(Model, Function[PROTO]);
+var ModelProto = Model[PROTO];
 
-Model.prototype.toString = function(stack){
-	return parseDefinition(this.definition).map(function(d){
+ModelProto.toString = function(stack){
+	return parseDefinition(this[DEFINITION]).map(function(d){
 		return toString(d, stack);
 	}).join(" or ");
 };
 
-Model.prototype.validate = function(obj, errorCollector){
-	this.validator(obj, []);
-	this.unstack(errorCollector);
+ModelProto[VALIDATE] = function(obj, errorCollector){
+	this[VALIDATOR](obj, []);
+	this[UNSTACK](errorCollector);
 };
 
-Model.prototype.test = function(obj){
+ModelProto.test = function(obj){
 	return test.call(this, obj, []);
 };
 
-Model.prototype.extend = function(){
+ModelProto.extend = function(){
 	var def, proto,
-		assertions = cloneArray(this.assertions),
+		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(Model.instanceOf(this, Model.Object)){
+	if(Model[INSTANCEOF](this, Model[OBJECT])){
 		def = {};
 		proto = {};
-		merge(def, this.definition);
-		merge(proto, this.prototype);
+		merge(def, this[DEFINITION]);
+		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(Model.instanceOf(arg, Model)){
-				merge(def, arg.definition, true);
-				merge(proto, arg.prototype, true);
+			if(Model[INSTANCEOF](arg, Model)){
+				merge(def, arg[DEFINITION], true);
+				merge(proto, arg[PROTO], true);
 			} else {
 				merge(def, arg, true);
 			}
 		})
 	} else {
-		def = args.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(this.definition))
-			      .filter(function(value, index, self) { return self.indexOf(value) === index; }); // remove duplicates
+		def = args
+			.reduce(function(def, ext){
+				return def.concat(parseDefinition(ext));
+			}, parseDefinition(this[DEFINITION]))
+			.filter(function(value, index, self) {
+				return self.indexOf(value) === index; // remove duplicates
+			});
 	}
 
 	args.forEach(function(arg){
-		if(Model.instanceOf(arg, Model)){
-			assertions = assertions.concat(arg.assertions);
+		if(Model[INSTANCEOF](arg, Model)){
+			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
 
 	var submodel = new this.constructor(def);
-	setProto(submodel, this.prototype);
-	merge(submodel.prototype, proto);
-	submodel.assertions = assertions;
+	setProto(submodel, this[PROTO]);
+	merge(submodel[PROTO], proto);
+	submodel[ASSERTIONS] = assertions;
 	return submodel;
 };
 
-Model.prototype.assert = function(assertion, message){
-	define(assertion, "description", message);
-	this.assertions.push(assertion);
+ModelProto.assert = function(assertion, message){
+	define(assertion, DESCRIPTION, message);
+	this[ASSERTIONS].push(assertion);
 	return this;
 };
 
-Model.prototype.errorCollector = function(errors){
-	throw new TypeError(errors.map(function(e){ return e.message; }).join('\n'));
+ModelProto.errorCollector = function(errors){
+	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
 };
 
-Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
+Model[INSTANCEOF] = function(obj, Constructor){ // instanceof sham for IE<9
 	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
 		if(o == null || stack.indexOf(o) !== -1) return false;
 		var proto = Object.getPrototypeOf(o);
 		stack.push(o);
-		return proto === Constructor.prototype || recursive(proto, stack);
+		return proto === Constructor[PROTO] || recursive(proto, stack);
 	})(obj, [])
 };
 
-Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
-Model.conventionForPrivate = function(key){ return key[0] === "_" };
+Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
+Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 
 // private methods
-define(Model.prototype, "validator", function(obj, stack){
-	checkDefinition(obj, this.definition, null, stack || [], this.errorStack);
-	matchAssertions(obj, this.assertions, this.errorStack);
+define(ModelProto, VALIDATOR, function(obj, stack){
+	checkDefinition(obj, this[DEFINITION], null, stack || [], this[ERROR_STACK]);
+	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
 });
 
 // throw all errors collected
-define(Model.prototype, "unstack", function(errorCollector){
-	if(this.errorStack.length === 0){
+define(ModelProto, UNSTACK, function(errorCollector){
+	if(!this[ERROR_STACK].length){
 		return;
 	}
 	if(!errorCollector){
 		errorCollector = this.errorCollector;
 	}
-	var errors = this.errorStack.map(function(err){
-		if(!err.message){
-			var expected = isArray(err.expected) ? err.expected : [err.expected];
-			err.message = ("expecting " + (err.path ? err.path + " to be " : "")
-			+ expected.map(function(d){ return toString(d); }).join(" or ")
-			+ ", got " + (err.result != null ? bettertypeof(err.result) + " " : "")
-			+ toString(err.result))
+	var errors = this[ERROR_STACK].map(function(err){
+		if(!err[MESSAGE]){
+			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
+			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
+			+ def.map(function(d){ return toString(d); }).join(" or ")
+			+ ", got " + (err[RESULT] != null ? bettertypeof(err[RESULT]) + " " : "")
+			+ toString(err[RESULT]))
 		}
 		return err;
 	});
-	this.errorStack = [];
+	this[ERROR_STACK] = [];
 	errorCollector.call(this, errors);
 })
 
@@ -138,11 +144,11 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		for(var i= 0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){ return; }
 		}
-		errorStack.push({
-			expected: def,
-			result: obj,
-			path: path
-		});
+		var err = {};
+		err[EXPECTED] = def;
+		err[RESULT] = obj;
+		err[PATH] = path;
+		errorStack.push(err);
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
@@ -160,7 +166,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return errorStack.length === 0;
 	}
-	if(Model.instanceOf(def, Model)){
+	if(Model[INSTANCEOF](def, Model)){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return true; //if found twice in call stack, cycle detected, skip validation
@@ -178,17 +184,17 @@ function checkDefinitionPart(obj, def, path, callStack){
 
 function test(obj, callStack){
 	var ok = true;
-	this.validator(obj, callStack);
-	this.unstack(function(){ ok = false; });
+	this[VALIDATOR](obj, callStack);
+	this[UNSTACK](function(){ ok = false; });
 	return ok;
 }
 
 function matchAssertions(obj, assertions, errorStack){
 	for(var i=0, l=assertions.length; i<l ; i++ ){
 		if(!assertions[i](obj)){
-			errorStack.push({
-				message: "assertion failed: "+ (assertions[i].description || toString(assertions[i]))
-			});
+			var err = {};
+			err[MESSAGE] = "assertion failed: "+ (assertions[i][DESCRIPTION] || toString(assertions[i]))
+			errorStack.push(err);
 		}
 	}
 }

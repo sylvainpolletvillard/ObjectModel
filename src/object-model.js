@@ -1,40 +1,44 @@
-Model.Object = function ObjectModel(def){
+Model[OBJECT] = function ObjectModel(def){
 
 	var model = function(obj) {
 		if(!(this instanceof model)){
 			return new model(obj);
 		}
 		if(obj != null && !isObject(obj)){
-			model.errorStack.push({ expected: model, result: obj });
+			var err = {};
+			err[EXPECTED] = model;
+			err[RESULT] = obj;
+			model[ERROR_STACK].push(err);
 		}
 		merge(this, obj, true);
-		var proxy = getProxy(model, this, model.definition);
-		ensureProto(proxy, model.prototype);
-		model.validate(proxy);
-		model.unstack();
+		var proxy = getProxy(model, this, model[DEFINITION]);
+		ensureProto(proxy, model[PROTO]);
+		model[VALIDATE](proxy);
+		model[UNSTACK]();
 		return proxy;
 	};
 
-	setConstructor(model, Model.Object);
-	model.definition = def;
-	model.assertions = [];
-	model.errorStack = [];
+	setConstructor(model, Model[OBJECT]);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	model[ERROR_STACK] = [];
 	return model;
 };
 
-setProto(Model.Object, Model.prototype, Model);
+setProto(Model[OBJECT], ModelProto, Model);
+var ObjectModelProto = Model[OBJECT][PROTO];
 
-Model.Object.prototype.defaults = function(p){
-	merge(this.prototype, p);
+ObjectModelProto[DEFAULTS] = function(p){
+	merge(this[PROTO], p);
 	return this;
 };
 
-Model.Object.prototype.toString = function(stack){
-	return toString(this.definition, stack);
+ObjectModelProto.toString = function(stack){
+	return toString(this[DEFINITION], stack);
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
+	if(Model[INSTANCEOF](defNode, Model) && !Model[INSTANCEOF](obj, defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
@@ -51,26 +55,28 @@ function getProxy(model, obj, defNode, path) {
 
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
-			var isConstant = Model.conventionForConstant(key);
+			var isConstant = Model[CONVENTION_CONSTANT](key);
 			Object.defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
 				set: function (val) {
 					if(isConstant && wrapper[key] !== undefined){
-						model.errorStack.push({ message: "cannot redefine constant " + key });
+						var err = {};
+						err[MESSAGE] = "cannot redefine constant " + key;
+						model[ERROR_STACK].push(err);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, [], model.errorStack);
+					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-					matchAssertions(obj, model.assertions, model.errorStack);
-					if(model.errorStack.length){
+					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK]);
+					if(model[ERROR_STACK].length){
 						wrapper[key] = oldValue;
-						model.unstack();
+						model[UNSTACK]();
 					}
 				},
-				enumerable: !Model.conventionForPrivate(key)
+				enumerable: !Model[CONVENTION_PRIVATE](key)
 			});
 		});
 		return proxy;

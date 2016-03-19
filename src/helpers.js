@@ -76,14 +76,14 @@ function ensureProto(o, p){
 }
 
 function setProto(constructor, proto, protoConstructor){
-	constructor.prototype = Object.create(proto);
-	constructor.prototype.constructor = protoConstructor || constructor;
-	ensureProto(constructor.prototype, proto);
+	constructor[PROTO] = Object.create(proto);
+	constructor[PROTO].constructor = protoConstructor || constructor;
+	ensureProto(constructor[PROTO], proto);
 }
 
 function setConstructor(model, constructor){
-	Object.setPrototypeOf(model, constructor.prototype);
+	Object.setPrototypeOf(model, constructor[PROTO]);
 	define(model, "constructor", constructor);
 }
 
-var isProxySupported = (typeof Proxy === "function");
+var isProxySupported = isFunction(Proxy);

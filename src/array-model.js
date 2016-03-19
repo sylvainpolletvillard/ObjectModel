@@ -42,7 +42,7 @@ setProto(Model[ARRAY], Model[PROTO], Model);
 var ArrayModelProto = Model[ARRAY][PROTO];
 
 ArrayModelProto.toString = function(stack){
-	return 'Array of ' + toString(this[DEFINITION], stack);
+	return ARRAY + ' of ' + toString(this[DEFINITION], stack);
 };
 
 // private methods
@@ -54,7 +54,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, callStack){
 		this[ERROR_STACK].push(err);
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this[DEFINITION], 'Array['+i+']', callStack, this[ERROR_STACK]);
+		checkDefinition(arr[i], this[DEFINITION], ARRAY+'['+i+']', callStack, this[ERROR_STACK]);
 	}
 	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
 });
@@ -89,7 +89,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model[DEFINITION], 'Array['+key+']', [], model[ERROR_STACK]);
+		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;

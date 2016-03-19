@@ -1,3 +1,5 @@
+var gzipSize = require('gzip-size').sync;
+
 module.exports = function(grunt) {
 
 	function esc(text) {
@@ -71,11 +73,11 @@ module.exports = function(grunt) {
 					inject: [
 						{
 							dest: 'index.html',
-							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified</strong>'
+							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
 						},
 						{
 							dest: 'index.html',
-							text: 'minified file ({{= sizeText(size(src[1])) }})'
+							text: 'minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
 						}
 					]
 				}

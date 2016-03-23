@@ -4,17 +4,10 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!(this instanceof model)){
 			return new model(obj);
 		}
-		if(obj != null && !isObject(obj)){
-			var err = {};
-			err[EXPECTED] = model;
-			err[RESULT] = obj;
-			model[ERROR_STACK].push(err);
-		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
 		ensureProto(proxy, model[PROTO]);
 		model[VALIDATE](proxy);
-		model[UNSTACK]();
 		return proxy;
 	};
 
@@ -38,7 +31,7 @@ ObjectModelProto.toString = function(stack){
 };
 
 function getProxy(model, obj, defNode, path) {
-	if(Model[INSTANCEOF](defNode, Model) && !Model[INSTANCEOF](obj, defNode)) {
+	if(Model[INSTANCEOF](defNode, Model) && obj && !Model[INSTANCEOF](obj, defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;

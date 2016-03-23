@@ -23,12 +23,14 @@ ModelProto.toString = function(stack){
 };
 
 ModelProto[VALIDATE] = function(obj, errorCollector){
-	this[VALIDATOR](obj, []);
+	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
 };
 
 ModelProto.test = function(obj){
-	return test.call(this, obj, []);
+	var errorStack = [];
+	this[VALIDATOR](obj, null, [], errorStack);
+	return !errorStack.length;
 };
 
 ModelProto.extend = function(){
@@ -95,9 +97,9 @@ Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
 Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 
 // private methods
-define(ModelProto, VALIDATOR, function(obj, stack){
-	checkDefinition(obj, this[DEFINITION], null, stack || [], this[ERROR_STACK]);
-	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	matchAssertions(obj, this[ASSERTIONS], errorStack);
 });
 
 // throw all errors collected
@@ -139,12 +141,29 @@ function parseDefinition(def){
 }
 
 function checkDefinition(obj, def, path, callStack, errorStack){
-	if(isLeaf(def)){
+	var err;
+	if(Model[INSTANCEOF](def, Model)){
+		var indexFound = callStack.indexOf(def);
+		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
+			return; //if found twice in call stack, cycle detected, skip validation
+		}
+		if(obj == null){
+			err = {};
+			err[EXPECTED] = def;
+			err[RESULT] = obj;
+			err[PATH] = path;
+			errorStack.push(err);
+			return;
+		}
+		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+	} else if(isLeaf(def)){
 		var pdef = parseDefinition(def);
 		for(var i= 0, l=pdef.length; i<l; i++){
-			if(checkDefinitionPart(obj, pdef[i], path, callStack)){ return; }
+			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
+				return;
+			}
 		}
-		var err = {};
+		err = {};
 		err[EXPECTED] = def;
 		err[RESULT] = obj;
 		err[PATH] = path;
@@ -152,7 +171,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 	} else {
 		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack.concat(val), errorStack);
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
 	}
 }
@@ -161,17 +180,10 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def)){
-		var errorStack=[];
+	if(!isLeaf(def) || Model[INSTANCEOF](def, Model)){ // object or model as part of union type
+		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
-		return errorStack.length === 0;
-	}
-	if(Model[INSTANCEOF](def, Model)){
-		var indexFound = callStack.indexOf(def);
-		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
-			return true; //if found twice in call stack, cycle detected, skip validation
-		}
-		return test.call(def, obj, callStack.concat(def));
+		return !errorStack.length;
 	}
 	if(def instanceof RegExp){
 		return def.test(obj);
@@ -180,13 +192,6 @@ function checkDefinitionPart(obj, def, path, callStack){
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
 		|| obj.constructor === def;
-}
-
-function test(obj, callStack){
-	var ok = true;
-	this[VALIDATOR](obj, callStack);
-	this[UNSTACK](function(){ ok = false; });
-	return ok;
 }
 
 function matchAssertions(obj, assertions, errorStack){

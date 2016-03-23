@@ -46,15 +46,15 @@ ArrayModelProto.toString = function(stack){
 };
 
 // private methods
-define(ArrayModelProto, VALIDATOR, function(arr, callStack){
+define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 	if(!isArray(arr)){
 		var err = {};
 		err[EXPECTED] = this;
 		err[RESULT] = arr;
-		this[ERROR_STACK].push(err);
+		errorStack.push(err);
 	}
 	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this[DEFINITION], ARRAY+'['+i+']', callStack, this[ERROR_STACK]);
+		checkDefinition(arr[i], this[DEFINITION], ARRAY+'['+i+']', callStack, errorStack);
 	}
 	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
 });

@@ -10,7 +10,7 @@ var
 	DEFINITION = "definition",
 	ASSERTIONS = "assertions",
 	VALIDATE = "validate",
-	VALIDATOR = "validator",
+	VALIDATOR = "_validator",
 	DESCRIPTION = "description",
 	EXPECTED = "expected",
 	RESULT = "result",

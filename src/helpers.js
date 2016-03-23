@@ -22,10 +22,10 @@ function toString(obj, stack){
 			}).join(', ') + ']';
 	}
 	if(obj && isObject(obj)){
-		var indent = (new Array(stack.length)).join('\t');
+		var indent = (new Array(stack.length-1)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
-				return '\n\t' + indent + key + ': ' + toString(obj[key], stack);
-			}).join(',') + '\n' + indent + '}';
+				return '\n' + indent + key + ': ' + toString(obj[key], stack);
+			}).join(',') + '\n' + '}';
 	}
 	return String(obj)
 }

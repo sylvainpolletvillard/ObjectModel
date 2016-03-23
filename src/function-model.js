@@ -61,11 +61,11 @@ FunctionModelProto[DEFAULTS] = function(){
 };
 
 // private methods
-define(FunctionModelProto, VALIDATOR, function(f){
+define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
 	if(!isFunction(f)){
 		var err = {};
 		err[EXPECTED] = FUNCTION;
 		err[RESULT] = f;
-		this[ERROR_STACK].push(err);
+		errorStack.push(err);
 	}
 });

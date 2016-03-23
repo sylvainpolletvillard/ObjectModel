@@ -127,7 +127,8 @@
 			<li>Easy inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in <strong>7.2 kB minified, 2.9 kB gzipped</strong></li>
+			<li>Custom error collectors</li>
+			<li>all in <strong>7.1 kB minified, 2.9 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -138,10 +139,10 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v1.2</h3>
+		<h3>Current version: v1.2.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.2 kB, 2.9 kB gzipped)</li>
-			<li><a href="dist/object-model-1.2.zip">object-model-1.2.zip</a> source files</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.1 kB, 2.9 kB gzipped)</li>
+			<li><a href="dist/object-model-1.2.0.zip">object-model-1.2.0.zip</a> source files</li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
@@ -203,6 +204,7 @@
 				<li>Make Model API use function models itself (wow, so meta X_x)</li>
 				<li>Greater use of ES6 Proxies</li>
 				<li>ES6 only version</li>
+				<li>more detailed path information in object models type errors</li>
 			</ul>
 		</details>
 
@@ -328,7 +330,7 @@ opening.easing = 1;</code>
 
 	<section id="doc-null-safe">
 		<h2>Null-safe object traversal</h2>
-		<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an Object Model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model.</p>
+		<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an Object Model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -463,7 +465,11 @@ ann = Mother(ann); // cast ann to Mother model
 Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
-<code class="language-none exception">TypeError: expecting female to be true, got Boolean false</code></pre>
+<code class="language-none exception">TypeError: expecting female to be true, got Boolean false
+expecting child to be {
+	name: String,
+	female: Boolean
+}, got undefined</code></pre>
 			</div>
 		</div>
 	</section>
@@ -486,12 +492,13 @@ Client.prototype.sendConfirmationMail = function(){
 };
 
 Object.keys(Client.definition);</code>
-<code class="language-none log">["name", "age", "email", "product", "orderDate", "store"]</code></pre>
+<code class="language-none log">["name", "female", "email", "product", "orderDate", "store"]</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">var joe = new Client({
 	name: "Joe",
+	female: false,
 	email: "joe@email.net",
 	product: { name: "diapers", quantity: 100 },
 	orderDate: new Date(),
@@ -531,14 +538,13 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
 <code class="language-none log">1</code>
-<code class="language-javascript">Integer(Math.sqrt(-1));</code>
-<code class="language-none exception">TypeError: assertion failed: isFinite</code>
-<code class="language-javascript">Integer(Math.sqrt(2));</code>
-<code class="language-none exception">TypeError: assertion failed: isInteger</code>
 
+<code class="language-javascript">Integer(Math.sqrt(2));</code>
+<code class="language-none exception">TypeError: assertion failed: should be an integer</code>
 
 <code class="language-javascript">PrimeNumber(83);</code>
 <code class="language-none log">83</code>
+
 <code class="language-javascript">PrimeNumber(87);</code>
 <code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
 			</div>

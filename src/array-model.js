@@ -51,10 +51,12 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 		var err = {};
 		err[EXPECTED] = this;
 		err[RESULT] = arr;
+		err[PATH] = path;
 		errorStack.push(err);
-	}
-	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this[DEFINITION], ARRAY+'['+i+']', callStack, errorStack);
+	} else {
+		for(var i=0, l=arr.length; i<l; i++){
+			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
+		}
 	}
 	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
 });

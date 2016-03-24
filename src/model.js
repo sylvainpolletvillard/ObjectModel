@@ -147,14 +147,6 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
 		}
-		if(obj == null){
-			err = {};
-			err[EXPECTED] = def;
-			err[RESULT] = obj;
-			err[PATH] = path;
-			errorStack.push(err);
-			return;
-		}
 		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
 	} else if(isLeaf(def)){
 		var pdef = parseDefinition(def);

@@ -30,6 +30,20 @@ ObjectModelProto.toString = function(stack){
 	return toString(this[DEFINITION], stack);
 };
 
+// private methods
+define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	if(!isObject(obj)){
+		var err = {};
+		err[EXPECTED] = this;
+		err[RESULT] = obj;
+		err[PATH] = path;
+		errorStack.push(err);
+	} else {
+		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	}
+	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+});
+
 function getProxy(model, obj, defNode, path) {
 	if(Model[INSTANCEOF](defNode, Model) && obj && !Model[INSTANCEOF](obj, defNode)) {
 		return defNode(obj);

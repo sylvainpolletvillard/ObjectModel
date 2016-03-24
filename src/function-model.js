@@ -66,6 +66,7 @@ define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
 		var err = {};
 		err[EXPECTED] = FUNCTION;
 		err[RESULT] = f;
+		err[PATH] = path;
 		errorStack.push(err);
 	}
 });

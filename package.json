@@ -1,6 +1,6 @@
 {
 	"name": "objectmodel",
-	"version": "1.2",
+	"version": "1.2.0",
 	"description": "Runtime Type Checking and Data Model Definition for JavaScript",
 	"author": "Sylvain Pollet-Villard",
 	"license": "MIT",
@@ -8,6 +8,9 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
+	},
+	"scripts": {
+		"postinstall": "npm install -g grunt-cli"
 	},
 	"devDependencies": {
 		"grunt": ">=0.4.5",
@@ -22,5 +25,19 @@
 		"grunt-regex-replace": "~0.2.6"
 	},
 	"main": "dist/object-model.umd.js",
-	"keywords": [ "typed", "types", "typing", "dynamic", "strong", "model", "definition", "object", "assertion", "inheritance", "composition", "structures", "proxy"]
+	"keywords": [
+		"typed",
+		"types",
+		"typing",
+		"dynamic",
+		"strong",
+		"model",
+		"definition",
+		"object",
+		"assertion",
+		"inheritance",
+		"composition",
+		"structures",
+		"proxy"
+	]
 }

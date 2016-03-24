@@ -63,6 +63,7 @@
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
+			<li><a href="#doc-custom-collectors">Custom error collectors</a></li>
 			<li><a href="#api">Full API</a></li>
 			<li><a href="#common-models">Commonly used models</a></li>
 			<li><a href="#common-questions">Common questions</a></li>
@@ -150,6 +151,7 @@
 				<dt>v1.2</dt>
 				<dd>null is now a valid value for an optional property</dd>
 				<dd>assert API has changed and now receives optional description</dd>
+				<dd>validate API has changed and now receives optional error collector</dd>
 				<dd>custom error collectors can be declared globally or by model</dd>
 				<dd>stack errors instead of throwing the first error catched</dd>
 				<dt>v1.1</dt>
@@ -697,6 +699,69 @@ joe.sayMyName();</code>
 
 	<hr>
 
+	<section id="doc-custom-collectors">
+		<h2>Custom error collectors</h2>
+		<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
+		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:
+		<ul>
+		<li><code>message</code>: a message describing all the errors caught</li>
+		<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
+		<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
+		<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
+		</ul>
+		</p>
+
+		<div class="panel">
+<pre><code class="language-javascript">var Student = Model({
+	name: String,
+	course: [ "math","english","history" ],
+	grade: Number
+}).assert(function(stu){ return stu.grade >= 60 }, "should at least get 60 to validate semester")
+
+Model.prototype.errorCollector = function(errors){
+	console.log("Global error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
+
+new Student({ name: "Joanna", course: "sleep", grade: 0 });
+</code><code class="language-none log">Global error collector caught these errors:
+{
+	message: 'expecting course to be "math" or "english" or "history", got String "sleep"'
+	path: "course"
+	expected: ["math","english","history"]
+	received: "games"
+}
+{
+	message: "assertion failed: should at least get 60 to validate semester"
+}
+</code><code class="language-javascript">
+Student.errorCollector = function(errors){
+	console.log("Student model error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
+
+new Student({ name: "Joanna", course: "math", grade: 50 });
+</code><code class="language-none log">Student model collector caught these errors:
+{
+	message: "assertion failed: should at least get 60 to validate semester"
+}
+</code><code class="language-javascript">
+Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(errors){
+	console.log("This specific error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+});
+</code><code class="language-none log">This specific error collector caught these errors:
+{
+	message: 'expecting course to be "math" or "english" or "history", got String "cheating"'
+	path: "course"
+	expected: ["math","english","history","science"]
+	received: "cheating"
+}</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="api">
 		<h2>Full API</h2>
 		<dl>
@@ -729,6 +794,9 @@ joe.sayMyName();</code>
 
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
+
+			<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
+			<dd>Function called when validation errors are detected</dd>
 
 			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
 			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>

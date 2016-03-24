@@ -320,9 +320,14 @@ opening.easing = 1;</code>
 			<div class="panel">
 				<span class="legend">Model</span>
 <pre><code class="language-javascript">var Shirt = new Model({
-	category: "clothes", // the only acceptable value is "clothes"
-	size: [Number, "M", /^X{0,2}[SL]$/], // valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
-	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined] // valid values: "black", "#FF0000", undefined...
+	// the only acceptable value is "clothes"
+	category: "clothes",
+
+	// valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
+	size: [Number, "M", /^X{0,2}[SL]$/],
+
+	// valid values: "black", "#FF0000", undefined...
+	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined]
 });</code></pre>
 			</div>
 		</div>
@@ -711,7 +716,6 @@ joe.sayMyName();</code>
 		</ul>
 		</p>
 
-		<div class="panel">
 <pre><code class="language-javascript">var Student = Model({
 	name: String,
 	course: [ "math","english","history" ],
@@ -757,7 +761,6 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 	expected: ["math","english","history","science"]
 	received: "cheating"
 }</code></pre>
-		</div>
 	</section>
 
 	<hr>

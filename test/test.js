@@ -799,7 +799,7 @@ function testSuite(Model){
 			assert.ok(errors.length === 1);
 			var err = errors[0];
 			assert.equal(err.expected, Number);
-			assert.equal(err.result, "nope");
+			assert.equal(err.received, "nope");
 			assert.equal(err.message, 'expecting Number, got String "nope"');
 		}
 
@@ -809,25 +809,27 @@ function testSuite(Model){
 			assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message, 'assertion failed: shouldnt be nope', 'global custom collector assertion error catch 2/2');
 		}
-		
+
 		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")("nope");
 
-		Model.prototype.errorCollector = function(errors){
-			assert.ok(errors.length === 1);
-			var err = errors[0];
-			assert.equal(err.expected, true);
-			assert.equal(err.result, false);
-			assert.equal(err.path, "a.b.c");
-			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false');
-		}
-
-		Model.Object({
+		var M = Model.Object({
 			a: {
 				b: {
 					c: true
 				}
 			}
-		})({
+		});
+
+		M.errorCollector = function(errors){
+			assert.ok(errors.length === 1);
+			var err = errors[0];
+			assert.equal(err.expected, true);
+			assert.equal(err.received, false);
+			assert.equal(err.path, "a.b.c");
+			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false');
+		}
+
+		M({
 			a: {
 				b: {
 					c: false
@@ -839,7 +841,7 @@ function testSuite(Model){
 			assert.ok(errors.length === 1);
 			var err = errors[0];
 			assert.equal(err.expected, Number);
-			assert.equal(err.result, "nope");
+			assert.equal(err.received, "nope");
 			assert.equal(err.message, 'expecting Number, got String "nope"');
 		});
 
@@ -865,7 +867,7 @@ function testSuite(Model){
 			assert.ok(errors.length === 1);
 			var err = errors[0];
 			assert.deepEqual(err.expected, null);
-			assert.deepEqual(err.result, undefined);
+			assert.deepEqual(err.received, undefined);
 			assert.equal(err.path, "d.e.f");
 			assert.equal(err.message, 'expecting d.e.f to be null, got undefined');
 		})

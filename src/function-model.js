@@ -10,7 +10,7 @@ Model[FUNCTION] = function FunctionModel(){
 			if (args.length > def[ARGS].length) {
 				var err = {};
 				err[EXPECTED] = toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS;
-				err[RESULT] = args.length;
+				err[RECEIVED] = args.length;
 				model[ERROR_STACK].push(err);
 			}
 			def[ARGS].forEach(function (argDef, i) {
@@ -65,7 +65,7 @@ define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
 	if(!isFunction(f)){
 		var err = {};
 		err[EXPECTED] = FUNCTION;
-		err[RESULT] = f;
+		err[RECEIVED] = f;
 		err[PATH] = path;
 		errorStack.push(err);
 	}

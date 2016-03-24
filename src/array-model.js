@@ -50,7 +50,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 	if(!isArray(arr)){
 		var err = {};
 		err[EXPECTED] = this;
-		err[RESULT] = arr;
+		err[RECEIVED] = arr;
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {

@@ -35,7 +35,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	if(!isObject(obj)){
 		var err = {};
 		err[EXPECTED] = this;
-		err[RESULT] = obj;
+		err[RECEIVED] = obj;
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {

@@ -115,8 +115,8 @@ define(ModelProto, UNSTACK, function(errorCollector){
 			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
 			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
 			+ def.map(function(d){ return toString(d); }).join(" or ")
-			+ ", got " + (err[RESULT] != null ? bettertypeof(err[RESULT]) + " " : "")
-			+ toString(err[RESULT]))
+			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
+			+ toString(err[RECEIVED]))
 		}
 		return err;
 	});
@@ -157,7 +157,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		}
 		err = {};
 		err[EXPECTED] = def;
-		err[RESULT] = obj;
+		err[RECEIVED] = obj;
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {

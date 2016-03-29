@@ -87,3 +87,13 @@ function setConstructor(model, constructor){
 }
 
 var isProxySupported = isFunction(window.Proxy);
+
+// shim for Function.name for browsers that don't support it. IE, I'm looking at you.
+if (!("name" in Function.prototype && "name" in (function x() {}))) {
+	Object.defineProperty(Function.prototype, "name", {
+		get: function() {
+			var results = Function.prototype.toString.call(this).match(/\s*function\s+([^\(\s]*)\s*/);
+			return results && results[1];
+		}
+	});
+}

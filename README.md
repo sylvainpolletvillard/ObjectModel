@@ -1,6 +1,8 @@
 Object Model
 ============
 
+[![Join the chat at https://gitter.im/sylvainpolletvillard/ObjectModel](https://badges.gitter.im/sylvainpolletvillard/ObjectModel.svg)](https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Runtime Type Checking and Data Model Definition for JavaScript
 
 ---

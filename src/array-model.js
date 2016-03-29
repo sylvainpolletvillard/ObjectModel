@@ -22,7 +22,7 @@ Model[ARRAY] = function ArrayModel(def){
 			}
 			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
-				def(proxy, method, proxifyArrayMethod(array, method, model, proxy));
+				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
 		}
 

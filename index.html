@@ -129,7 +129,7 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>7.1 kB minified, 2.9 kB gzipped</strong></li>
+			<li>all in <strong>7.2 kB minified, 2.9 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -142,7 +142,7 @@
 		<h2>Download</h2>
 		<h3>Current version: v1.2.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.1 kB, 2.9 kB gzipped)</li>
+			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.2 kB, 2.9 kB gzipped)</li>
 			<li><a href="dist/object-model-1.2.0.zip">object-model-1.2.0.zip</a> source files</li>
 		</ul>
 		<details>
@@ -860,6 +860,15 @@ User.create = function(properties){
 };
 
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
+
+		<h3>How can I get the model from an instance ?</h3>
+		<p>If this instance has been properly instantiated with the model constructor, you can retrieve a reference to this model through <code>Object.getPrototypeOf(instance).constructor</code>. This is useful to get the property type of an instance attribute for example.</p>
+<pre><code class="language-javascript">var User = Model({ name: String }),
+	joe = User({ name: "Joe" });
+
+var modelOfJoe = Object.getPrototypeOf(joe).constructor;
+// modelOfJoe === User
+// modelOfJoe.definition.name === String</code></pre>
 
 		<h3>How should I deal with circular references in my model definitions ?</h3>
 		<p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards:</p>

@@ -111,6 +111,26 @@ function testSuite(Model){
 
 		assert.strictEqual(joe.job, "Taxi", "Properties out of model definition are kept but are not validated");
 
+		assert.throws(function() {
+			var joey = Person({
+				name: false,
+				age: [42],
+				birth: "nope",
+				female: null,
+				address: {
+					work: {
+						city: true
+					}
+				}
+			});
+		}, function(err){
+			return /TypeError/.test(err.toString())
+				&& /name/.test(err.toString())
+				&& /age/.test(err.toString())
+				&& /birth/.test(err.toString())
+				&& /city/.test(err.toString())
+		}, "check that errors are correctly stacked");
+
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){

@@ -86,4 +86,4 @@ function setConstructor(model, constructor){
 	define(model, "constructor", constructor);
 }
 
-var isProxySupported = isFunction(window.Proxy);
+var isProxySupported = isFunction(this.Proxy);

@@ -6,10 +6,7 @@ function Model(def){
 		return obj;
 	};
 
-	setConstructor(model, Model);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model);
 	return model;
 }
 
@@ -126,6 +123,13 @@ define(ModelProto, UNSTACK, function(errorCollector){
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
+}
+
+function initModel(model, def, constructor){
+	setConstructor(model, constructor);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	define(model, ERROR_STACK, []);
 }
 
 function parseDefinition(def){

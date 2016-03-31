@@ -28,12 +28,11 @@ Model[FUNCTION] = function FunctionModel(){
 		return proxyFn;
 	};
 
+	var def = {};
+	def[ARGS] = cloneArray(arguments);
+
 	setProto(model, Function[PROTO]);
-	setConstructor(model, Model[FUNCTION]);
-	model[DEFINITION] = {};
-	model[DEFINITION][ARGS] = cloneArray(arguments);
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model[FUNCTION]);
 	return model;
 };
 

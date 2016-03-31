@@ -11,10 +11,7 @@ Model[OBJECT] = function ObjectModel(def){
 		return proxy;
 	};
 
-	setConstructor(model, Model[OBJECT]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model[OBJECT]);
 	return model;
 };
 

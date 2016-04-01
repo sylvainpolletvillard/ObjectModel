@@ -31,10 +31,7 @@ Model[ARRAY] = function ArrayModel(def){
 	};
 
 	setProto(model, Array[PROTO]);
-	setConstructor(model, Model[ARRAY]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model[ARRAY]);
 	return model;
 };
 

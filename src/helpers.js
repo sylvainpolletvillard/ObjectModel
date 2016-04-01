@@ -86,7 +86,7 @@ function setConstructor(model, constructor){
 	define(model, "constructor", constructor);
 }
 
-var isProxySupported = isFunction(window.Proxy);
+var isProxySupported = isFunction(this.Proxy);
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.
 if (!("name" in Function.prototype && "name" in (function x() {}))) {

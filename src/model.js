@@ -84,6 +84,7 @@ ModelProto.errorCollector = function(errors){
 Model[INSTANCEOF] = function(obj, Constructor){ // instanceof sham for IE<9
 	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
 		if(o == null || stack.indexOf(o) !== -1) return false;
+		if(!isObject(o) && !isFunction(o)) return o instanceof Constructor;
 		var proto = Object.getPrototypeOf(o);
 		stack.push(o);
 		return proto === Constructor[PROTO] || recursive(proto, stack);

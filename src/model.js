@@ -20,8 +20,6 @@ ModelProto.toString = function(stack){
 };
 
 ModelProto[VALIDATE] = function(obj, errorCollector){
-	console.log("spv",Object.keys(ModelProto))
-	console.log("spv2",Object.keys(this))
 	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
 };

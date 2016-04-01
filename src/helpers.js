@@ -54,22 +54,19 @@ function merge(target, src, deep) {
 function define(obj, key, val, enumerable) {
 	Object.defineProperty(obj, key, {
 		value: val,
-		enumerable: !!enumerable,
+		enumerable: enumerable || !canSetProto,
 		writable: true,
 		configurable: true
 	});
 }
 
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
+Object.getPrototypeOf = Object.getPrototypeOf || function(o){ return o[_PROTO] };
 Object.setPrototypeOf = Object.setPrototypeOf || function(o, p){
 	if(!canSetProto){
 		for(var k in p){ o[k] = p[k]; }
 	}
 	define(o, _PROTO, p);
-};
-
-Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
-    return o.__proto__ || (o[CONSTRUCTOR] ? o[CONSTRUCTOR][PROTO] : null);
 };
 
 function setConstructor(model, constructor){
@@ -79,8 +76,8 @@ function setConstructor(model, constructor){
 
 function setConstructorProto(constructor, proto){
 	constructor[PROTO] = Object.create(proto);
-	constructor[PROTO][CONSTRUCTOR] = constructor;
 	canSetProto || define(constructor[PROTO], _PROTO, proto);
+	constructor[PROTO][CONSTRUCTOR] = constructor;
 }
 
 var isProxySupported = isFunction(this.Proxy);

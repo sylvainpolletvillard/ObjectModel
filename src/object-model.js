@@ -6,7 +6,7 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		canSetProto || define(proxy, _PROXY, ModelProto);
+		canSetProto || define(proxy, _PROTO, ModelProto);
 		model[VALIDATE](proxy);
 		return proxy;
 	};

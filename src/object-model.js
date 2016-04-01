@@ -6,7 +6,7 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		ensureProto(proxy, model[PROTO]);
+		canSetProto || define(proxy, _PROXY, ModelProto);
 		model[VALIDATE](proxy);
 		return proxy;
 	};
@@ -15,7 +15,7 @@ Model[OBJECT] = function ObjectModel(def){
 	return model;
 };
 
-setProto(Model[OBJECT], ModelProto, Model);
+setConstructorProto(Model[OBJECT], ModelProto);
 var ObjectModelProto = Model[OBJECT][PROTO];
 
 ObjectModelProto[DEFAULTS] = function(p){

@@ -10,7 +10,7 @@ function Model(def){
 	return model;
 }
 
-setProto(Model, Function[PROTO]);
+setConstructorProto(Model, Function[PROTO]);
 var ModelProto = Model[PROTO];
 
 ModelProto.toString = function(stack){
@@ -20,6 +20,8 @@ ModelProto.toString = function(stack){
 };
 
 ModelProto[VALIDATE] = function(obj, errorCollector){
+	console.log("spv",Object.keys(ModelProto))
+	console.log("spv2",Object.keys(this))
 	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
 };
@@ -64,8 +66,8 @@ ModelProto.extend = function(){
 		}
 	});
 
-	var submodel = new this.constructor(def);
-	setProto(submodel, this[PROTO]);
+	var submodel = new this[CONSTRUCTOR](def);
+	setConstructorProto(submodel, this[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
 	return submodel;
@@ -187,7 +189,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
-		|| obj.constructor === def;
+		|| obj[CONSTRUCTOR] === def;
 }
 
 function matchAssertions(obj, assertions, errorStack){

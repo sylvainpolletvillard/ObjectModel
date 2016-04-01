@@ -61,29 +61,26 @@ function define(obj, key, val, enumerable) {
 }
 
 var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
-Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
-    ? function(o, p){ o.__proto__ = p; }
-    : function(o, p){ for(var k in p){ o[k] = p[k]; } ensureProto(o, p); });
-
-Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
-    return o.__proto__ || (o.constructor ? o.constructor.prototype : null);
+Object.setPrototypeOf = Object.setPrototypeOf || function(o, p){
+	if(!canSetProto){
+		for(var k in p){ o[k] = p[k]; }
+	}
+	define(o, _PROTO, p);
 };
 
-function ensureProto(o, p){
-	if(!canSetProto){
-		define(o, "__proto__", p);
-	}
-}
-
-function setProto(constructor, proto, protoConstructor){
-	constructor[PROTO] = Object.create(proto);
-	constructor[PROTO].constructor = protoConstructor || constructor;
-	ensureProto(constructor[PROTO], proto);
-}
+Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
+    return o.__proto__ || (o[CONSTRUCTOR] ? o[CONSTRUCTOR][PROTO] : null);
+};
 
 function setConstructor(model, constructor){
 	Object.setPrototypeOf(model, constructor[PROTO]);
-	define(model, "constructor", constructor);
+	define(model, CONSTRUCTOR, constructor);
+}
+
+function setConstructorProto(constructor, proto){
+	constructor[PROTO] = Object.create(proto);
+	constructor[PROTO][CONSTRUCTOR] = constructor;
+	canSetProto || define(constructor[PROTO], _PROTO, proto);
 }
 
 var isProxySupported = isFunction(this.Proxy);

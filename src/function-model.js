@@ -28,15 +28,16 @@ Model[FUNCTION] = function FunctionModel(){
 		return proxyFn;
 	};
 
+	setConstructorProto(model, Function[PROTO]);
+
 	var def = {};
 	def[ARGS] = cloneArray(arguments);
-
-	setProto(model, Function[PROTO]);
 	initModel(model, def, Model[FUNCTION]);
 	return model;
 };
 
-setProto(Model[FUNCTION], Model[PROTO], Model);
+setConstructorProto(Model[FUNCTION], Model[PROTO]);
+
 var FunctionModelProto = Model[FUNCTION][PROTO];
 
 FunctionModelProto.toString = function(stack){

@@ -30,12 +30,12 @@ Model[ARRAY] = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Array[PROTO]);
+	setConstructorProto(model, Array[PROTO]);
 	initModel(model, def, Model[ARRAY]);
 	return model;
 };
 
-setProto(Model[ARRAY], Model[PROTO], Model);
+setConstructorProto(Model[ARRAY], Model[PROTO]);
 var ArrayModelProto = Model[ARRAY][PROTO];
 
 ArrayModelProto.toString = function(stack){

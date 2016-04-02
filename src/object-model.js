@@ -6,7 +6,7 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		canSetProto || define(proxy, _PROTO, ModelProto);
+		setProto(proxy, model[PROTO]);
 		model[VALIDATE](proxy);
 		return proxy;
 	};
@@ -49,7 +49,7 @@ function getProxy(model, obj, defNode, path) {
 	}
 	else {
 		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+		var proxy = Object.create(getProto(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){

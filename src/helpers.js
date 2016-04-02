@@ -5,7 +5,7 @@ function isObject(o){
     return typeof o === "object";
 }
 function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+	return o && isObject(o) && getProto(o) === Object.prototype;
 }
 
 var isArray = function(a){	return a instanceof Array; };
@@ -60,17 +60,24 @@ function define(obj, key, val, enumerable) {
 	});
 }
 
-var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
-Object.getPrototypeOf = Object.getPrototypeOf || function(o){ return o[_PROTO] };
-Object.setPrototypeOf = Object.setPrototypeOf || function(o, p){
-	if(!canSetProto){
-		for(var k in p){ o[k] = p[k]; }
+var canSetProto = !!Object.setPrototypeOf;
+if(!canSetProto && {__proto__:[]} instanceof Array){
+	canSetProto = true;
+	Object.setPrototypeOf = function(o, p){ o[_PROTO] = p; }
+}
+
+var getProto = canSetProto ? Object.getPrototypeOf : function(o){ return o[_PROTO] || null };
+var setProto = canSetProto ? Object.setPrototypeOf : function(o, p){
+	for(var k in p){
+		if(!(k in o)){
+			o[k] = p[k];
+		}
 	}
-	define(o, _PROTO, p);
+	o[_PROTO] = p;
 };
 
 function setConstructor(model, constructor){
-	Object.setPrototypeOf(model, constructor[PROTO]);
+	setProto(model, constructor[PROTO]);
 	define(model, CONSTRUCTOR, constructor);
 }
 

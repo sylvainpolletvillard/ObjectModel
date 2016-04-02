@@ -11,6 +11,7 @@ Model[OBJECT] = function ObjectModel(def){
 		return proxy;
 	};
 
+	setConstructorProto(model, Object[PROTO]);
 	initModel(model, def, Model[OBJECT]);
 	return model;
 };

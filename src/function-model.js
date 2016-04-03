@@ -41,11 +41,11 @@ setConstructorProto(Model[FUNCTION], Model[PROTO]);
 var FunctionModelProto = Model[FUNCTION][PROTO];
 
 FunctionModelProto.toString = function(stack){
-	var out = 'Model.' + FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
-			return toString(argDef, stack);
-		}).join(",") +')';
+	var out = FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
+		return toString(argDef, stack);
+	}).join(",") +')';
 	if(RETURN in this[DEFINITION]) {
-		out += "." + RETURN + "(" + toString(this[DEFINITION][RETURN]) + ")";
+		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
 	}
 	return out;
 };

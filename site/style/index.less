@@ -2,32 +2,26 @@
 @import "colors";
 @import "fonts";
 
-
 .header {
 	.font-title();
-	max-width: 768px;
-	margin: 0 auto;
 	padding: 1em 2em;
+	margin: 0 auto;
 	text-align: center;
-	background: #fff;
-	letter-spacing: 0.05em;
-}
-.header h1 {
-	font-size: 300%;
-	font-weight: 100;
-	margin: 0;
 
-	@media(max-width: 480px){
-		font-size: 3em;
+	img {
+		width: 100%;
+		max-width: 400px;
 	}
-}
-.header h2 {
-	font-size: 125%;
-	font-weight: 100;
-	line-height: 1.5;
-	margin: 0;
-	color: #666;
-	letter-spacing: -0.02em;
+
+	.description {
+		.font-title();
+		font-size: 125%;
+		font-weight: 100;
+		line-height: 1.5;
+		margin: 0;
+		color: #666;
+		letter-spacing: -0.02em;
+	}
 }
 
 section p {

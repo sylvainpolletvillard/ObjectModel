@@ -535,24 +535,16 @@ dt code {
 }
 .header {
   font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  max-width: 768px;
-  margin: 0 auto;
   padding: 1em 2em;
+  margin: 0 auto;
   text-align: center;
-  background: #fff;
-  letter-spacing: 0.05em;
 }
-.header h1 {
-  font-size: 300%;
-  font-weight: 100;
-  margin: 0;
+.header img {
+  width: 100%;
+  max-width: 400px;
 }
-@media (max-width: 480px) {
-  .header h1 {
-    font-size: 3em;
-  }
-}
-.header h2 {
+.header .description {
+  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 125%;
   font-weight: 100;
   line-height: 1.5;

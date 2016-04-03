@@ -11,15 +11,15 @@
 	text-align: center;
 	background: #fff;
 	letter-spacing: 0.05em;
-
-	@media(max-width: 480px){
-		font-size: 3em;
-	}
 }
 .header h1 {
 	font-size: 300%;
 	font-weight: 100;
 	margin: 0;
+
+	@media(max-width: 480px){
+		font-size: 3em;
+	}
 }
 .header h2 {
 	font-size: 125%;
@@ -41,6 +41,12 @@ section > h2 {
 	padding-top: 2.5em;
 }
 
+details dl {
+	dd:before {
+		content: "\25E6 \ ";
+	}
+}
+
 table {
 	width: 100%;
 	th, td {
@@ -53,40 +59,45 @@ table {
 	}
 }
 
+.panel {
+	display: table-cell;
+	vertical-align: top;
+	background: #f5f2f0;
+	border: 1px solid #DEDEDE;
+	position: relative;
+
+	pre {
+		margin: 0;
+		font-size: 90%;
+	}
+
+	pre, code {
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	.legend {
+		position: absolute;
+		right: 0;
+		top: 0;
+		background-color: rgba(220, 220, 220, 0.25);
+		color: #909090;
+		text-shadow: 0 -1px 0 #ffffff;
+		padding: 2px 4px;
+	}
+
+	textarea {
+		width: 100%;
+		min-height: 5em;
+	}
+}
+
 .panels {
 
 	display: table;
 	width: 100%;
-
-	.panel {
-		display: table-cell;
-		vertical-align: top;
-		background: #f5f2f0;
-		border: 1px solid #DEDEDE;
-		position: relative;
-
-		pre {
-			margin: 0;
-			word-wrap: break-word;
-			overflow-wrap: break-word;
-			font-size: 90%;
-		}
-
-		.legend {
-			position: absolute;
-			right: 0;
-			top: 0;
-			background-color: #eeeeee;
-			color: #909090;
-			text-shadow: 0 -1px 0 #ffffff;
-			padding: 2px 4px;
-		}
-
-		textarea {
-			width: 100%;
-			min-height: 5em;
-		}
-	}
 
 	&.two .panel { width: 50%; }
 	&.three .panel { width: 33.3%; }

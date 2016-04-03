@@ -9,19 +9,21 @@ module.exports = function(grunt) {
 	var pkg = grunt.file.readJSON('package.json');
 	var BANNER = "// ObjectModel v"+pkg.version+" - "+pkg.homepage + "\n";
 
+	var srcFiles = [
+		'src/constants.js',
+		'src/helpers.js',
+		'src/model.js',
+		'src/object-model.js',
+		'src/array-model.js',
+		'src/function-model.js'
+	]
+
 	// Project configuration.
 	grunt.initConfig({
 		pkg: pkg,
 		concat: {
 			dist: {
-				src: [
-					'src/constants.js',
-					'src/helpers.js',
-					'src/model.js',
-					'src/object-model.js',
-					'src/array-model.js',
-					'src/function-model.js'
-				],
+				src: srcFiles,
 				dest: 'dist/object-model.js',
 				options: {
 					banner: BANNER + ";(function(global){\n",
@@ -29,7 +31,7 @@ module.exports = function(grunt) {
 				}
 			},
 			dist_umd: {
-				src: ['src/helpers.js', 'src/model.js', 'src/object-model.js', 'src/array-model.js', 'src/function-model.js'],
+				src: srcFiles,
 				dest: 'dist/object-model.umd.js',
 				options: {
 					banner: "(function (globals, factory) {\n"
@@ -44,7 +46,8 @@ module.exports = function(grunt) {
 		uglify: {
 			dist: {
 				options: {
-					banner: BANNER
+					banner: BANNER,
+					screwIE8: true
 				},
 				files: {
 					'dist/object-model.min.js': ['dist/object-model.js']
@@ -77,7 +80,7 @@ module.exports = function(grunt) {
 						},
 						{
 							dest: 'index.html',
-							text: 'minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
+							text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
 						}
 					]
 				}

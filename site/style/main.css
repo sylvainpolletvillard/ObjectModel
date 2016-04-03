@@ -1,6 +1,6 @@
-@import "prism.css";
 /*! normalize.css v2.1.0 | MIT License | git.io/normalize */
 /* apply a natural box layout model to all elements */
+@import "prism.css";
 * {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -59,11 +59,10 @@ audio:not([controls]) {
 html {
   font-family: sans-serif;
   /* 1 */
-
   -webkit-text-size-adjust: 100%;
+  /* 2 */
   -ms-text-size-adjust: 100%;
   /* 2 */
-
 }
 /**
  * Remove default margin.
@@ -215,10 +214,8 @@ fieldset {
 legend {
   border: 0;
   /* 1 */
-
   padding: 0;
   /* 2 */
-
 }
 /**
  * 1. Correct font family not being inherited in all browsers.
@@ -231,13 +228,10 @@ select,
 textarea {
   font-family: inherit;
   /* 1 */
-
   font-size: 100%;
   /* 2 */
-
   margin: 0;
   /* 3 */
-
 }
 /**
  * Address Firefox 4+ setting `line-height` on `input` using `!important` in
@@ -270,10 +264,8 @@ input[type="reset"],
 input[type="submit"] {
   -webkit-appearance: button;
   /* 2 */
-
   cursor: pointer;
   /* 3 */
-
 }
 /**
  * Re-set default cursor for disabled elements.
@@ -290,7 +282,6 @@ input[type="checkbox"],
 input[type="radio"] {
   padding: 0;
   /* 2 */
-
 }
 /**
  * Address `appearance` set to `searchfield` in Safari 5 and Chrome.
@@ -298,7 +289,6 @@ input[type="radio"] {
 input[type="search"] {
   -webkit-appearance: textfield;
   /* 1 */
-
 }
 /**
  * Remove inner padding and search cancel button in Safari 5 and Chrome
@@ -323,10 +313,8 @@ input::-moz-focus-inner {
 textarea {
   overflow: auto;
   /* 1 */
-
   vertical-align: top;
   /* 2 */
-
 }
 /* ==========================================================================
    Tables
@@ -545,104 +533,6 @@ dt code {
 #api a:hover {
   text-decoration: underline;
 }
-.hidden {
-  display: none;
-  visibility: hidden;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@-webkit-keyframes spin {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(360deg);
-  }
-}
-@-moz-keyframes spin {
-  from {
-    -moz-transform: rotate(0deg);
-  }
-  to {
-    -moz-transform: rotate(360deg);
-  }
-}
-@-o-keyframes spin {
-  from {
-    -o-transform: rotate(0deg);
-  }
-  to {
-    -o-transform: rotate(360deg);
-  }
-}
-@-ms-keyframes spin {
-  from {
-    -ms-transform: rotate(0deg);
-  }
-  to {
-    -ms-transform: rotate(360deg);
-  }
-}
-@keyframes spin-inv {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-@-webkit-keyframes spin-inv {
-  from {
-    -webkit-transform: rotate(360deg);
-  }
-  to {
-    -webkit-transform: rotate(0deg);
-  }
-}
-@-moz-keyframes spin-inv {
-  from {
-    -moz-transform: rotate(360deg);
-  }
-  to {
-    -moz-transform: rotate(0deg);
-  }
-}
-@-o-keyframes spin-inv {
-  from {
-    -o-transform: rotate(360deg);
-  }
-  to {
-    -o-transform: rotate(0deg);
-  }
-}
-@-ms-keyframes spin-inv {
-  from {
-    -ms-transform: rotate(360deg);
-  }
-  to {
-    -ms-transform: rotate(0deg);
-  }
-}
-@font-face {
-  font-family: 'Raleway';
-  src: url('raleway-light-webfont.eot');
-  src: url('raleway-light-webfont.eot?#iefix') format('embedded-opentype'), url('raleway-light-webfont.woff2') format('woff2'), url('raleway-light-webfont.woff') format('woff'), url('raleway-light-webfont.ttf') format('truetype'), url('raleway-light-webfont.svg#ralewaylight') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'ClearSans';
-  src: url('ClearSans-Regular-webfont.eot');
-  src: url('ClearSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('ClearSans-Regular-webfont.woff') format('woff'), url('ClearSans-Regular-webfont.ttf') format('truetype'), url('ClearSans-Regular-webfont.svg#clear_sansregular') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
 .header {
   font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
   max-width: 768px;
@@ -652,15 +542,15 @@ dt code {
   background: #fff;
   letter-spacing: 0.05em;
 }
-@media (max-width: 480px) {
-  .header {
-    font-size: 3em;
-  }
-}
 .header h1 {
   font-size: 300%;
   font-weight: 100;
   margin: 0;
+}
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 3em;
+  }
 }
 .header h2 {
   font-size: 125%;
@@ -679,6 +569,9 @@ section > h2 {
   margin: -1.5em 0 0.5em 0;
   padding-top: 2.5em;
 }
+details dl dd:before {
+  content: "\25E6 \ ";
+}
 table {
   width: 100%;
 }
@@ -691,139 +584,46 @@ table td {
 table th {
   background: #f0f0f0;
 }
-.panels {
-  display: table;
-  width: 100%;
-}
-.panels .panel {
+.panel {
   display: table-cell;
   vertical-align: top;
   background: #f5f2f0;
   border: 1px solid #DEDEDE;
   position: relative;
 }
-.panels .panel pre {
+.panel pre {
   margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
   font-size: 90%;
 }
-.panels .panel .legend {
+.panel pre,
+.panel code {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.panel .legend {
   position: absolute;
   right: 0;
   top: 0;
-  background-color: #eeeeee;
+  background-color: rgba(220, 220, 220, 0.25);
   color: #909090;
   text-shadow: 0 -1px 0 #ffffff;
   padding: 2px 4px;
 }
-.panels .panel textarea {
+.panel textarea {
   width: 100%;
   min-height: 5em;
+}
+.panels {
+  display: table;
+  width: 100%;
 }
 .panels.two .panel {
   width: 50%;
 }
 .panels.three .panel {
   width: 33.3%;
-}
-.hidden {
-  display: none;
-  visibility: hidden;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@-webkit-keyframes spin {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(360deg);
-  }
-}
-@-moz-keyframes spin {
-  from {
-    -moz-transform: rotate(0deg);
-  }
-  to {
-    -moz-transform: rotate(360deg);
-  }
-}
-@-o-keyframes spin {
-  from {
-    -o-transform: rotate(0deg);
-  }
-  to {
-    -o-transform: rotate(360deg);
-  }
-}
-@-ms-keyframes spin {
-  from {
-    -ms-transform: rotate(0deg);
-  }
-  to {
-    -ms-transform: rotate(360deg);
-  }
-}
-@keyframes spin-inv {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-@-webkit-keyframes spin-inv {
-  from {
-    -webkit-transform: rotate(360deg);
-  }
-  to {
-    -webkit-transform: rotate(0deg);
-  }
-}
-@-moz-keyframes spin-inv {
-  from {
-    -moz-transform: rotate(360deg);
-  }
-  to {
-    -moz-transform: rotate(0deg);
-  }
-}
-@-o-keyframes spin-inv {
-  from {
-    -o-transform: rotate(360deg);
-  }
-  to {
-    -o-transform: rotate(0deg);
-  }
-}
-@-ms-keyframes spin-inv {
-  from {
-    -ms-transform: rotate(360deg);
-  }
-  to {
-    -ms-transform: rotate(0deg);
-  }
-}
-@font-face {
-  font-family: 'Raleway';
-  src: url('raleway-light-webfont.eot');
-  src: url('raleway-light-webfont.eot?#iefix') format('embedded-opentype'), url('raleway-light-webfont.woff2') format('woff2'), url('raleway-light-webfont.woff') format('woff'), url('raleway-light-webfont.ttf') format('truetype'), url('raleway-light-webfont.svg#ralewaylight') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'ClearSans';
-  src: url('ClearSans-Regular-webfont.eot');
-  src: url('ClearSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('ClearSans-Regular-webfont.woff') format('woff'), url('ClearSans-Regular-webfont.ttf') format('truetype'), url('ClearSans-Regular-webfont.svg#clear_sansregular') format('svg');
-  font-weight: normal;
-  font-style: normal;
 }
 body {
   position: relative;
@@ -864,27 +664,26 @@ body {
 .lines {
   display: inline-block;
   width: 36px;
-  height: 5.142857142857143px;
+  height: 5.14285714px;
   background: #666;
-  border-radius: 2.5714285714285716px;
+  border-radius: 2.57142857px;
   transition: all 0.4s;
   position: relative;
-  top: -2.5714285714285716px;
+  top: -2.57142857px;
   /*create the upper and lower lines as pseudo-elements of the middle line*/
-
 }
 .lines:before,
 .lines:after {
   display: inline-block;
   width: 36px;
-  height: 5.142857142857143px;
+  height: 5.14285714px;
   background: #666;
-  border-radius: 2.5714285714285716px;
+  border-radius: 2.57142857px;
   transition: all 0.4s;
   position: absolute;
   left: 0;
   content: '';
-  transform-origin: 2.5714285714285716px center;
+  transform-origin: 2.57142857px center;
 }
 .lines:before {
   top: -9px;
@@ -899,7 +698,7 @@ body.menu-opened .lines-button.arrow .lines:before,
 body.menu-opened .lines-button.arrow .lines:after {
   top: 0;
   width: 20px;
-  transform-origin: 2.5714285714285716px center;
+  transform-origin: 2.57142857px center;
 }
 body.menu-opened .lines-button.arrow .lines:before {
   transform: rotate3d(0, 0, 1, -40deg);
@@ -923,7 +722,7 @@ body.menu-opened .lines-button.arrow .lines:after {
   transition: left 0.4s ease, opacity 0.2s ease;
 }
 #menu-button:hover {
-  box-shadow: 0.72px 0.72px 5.3999999999999995px #999999;
+  box-shadow: 0.72px 0.72px 5.4px #999999;
 }
 #menu-button:focus {
   background-color: #e8e8e8;

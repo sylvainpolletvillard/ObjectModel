@@ -6,14 +6,11 @@ function Model(def){
 		return obj;
 	};
 
-	setConstructor(model, Model);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model);
 	return model;
 }
 
-setProto(Model, Function[PROTO]);
+setConstructorProto(Model, Function[PROTO]);
 var ModelProto = Model[PROTO];
 
 ModelProto.toString = function(stack){
@@ -23,26 +20,28 @@ ModelProto.toString = function(stack){
 };
 
 ModelProto[VALIDATE] = function(obj, errorCollector){
-	this[VALIDATOR](obj, []);
+	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
 };
 
-ModelProto.test = function(obj){
-	return test.call(this, obj, []);
+ModelProto[TEST] = function(obj){
+	var errorStack = [];
+	this[VALIDATOR](obj, null, [], errorStack);
+	return !errorStack.length;
 };
 
-ModelProto.extend = function(){
+ModelProto[EXTEND] = function(){
 	var def, proto,
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(Model[INSTANCEOF](this, Model[OBJECT])){
+	if(this instanceof Model[OBJECT]){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
 		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(Model[INSTANCEOF](arg, Model)){
+			if(arg instanceof Model){
 				merge(def, arg[DEFINITION], true);
 				merge(proto, arg[PROTO], true);
 			} else {
@@ -60,13 +59,13 @@ ModelProto.extend = function(){
 	}
 
 	args.forEach(function(arg){
-		if(Model[INSTANCEOF](arg, Model)){
+		if(arg instanceof Model){
 			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
 
-	var submodel = new this.constructor(def);
-	setProto(submodel, this[PROTO]);
+	var submodel = new this[CONSTRUCTOR](def);
+	setConstructorProto(submodel, this[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
 	return submodel;
@@ -82,22 +81,13 @@ ModelProto.errorCollector = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
 };
 
-Model[INSTANCEOF] = function(obj, Constructor){ // instanceof sham for IE<9
-	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
-		if(o == null || stack.indexOf(o) !== -1) return false;
-		var proto = Object.getPrototypeOf(o);
-		stack.push(o);
-		return proto === Constructor[PROTO] || recursive(proto, stack);
-	})(obj, [])
-};
-
 Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
 Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 
 // private methods
-define(ModelProto, VALIDATOR, function(obj, stack){
-	checkDefinition(obj, this[DEFINITION], null, stack || [], this[ERROR_STACK]);
-	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	matchAssertions(obj, this[ASSERTIONS], errorStack);
 });
 
 // throw all errors collected
@@ -113,8 +103,8 @@ define(ModelProto, UNSTACK, function(errorCollector){
 			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
 			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
 			+ def.map(function(d){ return toString(d); }).join(" or ")
-			+ ", got " + (err[RESULT] != null ? bettertypeof(err[RESULT]) + " " : "")
-			+ toString(err[RESULT]))
+			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
+			+ toString(err[RECEIVED]))
 		}
 		return err;
 	});
@@ -126,12 +116,19 @@ function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }
 
+function initModel(model, def, constructor){
+	setConstructor(model, constructor);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	define(model, ERROR_STACK, []);
+}
+
 function parseDefinition(def){
 	if(isLeaf(def)){
 		if(!isArray(def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
 		});
 	}
@@ -139,20 +136,29 @@ function parseDefinition(def){
 }
 
 function checkDefinition(obj, def, path, callStack, errorStack){
-	if(isLeaf(def)){
+	var err;
+	if(def instanceof Model){
+		var indexFound = callStack.indexOf(def);
+		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
+			return; //if found twice in call stack, cycle detected, skip validation
+		}
+		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+	} else if(isLeaf(def)){
 		var pdef = parseDefinition(def);
 		for(var i= 0, l=pdef.length; i<l; i++){
-			if(checkDefinitionPart(obj, pdef[i], path, callStack)){ return; }
+			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
+				return;
+			}
 		}
-		var err = {};
+		err = {};
 		err[EXPECTED] = def;
-		err[RESULT] = obj;
+		err[RECEIVED] = obj;
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack.concat(val), errorStack);
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
 	}
 }
@@ -161,32 +167,18 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def)){
-		var errorStack=[];
+	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
+		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
-		return errorStack.length === 0;
-	}
-	if(Model[INSTANCEOF](def, Model)){
-		var indexFound = callStack.indexOf(def);
-		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
-			return true; //if found twice in call stack, cycle detected, skip validation
-		}
-		return test.call(def, obj, callStack.concat(def));
+		return !errorStack.length;
 	}
 	if(def instanceof RegExp){
-		return def.test(obj);
+		return def[TEST](obj);
 	}
 
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
-		|| obj.constructor === def;
-}
-
-function test(obj, callStack){
-	var ok = true;
-	this[VALIDATOR](obj, callStack);
-	this[UNSTACK](function(){ ok = false; });
-	return ok;
+		|| obj[CONSTRUCTOR] === def;
 }
 
 function matchAssertions(obj, assertions, errorStack){

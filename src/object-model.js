@@ -4,28 +4,18 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!(this instanceof model)){
 			return new model(obj);
 		}
-		if(obj != null && !isObject(obj)){
-			var err = {};
-			err[EXPECTED] = model;
-			err[RESULT] = obj;
-			model[ERROR_STACK].push(err);
-		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		ensureProto(proxy, model[PROTO]);
 		model[VALIDATE](proxy);
-		model[UNSTACK]();
 		return proxy;
 	};
 
-	setConstructor(model, Model[OBJECT]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	setConstructorProto(model, O[PROTO]);
+	initModel(model, def, Model[OBJECT]);
 	return model;
 };
 
-setProto(Model[OBJECT], ModelProto, Model);
+setConstructorProto(Model[OBJECT], ModelProto);
 var ObjectModelProto = Model[OBJECT][PROTO];
 
 ObjectModelProto[DEFAULTS] = function(p){
@@ -37,15 +27,28 @@ ObjectModelProto.toString = function(stack){
 	return toString(this[DEFINITION], stack);
 };
 
+// private methods
+define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	if(!isObject(obj)){
+		var err = {};
+		err[EXPECTED] = this;
+		err[RECEIVED] = obj;
+		err[PATH] = path;
+		errorStack.push(err);
+	} else {
+		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	}
+	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+});
+
 function getProxy(model, obj, defNode, path) {
-	if(Model[INSTANCEOF](defNode, Model) && !Model[INSTANCEOF](obj, defNode)) {
+	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
-	}
-	else {
-		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+	} else {
+		var wrapper = obj instanceof O ? obj : {};
+		var proxy = O.create(O.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -53,10 +56,10 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		Object.keys(defNode).forEach(function(key) {
+		O.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
 			var isConstant = Model[CONVENTION_CONSTANT](key);
-			Object.defineProperty(proxy, key, {
+			defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},

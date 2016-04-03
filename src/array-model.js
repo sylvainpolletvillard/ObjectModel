@@ -14,15 +14,15 @@ Model[ARRAY] = function ArrayModel(def){
 				}
 			});
 		} else {
-			proxy = Object.create(Array[PROTO]);
+			proxy = O.create(Array[PROTO]);
 			for(var key in array){
 				if(array.hasOwnProperty(key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
-			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
-				def(proxy, method, proxifyArrayMethod(array, method, model, proxy));
+				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
 		}
 
@@ -30,15 +30,12 @@ Model[ARRAY] = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Array[PROTO]);
-	setConstructor(model, Model[ARRAY]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	setConstructorProto(model, Array[PROTO]);
+	initModel(model, def, Model[ARRAY]);
 	return model;
 };
 
-setProto(Model[ARRAY], Model[PROTO], Model);
+setConstructorProto(Model[ARRAY], Model[PROTO]);
 var ArrayModelProto = Model[ARRAY][PROTO];
 
 ArrayModelProto.toString = function(stack){
@@ -46,21 +43,23 @@ ArrayModelProto.toString = function(stack){
 };
 
 // private methods
-define(ArrayModelProto, VALIDATOR, function(arr, callStack){
+define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 	if(!isArray(arr)){
 		var err = {};
 		err[EXPECTED] = this;
-		err[RESULT] = arr;
-		this[ERROR_STACK].push(err);
-	}
-	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this[DEFINITION], ARRAY+'['+i+']', callStack, this[ERROR_STACK]);
+		err[RECEIVED] = arr;
+		err[PATH] = path;
+		errorStack.push(err);
+	} else {
+		for(var i=0, l=arr.length; i<l; i++){
+			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
+		}
 	}
 	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
-	Object.defineProperty(proxy, key, {
+	defineProperty(proxy, key, {
 		enumerable: true,
 		get: function () {
 			return array[key];

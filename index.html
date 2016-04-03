@@ -63,6 +63,7 @@
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
+			<li><a href="#doc-custom-collectors">Custom error collectors</a></li>
 			<li><a href="#api">Full API</a></li>
 			<li><a href="#common-models">Commonly used models</a></li>
 			<li><a href="#common-questions">Common questions</a></li>
@@ -127,25 +128,37 @@
 			<li>Easy inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
-			<li>all in <strong>7.3 kB minified</strong></li>
+			<li>Custom error collectors</li>
+			<li>all in <strong>6.8 kB minified, 2.8 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome and Firefox, on Internet Explorer 9/10/11, on Opera 20, Safari 5.1 and preview version of Microsoft Edge. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+		<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">v1.1.5</a>.</p>
 	</section>
 
 	<hr>
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v1.2</h3>
+		<h3>Current version: v2.0.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.3 kB)</li>
-			<li><a href="dist/object-model-1.2.zip">object-model-1.2.zip</a> source files</li>
+			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
+			<li>Minified file (6.8 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Source files : <a href="dist/object-model-2.0.0.zip">object-model-2.0.0.zip</a> </li>
+			<li><a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">Older versions</a></li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v2.0</dt>
+				<dd>support for IE<11 had to be dropped (mixed feelings here)</dd>
+				<dd>removed Model.instanceOf as it is not useful anymore: use the instanceof operator</dd>
+				<dd>null is now a valid value for an optional property</dd>
+				<dd>stack errors instead of throwing the first error catched</dd>
+				<dd>added custom error collectors</dd>
+				<dd>assert API has changed and now receives an optional description</dd>
+				<dd>validate API has changed and now receives an optional error collector</dd>
 				<dt>v1.1</dt>
 				<dd>model.extend can now take models and/or models definitions as arguments</dd>
 				<dd>fixed some issues with object deep merging on model extensions</dd>
@@ -160,7 +173,6 @@
 				<dd>performance improvements, especially on Array models</dd>
 				<dt>v0.8</dt>
 				<dd>cycle detection and validation of circular object structures</dd>
-				<dd>support for IE9 with Model.instanceOf</dd>
 				<dd>support for Safari 5</dd>
 				<dt>v0.7</dt>
 				<dd>API redesign to get a single namespace</dd>
@@ -195,9 +207,10 @@
 			<summary>Future versions</summary>
 			<p>Possible changes under consideration:</p>
 			<ul>
-				<li>API changes based on feedback</li>
-				<li>JSDoc parsing to automatic model definition</li>
-				<li>ECMAScript 6 only version</li>
+				<li>Make Model API use function models itself (wow, so meta X_x)</li>
+				<li>Greater use of ES6 Proxies</li>
+				<li>ES6 only version</li>
+				<li>more detailed path information in object models type errors</li>
 			</ul>
 		</details>
 
@@ -311,9 +324,14 @@ opening.easing = 1;</code>
 			<div class="panel">
 				<span class="legend">Model</span>
 <pre><code class="language-javascript">var Shirt = new Model({
-	category: "clothes", // the only acceptable value is "clothes"
-	size: [Number, "M", /^X{0,2}[SL]$/], // valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
-	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined] // valid values: "black", "#FF0000", undefined...
+	// the only acceptable value is "clothes"
+	category: "clothes",
+
+	// valid values: 38, 42, "S", "M", "L", "XL", "XXL"...
+	size: [Number, "M", /^X{0,2}[SL]$/],
+
+	// valid values: "black", "#FF0000", undefined...
+	color: ["black","white", new RegExp("^#([A-F0-9]{6})$"), undefined]
 });</code></pre>
 			</div>
 		</div>
@@ -323,7 +341,7 @@ opening.easing = 1;</code>
 
 	<section id="doc-null-safe">
 		<h2>Null-safe object traversal</h2>
-		<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an Object Model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model.</p>
+		<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an Object Model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -458,7 +476,11 @@ ann = Mother(ann); // cast ann to Mother model
 Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
-<code class="language-none exception">TypeError: expecting female to be true, got Boolean false</code></pre>
+<code class="language-none exception">TypeError: expecting female to be true, got Boolean false
+expecting child to be {
+	name: String,
+	female: Boolean
+}, got undefined</code></pre>
 			</div>
 		</div>
 	</section>
@@ -481,12 +503,13 @@ Client.prototype.sendConfirmationMail = function(){
 };
 
 Object.keys(Client.definition);</code>
-<code class="language-none log">["name", "age", "email", "product", "orderDate", "store"]</code></pre>
+<code class="language-none log">["name", "female", "email", "product", "orderDate", "store"]</code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">var joe = new Client({
 	name: "Joe",
+	female: false,
 	email: "joe@email.net",
 	product: { name: "diapers", quantity: 100 },
 	orderDate: new Date(),
@@ -507,7 +530,9 @@ joe.sendConfirmationMail();</code>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-<pre><code class="language-javascript">var Integer = Model(Number).assert(Number.isFinite, Number.isInteger);
+<pre><code class="language-javascript">var Integer = Model(Number)
+	.assert(Number.isFinite)
+	.assert(Number.isInteger, "should be an integer");
 
 function isPrime(n) {
 	for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -524,15 +549,15 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
 <code class="language-none log">1</code>
+
 <code class="language-javascript">Integer(Math.sqrt(2));</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: isInteger</code>
-<code class="language-javascript">Integer(Math.sqrt(-1));</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: isFinite</code>
+<code class="language-none exception">TypeError: assertion failed: should be an integer</code>
 
 <code class="language-javascript">PrimeNumber(83);</code>
 <code class="language-none log">83</code>
+
 <code class="language-javascript">PrimeNumber(87);</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: isPrime</code></pre>
+<code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
 			</div>
 		</div>
 	</section>
@@ -600,14 +625,15 @@ c.UNIT = "cm";</code>
 		<div class="panels two">
 			<div class="panel">
 <pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);
-var Hand = Cards.extend("Joker").assert(function hasTwoCards(cards){
+var Hand = Cards.extend("Joker").assert(function(cards){
 	return cards.length === 2;
-}); // array of 2 Numbers, J, Q, K or Joker</code></pre></div>
+}, "should have two cards");
+// Hand is an array of 2 Numbers, J, Q, K or Joker</code></pre></div>
 			<div class="panel">
 <pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: hasTwoCards</code></pre>
+<code class="language-none exception">TypeError: assertion failed: should have two cards</code></pre>
 			</div>
 		</div>
 	</section>
@@ -682,6 +708,67 @@ joe.sayMyName();</code>
 
 	<hr>
 
+	<section id="doc-custom-collectors">
+		<h2>Custom error collectors</h2>
+		<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
+		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:
+		<ul>
+		<li><code>message</code>: a message describing all the errors caught</li>
+		<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
+		<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
+		<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
+		</ul>
+		</p>
+
+<pre><code class="language-javascript">var Student = Model({
+	name: String,
+	course: [ "math","english","history" ],
+	grade: Number
+}).assert(function(stu){ return stu.grade >= 60 }, "should at least get 60 to validate semester")
+
+Model.prototype.errorCollector = function(errors){
+	console.log("Global error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
+
+new Student({ name: "Joanna", course: "sleep", grade: 0 });
+</code><code class="language-none log">Global error collector caught these errors:
+{
+	message: 'expecting course to be "math" or "english" or "history", got String "sleep"'
+	path: "course"
+	expected: ["math","english","history"]
+	received: "sleep"
+}
+{
+	message: "assertion failed: should at least get 60 to validate semester"
+}
+</code><code class="language-javascript">
+Student.errorCollector = function(errors){
+	console.log("Student model error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
+
+new Student({ name: "Joanna", course: "math", grade: 50 });
+</code><code class="language-none log">Student model collector caught these errors:
+{
+	message: "assertion failed: should at least get 60 to validate semester"
+}
+</code><code class="language-javascript">
+Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(errors){
+	console.log("This specific error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+});
+</code><code class="language-none log">This specific error collector caught these errors:
+{
+	message: 'expecting course to be "math" or "english" or "history", got String "cheating"'
+	path: "course"
+	expected: ["math","english","history","science"]
+	received: "cheating"
+}</code></pre>
+	</section>
+
+	<hr>
+
 	<section id="api">
 		<h2>Full API</h2>
 		<dl>
@@ -697,10 +784,6 @@ joe.sayMyName();</code>
 			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2, ...)</code></dt>
 			<dd>Constructor for function models</dd>
 
-			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
-			<dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
-				For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
-
 			<dt><a href="#doc-private-and-constants">Model.conventionForConstant</a> <code>function(variableName)</code></dt>
 			<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit your needs.</dd>
 
@@ -715,13 +798,16 @@ joe.sayMyName();</code>
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
 
+			<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
+			<dd>Function called when validation errors are detected</dd>
+
 			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
 			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
 
-			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, ...otherAssertions)</code></dt>
-			<dd>Add any number of test functions to the model that must all return <code>true</code> to validate the instance.</dd>
+			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
+			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
 
-			<dt>validate <code>model.validate(object)</code></dt>
+			<dt>validate <code>model.validate(object, [errorCollector])</code></dt>
 			<dd>Manually trigger the validation of an object over the model definition. It is automatically done whenever a property in the model definition is changed.</dd>
 
 			<dt><a href="#doc-composition">test</a> <code>model.test(object)</code></dt>
@@ -775,6 +861,15 @@ User.create = function(properties){
 
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 
+		<h3>How can I get the model from an instance ?</h3>
+		<p>If this instance has been properly instantiated with the model constructor, you can retrieve a reference to this model through <code>Object.getPrototypeOf(instance).constructor</code>. This is useful to get the property type of an instance attribute for example.</p>
+<pre><code class="language-javascript">var User = Model({ name: String }),
+	joe = User({ name: "Joe" });
+
+var modelOfJoe = Object.getPrototypeOf(joe).constructor;
+// modelOfJoe === User
+// modelOfJoe.definition.name === String</code></pre>
+
 		<h3>How should I deal with circular references in my model definitions ?</h3>
 		<p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards:</p>
 <pre><code class="language-javascript">var Honey = Model({
@@ -809,7 +904,7 @@ var friendsBirthday = BirthdayList({
 	"Jim": "02/22/1987",
 	"Jack": null
 });</code>
-<code class="language-none exception">TypeError: an assertion of the model is not respected: checkValueTypes</code></pre>
+<code class="language-none exception">TypeError: assertion failed: checkValueTypes</code></pre>
 	</section>
 
 	<section>

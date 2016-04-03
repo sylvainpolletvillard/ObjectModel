@@ -69,8 +69,8 @@ function testSuite(Model){
 		assert.strictEqual(joe.female, false);
 		assert.equal(+joe.birth, +(new Date(1990,3,25)));
 		assert.strictEqual(joe.address.work.city, "Lille", "check nested property");
-		assert.ok(Model.instanceOf(joe, Person) && joe instanceof Object);
-		assert.ok(Model.instanceOf(Person, Model) && Person instanceof Function);
+		assert.ok(joe instanceof Person && joe instanceof Object);
+		assert.ok(Person instanceof Model && Person instanceof Function);
 
 		joe.name = "Big Joe";
 		joe.age++;
@@ -147,7 +147,7 @@ function testSuite(Model){
 		});
 
 		var joe = Person({ female: false });
-		assert.ok(Model.instanceOf(joe, Person));
+		assert.ok(joe instanceof Person);
 		joe.name = "joe";
 		joe.name = undefined;
 		joe.name = null;
@@ -207,9 +207,9 @@ function testSuite(Model){
 		var Arr = Model.Array(Number);
 		var a, b, c, d;
 
-		assert.ok(Model.instanceOf(Arr, Model.Array) && Arr instanceof Function, "Array models can be declared");
+		assert.ok(Arr instanceof Model.Array && Arr instanceof Function, "Array models can be declared");
 		a = Arr([]);
-		assert.ok(Model.instanceOf(a, Arr) && a instanceof Array, "Array models can be instanciated");
+		assert.ok(a instanceof Arr && a instanceof Array, "Array models can be instanciated");
 
 		a.push(1);
 		a[0] = 42;
@@ -253,7 +253,7 @@ function testSuite(Model){
 		var pokerHand = new Hand(["K",10]);
 
 		assert.ok(Object.getPrototypeOf(Hand.prototype) === Cards.prototype, "extension respect prototypal chain");
-		assert.ok(Model.instanceOf(pokerHand, Hand) && Model.instanceOf(pokerHand, Cards), "array model inheritance");
+		assert.ok(pokerHand instanceof Hand && pokerHand instanceof Cards, "array model inheritance");
 		Cards(["K",10]).push(7);
 		assert.throws(function(){ Hand(["K",10]).push(7); }, /TypeError/, "min/max of inherit array model");
 
@@ -276,14 +276,14 @@ function testSuite(Model){
 
 		var op = Model.Function(Number, Number).return(Number);
 
-		assert.ok(Model.instanceOf(op, Model.Function) && op instanceof Function);
+		assert.ok(op instanceof Model.Function && op instanceof Function);
 
 		var add = op(function(a,b){ return a + b; });
 		var add3 = op(function(a,b,c){ return a + b + c; });
 		var noop = op(function(a, b){ return undefined; });
 		var addStr = op(function(a,b){ return String(a) + String(b); });
 
-		assert.ok(add instanceof Function && Model.instanceOf(add, op));
+		assert.ok(add instanceof Function && add instanceof op);
 
 		assert.equal(add(15,25),40);
 		assert.throws(function(){ add(15) }, /TypeError/, "too few arguments");
@@ -502,14 +502,14 @@ function testSuite(Model){
 			female: true
 		});
 
-		assert.ok(Model.instanceOf(ann, Person),"ann instanceof Person");
-		assert.ok(Model.instanceOf(ann, Woman),"ann instanceof Woman");
-		assert.ok(Model.instanceOf(jane, Person),"jane instanceof Person");
-		assert.ok(Model.instanceOf(jane, Woman), "jane instanceof Woman");
-		assert.ok(Model.instanceOf(jane, UnemployedWoman), "jane instanceof UnemployedWoman");
-		assert.equal(Model.instanceOf(joe, Woman), false, "joe not instanceof Woman");
-		assert.equal(Model.instanceOf(joe, UnemployedWoman), false, "joe not instanceof UnemployedWoman");
-		assert.equal(Model.instanceOf(ann, UnemployedWoman), false, "ann not instanceof UnemployedWoman");
+		assert.ok(ann instanceof Person,"ann instanceof Person");
+		assert.ok(ann instanceof Woman,"ann instanceof Woman");
+		assert.ok(jane instanceof Person,"jane instanceof Person");
+		assert.ok(jane instanceof Woman, "jane instanceof Woman");
+		assert.ok(jane instanceof UnemployedWoman, "jane instanceof UnemployedWoman");
+		assert.equal(joe instanceof Woman, false, "joe not instanceof Woman");
+		assert.equal(joe instanceof UnemployedWoman, false, "joe not instanceof UnemployedWoman");
+		assert.equal(ann instanceof UnemployedWoman, false, "ann not instanceof UnemployedWoman");
 	});
 
 	QUnit.test("Multiple inheritance", function(assert){
@@ -668,9 +668,9 @@ function testSuite(Model){
 			children: []
 		});
 
-		assert.ok(Model.instanceOf(joefamily, Family), "joefamily instance of Family");
-		assert.ok(Model.instanceOf(joefamily.father, Person), "father instanceof Person");
-		assert.ok(Model.instanceOf(joefamily.mother, Person), "mother instanceof Person");
+		assert.ok(joefamily instanceof Family, "joefamily instance of Family");
+		assert.ok(joefamily.father instanceof Person, "father instanceof Person");
+		assert.ok(joefamily.mother instanceof Person, "mother instanceof Person");
 
 		var duckmother = {
 			female: true,
@@ -685,7 +685,7 @@ function testSuite(Model){
 		});
 
 		assert.ok(Person.test(duckmother), "Duck typing for object properties 1/2");
-		assert.notOk(Model.instanceOf(duckmother, Person), "Duck typing for object properties 2/2");
+		assert.notOk(duckmother instanceof Person, "Duck typing for object properties 2/2");
 
 		joefamily.mother.name = "Daisy";
 		assert.throws(function(){

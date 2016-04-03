@@ -68,9 +68,7 @@ var tests = {
 		joe.birth = new Date(1990,3,26);
 		delete joe.female;
 		try { joe.address.work = { city: 42 }; } catch (e){}
-
-		Model.instanceOf(joe, Person);
-		Model.instanceOf(Person, Model);
+		
 	},
 
 	"Object model with multiple types": function b4(){
@@ -88,7 +86,6 @@ var tests = {
 		});
 
 		var joe = Person({ female: false });
-		Model.instanceOf(joe, Person);
 		joe.name = "joe";
 		joe.name = undefined;
 		joe.age = new Date(1995,1,23);
@@ -108,10 +105,8 @@ var tests = {
 
 		var Arr = Model.Array(Number);
 		var a, b, c, d;
-
-		Model.instanceOf(Arr, Model.Array);
+		
 		a = Arr();
-		Model.instanceOf(a, Arr);
 
 		a.push(1);
 		a[0] = 42;
@@ -148,8 +143,7 @@ var tests = {
 			return cards.length === 2;
 		});
 		var pokerHand = new Hand("K",10);
-
-		Model.instanceOf(pokerHand, Hand) && Model.instanceOf(pokerHand, Cards);
+		
 		Cards("K",10).push(7);
 		try { Hand("K",10).push(7); } catch (e){}
 
@@ -162,7 +156,6 @@ var tests = {
 	"Function models": function b8() {
 
 		var op = Model.Function(Number, Number).return(Number);
-		Model.instanceOf(op, Model.Function);
 
 		var add = op(function (a, b) {
 			return a + b;
@@ -176,9 +169,7 @@ var tests = {
 		var addStr = op(function (a, b) {
 			return String(a) + String(b);
 		});
-
-		Model.instanceOf(add, op);
-
+		
 		add(15, 25);
 		try { add(15); } catch (e){}
 		try { add3(15, 25, 42); } catch (e){}
@@ -366,11 +357,7 @@ var tests = {
 			mother: ann,
 			children: []
 		});
-
-		Model.instanceOf(joefamily, Family);
-		Model.instanceOf(joefamily.father, Person);
-		Model.instanceOf(joefamily.mother, Person);
-
+		
 		var joefamily = new Family({
 			father: joe,
 			mother: {

@@ -3,17 +3,112 @@
  else if (typeof exports === 'object') module.exports = factory(); // Node
  else globals['Model'] = factory(); // globals
 }(this, function () {
+// string constants
+var
+OBJECT                = "Object",
+ARRAY                 = "Array",
+FUNCTION              = "Function",
+CONVENTION_CONSTANT   = "conventionForConstant",
+CONVENTION_PRIVATE    = "conventionForPrivate",
+DEFINITION            = "definition",
+ASSERTIONS            = "assertions",
+VALIDATE              = "validate",
+VALIDATOR             = "_validator",
+TEST                  = "test",
+EXTEND                = "extend",	
+DESCRIPTION           = "description",
+EXPECTED              = "expected",
+RECEIVED              = "received",
+PATH                  = "path",
+MESSAGE               = "message",
+ERROR_STACK           = "errorStack",
+UNSTACK               = "unstack",
+PROTO                 = "prototype",
+CONSTRUCTOR           = "constructor",	
+DEFAULTS              = "defaults",
+RETURN                = "return",
+ARGS                  = "arguments",
+
+ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+;
+
+// references shortcuts
+var
+O                     = Object,
+defineProperty        = O.defineProperty
+;
+var isProxySupported = isFunction(this.Proxy);
+
+// shim for Function.name for browsers that don't support it. IE, I'm looking at you.
+if (!("name" in Function.prototype && "name" in (function x() {}))) {
+	defineProperty(Function.prototype, "name", {
+		get: function() {
+			var results = Function.prototype.toString.call(this).match(/\s*function\s+([^\(\s]*)\s*/);
+			return results && results[1];
+		}
+	});
+}
+
+// shim for Object.setPrototypeOf if __proto__ is supported
+if(!O.setPrototypeOf && {__proto__:[]} instanceof Array){
+	O.setPrototypeOf = function (obj, proto) {
+		obj.__proto__ = proto
+		return obj
+	}
+}
+
 function isFunction(o){
 	return typeof o === "function";
 }
 function isObject(o){
     return typeof o === "object";
 }
+
 function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+	return o && isObject(o) && O.getPrototypeOf(o) === O.prototype;
 }
 
-var isArray = function(a){	return a instanceof Array; };
+function bettertypeof(obj){
+	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
+}
+
+var isArray = function(a){ return a instanceof Array; };
+
+function cloneArray(arr){
+	return Array.prototype.slice.call(arr);
+}
+
+function merge(target, src, deep) {
+	O.keys(src || {}).forEach(function(key){
+		if(deep && isPlainObject(src[key])){
+			var o = {};
+			merge(o, target[key], deep);
+			merge(o, src[key], deep);
+			target[key] = o;
+		} else {
+			target[key] = src[key]
+		}
+	});
+}
+
+function define(obj, key, val, enumerable) {
+	defineProperty(obj, key, {
+		value: val,
+		enumerable: enumerable,
+		writable: true,
+		configurable: true
+	});
+}
+
+function setConstructor(model, constructor){
+	O.setPrototypeOf(model, constructor[PROTO]);
+	define(model, CONSTRUCTOR, constructor);
+}
+
+function setConstructorProto(constructor, proto){
+	constructor[PROTO] = O.create(proto);
+	constructor[PROTO][CONSTRUCTOR] = constructor;
+}
 
 function toString(obj, stack){
 	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
@@ -28,70 +123,12 @@ function toString(obj, stack){
 	}
 	if(obj && isObject(obj)){
 		var indent = (new Array(stack.length-1)).join('\t');
-		return '{' + Object.keys(obj).map(function(key){
+		return '{' + O.keys(obj).map(function(key){
 				return '\n' + indent + key + ': ' + toString(obj[key], stack);
 			}).join(',') + '\n' + '}';
 	}
 	return String(obj)
 }
-
-function bettertypeof(obj){
-	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
-}
-
-function cloneArray(arr){
-	return Array.prototype.slice.call(arr);
-}
-
-function merge(target, src, deep) {
-	Object.keys(src || {}).forEach(function(key){
-		if(deep && isPlainObject(src[key])){
-			var o = {};
-			merge(o, target[key], deep);
-			merge(o, src[key], deep);
-			target[key] = o;
-		} else {
-			target[key] = src[key]
-		}
-	});
-}
-
-function define(obj, key, val, enumerable) {
-	Object.defineProperty(obj, key, {
-		value: val,
-		enumerable: !!enumerable,
-		writable: true,
-		configurable: true
-	});
-}
-
-var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
-Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
-    ? function(o, p){ o.__proto__ = p; }
-    : function(o, p){ for(var k in p){ o[k] = p[k]; } ensureProto(o, p); });
-
-Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
-    return o.__proto__ || (o.constructor ? o.constructor.prototype : null);
-};
-
-function ensureProto(o, p){
-	if(!canSetProto){
-		define(o, "__proto__", p);
-	}
-}
-
-function setProto(constructor, proto, protoConstructor){
-	constructor[PROTO] = Object.create(proto);
-	constructor[PROTO].constructor = protoConstructor || constructor;
-	ensureProto(constructor[PROTO], proto);
-}
-
-function setConstructor(model, constructor){
-	Object.setPrototypeOf(model, constructor[PROTO]);
-	define(model, "constructor", constructor);
-}
-
-var isProxySupported = isFunction(window.Proxy);
 function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def);
 
@@ -100,14 +137,11 @@ function Model(def){
 		return obj;
 	};
 
-	setConstructor(model, Model);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	initModel(model, def, Model);
 	return model;
 }
 
-setProto(Model, Function[PROTO]);
+setConstructorProto(Model, Function[PROTO]);
 var ModelProto = Model[PROTO];
 
 ModelProto.toString = function(stack){
@@ -121,24 +155,24 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 	this[UNSTACK](errorCollector);
 };
 
-ModelProto.test = function(obj){
+ModelProto[TEST] = function(obj){
 	var errorStack = [];
 	this[VALIDATOR](obj, null, [], errorStack);
 	return !errorStack.length;
 };
 
-ModelProto.extend = function(){
+ModelProto[EXTEND] = function(){
 	var def, proto,
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(Model[INSTANCEOF](this, Model[OBJECT])){
+	if(this instanceof Model[OBJECT]){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
 		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(Model[INSTANCEOF](arg, Model)){
+			if(arg instanceof Model){
 				merge(def, arg[DEFINITION], true);
 				merge(proto, arg[PROTO], true);
 			} else {
@@ -156,13 +190,13 @@ ModelProto.extend = function(){
 	}
 
 	args.forEach(function(arg){
-		if(Model[INSTANCEOF](arg, Model)){
+		if(arg instanceof Model){
 			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
 
-	var submodel = new this.constructor(def);
-	setProto(submodel, this[PROTO]);
+	var submodel = new this[CONSTRUCTOR](def);
+	setConstructorProto(submodel, this[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
 	return submodel;
@@ -176,15 +210,6 @@ ModelProto.assert = function(assertion, message){
 
 ModelProto.errorCollector = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
-};
-
-Model[INSTANCEOF] = function(obj, Constructor){ // instanceof sham for IE<9
-	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
-		if(o == null || stack.indexOf(o) !== -1) return false;
-		var proto = Object.getPrototypeOf(o);
-		stack.push(o);
-		return proto === Constructor[PROTO] || recursive(proto, stack);
-	})(obj, [])
 };
 
 Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
@@ -222,12 +247,19 @@ function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }
 
+function initModel(model, def, constructor){
+	setConstructor(model, constructor);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	define(model, ERROR_STACK, []);
+}
+
 function parseDefinition(def){
 	if(isLeaf(def)){
 		if(!isArray(def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
 		});
 	}
@@ -236,7 +268,7 @@ function parseDefinition(def){
 
 function checkDefinition(obj, def, path, callStack, errorStack){
 	var err;
-	if(Model[INSTANCEOF](def, Model)){
+	if(def instanceof Model){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
@@ -255,7 +287,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
@@ -266,18 +298,18 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def) || Model[INSTANCEOF](def, Model)){ // object or model as part of union type
+	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
 		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
 	}
 	if(def instanceof RegExp){
-		return def.test(obj);
+		return def[TEST](obj);
 	}
 
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
-		|| obj.constructor === def;
+		|| obj[CONSTRUCTOR] === def;
 }
 
 function matchAssertions(obj, assertions, errorStack){
@@ -297,19 +329,16 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		ensureProto(proxy, model[PROTO]);
 		model[VALIDATE](proxy);
 		return proxy;
 	};
 
-	setConstructor(model, Model[OBJECT]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	setConstructorProto(model, O[PROTO]);
+	initModel(model, def, Model[OBJECT]);
 	return model;
 };
 
-setProto(Model[OBJECT], ModelProto, Model);
+setConstructorProto(Model[OBJECT], ModelProto);
 var ObjectModelProto = Model[OBJECT][PROTO];
 
 ObjectModelProto[DEFAULTS] = function(p){
@@ -336,14 +365,13 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 });
 
 function getProxy(model, obj, defNode, path) {
-	if(Model[INSTANCEOF](defNode, Model) && obj && !Model[INSTANCEOF](obj, defNode)) {
+	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
-	}
-	else {
-		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+	} else {
+		var wrapper = obj instanceof O ? obj : {};
+		var proxy = O.create(O.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -351,10 +379,10 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		Object.keys(defNode).forEach(function(key) {
+		O.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
 			var isConstant = Model[CONVENTION_CONSTANT](key);
-			Object.defineProperty(proxy, key, {
+			defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
@@ -396,13 +424,13 @@ Model[ARRAY] = function ArrayModel(def){
 				}
 			});
 		} else {
-			proxy = Object.create(Array[PROTO]);
+			proxy = O.create(Array[PROTO]);
 			for(var key in array){
 				if(array.hasOwnProperty(key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
-			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
 				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
@@ -412,15 +440,12 @@ Model[ARRAY] = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Array[PROTO]);
-	setConstructor(model, Model[ARRAY]);
-	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	setConstructorProto(model, Array[PROTO]);
+	initModel(model, def, Model[ARRAY]);
 	return model;
 };
 
-setProto(Model[ARRAY], Model[PROTO], Model);
+setConstructorProto(Model[ARRAY], Model[PROTO]);
 var ArrayModelProto = Model[ARRAY][PROTO];
 
 ArrayModelProto.toString = function(stack){
@@ -444,7 +469,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 });
 
 function proxifyArrayKey(proxy, array, key, model){
-	Object.defineProperty(proxy, key, {
+	defineProperty(proxy, key, {
 		enumerable: true,
 		get: function () {
 			return array[key];
@@ -511,24 +536,24 @@ Model[FUNCTION] = function FunctionModel(){
 		return proxyFn;
 	};
 
-	setProto(model, Function[PROTO]);
-	setConstructor(model, Model[FUNCTION]);
-	model[DEFINITION] = {};
-	model[DEFINITION][ARGS] = cloneArray(arguments);
-	model[ASSERTIONS] = [];
-	model[ERROR_STACK] = [];
+	setConstructorProto(model, Function[PROTO]);
+
+	var def = {};
+	def[ARGS] = cloneArray(arguments);
+	initModel(model, def, Model[FUNCTION]);
 	return model;
 };
 
-setProto(Model[FUNCTION], Model[PROTO], Model);
+setConstructorProto(Model[FUNCTION], Model[PROTO]);
+
 var FunctionModelProto = Model[FUNCTION][PROTO];
 
 FunctionModelProto.toString = function(stack){
-	var out = 'Model.' + FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
-			return toString(argDef, stack);
-		}).join(",") +')';
+	var out = FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
+		return toString(argDef, stack);
+	}).join(",") +')';
 	if(RETURN in this[DEFINITION]) {
-		out += "." + RETURN + "(" + toString(this[DEFINITION][RETURN]) + ")";
+		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
 	}
 	return out;
 };

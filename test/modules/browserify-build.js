@@ -4,17 +4,112 @@
  else if (typeof exports === 'object') module.exports = factory(); // Node
  else globals['Model'] = factory(); // globals
 }(this, function () {
+// string constants
+var
+OBJECT                = "Object",
+ARRAY                 = "Array",
+FUNCTION              = "Function",
+CONVENTION_CONSTANT   = "conventionForConstant",
+CONVENTION_PRIVATE    = "conventionForPrivate",
+DEFINITION            = "definition",
+ASSERTIONS            = "assertions",
+VALIDATE              = "validate",
+VALIDATOR             = "_validator",
+TEST                  = "test",
+EXTEND                = "extend",	
+DESCRIPTION           = "description",
+EXPECTED              = "expected",
+RECEIVED              = "received",
+PATH                  = "path",
+MESSAGE               = "message",
+ERROR_STACK           = "errorStack",
+UNSTACK               = "unstack",
+PROTO                 = "prototype",
+CONSTRUCTOR           = "constructor",	
+DEFAULTS              = "defaults",
+RETURN                = "return",
+ARGS                  = "arguments",
+
+ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+;
+
+// references shortcuts
+var
+O                     = Object,
+defineProperty        = O.defineProperty
+;
+var isProxySupported = isFunction(this.Proxy);
+
+// shim for Function.name for browsers that don't support it. IE, I'm looking at you.
+if (!("name" in Function.prototype && "name" in (function x() {}))) {
+	defineProperty(Function.prototype, "name", {
+		get: function() {
+			var results = Function.prototype.toString.call(this).match(/\s*function\s+([^\(\s]*)\s*/);
+			return results && results[1];
+		}
+	});
+}
+
+// shim for Object.setPrototypeOf if __proto__ is supported
+if(!O.setPrototypeOf && {__proto__:[]} instanceof Array){
+	O.setPrototypeOf = function (obj, proto) {
+		obj.__proto__ = proto
+		return obj
+	}
+}
+
 function isFunction(o){
 	return typeof o === "function";
 }
 function isObject(o){
     return typeof o === "object";
 }
+
 function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+	return o && isObject(o) && O.getPrototypeOf(o) === O.prototype;
 }
 
-var isArray = function(a){	return a instanceof Array; };
+function bettertypeof(obj){
+	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
+}
+
+var isArray = function(a){ return a instanceof Array; };
+
+function cloneArray(arr){
+	return Array.prototype.slice.call(arr);
+}
+
+function merge(target, src, deep) {
+	O.keys(src || {}).forEach(function(key){
+		if(deep && isPlainObject(src[key])){
+			var o = {};
+			merge(o, target[key], deep);
+			merge(o, src[key], deep);
+			target[key] = o;
+		} else {
+			target[key] = src[key]
+		}
+	});
+}
+
+function define(obj, key, val, enumerable) {
+	defineProperty(obj, key, {
+		value: val,
+		enumerable: enumerable,
+		writable: true,
+		configurable: true
+	});
+}
+
+function setConstructor(model, constructor){
+	O.setPrototypeOf(model, constructor[PROTO]);
+	define(model, CONSTRUCTOR, constructor);
+}
+
+function setConstructorProto(constructor, proto){
+	constructor[PROTO] = O.create(proto);
+	constructor[PROTO][CONSTRUCTOR] = constructor;
+}
 
 function toString(obj, stack){
 	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
@@ -28,243 +123,256 @@ function toString(obj, stack){
 			}).join(', ') + ']';
 	}
 	if(obj && isObject(obj)){
-		var indent = (new Array(stack.length)).join('\t');
-		return '{' + Object.keys(obj).map(function(key){
-				return '\n\t' + indent + key + ': ' + toString(obj[key], stack);
-			}).join(',') + '\n' + indent + '}';
+		var indent = (new Array(stack.length-1)).join('\t');
+		return '{' + O.keys(obj).map(function(key){
+				return '\n' + indent + key + ': ' + toString(obj[key], stack);
+			}).join(',') + '\n' + '}';
 	}
 	return String(obj)
 }
-
-function bettertypeof(obj){
-	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
-}
-
-function cloneArray(arr){
-	return Array.prototype.slice.call(arr);
-}
-
-function merge(target, src, deep) {
-	Object.keys(src || {}).forEach(function(key){
-		if(deep && isPlainObject(src[key])){
-			var o = {};
-			merge(o, target[key], deep);
-			merge(o, src[key], deep);
-			target[key] = o;
-		} else {
-			target[key] = src[key]
-		}
-	});
-}
-
-var canSetProto = !!Object.setPrototypeOf || {__proto__:[]} instanceof Array;
-Object.setPrototypeOf = Object.setPrototypeOf || (canSetProto
-    ? function(o, p){ o.__proto__ = p; }
-    : function(o, p){ for(var k in p){ o[k] = p[k]; } ensureProto(o, p); });
-
-Object.getPrototypeOf = Object.getPrototypeOf && canSetProto ? Object.getPrototypeOf : function(o){
-    return o.__proto__ || (o.constructor ? o.constructor.prototype : null);
-};
-
-function ensureProto(o, p){
-	if(!canSetProto){
-		Object.defineProperty(o, "__proto__", { enumerable: false, writable: true, value: p });
-	}
-}
-
-function setProto(constructor, proto, protoConstructor){
-	constructor.prototype = Object.create(proto);
-	constructor.prototype.constructor = protoConstructor || constructor;
-	ensureProto(constructor.prototype, proto);
-}
-
-function setConstructor(model, constructor){
-	Object.setPrototypeOf(model, constructor.prototype);
-	Object.defineProperty(model, "constructor", { enumerable: false, writable: true, value: constructor });
-}
-
-var isProxySupported = (typeof Proxy === "function");
 function Model(def){
-	if(!isLeaf(def)) return Model.Object(def);
+	if(!isLeaf(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
-		model.validate(obj);
+		model[VALIDATE](obj);
 		return obj;
 	};
 
-	setConstructor(model, Model);
-	model.definition = def;
-	model.assertions = [];
+	initModel(model, def, Model);
 	return model;
 }
 
-setProto(Model, Function.prototype);
+setConstructorProto(Model, Function[PROTO]);
+var ModelProto = Model[PROTO];
 
-Model.prototype.toString = function(stack){
-	return parseDefinition(this.definition).map(function(d){ return toString(d, stack); }).join(" or ");
+ModelProto.toString = function(stack){
+	return parseDefinition(this[DEFINITION]).map(function(d){
+		return toString(d, stack);
+	}).join(" or ");
 };
 
-Model.prototype.validate = function(obj, stack){
-	checkDefinition(obj, this.definition, undefined, stack || []);
-	matchAssertions(obj, this.assertions);
+ModelProto[VALIDATE] = function(obj, errorCollector){
+	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
+	this[UNSTACK](errorCollector);
 };
 
-Model.prototype.test = function(obj, stack){
-	try { this.validate(obj, stack); return true; }
-	catch(e){ return false; }
+ModelProto[TEST] = function(obj){
+	var errorStack = [];
+	this[VALIDATOR](obj, null, [], errorStack);
+	return !errorStack.length;
 };
 
-Model.prototype.extend = function(){
+ModelProto[EXTEND] = function(){
 	var def, proto,
-		assertions = cloneArray(this.assertions),
+		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(Model.instanceOf(this, Model.Object)){
+	if(this instanceof Model[OBJECT]){
 		def = {};
 		proto = {};
-		merge(def, this.definition);
-		merge(proto, this.prototype);
+		merge(def, this[DEFINITION]);
+		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(Model.instanceOf(arg, Model)){
-				merge(def, arg.definition, true);
-				merge(proto, arg.prototype, true);
+			if(arg instanceof Model){
+				merge(def, arg[DEFINITION], true);
+				merge(proto, arg[PROTO], true);
 			} else {
 				merge(def, arg, true);
 			}
 		})
 	} else {
-		def = args.reduce(function(def, ext){ return def.concat(parseDefinition(ext)); }, parseDefinition(this.definition))
-			      .filter(function(value, index, self) { return self.indexOf(value) === index; }); // remove duplicates
+		def = args
+			.reduce(function(def, ext){
+				return def.concat(parseDefinition(ext));
+			}, parseDefinition(this[DEFINITION]))
+			.filter(function(value, index, self) {
+				return self.indexOf(value) === index; // remove duplicates
+			});
 	}
 
 	args.forEach(function(arg){
-		if(Model.instanceOf(arg, Model)){
-			assertions = assertions.concat(arg.assertions);
+		if(arg instanceof Model){
+			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
 
-	var submodel = new this.constructor(def);
-	setProto(submodel, this.prototype);
-	merge(submodel.prototype, proto);
-	submodel.assertions = assertions;
+	var submodel = new this[CONSTRUCTOR](def);
+	setConstructorProto(submodel, this[PROTO]);
+	merge(submodel[PROTO], proto);
+	submodel[ASSERTIONS] = assertions;
 	return submodel;
 };
 
-Model.prototype.assert = function(){
-	this.assertions = this.assertions.concat(cloneArray(arguments).filter(isFunction));
+ModelProto.assert = function(assertion, message){
+	define(assertion, DESCRIPTION, message);
+	this[ASSERTIONS].push(assertion);
 	return this;
 };
 
-Model.instanceOf = function(obj, Constructor){ // instanceof sham for IE<9
-	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
-		if(o == null || stack.indexOf(o) !== -1) return false;
-		var proto = Object.getPrototypeOf(o);
-		stack.push(o);
-		return proto === Constructor.prototype || recursive(proto, stack);
-	})(obj, [])
+ModelProto.errorCollector = function(errors){
+	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
 };
 
-Model.conventionForConstant = function(key){ return key.toUpperCase() === key };
-Model.conventionForPrivate = function(key){ return key[0] === "_" };
+Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
+Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
+
+// private methods
+define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	matchAssertions(obj, this[ASSERTIONS], errorStack);
+});
+
+// throw all errors collected
+define(ModelProto, UNSTACK, function(errorCollector){
+	if(!this[ERROR_STACK].length){
+		return;
+	}
+	if(!errorCollector){
+		errorCollector = this.errorCollector;
+	}
+	var errors = this[ERROR_STACK].map(function(err){
+		if(!err[MESSAGE]){
+			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
+			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
+			+ def.map(function(d){ return toString(d); }).join(" or ")
+			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
+			+ toString(err[RECEIVED]))
+		}
+		return err;
+	});
+	this[ERROR_STACK] = [];
+	errorCollector.call(this, errors);
+})
 
 function isLeaf(def){
 	return bettertypeof(def) != "Object";
 }
 
+function initModel(model, def, constructor){
+	setConstructor(model, constructor);
+	model[DEFINITION] = def;
+	model[ASSERTIONS] = [];
+	define(model, ERROR_STACK, []);
+}
+
 function parseDefinition(def){
 	if(isLeaf(def)){
 		if(!isArray(def)) return [def];
-		else if(def.length === 1) return def.concat(undefined);
+		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
 		});
 	}
 	return def;
 }
 
-function checkDefinition(obj, def, path, stack){
-	if(isLeaf(def)){
-		def = parseDefinition(def);
-		for(var i= 0, l=def.length; i<l; i++){
-			if(checkDefinitionPart(obj, def[i], stack)){ return; }
+function checkDefinition(obj, def, path, callStack, errorStack){
+	var err;
+	if(def instanceof Model){
+		var indexFound = callStack.indexOf(def);
+		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
+			return; //if found twice in call stack, cycle detected, skip validation
 		}
-		throw new TypeError("expecting " + (path ? path + " to be " : "") + def.map(function(d){ return toString(d); }).join(" or ")
-		+ ", got " + (obj != null ? bettertypeof(obj) + " " : "") + toString(obj) );
+		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+	} else if(isLeaf(def)){
+		var pdef = parseDefinition(def);
+		for(var i= 0, l=pdef.length; i<l; i++){
+			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
+				return;
+			}
+		}
+		err = {};
+		err[EXPECTED] = def;
+		err[RECEIVED] = obj;
+		err[PATH] = path;
+		errorStack.push(err);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, stack.concat(val));
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
 	}
 }
 
-function checkDefinitionPart(obj, def, stack){
+function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(Model.instanceOf(def, Model)){
-		var indexFound = stack.indexOf(def);
-		if(indexFound !== -1 && stack.slice(indexFound+1).indexOf(def) !== -1){
-			return true; //if found twice in call stack, cycle detected, skip validation
-		}
-		return def.test(obj, stack.concat(def));
+	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
+		var errorStack = [];
+		checkDefinition(obj, def, path, callStack, errorStack);
+		return !errorStack.length;
 	}
 	if(def instanceof RegExp){
-		return def.test(obj);
+		return def[TEST](obj);
 	}
 
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
-		|| obj.constructor === def;
+		|| obj[CONSTRUCTOR] === def;
 }
 
-function matchAssertions(obj, assertions){
+function matchAssertions(obj, assertions, errorStack){
 	for(var i=0, l=assertions.length; i<l ; i++ ){
 		if(!assertions[i](obj)){
-			throw new TypeError("an assertion of the model is not respected: "+toString(assertions[i]));
+			var err = {};
+			err[MESSAGE] = "assertion failed: "+ (assertions[i][DESCRIPTION] || toString(assertions[i]))
+			errorStack.push(err);
 		}
 	}
 }
-Model.Object = function ObjectModel(def){
+Model[OBJECT] = function ObjectModel(def){
 
 	var model = function(obj) {
 		if(!(this instanceof model)){
 			return new model(obj);
 		}
 		merge(this, obj, true);
-		var proxy = getProxy(model, this, model.definition);
-		model.validate(proxy);
-		ensureProto(proxy, model.prototype);
+		var proxy = getProxy(model, this, model[DEFINITION]);
+		model[VALIDATE](proxy);
 		return proxy;
 	};
 
-	setConstructor(model, Model.Object);
-	model.definition = def;
-	model.assertions = [];
+	setConstructorProto(model, O[PROTO]);
+	initModel(model, def, Model[OBJECT]);
 	return model;
 };
 
-setProto(Model.Object, Model.prototype, Model);
+setConstructorProto(Model[OBJECT], ModelProto);
+var ObjectModelProto = Model[OBJECT][PROTO];
 
-Model.Object.prototype.defaults = function(p){
-	merge(this.prototype, p);
+ObjectModelProto[DEFAULTS] = function(p){
+	merge(this[PROTO], p);
 	return this;
 };
 
-Model.Object.prototype.toString = function(stack){
-	return toString(this.definition, stack);
+ObjectModelProto.toString = function(stack){
+	return toString(this[DEFINITION], stack);
 };
 
+// private methods
+define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
+	if(!isObject(obj)){
+		var err = {};
+		err[EXPECTED] = this;
+		err[RECEIVED] = obj;
+		err[PATH] = path;
+		errorStack.push(err);
+	} else {
+		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+	}
+	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+});
+
 function getProxy(model, obj, defNode, path) {
-	if(Model.instanceOf(defNode, Model) && !Model.instanceOf(obj, defNode)) {
+	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
-	}
-	else {
-		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+	} else {
+		var wrapper = obj instanceof O ? obj : {};
+		var proxy = O.create(O.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -272,38 +380,41 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		Object.keys(defNode).forEach(function(key) {
+		O.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
-			var isConstant = Model.conventionForConstant(key);
-			Object.defineProperty(proxy, key, {
+			var isConstant = Model[CONVENTION_CONSTANT](key);
+			defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
 				set: function (val) {
 					if(isConstant && wrapper[key] !== undefined){
-						throw new TypeError("cannot redefine constant " + key);
+						var err = {};
+						err[MESSAGE] = "cannot redefine constant " + key;
+						model[ERROR_STACK].push(err);
 					}
 					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, []);
+					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-					try { matchAssertions(obj, model.assertions); }
-					catch(e){ wrapper[key] = oldValue; throw e; }
+					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK]);
+					if(model[ERROR_STACK].length){
+						wrapper[key] = oldValue;
+						model[UNSTACK]();
+					}
 				},
-				enumerable: !Model.conventionForPrivate(key)
+				enumerable: !Model[CONVENTION_PRIVATE](key)
 			});
 		});
 		return proxy;
 	}
 }
-var ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
-
-Model.Array = function ArrayModel(def){
+Model[ARRAY] = function ArrayModel(def){
 
 	var model = function(array) {
 
 		var proxy;
-		model.validate(array);
+		model[VALIDATE](array);
 		if(isProxySupported){
 			proxy = new Proxy(array, {
 				get: function (arr, key) {
@@ -314,18 +425,15 @@ Model.Array = function ArrayModel(def){
 				}
 			});
 		} else {
-			proxy = Object.create(Array.prototype);
+			proxy = O.create(Array[PROTO]);
 			for(var key in array){
 				if(array.hasOwnProperty(key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
-			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
-				Object.defineProperty(proxy, method, {
-					configurable: true,
-					value: proxifyArrayMethod(array, method, model, proxy)
-				});
+				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
 		}
 
@@ -333,31 +441,36 @@ Model.Array = function ArrayModel(def){
 		return proxy;
 	};
 
-	setProto(model, Array.prototype);
-	setConstructor(model, Model.Array);
-	model.definition = def;
-	model.assertions = [];
+	setConstructorProto(model, Array[PROTO]);
+	initModel(model, def, Model[ARRAY]);
 	return model;
 };
 
-setProto(Model.Array, Model.prototype, Model);
+setConstructorProto(Model[ARRAY], Model[PROTO]);
+var ArrayModelProto = Model[ARRAY][PROTO];
 
-Model.Array.prototype.validate = function(arr){
+ArrayModelProto.toString = function(stack){
+	return ARRAY + ' of ' + toString(this[DEFINITION], stack);
+};
+
+// private methods
+define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 	if(!isArray(arr)){
-		throw new TypeError("expecting "+this.toString()+", got: " + toString(arr));
+		var err = {};
+		err[EXPECTED] = this;
+		err[RECEIVED] = arr;
+		err[PATH] = path;
+		errorStack.push(err);
+	} else {
+		for(var i=0, l=arr.length; i<l; i++){
+			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
+		}
 	}
-	for(var i=0, l=arr.length; i<l; i++){
-		checkDefinition(arr[i], this.definition, 'Array['+i+']', []);
-	}
-	matchAssertions(arr, this.assertions);
-};
-
-Model.Array.prototype.toString = function(stack){
-	return 'Array of ' + toString(this.definition, stack);
-};
+	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
+});
 
 function proxifyArrayKey(proxy, array, key, model){
-	Object.defineProperty(proxy, key, {
+	defineProperty(proxy, key, {
 		enumerable: true,
 		get: function () {
 			return array[key];
@@ -371,8 +484,8 @@ function proxifyArrayKey(proxy, array, key, model){
 function proxifyArrayMethod(array, method, model, proxy){
 	return function() {
 		var testArray = array.slice();
-		Array.prototype[method].apply(testArray, arguments);
-		model.validate(testArray);
+		Array[PROTO][method].apply(testArray, arguments);
+		model[VALIDATE](testArray);
 		if(!isProxySupported){
 			for(var key in testArray){
 				if(testArray.hasOwnProperty(key) && !(key in proxy)){
@@ -380,77 +493,92 @@ function proxifyArrayMethod(array, method, model, proxy){
 				}
 			}
 		}
-		return Array.prototype[method].apply(array, arguments);
+		return Array[PROTO][method].apply(array, arguments);
 	};
 }
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model.definition, 'Array['+key+']', []);
+		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model.assertions);
+	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK]);
+	model[UNSTACK]();
 	array[key] = value;
 }
-Model.Function = function FunctionModel(){
+Model[FUNCTION] = function FunctionModel(){
 
 	var model = function(fn) {
 
-		var def = model.definition;
+		var def = model[DEFINITION];
 		var proxyFn = function () {
 			var args = [];
-			merge(args, def.defaults);
+			merge(args, def[DEFAULTS]);
 			merge(args, cloneArray(arguments));
-			if (args.length !== def.arguments.length) {
-				throw new TypeError("expecting " + toString(fn) + " to be called with " + def.arguments.length + " arguments, got " + args.length);
+			if (args.length > def[ARGS].length) {
+				var err = {};
+				err[EXPECTED] = toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS;
+				err[RECEIVED] = args.length;
+				model[ERROR_STACK].push(err);
 			}
-			def.arguments.forEach(function (argDef, i) {
-				checkDefinition(args[i], argDef, 'arguments[' + i + ']', []);
+			def[ARGS].forEach(function (argDef, i) {
+				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
-			matchAssertions(args, model.assertions);
+			matchAssertions(args, model[ASSERTIONS], model[ERROR_STACK]);
 			var returnValue = fn.apply(this, args);
-			if ("return" in def) {
-				checkDefinition(returnValue, def.return, 'return value', []);
+			if (RETURN in def) {
+				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
 			}
+			model[UNSTACK]();
 			return returnValue;
 		};
 		setConstructor(proxyFn, model);
 		return proxyFn;
 	};
 
-	setProto(model, Function.prototype);
-	setConstructor(model, Model.Function);
-	model.definition = { arguments: cloneArray(arguments) };
-	model.assertions = [];
+	setConstructorProto(model, Function[PROTO]);
+
+	var def = {};
+	def[ARGS] = cloneArray(arguments);
+	initModel(model, def, Model[FUNCTION]);
 	return model;
 };
 
-setProto(Model.Function, Model.prototype, Model);
+setConstructorProto(Model[FUNCTION], Model[PROTO]);
 
-Model.Function.prototype.validate = function (f) {
-	if(!isFunction(f)){
-		throw new TypeError("expecting a function, got: " + toString(f));
-	}
-};
+var FunctionModelProto = Model[FUNCTION][PROTO];
 
-Model.Function.prototype.toString = function(stack){
-	var out = 'Model.Function('+this.definition.arguments.map(function(argDef){ return toString(argDef, stack); }).join(",") +')';
-	if("return" in this.definition) {
-		out += ".return(" + toString(this.definition.return) + ")";
+FunctionModelProto.toString = function(stack){
+	var out = FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
+		return toString(argDef, stack);
+	}).join(",") +')';
+	if(RETURN in this[DEFINITION]) {
+		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
 	}
 	return out;
 };
 
-Model.Function.prototype.return = function(def){
-	this.definition.return = def;
+FunctionModelProto[RETURN] = function(def){
+	this[DEFINITION][RETURN] = def;
 	return this;
 };
 
-Model.Function.prototype.defaults = function(){
-	this.definition.defaults = cloneArray(arguments);
+FunctionModelProto[DEFAULTS] = function(){
+	this[DEFINITION][DEFAULTS] = cloneArray(arguments);
 	return this;
 };
+
+// private methods
+define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
+	if(!isFunction(f)){
+		var err = {};
+		err[EXPECTED] = FUNCTION;
+		err[RECEIVED] = f;
+		err[PATH] = path;
+		errorStack.push(err);
+	}
+});
 return Model;
 }));
 },{}],2:[function(require,module,exports){

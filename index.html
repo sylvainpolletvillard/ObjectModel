@@ -129,11 +129,12 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>7.4 kB minified, 3 kB gzipped</strong></li>
+			<li>all in <strong>6.8 kB minified, 2.8 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome and Firefox, on Internet Explorer 9/10/11, on Opera 20, Safari 5.1 and preview version of Microsoft Edge. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+		<p>Support for IE < 11 had to be dropped in v1.2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">v1.1.5</a>.</p>
 	</section>
 
 	<hr>
@@ -142,17 +143,21 @@
 		<h2>Download</h2>
 		<h3>Current version: v1.2.0</h3>
 		<ul>
-			<li><a href="dist/object-model.min.js">object-model.min.js</a> minified file (7.4 kB, 3 kB gzipped)</li>
-			<li><a href="dist/object-model-1.2.0.zip">object-model-1.2.0.zip</a> source files</li>
+			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
+			<li>Minified file (6.8 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Source files : <a href="dist/object-model-1.2.0.zip">object-model-1.2.0.zip</a> </li>
+			<li><a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">Older versions</a></li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
 				<dt>v1.2</dt>
+				<dd>support for IE<11 had to be dropped :(</dd>
+				<dd>removed Model.instanceOf as it is not useful anymore: use the instanceof operator</dd>
 				<dd>null is now a valid value for an optional property</dd>
 				<dd>assert API has changed and now receives optional description</dd>
+				<dd>added custom error collectors</dd>
 				<dd>validate API has changed and now receives optional error collector</dd>
-				<dd>custom error collectors can be declared globally or by model</dd>
 				<dd>stack errors instead of throwing the first error catched</dd>
 				<dt>v1.1</dt>
 				<dd>model.extend can now take models and/or models definitions as arguments</dd>
@@ -168,7 +173,6 @@
 				<dd>performance improvements, especially on Array models</dd>
 				<dt>v0.8</dt>
 				<dd>cycle detection and validation of circular object structures</dd>
-				<dd>support for IE9 with Model.instanceOf</dd>
 				<dd>support for Safari 5</dd>
 				<dt>v0.7</dt>
 				<dd>API redesign to get a single namespace</dd>
@@ -779,10 +783,6 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 
 			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2, ...)</code></dt>
 			<dd>Constructor for function models</dd>
-
-			<dt>Model.instanceOf <code>Model.instanceOf(object, model)</code></dt>
-			<dd>Returns <code>true</code> if the object passed is an instance of the model passed.<br/>
-				For modern browsers (ie. not IE9), you can also use the <code>instanceof</code> operator.</dd>
 
 			<dt><a href="#doc-private-and-constants">Model.conventionForConstant</a> <code>function(variableName)</code></dt>
 			<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit your needs.</dd>

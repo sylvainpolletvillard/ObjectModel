@@ -46,7 +46,8 @@ module.exports = function(grunt) {
 		uglify: {
 			dist: {
 				options: {
-					banner: BANNER
+					banner: BANNER,
+					screwIE8: true
 				},
 				files: {
 					'dist/object-model.min.js': ['dist/object-model.js']
@@ -79,7 +80,7 @@ module.exports = function(grunt) {
 						},
 						{
 							dest: 'index.html',
-							text: 'minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
+							text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
 						}
 					]
 				}

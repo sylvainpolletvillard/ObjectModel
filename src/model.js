@@ -128,7 +128,7 @@ function parseDefinition(def){
 		if(!isArray(def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
 		});
 	}
@@ -156,7 +156,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {
-		Object.keys(def).forEach(function(key) {
+		O.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});

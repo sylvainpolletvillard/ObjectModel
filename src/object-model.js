@@ -10,7 +10,7 @@ Model[OBJECT] = function ObjectModel(def){
 		return proxy;
 	};
 
-	setConstructorProto(model, Object[PROTO]);
+	setConstructorProto(model, O[PROTO]);
 	initModel(model, def, Model[OBJECT]);
 	return model;
 };
@@ -47,8 +47,8 @@ function getProxy(model, obj, defNode, path) {
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {
-		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
+		var wrapper = obj instanceof O ? obj : {};
+		var proxy = O.create(O.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -56,10 +56,10 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		Object.keys(defNode).forEach(function(key) {
+		O.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
 			var isConstant = Model[CONVENTION_CONSTANT](key);
-			Object.defineProperty(proxy, key, {
+			defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},

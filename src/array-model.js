@@ -14,13 +14,13 @@ Model[ARRAY] = function ArrayModel(def){
 				}
 			});
 		} else {
-			proxy = Object.create(Array[PROTO]);
+			proxy = O.create(Array[PROTO]);
 			for(var key in array){
 				if(array.hasOwnProperty(key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
-			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "length", { get: function() { return array.length; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
 				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
@@ -59,7 +59,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 });
 
 function proxifyArrayKey(proxy, array, key, model){
-	Object.defineProperty(proxy, key, {
+	defineProperty(proxy, key, {
 		enumerable: true,
 		get: function () {
 			return array[key];

@@ -26,3 +26,9 @@ ARGS                  = "arguments",
 
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 ;
+
+// references shortcuts
+var
+O                     = Object,
+defineProperty        = O.defineProperty
+;

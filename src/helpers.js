@@ -4,11 +4,12 @@ function isFunction(o){
 function isObject(o){
     return typeof o === "object";
 }
+
 function isPlainObject(o){
-	return o && isObject(o) && getProto(o) === Object.prototype;
+	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
 }
 
-var isArray = function(a){	return a instanceof Array; };
+var isArray = function(a){ return a instanceof Array; };
 
 function toString(obj, stack){
 	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
@@ -24,8 +25,8 @@ function toString(obj, stack){
 	if(obj && isObject(obj)){
 		var indent = (new Array(stack.length-1)).join('\t');
 		return '{' + Object.keys(obj).map(function(key){
-				return '\n' + indent + key + ': ' + toString(obj[key], stack);
-			}).join(',') + '\n' + '}';
+			return '\n' + indent + key + ': ' + toString(obj[key], stack);
+		}).join(',') + '\n' + '}';
 	}
 	return String(obj)
 }
@@ -54,36 +55,19 @@ function merge(target, src, deep) {
 function define(obj, key, val, enumerable) {
 	Object.defineProperty(obj, key, {
 		value: val,
-		enumerable: enumerable || !canSetProto,
+		enumerable: enumerable,
 		writable: true,
 		configurable: true
 	});
 }
 
-var canSetProto = !!Object.setPrototypeOf;
-if(!canSetProto && {__proto__:[]} instanceof Array){
-	canSetProto = true;
-	Object.setPrototypeOf = function(o, p){ o[_PROTO] = p; }
-}
-
-var getProto = canSetProto ? Object.getPrototypeOf : function(o){ return o[_PROTO] || null };
-var setProto = canSetProto ? Object.setPrototypeOf : function(o, p){
-	for(var k in p){
-		if(!(k in o)){
-			o[k] = p[k];
-		}
-	}
-	o[_PROTO] = p;
-};
-
 function setConstructor(model, constructor){
-	setProto(model, constructor[PROTO]);
+	Object.setPrototypeOf(model, constructor[PROTO]);
 	define(model, CONSTRUCTOR, constructor);
 }
 
 function setConstructorProto(constructor, proto){
 	constructor[PROTO] = Object.create(proto);
-	canSetProto || define(constructor[PROTO], _PROTO, proto);
 	constructor[PROTO][CONSTRUCTOR] = constructor;
 }
 
@@ -97,4 +81,12 @@ if (!("name" in Function.prototype && "name" in (function x() {}))) {
 			return results && results[1];
 		}
 	});
+}
+
+// shim for Object.setPrototypeOf if __proto__ is supported
+if(!Object.setPrototypeOf && {__proto__:[]} instanceof Array){
+	Object.setPrototypeOf = function (obj, proto) {
+		obj.__proto__ = proto
+		return obj
+	}
 }

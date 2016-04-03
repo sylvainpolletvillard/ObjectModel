@@ -6,7 +6,6 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
-		setProto(proxy, model[PROTO]);
 		model[VALIDATE](proxy);
 		return proxy;
 	};
@@ -43,14 +42,13 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 });
 
 function getProxy(model, obj, defNode, path) {
-	if(Model[INSTANCEOF](defNode, Model) && obj && !Model[INSTANCEOF](obj, defNode)) {
+	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
 	} else if(isLeaf(defNode)){
 		return obj;
-	}
-	else {
+	} else {
 		var wrapper = obj instanceof Object ? obj : {};
-		var proxy = Object.create(getProto(wrapper));
+		var proxy = Object.create(Object.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){

@@ -24,24 +24,24 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 	this[UNSTACK](errorCollector);
 };
 
-ModelProto.test = function(obj){
+ModelProto[TEST] = function(obj){
 	var errorStack = [];
 	this[VALIDATOR](obj, null, [], errorStack);
 	return !errorStack.length;
 };
 
-ModelProto.extend = function(){
+ModelProto[EXTEND] = function(){
 	var def, proto,
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(Model[INSTANCEOF](this, Model[OBJECT])){
+	if(this instanceof Model[OBJECT]){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
 		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(Model[INSTANCEOF](arg, Model)){
+			if(arg instanceof Model){
 				merge(def, arg[DEFINITION], true);
 				merge(proto, arg[PROTO], true);
 			} else {
@@ -59,7 +59,7 @@ ModelProto.extend = function(){
 	}
 
 	args.forEach(function(arg){
-		if(Model[INSTANCEOF](arg, Model)){
+		if(arg instanceof Model){
 			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
@@ -79,16 +79,6 @@ ModelProto.assert = function(assertion, message){
 
 ModelProto.errorCollector = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
-};
-
-Model[INSTANCEOF] = function(obj, Constructor){ // instanceof sham for IE<9
-	return canSetProto ? obj instanceof Constructor	: (function recursive(o, stack){
-		if(o == null || stack.indexOf(o) !== -1) return false;
-		if(!isObject(o) && !isFunction(o)) return o instanceof Constructor;
-		var proto = getProto(o);
-		stack.push(o);
-		return proto === Constructor[PROTO] || recursive(proto, stack);
-	})(obj, [])
 };
 
 Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
@@ -147,7 +137,7 @@ function parseDefinition(def){
 
 function checkDefinition(obj, def, path, callStack, errorStack){
 	var err;
-	if(Model[INSTANCEOF](def, Model)){
+	if(def instanceof Model){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
@@ -177,13 +167,13 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def) || Model[INSTANCEOF](def, Model)){ // object or model as part of union type
+	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
 		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
 	}
 	if(def instanceof RegExp){
-		return def.test(obj);
+		return def[TEST](obj);
 	}
 
 	return obj === def

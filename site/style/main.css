@@ -706,7 +706,7 @@ body.menu-opened .lines-button.arrow .lines:after {
   cursor: pointer;
   background: #eee;
   border: none;
-  box-shadow: 1.8px 1.8px 9px #999999;
+  box-shadow: 1.8px 1.8px 9px #999;
   -webkit-transition: left 0.4s ease, opacity 0.2s ease;
   -moz-transition: left 0.4s ease, opacity 0.2s ease;
   -ms-transition: left 0.4s ease, opacity 0.2s ease;
@@ -714,11 +714,11 @@ body.menu-opened .lines-button.arrow .lines:after {
   transition: left 0.4s ease, opacity 0.2s ease;
 }
 #menu-button:hover {
-  box-shadow: 0.72px 0.72px 5.4px #999999;
+  box-shadow: 0.72px 0.72px 5.4px #999;
 }
 #menu-button:focus {
   background-color: #e8e8e8;
-  box-shadow: inset -0.72px -0.72px 7.2px #aaaaaa;
+  box-shadow: inset -0.72px -0.72px 7.2px #aaa;
   outline: none;
 }
 #lang-button {
@@ -855,4 +855,22 @@ body.menu-opened #menu-button {
     display: block;
     width: 100%;
   }
+}
+.share-buttons {
+  list-style: none;
+  text-align: center;
+}
+.share-buttons li {
+  display: inline-block;
+  padding: 0 1em;
+}
+.share-buttons li:hover img {
+  transform: rotateY(360deg);
+  transition-duration: 600ms;
+}
+.share-buttons img {
+  transform: rotateY(0deg);
+  transition: transform 300ms linear;
+  width: 3em;
+  border-radius: 0.4em;
 }

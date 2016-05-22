@@ -1,23 +1,19 @@
 function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def);
 
-	var model = function(obj) {
+	const model = function(obj) {
 		model[VALIDATE](obj);
 		return obj;
-	};
+	}
 
 	initModel(model, def, Model);
 	return model;
 }
 
 setConstructorProto(Model, Function[PROTO]);
-var ModelProto = Model[PROTO];
+const ModelProto = Model[PROTO];
 
-ModelProto.toString = function(stack){
-	return parseDefinition(this[DEFINITION]).map(function(d){
-		return toString(d, stack);
-	}).join(" or ");
-};
+ModelProto.toString = stack => parseDefinition(this[DEFINITION]).map(d => toString(d, stack)).join(" or ")
 
 ModelProto[VALIDATE] = function(obj, errorCollector){
 	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
@@ -25,48 +21,41 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	var errorStack = [];
+	const errorStack = [];
 	this[VALIDATOR](obj, null, [], errorStack);
 	return !errorStack.length;
 };
 
 ModelProto[EXTEND] = function(){
-	var def, proto,
-		assertions = cloneArray(this[ASSERTIONS]),
-		args = cloneArray(arguments);
+	let def, proto, assertions = [...this[ASSERTIONS]];
+	const args = [...arguments];
 
 	if(this instanceof Model[OBJECT]){
 		def = {};
 		proto = {};
-		merge(def, this[DEFINITION]);
-		merge(proto, this[PROTO]);
-		args.forEach(function(arg){
+		Object.assign(def, this[DEFINITION]);
+		Object.assign(proto, this[PROTO]);
+		args.forEach(arg => {
 			if(arg instanceof Model){
-				merge(def, arg[DEFINITION], true);
-				merge(proto, arg[PROTO], true);
+				deepAssign(def, arg[DEFINITION]);
+				deepAssign(proto, arg[PROTO]);
 			} else {
-				merge(def, arg, true);
+				deepAssign(def, arg);
 			}
 		})
 	} else {
 		def = args
-			.reduce(function(def, ext){
-				return def.concat(parseDefinition(ext));
-			}, parseDefinition(this[DEFINITION]))
-			.filter(function(value, index, self) {
-				return self.indexOf(value) === index; // remove duplicates
-			});
+			.reduce((def, ext) => def.concat(parseDefinition(ext)), parseDefinition(this[DEFINITION]))
+			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
 	}
 
-	args.forEach(function(arg){
-		if(arg instanceof Model){
-			assertions = assertions.concat(arg[ASSERTIONS]);
-		}
-	});
+	args.forEach(arg => {
+		if(arg instanceof Model) assertions = assertions.concat(arg[ASSERTIONS]);
+	})
 
 	var submodel = new this[CONSTRUCTOR](def);
 	setConstructorProto(submodel, this[PROTO]);
-	merge(submodel[PROTO], proto);
+	Object.assign(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
 	return submodel;
 };
@@ -77,12 +66,10 @@ ModelProto.assert = function(assertion, message){
 	return this;
 };
 
-ModelProto.errorCollector = function(errors){
-	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
-};
+ModelProto.errorCollector = errors => { throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n')) }
 
-Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };
-Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
+Model[CONVENTION_CONSTANT] = key => key.toUpperCase() === key
+Model[CONVENTION_PRIVATE] = key => key[0] === "_"
 
 // private methods
 define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
@@ -92,19 +79,13 @@ define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 
 // throw all errors collected
 define(ModelProto, UNSTACK, function(errorCollector){
-	if(!this[ERROR_STACK].length){
-		return;
-	}
-	if(!errorCollector){
-		errorCollector = this.errorCollector;
-	}
-	var errors = this[ERROR_STACK].map(function(err){
+	if(!this[ERROR_STACK].length) return;
+	if(!errorCollector) errorCollector = this.errorCollector
+	const errors = this[ERROR_STACK].map(err => {
 		if(!err[MESSAGE]){
-			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
-			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
-			+ def.map(function(d){ return toString(d); }).join(" or ")
-			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
-			+ toString(err[RECEIVED]))
+			const def = Array.isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
+			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "") + def.map(d => toString(d)).join(" or ")
+			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "") + toString(err[RECEIVED]))
 		}
 		return err;
 	});
@@ -112,9 +93,7 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	errorCollector.call(this, errors);
 })
 
-function isLeaf(def){
-	return bettertypeof(def) != "Object";
-}
+const isLeaf = def => bettertypeof(def) != "Object"
 
 function initModel(model, def, constructor){
 	setConstructor(model, constructor);
@@ -125,68 +104,56 @@ function initModel(model, def, constructor){
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!isArray(def)) return [def];
-		else if(def.length === 1) return def.concat(undefined, null);
+		if(!Array.isArray(def)) return [def]
+		else if(def.length === 1) return [...def, undefined, null]
 	} else {
-		O.keys(def).forEach(function(key) {
-			def[key] = parseDefinition(def[key]);
-		});
+		for(let key of def) def[key] = parseDefinition(def[key])
 	}
 	return def;
 }
 
 function checkDefinition(obj, def, path, callStack, errorStack){
-	var err;
 	if(def instanceof Model){
-		var indexFound = callStack.indexOf(def);
-		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
-			return; //if found twice in call stack, cycle detected, skip validation
-		}
+		const indexFound = callStack.indexOf(def);
+		//if found twice in call stack, cycle detected, skip validation
+		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1) return;
 		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
-	} else if(isLeaf(def)){
-		var pdef = parseDefinition(def);
-		for(var i= 0, l=pdef.length; i<l; i++){
-			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
-				return;
-			}
-		}
-		err = {};
-		err[EXPECTED] = def;
-		err[RECEIVED] = obj;
-		err[PATH] = path;
-		errorStack.push(err);
+	}
+	else if(isLeaf(def)){
+		const pdef = parseDefinition(def);
+		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack))) return;
+		errorStack.push({
+			[EXPECTED]: def,
+			[RECEIVED]: obj,
+			[PATH]: path
+		})
 	} else {
-		O.keys(def).forEach(function(key) {
-			var val = obj != null ? obj[key] : undefined;
+		O.keys(def).forEach(key => {
+			const val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
 	}
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
-	if(obj == null){
-		return obj === def;
-	}
+	if(obj == null) return obj === def;
 	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
-		var errorStack = [];
+		const errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
 	}
-	if(def instanceof RegExp){
-		return def[TEST](obj);
-	}
-
+	if(def instanceof RegExp) return def[TEST](obj);
 	return obj === def
 		|| (isFunction(def) && obj instanceof def)
 		|| obj[CONSTRUCTOR] === def;
 }
 
 function matchAssertions(obj, assertions, errorStack){
-	for(var i=0, l=assertions.length; i<l ; i++ ){
-		if(!assertions[i](obj)){
-			var err = {};
-			err[MESSAGE] = "assertion failed: "+ (assertions[i][DESCRIPTION] || toString(assertions[i]))
-			errorStack.push(err);
+	for(let assertion of assertions){
+		if(!assertion(obj)){
+			errorStack.push({
+				[MESSAGE]: `assertion failed: ${assertion[DESCRIPTION] || toString(assertion)}`
+			});
 		}
 	}
 }

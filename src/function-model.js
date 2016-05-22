@@ -1,23 +1,21 @@
 Model[FUNCTION] = function FunctionModel(){
 
-	var model = function(fn) {
+	const model = function(fn) {
 
-		var def = model[DEFINITION];
-		var proxyFn = function () {
-			var args = [];
-			merge(args, def[DEFAULTS]);
-			merge(args, cloneArray(arguments));
+		const def = model[DEFINITION];
+		const proxyFn = function () {
+			const args = [];
+			Object.assign(args, def[DEFAULTS]);
+			Object.assign(args, [...arguments]);
 			if (args.length > def[ARGS].length) {
-				var err = {};
-				err[EXPECTED] = toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS;
-				err[RECEIVED] = args.length;
-				model[ERROR_STACK].push(err);
+				model[ERROR_STACK].push({
+					[EXPECTED]: toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS,
+					[RECEIVED]: args.length
+				})
 			}
-			def[ARGS].forEach(function (argDef, i) {
-				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
-			});
+			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]));
 			matchAssertions(args, model[ASSERTIONS], model[ERROR_STACK]);
-			var returnValue = fn.apply(this, args);
+			const returnValue = fn.apply(this, args);
 			if (RETURN in def) {
 				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
 			}
@@ -30,20 +28,17 @@ Model[FUNCTION] = function FunctionModel(){
 
 	setConstructorProto(model, Function[PROTO]);
 
-	var def = {};
-	def[ARGS] = cloneArray(arguments);
+	const def = { [ARGS]: [...arguments] };
 	initModel(model, def, Model[FUNCTION]);
 	return model;
 };
 
 setConstructorProto(Model[FUNCTION], Model[PROTO]);
 
-var FunctionModelProto = Model[FUNCTION][PROTO];
+const FunctionModelProto = Model[FUNCTION][PROTO];
 
 FunctionModelProto.toString = function(stack){
-	var out = FUNCTION + '(' + this[DEFINITION][ARGS].map(function(argDef){
-		return toString(argDef, stack);
-	}).join(",") +')';
+	let out = FUNCTION + '(' + this[DEFINITION][ARGS].map(argDef => toString(argDef, stack)).join(",") +')';
 	if(RETURN in this[DEFINITION]) {
 		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
 	}
@@ -56,17 +51,17 @@ FunctionModelProto[RETURN] = function(def){
 };
 
 FunctionModelProto[DEFAULTS] = function(){
-	this[DEFINITION][DEFAULTS] = cloneArray(arguments);
+	this[DEFINITION][DEFAULTS] = [...arguments];
 	return this;
 };
 
 // private methods
 define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
 	if(!isFunction(f)){
-		var err = {};
-		err[EXPECTED] = FUNCTION;
-		err[RECEIVED] = f;
-		err[PATH] = path;
-		errorStack.push(err);
+		errorStack.push({
+			[EXPECTED]: FUNCTION,
+			[RECEIVED]: f,
+			[PATH]: path
+		});
 	}
 });

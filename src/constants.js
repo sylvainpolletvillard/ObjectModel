@@ -1,5 +1,5 @@
 // string constants
-var
+const
 OBJECT                = "Object",
 ARRAY                 = "Array",
 FUNCTION              = "Function",
@@ -28,7 +28,7 @@ ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "u
 ;
 
 // references shortcuts
-var
+const
 O                     = Object,
 defineProperty        = O.defineProperty
 ;

@@ -1,54 +1,50 @@
 Model[OBJECT] = function ObjectModel(def){
 
-	var model = function(obj) {
-		if(!(this instanceof model)){
-			return new model(obj);
-		}
-		merge(this, obj, true);
-		var proxy = getProxy(model, this, model[DEFINITION]);
+	const model = function(obj) {
+		if(!(this instanceof model)) return new model(obj)
+		deepAssign(this, obj)
+		const proxy = getProxy(model, this, model[DEFINITION])
 		model[VALIDATE](proxy);
-		return proxy;
-	};
+		return proxy
+	}
 
-	setConstructorProto(model, O[PROTO]);
-	initModel(model, def, Model[OBJECT]);
-	return model;
+	setConstructorProto(model, O[PROTO])
+	initModel(model, def, Model[OBJECT])
+	return model
 };
 
-setConstructorProto(Model[OBJECT], ModelProto);
-var ObjectModelProto = Model[OBJECT][PROTO];
+setConstructorProto(Model[OBJECT], ModelProto)
+const ObjectModelProto = Model[OBJECT][PROTO]
 
 ObjectModelProto[DEFAULTS] = function(p){
-	merge(this[PROTO], p);
-	return this;
-};
+	Object.assign(this[PROTO], p)
+	return this
+}
 
 ObjectModelProto.toString = function(stack){
-	return toString(this[DEFINITION], stack);
-};
+	return toString(this[DEFINITION], stack)
+}
 
 // private methods
 define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	if(!isObject(obj)){
-		var err = {};
-		err[EXPECTED] = this;
-		err[RECEIVED] = obj;
-		err[PATH] = path;
-		errorStack.push(err);
+		errorStack.push({
+			[EXPECTED]: this,
+			[RECEIVED]: obj,
+			[PATH]: path
+		})
 	} else {
-		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
+		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
 	}
-	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK])
 });
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
-		return defNode(obj);
-	} else if(isLeaf(defNode)){
-		return obj;
-	} else {
-		var wrapper = obj instanceof O ? obj : {};
-		var proxy = O.create(O.getPrototypeOf(wrapper));
+	if(defNode instanceof Model && obj && !(obj instanceof defNode)) return defNode(obj)
+	else if(isLeaf(defNode)) return obj
+	else {
+		const wrapper = obj instanceof O ? obj : {},
+			  proxy = O.create(O.getPrototypeOf(wrapper))
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -56,32 +52,30 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		O.keys(defNode).forEach(function(key) {
-			var newPath = (path ? path + '.' + key : key);
-			var isConstant = Model[CONVENTION_CONSTANT](key);
+		O.keys(defNode).forEach(key => {
+			const newPath = (path ? path + '.' + key : key),
+			      isConstant = Model[CONVENTION_CONSTANT](key)
 			defineProperty(proxy, key, {
-				get: function () {
-					return getProxy(model, wrapper[key], defNode[key], newPath);
-				},
-				set: function (val) {
+				get: () => getProxy(model, wrapper[key], defNode[key], newPath),
+				set: val => {
 					if(isConstant && wrapper[key] !== undefined){
-						var err = {};
-						err[MESSAGE] = "cannot redefine constant " + key;
-						model[ERROR_STACK].push(err);
+						model[ERROR_STACK].push({
+							[MESSAGE]: `cannot redefine constant ${key}`
+						})
 					}
-					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
-					var oldValue = wrapper[key];
-					wrapper[key] = newProxy;
-					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK]);
+					const newProxy = getProxy(model, val, defNode[key], newPath)
+					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
+					const oldValue = wrapper[key]
+					wrapper[key] = newProxy
+					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
 					if(model[ERROR_STACK].length){
-						wrapper[key] = oldValue;
-						model[UNSTACK]();
+						wrapper[key] = oldValue
+						model[UNSTACK]()
 					}
 				},
 				enumerable: !Model[CONVENTION_PRIVATE](key)
-			});
-		});
-		return proxy;
+			})
+		})
+		return proxy
 	}
 }

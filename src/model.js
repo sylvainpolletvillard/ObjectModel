@@ -68,6 +68,7 @@ ModelProto[EXTEND] = function(){
 	setConstructorProto(submodel, this[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
+	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR];
 	return submodel;
 };
 
@@ -77,7 +78,7 @@ ModelProto.assert = function(assertion, message){
 	return this;
 };
 
-ModelProto.errorCollector = function(errors){
+ModelProto[ERROR_COLLECTOR] = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
 };
 
@@ -96,7 +97,7 @@ define(ModelProto, UNSTACK, function(errorCollector){
 		return;
 	}
 	if(!errorCollector){
-		errorCollector = this.errorCollector;
+		errorCollector = this[ERROR_COLLECTOR];
 	}
 	var errors = this[ERROR_STACK].map(function(err){
 		if(!err[MESSAGE]){

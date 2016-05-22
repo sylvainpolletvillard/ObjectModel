@@ -45,7 +45,7 @@ FunctionModelProto.toString = function(stack){
 		return toString(argDef, stack);
 	}).join(",") +')';
 	if(RETURN in this[DEFINITION]) {
-		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
+		out += " => " + toString(this[DEFINITION][RETURN]);
 	}
 	return out;
 };

@@ -72,21 +72,26 @@ function setConstructorProto(constructor, proto){
 }
 
 function toString(obj, stack){
-	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
+	stack = stack || [];
+	if(stack.length > 15 || stack.indexOf(obj) >= 0){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
+	if(obj instanceof Model) return obj.toString(stack);
 	stack = [obj].concat(stack);
-	if(isFunction(obj)){ return obj.name || obj.toString(stack); }
+	if(isFunction(obj)){
+		return obj.name || obj.toString(stack);
+	}
 	if(isArray(obj)){
 		return '[' + obj.map(function(item) {
 				return toString(item, stack);
 			}).join(', ') + ']';
 	}
 	if(obj && isObject(obj)){
-		var indent = (new Array(stack.length-1)).join('\t');
-		return '{' + O.keys(obj).map(function(key){
-				return '\n' + indent + key + ': ' + toString(obj[key], stack);
-			}).join(',') + '\n' + '}';
+		var indent = (new Array(stack.length)).join('\t');
+		var props = O.keys(obj);
+		return '{' + props.map(function(key){
+			return '\n' + indent + '\t' + key + ': ' + toString(obj[key], stack);
+		}).join(',') + (props.length ? '\n' + indent : '') + '}';
 	}
 	return String(obj)
 }

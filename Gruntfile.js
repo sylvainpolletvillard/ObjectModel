@@ -50,7 +50,9 @@ module.exports = function(grunt) {
 					screwIE8: true
 				},
 				files: {
+					/* Uglify does not support ES6 atm: https://github.com/mishoo/UglifyJS2/issues/448 
 					'dist/object-model.min.js': ['dist/object-model.js']
+					*/
 				}
 			}
 		},
@@ -76,11 +78,13 @@ module.exports = function(grunt) {
 					inject: [
 						{
 							dest: 'index.html',
-							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
+							//text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
+							text: 'all in <strong>{{= sizeText(size(src[0])) }}</strong>'
 						},
 						{
 							dest: 'index.html',
-							text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
+							//text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
+							text: 'Bundle file ({{= sizeText(size(src[0])) }})'
 						}
 					]
 				}

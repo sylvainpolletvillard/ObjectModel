@@ -129,23 +129,32 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>6.8 kB minified, 2.8 kB gzipped</strong></li>
+			<li>all in <strong>13.7 kB</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
-		<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">v1.2</a>.</p>
+
+		<p>This library is <a href="test">unit tested</a> against these browsers, depending of the version of the library:
+			<dl>
+				<dt>v1.x</dt>
+				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
+				<dt>v2.x</dt>
+				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
+				<dt>v3.x</dt>
+				<dd>Next version of ObjectModel relies on ES6 and Proxies, so only the evergreen versions of Chrome, Firefox and Edge are supported. It also works on Node 6.0+.</dd>
+			</dl>
 	</section>
 
 	<hr>
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v2.0.0</h3>
+		<h3>Current version: v3.0.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
-			<li>Minified file (6.8 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-			<li>Source files : <a href="dist/object-model-2.0.0.zip">object-model-2.0.0.zip</a> </li>
+			<!--<li>Minified file (6.8 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>-->
+			<li>Bundle file (13.7 kB) : <a href="dist/object-model.js">object-model.js</a></li>
+			<li>Source files : <a href="dist/object-model-3.0.0.zip">object-model-3.0.0.zip</a> </li>
 			<li><a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">Older versions</a></li>
 		</ul>
 		<details>

@@ -4,14 +4,14 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!(this instanceof model)) return new model(obj)
 		deepAssign(this, obj)
 		const proxy = getProxy(model, this, model[DEFINITION])
-		model[VALIDATE](proxy);
+		model[VALIDATE](proxy)
 		return proxy
 	}
 
 	setConstructorProto(model, O[PROTO])
 	initModel(model, def, Model[OBJECT])
 	return model
-};
+}
 
 setConstructorProto(Model[OBJECT], ModelProto)
 const ObjectModelProto = Model[OBJECT][PROTO]
@@ -37,7 +37,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
 	}
 	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK])
-});
+})
 
 function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model && obj && !(obj instanceof defNode)) return defNode(obj)
@@ -48,7 +48,7 @@ function getProxy(model, obj, defNode, path) {
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
-				proxy[key] = wrapper[key]; // properties out of model definition are kept
+				proxy[key] = wrapper[key] // properties out of model definition are kept
 			}
 		}
 

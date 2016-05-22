@@ -25,10 +25,8 @@ RETURN                = "return",
 ARGS                  = "arguments",
 
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
-;
 
 // references shortcuts
 const
 O                     = Object,
 defineProperty        = O.defineProperty
-;

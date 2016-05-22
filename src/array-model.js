@@ -1,30 +1,30 @@
 Model[ARRAY] = function ArrayModel(def){
 
 	const model = function(array) {
-		model[VALIDATE](array);
+		model[VALIDATE](array)
 		const proxy = new Proxy(array, {
 			get: function (arr, key) {
-				return (ARRAY_MUTATOR_METHODS.indexOf(key) >= 0 ? proxifyArrayMethod(arr, key, model) : arr[key]);
+				return ARRAY_MUTATOR_METHODS.includes(key) ? proxifyArrayMethod(arr, key, model) : arr[key]
 			},
 			set: function (arr, key, val) {
-				setArrayKey(arr, key, val, model);
+				setArrayKey(arr, key, val, model)
 			}
-		});
-		setConstructor(proxy, model);
-		return proxy;
-	};
+		})
+		setConstructor(proxy, model)
+		return proxy
+	}
 
-	setConstructorProto(model, Array[PROTO]);
-	initModel(model, def, Model[ARRAY]);
-	return model;
-};
+	setConstructorProto(model, Array[PROTO])
+	initModel(model, def, Model[ARRAY])
+	return model
+}
 
-setConstructorProto(Model[ARRAY], Model[PROTO]);
-const ArrayModelProto = Model[ARRAY][PROTO];
+setConstructorProto(Model[ARRAY], Model[PROTO])
+const ArrayModelProto = Model[ARRAY][PROTO]
 
 ArrayModelProto.toString = function(stack){
-	return ARRAY + ' of ' + toString(this[DEFINITION], stack);
-};
+	return ARRAY + ' of ' + toString(this[DEFINITION], stack)
+}
 
 // private methods
 define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
@@ -33,29 +33,29 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 			[EXPECTED]: this,
 			[RECEIVED]: arr,
 			[PATH]: path
-		});
+		})
 	} else {
-		arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack));
+		arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
 	}
-	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
-});
+	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK])
+})
 
 function proxifyArrayMethod(array, method, model){
 	return function() {
-		const testArray = array.slice();
-		Array[PROTO][method].apply(testArray, arguments);
-		model[VALIDATE](testArray);
-		return Array[PROTO][method].apply(array, arguments);
-	};
+		const testArray = array.slice()
+		Array[PROTO][method].apply(testArray, arguments)
+		model[VALIDATE](testArray)
+		return Array[PROTO][method].apply(array, arguments)
+	}
 }
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
+		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK])
 	}
-	const testArray = array.slice();
-	testArray[key] = value;
-	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK]);
-	model[UNSTACK]();
-	array[key] = value;
+	const testArray = array.slice()
+	testArray[key] = value
+	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK])
+	model[UNSTACK]()
+	array[key] = value
 }

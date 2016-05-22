@@ -34,7 +34,7 @@ module.exports = function(grunt) {
 				src: srcFiles,
 				dest: 'dist/object-model.umd.js',
 				options: {
-					banner: "(function (globals, factory) {\n"
+					banner: BANNER + ";(function (globals, factory) {\n"
 					+" if (typeof define === 'function' && define.amd) define(factory); // AMD\n"
 					+" else if (typeof exports === 'object') module.exports = factory(); // Node\n"
 					+" else globals['Model'] = factory(); // globals\n"

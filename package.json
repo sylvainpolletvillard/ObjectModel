@@ -1,6 +1,6 @@
 {
 	"name": "objectmodel",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "Runtime Type Checking and Data Model Definition for JavaScript",
 	"author": "Sylvain Pollet-Villard",
 	"license": "MIT",

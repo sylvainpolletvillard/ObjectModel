@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (globals, factory) {
+// ObjectModel v2.0.1 - http://objectmodel.js.org
+;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
  else globals['Model'] = factory(); // globals
@@ -23,6 +24,7 @@ RECEIVED              = "received",
 PATH                  = "path",
 MESSAGE               = "message",
 ERROR_STACK           = "errorStack",
+ERROR_COLLECTOR       = "errorCollector",
 UNSTACK               = "unstack",
 PROTO                 = "prototype",
 CONSTRUCTOR           = "constructor",	
@@ -112,21 +114,26 @@ function setConstructorProto(constructor, proto){
 }
 
 function toString(obj, stack){
-	if(stack && (stack.length > 15 || stack.indexOf(obj) >= 0)){ return '...'; }
+	stack = stack || [];
+	if(stack.length > 15 || stack.indexOf(obj) >= 0){ return '...'; }
 	if(obj == null){ return String(obj); }
 	if(typeof obj == "string"){ return '"'+obj+'"'; }
+	if(obj instanceof Model) return obj.toString(stack);
 	stack = [obj].concat(stack);
-	if(isFunction(obj)){ return obj.name || obj.toString(stack); }
+	if(isFunction(obj)){
+		return obj.name || obj.toString(stack);
+	}
 	if(isArray(obj)){
 		return '[' + obj.map(function(item) {
 				return toString(item, stack);
 			}).join(', ') + ']';
 	}
 	if(obj && isObject(obj)){
-		var indent = (new Array(stack.length-1)).join('\t');
-		return '{' + O.keys(obj).map(function(key){
-				return '\n' + indent + key + ': ' + toString(obj[key], stack);
-			}).join(',') + '\n' + '}';
+		var indent = (new Array(stack.length)).join('\t');
+		var props = O.keys(obj);
+		return '{' + props.map(function(key){
+			return '\n' + indent + '\t' + key + ': ' + toString(obj[key], stack);
+		}).join(',') + (props.length ? '\n' + indent : '') + '}';
 	}
 	return String(obj)
 }
@@ -200,6 +207,7 @@ ModelProto[EXTEND] = function(){
 	setConstructorProto(submodel, this[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
+	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR];
 	return submodel;
 };
 
@@ -209,7 +217,7 @@ ModelProto.assert = function(assertion, message){
 	return this;
 };
 
-ModelProto.errorCollector = function(errors){
+ModelProto[ERROR_COLLECTOR] = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
 };
 
@@ -228,7 +236,7 @@ define(ModelProto, UNSTACK, function(errorCollector){
 		return;
 	}
 	if(!errorCollector){
-		errorCollector = this.errorCollector;
+		errorCollector = this[ERROR_COLLECTOR];
 	}
 	var errors = this[ERROR_STACK].map(function(err){
 		if(!err[MESSAGE]){
@@ -554,7 +562,7 @@ FunctionModelProto.toString = function(stack){
 		return toString(argDef, stack);
 	}).join(",") +')';
 	if(RETURN in this[DEFINITION]) {
-		out += " => " + RETURN + toString(this[DEFINITION][RETURN]);
+		out += " => " + toString(this[DEFINITION][RETURN]);
 	}
 	return out;
 };

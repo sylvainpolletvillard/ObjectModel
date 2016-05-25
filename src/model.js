@@ -57,6 +57,7 @@ ModelProto[EXTEND] = function(){
 	setConstructorProto(submodel, this[PROTO])
 	Object.assign(submodel[PROTO], proto)
 	submodel[ASSERTIONS] = assertions
+	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR]
 	return submodel
 }
 
@@ -66,7 +67,7 @@ ModelProto.assert = function(assertion, message){
 	return this
 }
 
-ModelProto.errorCollector = errors => {
+ModelProto[ERROR_COLLECTOR] = errors => {
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
 }
 

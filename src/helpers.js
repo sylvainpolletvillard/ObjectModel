@@ -40,17 +40,20 @@ function setConstructorProto(constructor, proto){
 	constructor[PROTO][CONSTRUCTOR] = constructor
 }
 
-function toString(obj, stack){
-	if(stack && (stack.length > 15 || stack.includes(obj))) return '...'
+function toString(obj, stack = []){
+	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj == null) return String(obj)
 	if(typeof obj == "string") return `"${obj}"`
+	if(obj instanceof Model) return obj.toString(stack);
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
 	if(Array.isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
 	if(obj && isObject(obj)) {
-		return `{${O.keys(obj).map(
-			key => `\n${'\t'.repeat(stack.length-1)+key}: ${toString(obj[key], stack)}`
-		).join(',')}\n}`
+		const props = O.keys(obj),
+			  indent = '\t'.repeat(stack.length)
+		return `{${props.map(
+			key => `\n${indent+key}: ${toString(obj[key], stack)}`
+		).join(',')} ${props.length ? `\n${indent}` : ''}}`
 	}
 	return String(obj)
 }

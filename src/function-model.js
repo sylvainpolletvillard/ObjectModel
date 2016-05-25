@@ -40,7 +40,7 @@ const FunctionModelProto = Model[FUNCTION][PROTO]
 FunctionModelProto.toString = function(stack){
 	let out = FUNCTION + '(' + this[DEFINITION][ARGS].map(argDef => toString(argDef, stack)).join(",") +')'
 	if(RETURN in this[DEFINITION]) {
-		out += " => " + RETURN + toString(this[DEFINITION][RETURN])
+		out += " => " + toString(this[DEFINITION][RETURN])
 	}
 	return out
 }

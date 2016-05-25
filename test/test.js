@@ -414,7 +414,11 @@ function testSuite(Model){
 		m._private++;
 		assert.throws(function(){ m.CONST++; }, /TypeError[\s\S]*constant/, "try to redefine constant");
 		assert.equal(Object.keys(m).length, 2, "non enumerable key not counted by Object.keys");
-		assert.equal(Object.keys(m).indexOf("_private"), -1, "non enumerable key not found in Object.keys");
+		assert.equal(Object.keys(m).includes("_private"), false, "non enumerable key not found in Object.keys");
+		assert.equal(Object.getOwnPropertyNames(m).length, 2, "non enumerable key not counted by Object.getOwnPropertyNames");
+		assert.equal(Object.getOwnPropertyNames(m).includes("_private"), false, "non enumerable key not found in Object.getOwnPropertyNames");
+		assert.equal("normal" in m, true, "enumerable key found with operator in")
+		assert.equal("_private" in m, false, "non enumerable key not found with operator in")
 
 	});
 

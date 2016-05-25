@@ -40,42 +40,39 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 })
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model && obj && !(obj instanceof defNode)) return defNode(obj)
-	else if(isLeaf(defNode)) return obj
-	else {
-		const wrapper = obj instanceof O ? obj : {},
-			  proxy = O.create(O.getPrototypeOf(wrapper))
+	if(defNode instanceof Model && obj && !(obj instanceof defNode))
+		return defNode(obj)
+	else if(isLeaf(defNode))
+		return obj
 
-		for(var key in wrapper){
-			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
-				proxy[key] = wrapper[key] // properties out of model definition are kept
-			}
-		}
-
-		O.keys(defNode).forEach(key => {
+	return new Proxy(obj || {}, {
+		get(o, key) {
+			const newPath = (path ? path + '.' + key : key);
+			return getProxy(model, o[key], defNode[key], newPath);
+		},
+		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),
-			      isConstant = Model[CONVENTION_CONSTANT](key)
-			defineProperty(proxy, key, {
-				get: () => getProxy(model, wrapper[key], defNode[key], newPath),
-				set: val => {
-					if(isConstant && wrapper[key] !== undefined){
-						model[ERROR_STACK].push({
-							[MESSAGE]: `cannot redefine constant ${key}`
-						})
-					}
-					const newProxy = getProxy(model, val, defNode[key], newPath)
-					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
-					const oldValue = wrapper[key]
-					wrapper[key] = newProxy
-					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
-					if(model[ERROR_STACK].length){
-						wrapper[key] = oldValue
-						model[UNSTACK]()
-					}
-				},
-				enumerable: !Model[CONVENTION_PRIVATE](key)
-			})
-		})
-		return proxy
-	}
+				  isConstant = Model[CONVENTION_CONSTANT](key)
+			if(isConstant && o[key] !== undefined){
+				model[ERROR_STACK].push({
+					[MESSAGE]: `cannot redefine constant ${key}`
+				})
+			}
+			const newProxy = getProxy(model, val, defNode[key], newPath)
+			checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
+			const oldValue = o[key]
+			o[key] = newProxy
+			matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
+			if(model[ERROR_STACK].length){
+				o[key] = oldValue
+				model[UNSTACK]()
+			}
+		},
+		has(o, key){
+			return Reflect.has(o, key) && !Model[CONVENTION_PRIVATE](key)
+		},
+		ownKeys(o){
+			return Reflect.ownKeys(o).filter(key => !Model[CONVENTION_PRIVATE](key))
+		}
+	});
 }

@@ -1,4 +1,4 @@
-<p align="center"><a href="http://vuejs.org" target="_blank"><img width="400" src="http://objectmodel.js.org/site/res/logo.png"></a></p>
+<p align="center"><a href="http://objectmodel.js.org" target="_blank"><img width="400" src="http://objectmodel.js.org/site/res/logo.png"></a></p>
 
 <p align="center">Runtime Type Checking and Data Model Definition for JavaScript</p>
 

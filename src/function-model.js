@@ -19,7 +19,7 @@ Model[FUNCTION] = function FunctionModel(){
 			if (RETURN in def) {
 				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK])
 			}
-			model[UNSTACK]()
+			model[UNSTACK_ERRORS]()
 			return returnValue
 		}
 		setConstructor(proxyFn, model)
@@ -35,33 +35,32 @@ Model[FUNCTION] = function FunctionModel(){
 
 setConstructorProto(Model[FUNCTION], Model[PROTO])
 
-const FunctionModelProto = Model[FUNCTION][PROTO]
+Object.assign(Model[FUNCTION][PROTO], {
 
-FunctionModelProto.toString = function(stack){
-	let out = FUNCTION + '(' + this[DEFINITION][ARGS].map(argDef => toString(argDef, stack)).join(",") +')'
-	if(RETURN in this[DEFINITION]) {
-		out += " => " + toString(this[DEFINITION][RETURN])
-	}
-	return out
-}
+	toString(stack){
+		let out = FUNCTION + '(' + this[DEFINITION][ARGS].map(argDef => toString(argDef, stack)).join(",") +')'
+		if(RETURN in this[DEFINITION]) {
+			out += " => " + toString(this[DEFINITION][RETURN])
+		}
+		return out
+	},
 
-FunctionModelProto[RETURN] = function(def){
-	this[DEFINITION][RETURN] = def
-	return this
-}
+	[RETURN](def){
+		this[DEFINITION][RETURN] = def
+		return this
+	},
 
-FunctionModelProto[DEFAULTS] = function(){
-	this[DEFINITION][DEFAULTS] = [...arguments]
-	return this
-}
-
-// private methods
-define(FunctionModelProto, VALIDATOR, function(f, path, callStack, errorStack){
-	if(!isFunction(f)){
-		errorStack.push({
-			[EXPECTED]: FUNCTION,
-			[RECEIVED]: f,
-			[PATH]: path
-		})
+	[DEFAULTS](){
+		this[DEFINITION][DEFAULTS] = [...arguments]
+		return this
+	},
+	[VALIDATOR](f, path, callStack, errorStack){
+		if (!isFunction(f)) {
+			errorStack.push({
+				[EXPECTED]: FUNCTION,
+				[RECEIVED]: f,
+				[PATH]: path
+			})
+		}
 	}
 })

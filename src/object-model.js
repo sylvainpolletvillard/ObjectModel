@@ -13,30 +13,31 @@ Model[OBJECT] = function ObjectModel(def){
 	return model
 }
 
-setConstructorProto(Model[OBJECT], ModelProto)
-const ObjectModelProto = Model[OBJECT][PROTO]
+setConstructorProto(Model[OBJECT], Model[PROTO])
 
-ObjectModelProto[DEFAULTS] = function(p){
-	Object.assign(this[PROTO], p)
-	return this
-}
+Object.assign(Model[OBJECT][PROTO], {
 
-ObjectModelProto.toString = function(stack){
-	return toString(this[DEFINITION], stack)
-}
+	[DEFAULTS](p){
+		Object.assign(this[PROTO], p)
+		return this
+	},
 
-// private methods
-define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
-	if(!isObject(obj)){
-		errorStack.push({
-			[EXPECTED]: this,
-			[RECEIVED]: obj,
-			[PATH]: path
-		})
-	} else {
-		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+	toString(stack){
+		return toString(this[DEFINITION], stack)
+	},
+
+	[VALIDATOR](obj, path, callStack, errorStack){
+		if(!isObject(obj)){
+			errorStack.push({
+				[EXPECTED]: this,
+				[RECEIVED]: obj,
+				[PATH]: path
+			})
+		} else {
+			checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+		}
+		matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK])
 	}
-	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK])
 })
 
 function getProxy(model, obj, defNode, path) {
@@ -52,20 +53,28 @@ function getProxy(model, obj, defNode, path) {
 		},
 		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),
-				  isConstant = Model[CONVENTION_CONSTANT](key)
-			if(isConstant && o[key] !== undefined){
+				  isConstant = Model[CONVENTION_CONSTANT](key),
+				  initialValue = o[key];
+			
+			if(isConstant && initialValue !== undefined){
 				model[ERROR_STACK].push({
 					[MESSAGE]: `cannot redefine constant ${key}`
 				})
 			}
-			const newProxy = getProxy(model, val, defNode[key], newPath)
-			checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
-			const oldValue = o[key]
-			o[key] = newProxy
-			matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
+			if(defNode.hasOwnProperty(key)){
+				const newProxy = getProxy(model, val, defNode[key], newPath)
+				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
+				o[key] = newProxy
+				matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
+			} else {
+				model[ERROR_STACK].push({
+					[MESSAGE]: `cannot find property ${newPath} in the model definition`
+				})
+			}
+		
 			if(model[ERROR_STACK].length){
-				o[key] = oldValue
-				model[UNSTACK]()
+				o[key] = initialValue
+				model[UNSTACK_ERRORS]()
 			}
 		},
 		has(o, key){

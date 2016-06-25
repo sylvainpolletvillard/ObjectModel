@@ -20,24 +20,24 @@ Model[ARRAY] = function ArrayModel(def){
 }
 
 setConstructorProto(Model[ARRAY], Model[PROTO])
-const ArrayModelProto = Model[ARRAY][PROTO]
+Object.assign(Model[ARRAY][PROTO], {
 
-ArrayModelProto.toString = function(stack){
-	return ARRAY + ' of ' + toString(this[DEFINITION], stack)
-}
+	toString(stack){
+		return ARRAY + ' of ' + toString(this[DEFINITION], stack)
+	},
 
-// private methods
-define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
-	if(!Array.isArray(arr)){
-		errorStack.push({
-			[EXPECTED]: this,
-			[RECEIVED]: arr,
-			[PATH]: path
-		})
-	} else {
-		arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
+	[VALIDATOR](arr, path, callStack, errorStack){
+		if(!Array.isArray(arr)){
+			errorStack.push({
+				[EXPECTED]: this,
+				[RECEIVED]: arr,
+				[PATH]: path
+			})
+		} else {
+			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
+		}
+		matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK])
 	}
-	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK])
 })
 
 function proxifyArrayMethod(array, method, model){
@@ -56,6 +56,6 @@ function setArrayKey(array, key, value, model){
 	const testArray = array.slice()
 	testArray[key] = value
 	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK])
-	model[UNSTACK]()
+	model[UNSTACK_ERRORS]()
 	array[key] = value
 }

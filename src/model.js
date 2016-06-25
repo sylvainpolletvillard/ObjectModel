@@ -11,90 +11,93 @@ function Model(def){
 }
 
 setConstructorProto(Model, Function[PROTO])
-const ModelProto = Model[PROTO]
 
-ModelProto.toString = stack => parseDefinition(this[DEFINITION]).map(d => toString(d, stack)).join(" or ")
+Object.assign(Model[PROTO], {
+	toString(stack){
+		return parseDefinition(this[DEFINITION]).map(d => toString(d, stack)).join(" or ")
+	},
 
-ModelProto[VALIDATE] = function(obj, errorCollector){
-	this[VALIDATOR](obj, null, [], this[ERROR_STACK])
-	this[UNSTACK](errorCollector)
-}
+	[VALIDATE](obj, errorCollector){
+		this[VALIDATOR](obj, null, [], this[ERROR_STACK])
+		this[UNSTACK_ERRORS](errorCollector)
+	},
 
-ModelProto[TEST] = function(obj){
-	const errorStack = []
-	this[VALIDATOR](obj, null, [], errorStack)
-	return !errorStack.length
-}
+	[TEST](obj){
+		const errorStack = []
+		this[VALIDATOR](obj, null, [], errorStack)
+		return !errorStack.length
+	},
 
-ModelProto[EXTEND] = function(){
-	let def, proto, assertions = [...this[ASSERTIONS]]
-	const args = [...arguments]
+	[EXTEND](){
+		let def, proto, assertions = [...this[ASSERTIONS]]
+		const args = [...arguments]
 
-	if(this instanceof Model[OBJECT]){
-		def = {}
-		proto = {}
-		Object.assign(def, this[DEFINITION])
-		Object.assign(proto, this[PROTO])
+		if(this instanceof Model[OBJECT]){
+			def = {}
+			proto = {}
+			Object.assign(def, this[DEFINITION])
+			Object.assign(proto, this[PROTO])
+			args.forEach(arg => {
+				if(arg instanceof Model){
+					deepAssign(def, arg[DEFINITION])
+					deepAssign(proto, arg[PROTO])
+				} else {
+					deepAssign(def, arg)
+				}
+			})
+		} else {
+			def = args
+				.reduce((def, ext) => def.concat(parseDefinition(ext)), parseDefinition(this[DEFINITION]))
+				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
+		}
+
 		args.forEach(arg => {
-			if(arg instanceof Model){
-				deepAssign(def, arg[DEFINITION])
-				deepAssign(proto, arg[PROTO])
-			} else {
-				deepAssign(def, arg)
-			}
+			if(arg instanceof Model) assertions = assertions.concat(arg[ASSERTIONS])
 		})
-	} else {
-		def = args
-			.reduce((def, ext) => def.concat(parseDefinition(ext)), parseDefinition(this[DEFINITION]))
-			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
+
+		var submodel = new this[CONSTRUCTOR](def)
+		setConstructorProto(submodel, this[PROTO])
+		Object.assign(submodel[PROTO], proto)
+		submodel[ASSERTIONS] = assertions
+		submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR]
+		return submodel
+	},
+
+	assert(assertion, message){
+		define(assertion, DESCRIPTION, message)
+		this[ASSERTIONS].push(assertion)
+		return this
+	},
+
+	[ERROR_COLLECTOR](errors){
+		throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
+	},
+
+	[VALIDATOR](obj, path, callStack, errorStack){
+		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+		matchAssertions(obj, this[ASSERTIONS], errorStack)
+	},
+
+	// throw all errors collected
+	[UNSTACK_ERRORS](errorCollector){
+		if (!this[ERROR_STACK].length) return
+		if (!errorCollector) errorCollector = this.errorCollector
+		const errors = this[ERROR_STACK].map(err => {
+			if (!err[MESSAGE]) {
+				const def = Array.isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
+				err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "") + def.map(d => toString(d)).join(" or ")
+				+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "") + toString(err[RECEIVED]))
+			}
+			return err
+		})
+		this[ERROR_STACK] = []
+		errorCollector.call(this, errors)
 	}
 
-	args.forEach(arg => {
-		if(arg instanceof Model) assertions = assertions.concat(arg[ASSERTIONS])
-	})
-
-	var submodel = new this[CONSTRUCTOR](def)
-	setConstructorProto(submodel, this[PROTO])
-	Object.assign(submodel[PROTO], proto)
-	submodel[ASSERTIONS] = assertions
-	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR]
-	return submodel
-}
-
-ModelProto.assert = function(assertion, message){
-	define(assertion, DESCRIPTION, message)
-	this[ASSERTIONS].push(assertion)
-	return this
-}
-
-ModelProto[ERROR_COLLECTOR] = errors => {
-	throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
-}
+})
 
 Model[CONVENTION_CONSTANT] = key => key.toUpperCase() === key
 Model[CONVENTION_PRIVATE] = key => key[0] === "_"
-
-// private methods
-define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
-	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
-	matchAssertions(obj, this[ASSERTIONS], errorStack)
-})
-
-// throw all errors collected
-define(ModelProto, UNSTACK, function(errorCollector){
-	if(!this[ERROR_STACK].length) return
-	if(!errorCollector) errorCollector = this.errorCollector
-	const errors = this[ERROR_STACK].map(err => {
-		if(!err[MESSAGE]){
-			const def = Array.isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
-			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "") + def.map(d => toString(d)).join(" or ")
-			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "") + toString(err[RECEIVED]))
-		}
-		return err
-	})
-	this[ERROR_STACK] = []
-	errorCollector.call(this, errors)
-})
 
 const isLeaf = def => bettertypeof(def) != "Object"
 

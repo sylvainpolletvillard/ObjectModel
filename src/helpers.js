@@ -53,7 +53,7 @@ function toString(obj, stack = []){
 			  indent = '\t'.repeat(stack.length)
 		return `{${props.map(
 			key => `\n${indent+key}: ${toString(obj[key], stack)}`
-		).join(',')} ${props.length ? `\n${indent}` : ''}}`
+		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 	}
 	return String(obj)
 }

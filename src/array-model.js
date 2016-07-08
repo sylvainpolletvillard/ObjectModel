@@ -27,14 +27,14 @@ Object.assign(Model[ARRAY][PROTO], {
 	},
 
 	[VALIDATOR](arr, path, callStack, errorStack){
-		if(!Array.isArray(arr)){
+		if(Array.isArray(arr)){
+			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
+		} else {
 			errorStack.push({
 				[EXPECTED]: this,
 				[RECEIVED]: arr,
 				[PATH]: path
 			})
-		} else {
-			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
 		}
 		matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK])
 	}

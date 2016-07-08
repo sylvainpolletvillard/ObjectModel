@@ -2,6 +2,8 @@
 const
 OBJECT                = "Object",
 ARRAY                 = "Array",
+SET                   = "Set",
+MAP                   = "Map",	
 FUNCTION              = "Function",
 CONVENTION_CONSTANT   = "conventionForConstant",
 CONVENTION_PRIVATE    = "conventionForPrivate",
@@ -25,7 +27,9 @@ DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
 
-ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
+SET_MUTATOR_METHODS   = ["add", "delete", "clear"],	
+MAP_MUTATOR_METHODS   = ["set", "delete", "clear"]
 
 // references shortcuts
 const

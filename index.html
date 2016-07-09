@@ -9,7 +9,10 @@
 
 	<title>Object Model</title>
 
+	<link rel="icon" type="image/png" href="site/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="site/favicon-16x16.png" sizes="16x16" />
 	<link rel="shortcut icon" href="site/favicon.ico" type="image/x-icon">
+
 	<link rel="stylesheet" href="site/style/main.css"/>
 	<script src="site/lib/jquery-2.1.0.min.js"></script>
 
@@ -142,16 +145,21 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v2.0.1</h3>
+		<h3>Current version: v2.1.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
 			<li>Minified file (6.9 kB, 2.9 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-			<li>Source files : <a href="dist/object-model-2.0.1.zip">object-model-2.0.1.zip</a> </li>
+			<li>Source files : <a href="dist/object-model-2.1.0.zip">object-model-2.1.0.zip</a> </li>
 			<li><a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">Older versions</a></li>
 		</ul>
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v2.1</dt>
+				<dd>assertions are now inherited from <code>Model.prototype</code>, which enables you to add global assertions</dd>
+				<dd>assertions now require to return <code>true</code> to validate. Truthy values do not pass anymore</dd>
+				<dd>assertions error messages can now be functions called with the assertion result as argument</dd>
+
 				<dt>v2.0</dt>
 				<dd>support for IE<11 had to be dropped (<a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/issues/18#issuecomment-205211407">explainations</a>)</dd>
 				<dd>removed Model.instanceOf as it is not useful anymore: use the instanceof operator</dd>
@@ -233,7 +241,7 @@
             <div class="panel">
                 <span class="legend">Model</span>
 <pre><code class="language-javascript">var NumberModel = Model(Number);
-// 'new' keyword is always optional</code></pre>
+// 'new' keyword is optional for models and model instances</code></pre>
             </div>
             <div class="panel">
                 <span class="legend">Instance</span>
@@ -456,7 +464,7 @@ var joe_and_ann = Lovers({
 
 	<section id="doc-extensions">
 		<h2>Inheritance by extension</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or override previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -531,7 +539,7 @@ joe.sendConfirmationMail();</code>
 
 	<section id="doc-assertions">
 		<h2>Assertions for custom validation tests</h2>
-		<p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
+		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -565,6 +573,33 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 <code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
 			</div>
 		</div>
+
+		<p>Starting from <strong>v2.1</strong>, assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Configuration</span>
+<pre><code class="language-javascript">Model.Object.prototype.assert(function noUndeclaredProperties(obj) {
+	var modelDefinition = this.definition;
+	var extraKeys = Object.keys(obj).filter(function(key){
+		return modelDefinition.hasOwnProperty(key) === false;
+	});
+	if(extraKeys.length === 0) return true; // validate assertion
+	else return extraKeys; // pass information to the error message
+}, function(extraKeys){
+	return "These properties are not defined in the model:"
+	     + extraKeys.join(', ');
+})</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Example</span>
+<pre><code class="language-javascript">var Order = Model({ price: Number });
+
+var expectedOrder = Order({ price: 42.50 });
+
+var receivedOrder = Order({ price: 42.50, taxes: 8.33, deliveryCost: 15.00 });</code>
+<code class="language-none exception">TypeError: These properties are not defined in the model: taxes, deliveryCost</code></pre>
+			</div>
 	</section>
 
 	<hr>

@@ -55,7 +55,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
 		}
 	}
-	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
+	checkAssertions(arr, this);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -92,7 +92,7 @@ function setArrayKey(array, key, value, model){
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK]);
+	checkAssertions(testArray, model);
 	model[UNSTACK]();
 	array[key] = value;
 }

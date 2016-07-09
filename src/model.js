@@ -19,6 +19,8 @@ ModelProto.toString = function(stack){
 	}).join(" or ");
 };
 
+ModelProto[ASSERTIONS] = [];
+
 ModelProto[VALIDATE] = function(obj, errorCollector){
 	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
@@ -88,7 +90,7 @@ Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 // private methods
 define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
-	matchAssertions(obj, this[ASSERTIONS], errorStack);
+	checkAssertions(obj, this, errorStack);
 });
 
 // throw all errors collected
@@ -120,7 +122,7 @@ function isLeaf(def){
 function initModel(model, def, constructor){
 	setConstructor(model, constructor);
 	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
+	model[ASSERTIONS] = model[ASSERTIONS].slice(); // clone from Model.prototype
 	define(model, ERROR_STACK, []);
 }
 
@@ -182,11 +184,17 @@ function checkDefinitionPart(obj, def, path, callStack){
 		|| obj[CONSTRUCTOR] === def;
 }
 
-function matchAssertions(obj, assertions, errorStack){
-	for(var i=0, l=assertions.length; i<l ; i++ ){
-		if(!assertions[i](obj)){
-			var err = {};
-			err[MESSAGE] = "assertion failed: "+ (assertions[i][DESCRIPTION] || toString(assertions[i]))
+function checkAssertions(obj, model, errorStack){
+	if(errorStack === undefined){
+		errorStack = model[ERROR_STACK];
+	}
+	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++ ){
+		var assert = model[ASSERTIONS][i],
+			assertionResult = assert.call(model, obj);
+		if(assertionResult !== true){
+			var err = {},
+				message = isFunction(assert[DESCRIPTION]) ? assert[DESCRIPTION].call(model, assertionResult) : assert[DESCRIPTION];
+			err[MESSAGE] = "assertion failed: "+ (message || toString(assert))
 			errorStack.push(err);
 		}
 	}

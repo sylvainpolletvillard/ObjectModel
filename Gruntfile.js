@@ -92,7 +92,18 @@ module.exports = function(grunt) {
 					archive: 'dist/object-model-<%= pkg.version %>.zip'
 				},
 				files: [{
-					src:['dist/*.js','src/**','lib/**','test/**','Gruntfile.js','package.json']
+					src:[
+						'dist/*.js',
+						'src/**',
+						'lib/**',
+						'test/**',
+						'site/*',
+						'index.html',
+						'Gruntfile.js',
+						'package.json',
+						'LICENSE',
+						'README.md'
+					]
 				}]
 			}
 		},

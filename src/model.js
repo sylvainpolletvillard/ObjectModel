@@ -17,6 +17,8 @@ Object.assign(Model[PROTO], {
 		return parseDefinition(this[DEFINITION]).map(d => toString(d, stack)).join(" or ")
 	},
 
+	[ASSERTIONS]: [],
+
 	[VALIDATE](obj, errorCollector){
 		this[VALIDATOR](obj, null, [], this[ERROR_STACK])
 		this[UNSTACK_ERRORS](errorCollector)
@@ -75,7 +77,7 @@ Object.assign(Model[PROTO], {
 
 	[VALIDATOR](obj, path, callStack, errorStack){
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
-		matchAssertions(obj, this[ASSERTIONS], errorStack)
+		checkAssertions(obj, this, errorStack)
 	},
 
 	// throw all errors collected
@@ -104,7 +106,7 @@ const isLeaf = def => bettertypeof(def) != "Object"
 function initModel(model, def, constructor){
 	setConstructor(model, constructor)
 	model[DEFINITION] = def
-	model[ASSERTIONS] = []
+	model[ASSERTIONS] = model[ASSERTIONS].slice();
 	define(model, ERROR_STACK, [])
 }
 
@@ -154,11 +156,13 @@ function checkDefinitionPart(obj, def, path, callStack){
 		|| obj[CONSTRUCTOR] === def
 }
 
-function matchAssertions(obj, assertions, errorStack){
-	for(let assertion of assertions){
-		if(!assertion(obj)){
+function checkAssertions(obj, model, errorStack = model[ERROR_STACK]){
+	for(let assertion of model[ASSERTIONS]){
+		let assertionResult = assertion.call(model, obj);
+		if(assertionResult !== true){
+			let message = isFunction(assertion[DESCRIPTION]) ? assertion[DESCRIPTION].call(model, assertionResult) : assertion[DESCRIPTION];
 			errorStack.push({
-				[MESSAGE]: `assertion failed: ${assertion[DESCRIPTION] || toString(assertion)}`
+				[MESSAGE]: `assertion failed: ${message || toString(assertion) }`
 			})
 		}
 	}

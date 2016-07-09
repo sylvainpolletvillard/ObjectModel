@@ -36,7 +36,7 @@ Object.assign(Model[ARRAY][PROTO], {
 				[PATH]: path
 			})
 		}
-		matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK])
+		checkAssertions(arr, this)
 	}
 })
 
@@ -55,7 +55,7 @@ function setArrayKey(array, key, value, model){
 	}
 	const testArray = array.slice()
 	testArray[key] = value
-	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK])
+	checkAssertions(testArray, model)
 	model[UNSTACK_ERRORS]()
 	array[key] = value
 }

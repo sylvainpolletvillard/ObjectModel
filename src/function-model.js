@@ -14,7 +14,7 @@ Model[FUNCTION] = function FunctionModel(){
 				})
 			}
 			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]))
-			matchAssertions(args, model[ASSERTIONS], model[ERROR_STACK])
+			checkAssertions(args, model)
 			const returnValue = fn.apply(this, args)
 			if (RETURN in def) {
 				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK])

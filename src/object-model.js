@@ -36,7 +36,7 @@ Object.assign(Model[OBJECT][PROTO], {
 		} else {
 			checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
 		}
-		matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK])
+		checkAssertions(obj, this)
 	}
 })
 
@@ -65,7 +65,7 @@ function getProxy(model, obj, defNode, path) {
 				const newProxy = getProxy(model, val, defNode[key], newPath)
 				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
 				o[key] = newProxy
-				matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK])
+				checkAssertions(obj, model)
 			} else {
 				model[ERROR_STACK].push({
 					[MESSAGE]: `cannot find property ${newPath} in the model definition`

@@ -134,14 +134,14 @@
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
 
-		<p>This library is <a href="test">unit tested</a> against these browsers, depending of the version of the library:
+		<p>This library is <a href="test">unit tested</a> against these browsers, depending of the version of Object Model:
 			<dl>
 				<dt>v1.x</dt>
 				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
 				<dt>v2.x</dt>
 				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
 				<dt>v3.x</dt>
-				<dd>Next version of ObjectModel relies on ES6 and Proxies, so only the evergreen versions of Chrome, Firefox and Edge are supported. It also works on Node 6.0+.</dd>
+				<dd>Next version of ObjectModel relies on ES6 and Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
 			</dl>
 	</section>
 
@@ -160,6 +160,17 @@
 		<details>
 			<summary>Changelog</summary>
 			<dl>
+				<dt>v3.0</dt>
+				<dd>use ES6 Proxies everywhere instead of ES5 property getters</dd>
+				<dd>only usable on modern browsers: Edge 14 / Firefox 47 / Chrome 50 (<a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/issues/21#issuecomment-231017366">explainations</a>)</dd>
+				<dd>undeclared properties in model definition now trigger validation errors</dd>
+				<dd>added Model.Map and Model.Set</dd>
+
+				<dt>v2.1</dt>
+				<dd>assertions are now inherited from <code>Model.prototype</code>, which enables you to add global assertions</dd>
+				<dd>assertions now require to return <code>true</code> to validate. Truthy values do not pass anymore</dd>
+				<dd>assertions error messages can now be functions called with the assertion result as argument</dd>
+
 				<dt>v2.0</dt>
 				<dd>support for IE<11 had to be dropped (<a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/issues/18#issuecomment-205211407">explainations</a>)</dd>
 				<dd>removed Model.instanceOf as it is not useful anymore: use the instanceof operator</dd>
@@ -241,7 +252,7 @@
             <div class="panel">
                 <span class="legend">Model</span>
 <pre><code class="language-javascript">var NumberModel = Model(Number);
-// 'new' keyword is always optional</code></pre>
+// 'new' keyword is optional for models and model instances</code></pre>
             </div>
             <div class="panel">
                 <span class="legend">Instance</span>
@@ -464,7 +475,7 @@ var joe_and_ann = Lovers({
 
 	<section id="doc-extensions">
 		<h2>Inheritance by extension</h2>
-		<p>Extensions create new models based on existing model definitions. You can declare new properties or modify previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
+		<p>Extensions create new models based on existing model definitions. You can declare new properties or override previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -481,12 +492,10 @@ var Mother = Person.extend({
 			<div class="panel">
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">var joe = new Person({ name: "Joe", female: false });
-var ann = new Person({ name: "Joe's wife", female: true });
 var joanna = new Person({ name: "Joe's daughter", female: true });
+var ann = new Mother({ name: "Joe's wife", female: true, child: joanna });
 
-ann.child = joanna;
-ann = Mother(ann); // cast ann to Mother model
-Mother.test(ann) && Person.test(ann)</code>
+ann instanceof Mother && ann instanceof Person</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false

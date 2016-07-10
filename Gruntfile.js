@@ -78,26 +78,14 @@ module.exports = function(grunt) {
 					inject: [
 						{
 							dest: 'index.html',
-							//text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
-							text: 'all in <strong>{{= sizeText(size(src[0])) }}</strong>'
+							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
 						},
 						{
 							dest: 'index.html',
-							//text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
-							text: 'Bundle file ({{= sizeText(size(src[0])) }})'
+							text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
 						}
 					]
 				}
-			}
-		},
-		compress: {
-			source_files: {
-				options: {
-					archive: 'dist/object-model-<%= pkg.version %>.zip'
-				},
-				files: [{
-					src:['dist/*.js','src/**','lib/**','test/**','Gruntfile.js','package.json']
-				}]
 			}
 		},
 		"regex-replace": {
@@ -110,8 +98,10 @@ module.exports = function(grunt) {
 						replace: 'Current version: v'+pkg.version
 					},{
 						name: 'zip url',
-						search: esc('<a href="dist/object-model-')+'\\d+\\.\\d+\\.\\d+'+esc('.zip">object-model-')+'\\d+\\.\\d+\\.\\d+'+esc('.zip</a>'),
-						replace: '<a href="dist/object-model-'+pkg.version+'.zip">object-model-'+pkg.version+'.zip</a>'
+						search: esc('<a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v')
+						+'\\d+\\.\\d+\\.\\d+'+esc('.zip">object-model-')+'\\d+\\.\\d+\\.\\d+'+esc('.zip</a>'),
+						replace: '<a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v'
+						+pkg.version+'.zip">object-model-'+pkg.version+'.zip</a>'
 					}
 				]
 			}
@@ -129,12 +119,11 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-contrib-compress');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
 	grunt.loadNpmTasks('grunt-browserify');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','uglify:dist','file_info:dist','compress:source_files','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','uglify:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

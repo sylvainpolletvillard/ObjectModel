@@ -1,4 +1,4 @@
-// ObjectModel v2.0.1 - http://objectmodel.js.org
+// ObjectModel v2.1.0 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -157,6 +157,8 @@ ModelProto.toString = function(stack){
 	}).join(" or ");
 };
 
+ModelProto[ASSERTIONS] = [];
+
 ModelProto[VALIDATE] = function(obj, errorCollector){
 	this[VALIDATOR](obj, null, [], this[ERROR_STACK]);
 	this[UNSTACK](errorCollector);
@@ -212,7 +214,7 @@ ModelProto[EXTEND] = function(){
 
 ModelProto.assert = function(assertion, message){
 	define(assertion, DESCRIPTION, message);
-	this[ASSERTIONS].push(assertion);
+	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
 
@@ -226,7 +228,7 @@ Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 // private methods
 define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
-	matchAssertions(obj, this[ASSERTIONS], errorStack);
+	checkAssertions(obj, this, errorStack);
 });
 
 // throw all errors collected
@@ -258,7 +260,7 @@ function isLeaf(def){
 function initModel(model, def, constructor){
 	setConstructor(model, constructor);
 	model[DEFINITION] = def;
-	model[ASSERTIONS] = [];
+	model[ASSERTIONS] = model[ASSERTIONS].slice(); // clone from Model.prototype
 	define(model, ERROR_STACK, []);
 }
 
@@ -320,11 +322,17 @@ function checkDefinitionPart(obj, def, path, callStack){
 		|| obj[CONSTRUCTOR] === def;
 }
 
-function matchAssertions(obj, assertions, errorStack){
-	for(var i=0, l=assertions.length; i<l ; i++ ){
-		if(!assertions[i](obj)){
-			var err = {};
-			err[MESSAGE] = "assertion failed: "+ (assertions[i][DESCRIPTION] || toString(assertions[i]))
+function checkAssertions(obj, model, errorStack){
+	if(errorStack === undefined){
+		errorStack = model[ERROR_STACK];
+	}
+	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++ ){
+		var assert = model[ASSERTIONS][i],
+			assertionResult = assert.call(model, obj);
+		if(assertionResult !== true){
+			var err = {},
+				message = isFunction(assert[DESCRIPTION]) ? assert[DESCRIPTION].call(model, assertionResult) : assert[DESCRIPTION];
+			err[MESSAGE] = "assertion failed: "+ (message || toString(assert))
 			errorStack.push(err);
 		}
 	}
@@ -369,7 +377,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	} else {
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
 	}
-	matchAssertions(obj, this[ASSERTIONS], this[ERROR_STACK]);
+	checkAssertions(obj, this);
 });
 
 function getProxy(model, obj, defNode, path) {
@@ -404,7 +412,7 @@ function getProxy(model, obj, defNode, path) {
 					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 					var oldValue = wrapper[key];
 					wrapper[key] = newProxy;
-					matchAssertions(obj, model[ASSERTIONS], model[ERROR_STACK]);
+					checkAssertions(obj, model);
 					if(model[ERROR_STACK].length){
 						wrapper[key] = oldValue;
 						model[UNSTACK]();
@@ -473,7 +481,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
 		}
 	}
-	matchAssertions(arr, this[ASSERTIONS], this[ERROR_STACK]);
+	checkAssertions(arr, this);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -510,7 +518,7 @@ function setArrayKey(array, key, value, model){
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	matchAssertions(testArray, model[ASSERTIONS], model[ERROR_STACK]);
+	checkAssertions(testArray, model);
 	model[UNSTACK]();
 	array[key] = value;
 }
@@ -532,7 +540,7 @@ Model[FUNCTION] = function FunctionModel(){
 			def[ARGS].forEach(function (argDef, i) {
 				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
-			matchAssertions(args, model[ASSERTIONS], model[ERROR_STACK]);
+			checkAssertions(args, model);
 			var returnValue = fn.apply(this, args);
 			if (RETURN in def) {
 				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);

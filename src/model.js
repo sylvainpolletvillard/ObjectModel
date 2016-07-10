@@ -76,7 +76,7 @@ ModelProto[EXTEND] = function(){
 
 ModelProto.assert = function(assertion, message){
 	define(assertion, DESCRIPTION, message);
-	this[ASSERTIONS].push(assertion);
+	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
 

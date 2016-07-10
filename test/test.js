@@ -759,6 +759,22 @@ function testSuite(Model){
 		var nestedModel = NestedModel({ foo: { bar: { baz: true }}});
 		assert.throws(function(){ nestedModel.foo.bar.baz = false; }, /TypeError/, "test assertion after nested property assignment");
 
+		function assertFail(){ return false; }
+		function assertFailWithData(){ return -1; }
+		Model.prototype.assert(assertFail, "expected message without data");
+		Model.Object.prototype.assert(assertFailWithData, function(data){ return "expected message with data "+data; });
+
+		assert.equal(Model.prototype.assertions.length, 1)
+		assert.equal(Model.Object.prototype.assertions.length, 2);
+
+		var M = Model({ a: String });
+		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message without data");
+		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message with data -1");
+
+		// clean up global assertions
+		Model.prototype.assertions = [];
+		delete Model.Object.prototype.assertions;
+
 	});
 
 	QUnit.test("Cyclic detection", function(assert){

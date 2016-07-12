@@ -149,83 +149,16 @@
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
 			<li>Minified file (6.9 kB, 2.9 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-			<li>Source files : <a href="dist/object-model-2.1.0.zip">object-model-2.1.0.zip</a> </li>
-			<li><a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">Older versions</a></li>
+			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.1.0.zip">object-model-2.1.0.zip</a> </li>
 		</ul>
-		<details>
-			<summary>Changelog</summary>
-			<dl>
-				<dt>v2.1</dt>
-				<dd>assertions are now inherited from <code>Model.prototype</code>, which enables you to add global assertions</dd>
-				<dd>assertions now require to return <code>true</code> to validate. Truthy values do not pass anymore</dd>
-				<dd>assertions error messages can now be functions called with the assertion result as argument</dd>
+		<h3>Changelog and previous releases</h3>
+		<p>Checkout the <a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/releases">Github Releases</a></p>
 
-				<dt>v2.0</dt>
-				<dd>support for IE<11 had to be dropped (<a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/issues/18#issuecomment-205211407">explainations</a>)</dd>
-				<dd>removed Model.instanceOf as it is not useful anymore: use the instanceof operator</dd>
-				<dd>reduced the library size by ~ 20%</dd>
-
-				<dt>v1.2</dt>
-				<dd>null is now a valid value for an optional property</dd>
-				<dd>stack errors instead of throwing the first error catched</dd>
-				<dd>added custom error collectors</dd>
-				<dd>assert API has changed and now receives an optional description</dd>
-				<dd>validate API has changed and now receives an optional error collector</dd>
-
-				<dt>v1.1</dt>
-				<dd>model.extend can now take models and/or models definitions as arguments</dd>
-				<dd>fixed some issues with object deep merging on model extensions</dd>
-				<dd>make array models keys enumerable</dd>
-				<dt>v1.0</dt>
-				<dd>added model.validate and model.test</dd>
-				<dd>moved conventions to overridable exposed functions</dd>
-				<dd>preserve object properties out of model definition at instanciation</dd>
-				<dd>aligned array models constructors with other models behaviour</dd>
-				<dt>v0.9</dt>
-				<dd>use of ECMAScript 6 proxies if available</dd>
-				<dd>performance improvements, especially on Array models</dd>
-				<dt>v0.8</dt>
-				<dd>cycle detection and validation of circular object structures</dd>
-				<dd>support for Safari 5</dd>
-				<dt>v0.7</dt>
-				<dd>API redesign to get a single namespace</dd>
-				<dd>UMD version</dd>
-				<dd>added model.assert</dd>
-				<dd>removed arrayModel.min/max</dd>
-				<dd>some performance improvements</dd>
-				<dt>v0.6</dt>
-				<dd>corrected models prototypal chain</dd>
-				<dd>models prototype is used to store default values and methods</dd>
-				<dd>automatic instanciation of Function models on object model properties</dd>
-				<dt>v0.5</dt>
-				<dd>constants and private properties by name convention</dd>
-				<dd>unit tests</dd>
-				<dt>v0.4</dt>
-				<dd>Model.defaults, Model.Function.defaults</dd>
-				<dd>Model.extend, Model.Array.extend</dd>
-				<dt>v0.3</dt>
-				<dd>Model.Function</dd>
-				<dd>arguments and return value validation</dd>
-				<dt>v0.2</dt>
-				<dd>Model.Array</dd>
-				<dd>Optional & mandatory parameters</dd>
-				<dd>Multi-types parameters</dd>
-				<dt>v0.1</dt>
-				<dd>basic object Model</dd>
-				<dd>null-safe traversing</dd>
-				<dd>validation by constructor or equality</dd>
-			</dl>
-		</details>
-		<details>
-			<summary>Future versions</summary>
-			<p>Possible changes under consideration:</p>
-			<ul>
-				<li>Make Model API use function models itself (wow, so meta X_x)</li>
-				<li>Greater use of ES6 Proxies</li>
-				<li>ES6 only version</li>
-				<li>more detailed path information in object models type errors</li>
-			</ul>
-		</details>
+		<h3>Future versions: possible changes under consideration:</h3>
+		<ul>
+			<li>make Model API use function models itself (so meta X_x)</li>
+			<li>more detailed path information in object models type errors</li>
+		</ul>
 
 		<h3>GitHub repository</h3>
 		<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel">GitHub  repository</a>.</p>

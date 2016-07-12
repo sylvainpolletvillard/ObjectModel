@@ -9,6 +9,10 @@
 
 	<title>Object Model</title>
 
+	<link rel="icon" type="image/png" href="site/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="site/favicon-16x16.png" sizes="16x16" />
+	<link rel="shortcut icon" href="site/favicon.ico" type="image/x-icon">
+
 	<link rel="stylesheet" href="site/style/main.css"/>
 	<script src="site/lib/jquery-2.1.0.min.js"></script>
 
@@ -475,7 +479,7 @@ joe.sendConfirmationMail();</code>
 
 	<section id="doc-assertions">
 		<h2>Assertions for custom validation tests</h2>
-		<p>You can add to your models any number of assertions that are custom test functions applied on the values of instances of the model. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
+		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -509,6 +513,33 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 <code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
 			</div>
 		</div>
+
+		<p>Starting from <strong>v2.1</strong>, assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Configuration</span>
+<pre><code class="language-javascript">Model.Object.prototype.assert(function noUndeclaredProperties(obj) {
+	var modelDefinition = this.definition;
+	var extraKeys = Object.keys(obj).filter(function(key){
+		return modelDefinition.hasOwnProperty(key) === false;
+	});
+	if(extraKeys.length === 0) return true; // validate assertion
+	else return extraKeys; // pass information to the error message
+}, function(extraKeys){
+	return "These properties are not defined in the model:"
+	     + extraKeys.join(', ');
+})</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Example</span>
+<pre><code class="language-javascript">var Order = Model({ price: Number });
+
+var expectedOrder = Order({ price: 42.50 });
+
+var receivedOrder = Order({ price: 42.50, taxes: 8.33, deliveryCost: 15.00 });</code>
+<code class="language-none exception">TypeError: These properties are not defined in the model: taxes, deliveryCost</code></pre>
+			</div>
 	</section>
 
 	<hr>

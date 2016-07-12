@@ -1,9 +1,6 @@
-Object Model
-============
+<p align="center"><a href="http://objectmodel.js.org" target="_blank"><img width="400" src="http://objectmodel.js.org/site/res/logo.png"></a></p>
 
-[![Join the chat at https://gitter.im/sylvainpolletvillard/ObjectModel](https://badges.gitter.im/sylvainpolletvillard/ObjectModel.svg)](https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Runtime Type Checking and Data Model Definition for JavaScript
+<p align="center">Runtime Type Checking and Data Model Definition for JavaScript</p>
 
 ---
 

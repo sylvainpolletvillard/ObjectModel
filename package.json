@@ -16,7 +16,6 @@
     "grunt": "~1.0.1",
     "grunt-browserify": "~5.0.0",
     "grunt-cli": "^1.2.0",
-    "grunt-contrib-compress": "~1.2.0",
     "grunt-contrib-concat": "~1.0.1",
     "grunt-contrib-connect": "~1.0.2",
     "grunt-contrib-qunit": "~1.2.0",

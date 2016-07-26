@@ -1,4 +1,4 @@
-function testSuite(Model){
+(function testSuite(Model){
 
 	QUnit.test( "Basic models", function( assert ) {
 
@@ -916,4 +916,4 @@ function testSuite(Model){
 
 	});
 
-}
+})(this.Model)

@@ -133,7 +133,7 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>6.8 kB minified, 2.8 kB gzipped</strong></li>
+			<li>all in <strong>5.8 kB minified, 2.6 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -156,8 +156,7 @@
 		<h3>Current version: v3.0.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
-			<!--<li>Minified file (6.8 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>-->
-			<li>Minified file (13.7 kB) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Minified file (5.8 kB, 2.6 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
 			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
@@ -540,6 +539,7 @@ var expectedOrder = Order({ price: 42.50 });
 var receivedOrder = Order({ price: 42.50, taxes: 8.33, deliveryCost: 15.00 });</code>
 <code class="language-none exception">TypeError: These properties are not defined in the model: taxes, deliveryCost</code></pre>
 			</div>
+		</div>
 	</section>
 
 	<hr>
@@ -691,14 +691,14 @@ joe.sayMyName();</code>
 	<section id="doc-custom-collectors">
 		<h2>Custom error collectors</h2>
 		<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
-		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:
+		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:</p>
 		<ul>
 		<li><code>message</code>: a message describing all the errors caught</li>
 		<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
 		<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
 		<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
 		</ul>
-		</p>
+
 
 <pre><code class="language-javascript">var Student = Model({
 	name: String,

@@ -43,16 +43,17 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		uglify: {
+		babel: {
 			dist: {
 				options: {
-					banner: BANNER,
-					screwIE8: true
+					sourceMap: true,
+					presets: [require('babel-preset-minify')],
+					compact: true,
+					minified: true,
+					comments: false
 				},
 				files: {
-					/* Uglify does not support ES6 atm: https://github.com/mishoo/UglifyJS2/issues/448 
-					'dist/object-model.min.js': ['dist/object-model.js']
-					*/
+					'dist/object-model.min.js': 'dist/object-model.js'
 				}
 			}
 		},
@@ -122,8 +123,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
 	grunt.loadNpmTasks('grunt-browserify');
+	grunt.loadNpmTasks('grunt-babel');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','uglify:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','babel:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

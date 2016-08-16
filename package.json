@@ -1,42 +1,40 @@
 {
-	"name": "objectmodel",
-	"version": "2.1.0",
-	"description": "Runtime Type Checking and Data Model Definition for JavaScript",
-	"author": "Sylvain Pollet-Villard",
-	"license": "MIT",
-	"homepage": "http://objectmodel.js.org",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
-	},
-	"scripts": {
-		"postinstall": "npm install -g grunt-cli"
-	},
-	"devDependencies": {
-		"grunt": ">=0.4.5",
-		"grunt-browserify": "~5.0.0",
-		"grunt-contrib-concat": "~1.0.0",
-		"grunt-contrib-connect": "~1.0.0",
-		"grunt-contrib-qunit": "~1.1.0",
-		"grunt-contrib-uglify": "~1.0.1",
-		"grunt-contrib-watch": "~1.0.0",
-		"grunt-file-info": "1.0.10",
-		"grunt-regex-replace": "~0.2.6"
-	},
-	"main": "dist/object-model.umd.js",
-	"keywords": [
-		"typed",
-		"types",
-		"typing",
-		"dynamic",
-		"strong",
-		"model",
-		"definition",
-		"object",
-		"assertion",
-		"inheritance",
-		"composition",
-		"structures",
-		"proxy"
-	]
+  "name": "objectmodel",
+  "version": "2.1.0",
+  "description": "Runtime Type Checking and Data Model Definition for JavaScript",
+  "author": "Sylvain Pollet-Villard",
+  "license": "MIT",
+  "homepage": "http://objectmodel.js.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
+  },
+  "devDependencies": {
+    "grunt": ">=0.4.5",
+    "grunt-browserify": "~5.0.0",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "~1.0.0",
+    "grunt-contrib-connect": "~1.0.0",
+    "grunt-contrib-qunit": "~1.1.0",
+    "grunt-contrib-uglify": "~1.0.1",
+    "grunt-contrib-watch": "~1.0.0",
+    "grunt-file-info": "1.0.10",
+    "grunt-regex-replace": "~0.2.6"
+  },
+  "main": "dist/object-model.umd.js",
+  "keywords": [
+    "typed",
+    "types",
+    "typing",
+    "dynamic",
+    "strong",
+    "model",
+    "definition",
+    "object",
+    "assertion",
+    "inheritance",
+    "composition",
+    "structures",
+    "proxy"
+  ]
 }

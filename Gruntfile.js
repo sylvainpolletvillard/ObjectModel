@@ -106,14 +106,7 @@ module.exports = function(grunt) {
 					}
 				]
 			}
-		},
-        browserify: {
-            dist: {
-                files: {
-                    'test/modules/browserify-build.js': ['test/modules/browserify-main.js']
-                }
-            }
-        }
+		}
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
@@ -122,10 +115,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
-	grunt.loadNpmTasks('grunt-browserify');
 	grunt.loadNpmTasks('grunt-babel');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','browserify','babel:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','babel:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

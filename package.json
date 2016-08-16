@@ -25,7 +25,14 @@
     "grunt-contrib-uglify": "~1.0.1",
     "grunt-contrib-watch": "~1.0.0",
     "grunt-file-info": "sylvainpolletvillard/grunt-file-info",
-    "grunt-regex-replace": "~0.2.9"
+    "grunt-regex-replace": "~0.2.9",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-cli": "^1.2.2",
+    "gulp-header": "^1.8.7",
+    "gulp-qunit": "^1.4.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^1.6.0"
   },
   "main": "dist/object-model.umd.js",
   "keywords": [

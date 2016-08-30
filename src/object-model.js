@@ -44,6 +44,11 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
+	} else if(isArray(defNode)){
+		var suitableModels = defNode.filter(function(part){
+			return part instanceof Model && obj && !(obj instanceof part) && part.test(obj)
+		})
+		return suitableModels.length === 1 ? suitableModels[0](obj) : obj; // when ambiguous, do not cast at all
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {

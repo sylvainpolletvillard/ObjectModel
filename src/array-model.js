@@ -7,10 +7,18 @@ Model[ARRAY] = function ArrayModel(def){
 		if(isProxySupported){
 			proxy = new Proxy(array, {
 				get: function (arr, key) {
-					return (ARRAY_MUTATOR_METHODS.indexOf(key) >= 0 ? proxifyArrayMethod(arr, key, model) : arr[key]);
+					if(key === CONSTRUCTOR){
+						return model;
+					} else if(ARRAY_MUTATOR_METHODS.indexOf(key) >= 0){
+						return proxifyArrayMethod(arr, key, model);
+					}
+					return arr[key];
 				},
 				set: function (arr, key, val) {
 					setArrayKey(arr, key, val, model);
+				},
+				getPrototypeOf: function(){
+					return model[PROTO];
 				}
 			});
 		} else {
@@ -24,9 +32,9 @@ Model[ARRAY] = function ArrayModel(def){
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
 				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
+			setConstructor(proxy, model);
 		}
 
-		setConstructor(proxy, model);
 		return proxy;
 	};
 

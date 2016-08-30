@@ -131,6 +131,16 @@ function testSuite(Model){
 				&& /city/.test(err.toString())
 		}, "check that errors are correctly stacked");
 
+		var User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		var Article = new Model({title: String, user: User})
+			.defaults({title: 'bar', user: new User()});
+		var a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
+
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){
@@ -167,6 +177,16 @@ function testSuite(Model){
 		assert.throws(function(){ joe.age = []; }, /TypeError/);
 		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError/);
 		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
+
+		var User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		var Article = new Model({title: String, user: [User]})
+			.defaults({title: 'bar', user: new User()});
+		var a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
 	});
 
 	QUnit.test("Fixed values", function(assert){

@@ -268,6 +268,10 @@ function testSuite(Model){
 		assert.ok(childO.arr instanceof Array, "child array model is array");
 		var parentO = ParentO({ child: childO });
 		assert.ok(parentO.child.arr instanceof Array, "child array model from parent is array");
+
+		childO.arr.push("a");
+		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
+		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
 	});
 
 	QUnit.test("Function models", function(assert){

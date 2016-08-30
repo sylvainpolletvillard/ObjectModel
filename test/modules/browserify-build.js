@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// ObjectModel v2.1.1 - http://objectmodel.js.org
+// ObjectModel v2.1.2 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -434,10 +434,18 @@ Model[ARRAY] = function ArrayModel(def){
 		if(isProxySupported){
 			proxy = new Proxy(array, {
 				get: function (arr, key) {
-					return (ARRAY_MUTATOR_METHODS.indexOf(key) >= 0 ? proxifyArrayMethod(arr, key, model) : arr[key]);
+					if(key === CONSTRUCTOR){
+						return model;
+					} else if(ARRAY_MUTATOR_METHODS.indexOf(key) >= 0){
+						return proxifyArrayMethod(arr, key, model);
+					}
+					return arr[key];
 				},
 				set: function (arr, key, val) {
 					setArrayKey(arr, key, val, model);
+				},
+				getPrototypeOf: function(){
+					return model[PROTO];
 				}
 			});
 		} else {
@@ -451,9 +459,9 @@ Model[ARRAY] = function ArrayModel(def){
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
 				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
+			setConstructor(proxy, model);
 		}
 
-		setConstructor(proxy, model);
 		return proxy;
 	};
 

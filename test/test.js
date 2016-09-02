@@ -1,3 +1,22 @@
+var consoleMock = {
+	methods: ["debug","log","warn","error"],
+	apply: function(){
+		consoleMock.methods.forEach(function(method){
+			consoleMock["_default"+method] = console[method];
+			consoleMock[method+"LastArgs"] = [];
+			console[method] = function(){
+				consoleMock[method+"LastArgs"] = arguments;
+			}
+		})
+	},
+	revert: function(){
+		consoleMock.methods.forEach(function(method){
+			console[method] = consoleMock["_default"+method];
+			consoleMock[method+"LastArgs"] = [];
+		});
+	}
+}
+
 function testSuite(Model){
 
 	QUnit.test( "Basic models", function( assert ) {
@@ -131,16 +150,6 @@ function testSuite(Model){
 				&& /city/.test(err.toString())
 		}, "check that errors are correctly stacked");
 
-		var User = new Model({username: String, email: String})
-			.defaults({username: 'foo', email: 'foo@foo'});
-		var Article = new Model({title: String, user: User})
-			.defaults({title: 'bar', user: new User()});
-		var a = new Article();
-		a.user = {username: 'joe', email: 'foo'};
-
-		assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
-		assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
-
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){
@@ -178,15 +187,6 @@ function testSuite(Model){
 		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError/);
 		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
 
-		var User = new Model({username: String, email: String})
-			.defaults({username: 'foo', email: 'foo@foo'});
-		var Article = new Model({title: String, user: [User]})
-			.defaults({title: 'bar', user: new User()});
-		var a = new Article();
-		a.user = {username: 'joe', email: 'foo'};
-
-		assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
-		assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
 	});
 
 	QUnit.test("Fixed values", function(assert){
@@ -670,7 +670,9 @@ function testSuite(Model){
 			father: Person,
 			mother: Person.extend({ female: true }),
 			children: Model.Array(Person),
-			grandparents: [Model.Array(Person).assert(function(persons){ return persons.length <= 4 })]
+			grandparents: [Model.Array(Person).assert(function(persons){
+				return persons && persons.length <= 4
+			})]
 		});
 
 		var joe = Person({
@@ -935,5 +937,50 @@ function testSuite(Model){
 		Model.prototype.errorCollector = defaultErrorCollector;
 
 	});
+
+	QUnit.test("Automatic model casting", function (assert) {
+
+		var User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		var Article = new Model({title: String, user: User})
+			.defaults({title: 'bar', user: new User()});
+		var a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
+
+		User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		Article = new Model({title: String, user: [User]})
+			.defaults({title: 'bar', user: new User()});
+		a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
+
+		var Type1 = Model({ name: String, other1: [Boolean] });
+		var Type2 = Model({ name: String, other2: [Number] });
+		var Container = Model({ foo: { bar: [Type1, Type2] }});
+
+
+		consoleMock.apply();
+		var c = new Container({ foo: { bar: { name: "dunno" }}});
+		assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number\]/
+				.test(consoleMock["warnLastArgs"][0]),
+			"should warn about ambiguous model for object sub prop"
+		);
+		assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
+		assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");
+		consoleMock.revert();
+
+		consoleMock.apply();
+		c = new Container({ foo: { bar: Type2({ name: "dunno" }) }});
+		assert.ok(consoleMock["warnLastArgs"].length === 0, "should not warn when explicit model cast in ambiguous context");
+		assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
+		assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
+
+	})
 
 }

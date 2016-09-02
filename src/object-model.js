@@ -43,6 +43,21 @@ Object.assign(Model[OBJECT][PROTO], {
 function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model && obj && !(obj instanceof defNode))
 		return defNode(obj)
+	else if(Array.isArray(defNode)){ // union type
+		let suitableModels = [];
+		for(let part of defNode.filter(part => part instanceof Model)){
+			if(obj instanceof part)
+				return obj;
+			if(part.test(obj))
+				suitableModels.push(part);
+		}
+		if(suitableModels.length === 1)
+			return suitableModels[0](obj); // automatically cast to suitable model when explicit
+		else if(suitableModels.length > 1)
+			console.warn(`Ambiguous model for value ${toString(obj)},
+			 could be ${suitableModels.join(" or ")}`);
+		return obj;
+	}
 	else if(isLeaf(defNode))
 		return obj
 
@@ -82,6 +97,9 @@ function getProxy(model, obj, defNode, path) {
 		},
 		ownKeys(o){
 			return Reflect.ownKeys(o).filter(key => !Model[CONVENTION_PRIVATE](key))
+		},
+		getPrototypeOf(){
+			return model[PROTO];
 		}
 	});
 }

@@ -2,16 +2,21 @@ Model[ARRAY] = function ArrayModel(def){
 
 	const model = function(array) {
 		model[VALIDATE](array)
-		const proxy = new Proxy(array, {
-			get: function (arr, key) {
-				return ARRAY_MUTATOR_METHODS.includes(key) ? proxifyArrayMethod(arr, key, model) : arr[key]
+		return new Proxy(array, {
+			get(arr, key) {
+				if (key === CONSTRUCTOR)
+					return model
+				else if (ARRAY_MUTATOR_METHODS.includes(key))
+					return proxifyArrayMethod(arr, key, model)
+				return arr[key]
 			},
-			set: function (arr, key, val) {
+			set(arr, key, val) {
 				setArrayKey(arr, key, val, model)
+			},
+			getPrototypeOf(){
+				return model[PROTO];
 			}
 		})
-		setConstructor(proxy, model)
-		return proxy
 	}
 
 	setConstructorProto(model, Array[PROTO])

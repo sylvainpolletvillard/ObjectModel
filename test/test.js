@@ -1,3 +1,22 @@
+var consoleMock = {
+	methods: ["debug","log","warn","error"],
+	apply: function(){
+		consoleMock.methods.forEach(function(method){
+			consoleMock["_default"+method] = console[method];
+			consoleMock[method+"LastArgs"] = [];
+			console[method] = function(){
+				consoleMock[method+"LastArgs"] = arguments;
+			}
+		})
+	},
+	revert: function(){
+		consoleMock.methods.forEach(function(method){
+			console[method] = consoleMock["_default"+method];
+			consoleMock[method+"LastArgs"] = [];
+		});
+	}
+};
+
 (function testSuite(Model){
 
 	QUnit.test( "Basic models", function( assert ) {
@@ -167,6 +186,7 @@
 		assert.throws(function(){ joe.age = []; }, /TypeError/);
 		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError/);
 		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
+
 	});
 
 	QUnit.test("Fixed values", function(assert){
@@ -268,6 +288,10 @@
 		assert.ok(childO.arr instanceof Array, "child array model is array");
 		var parentO = ParentO({ child: childO });
 		assert.ok(parentO.child.arr instanceof Array, "child array model from parent is array");
+
+		childO.arr.push("a");
+		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
+		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -650,7 +674,9 @@
 			father: Person,
 			mother: Person.extend({ female: true }),
 			children: Model.Array(Person),
-			grandparents: [Model.Array(Person).assert(function(persons){ return persons.length <= 4 })]
+			grandparents: [Model.Array(Person).assert(function(persons){
+				return persons && persons.length <= 4
+			})]
 		});
 
 		var joe = Person({
@@ -915,5 +941,51 @@
 		Model.prototype.errorCollector = defaultErrorCollector;
 
 	});
+
+	QUnit.test("Automatic model casting", function (assert) {
+
+		var User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		var Article = new Model({title: String, user: User})
+			.defaults({title: 'bar', user: new User()});
+		var a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
+
+		User = new Model({username: String, email: String})
+			.defaults({username: 'foo', email: 'foo@foo'});
+		Article = new Model({title: String, user: [User]})
+			.defaults({title: 'bar', user: new User()});
+		a = new Article();
+		a.user = {username: 'joe', email: 'foo'};
+
+		assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
+		assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
+
+		var Type1 = Model({ name: String, other1: [Boolean] });
+		var Type2 = Model({ name: String, other2: [Number] });
+		var Container = Model({ foo: { bar: [Type1, Type2] }});
+
+
+		consoleMock.apply();
+		var c = new Container({ foo: { bar: { name: "dunno" }}});
+		assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number\]/
+				.test(consoleMock["warnLastArgs"][0]),
+			"should warn about ambiguous model for object sub prop"
+		);
+		assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
+		assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");
+		consoleMock.revert();
+
+		consoleMock.apply();
+		c = new Container({ foo: { bar: Type2({ name: "dunno" }) }});
+		assert.ok(consoleMock["warnLastArgs"].length === 0, "should not warn when explicit model cast in ambiguous context");
+		assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
+		assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
+		consoleMock.revert();
+
+	})
 
 })(this.Model)

@@ -1,4 +1,4 @@
-// ObjectModel v2.1.2 - http://objectmodel.js.org
+// ObjectModel v2.2.0 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var
@@ -379,11 +379,25 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
-	} else if(isArray(defNode)){
-		var suitableModels = defNode.filter(function(part){
-			return part instanceof Model && obj && !(obj instanceof part) && part.test(obj)
-		})
-		return suitableModels.length === 1 ? suitableModels[0](obj) : obj;
+	} else if(isArray(defNode)){ // union type
+		var suitableModels = [];
+		for(var i=0, l=defNode.length; i<l; i++){
+			var part = defNode[i];
+			if(part instanceof Model){
+				if(obj instanceof part){
+					return obj;
+				}
+				if(part.test(obj)){
+					suitableModels.push(part);
+				}
+			}
+		}
+		if(suitableModels.length === 1){
+			return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+		} else if(suitableModels.length > 1){
+			console.warn("Ambiguous model for value "+toString(obj)+", could be "+suitableModels.join(" or "));
+		}
+		return obj;
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {

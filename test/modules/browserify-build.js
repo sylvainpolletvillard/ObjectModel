@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// ObjectModel v2.1.2 - http://objectmodel.js.org
+// ObjectModel v2.2.0 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -384,6 +384,25 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 function getProxy(model, obj, defNode, path) {
 	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
 		return defNode(obj);
+	} else if(isArray(defNode)){ // union type
+		var suitableModels = [];
+		for(var i=0, l=defNode.length; i<l; i++){
+			var part = defNode[i];
+			if(part instanceof Model){
+				if(obj instanceof part){
+					return obj;
+				}
+				if(part.test(obj)){
+					suitableModels.push(part);
+				}
+			}
+		}
+		if(suitableModels.length === 1){
+			return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+		} else if(suitableModels.length > 1){
+			console.warn("Ambiguous model for value "+toString(obj)+", could be "+suitableModels.join(" or "));
+		}
+		return obj;
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {

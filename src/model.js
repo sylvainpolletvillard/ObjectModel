@@ -74,8 +74,12 @@ ModelProto[EXTEND] = function(){
 	return submodel;
 };
 
-ModelProto.assert = function(assertion, message){
-	define(assertion, DESCRIPTION, message);
+ModelProto.assert = function(assertion, description){
+	description = description || toString(assertion);
+	var onFail = isFunction(description) ? description : function (assertionResult, value) {
+		return "assertion " + description + " returned " + toString(assertionResult) + " for value " + toString(value);
+	};
+	define(assertion, ON_FAIL, onFail);
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
@@ -190,11 +194,15 @@ function checkAssertions(obj, model, errorStack){
 	}
 	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++ ){
 		var assert = model[ASSERTIONS][i],
+			assertionResult;
+		try {
 			assertionResult = assert.call(model, obj);
+		} catch(err){
+			assertionResult = err;
+		}
 		if(assertionResult !== true){
-			var err = {},
-				message = isFunction(assert[DESCRIPTION]) ? assert[DESCRIPTION].call(model, assertionResult) : assert[DESCRIPTION];
-			err[MESSAGE] = "assertion failed: "+ (message || toString(assert))
+			var err = {};
+			err[MESSAGE] = assert[ON_FAIL].call(model, assertionResult, obj)
 			errorStack.push(err);
 		}
 	}

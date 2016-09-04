@@ -86,6 +86,9 @@ function toString(obj, stack){
 				return toString(item, stack);
 			}).join(', ') + ']';
 	}
+	if(obj instanceof Error){
+		return obj.toString();
+	}
 	if(obj && isObject(obj)){
 		var indent = (new Array(stack.length)).join('\t');
 		var props = O.keys(obj);

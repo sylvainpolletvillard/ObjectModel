@@ -91,7 +91,7 @@ function toString(obj, stack){
 				return toString(item, stack);
 			}).join(', ') + ']';
 	}
-	if(is(Error, obj)){
+	if(obj.toString !== Object.prototype.toString){
 		return obj.toString();
 	}
 	if(obj && isObject(obj)){

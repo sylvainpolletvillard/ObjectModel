@@ -158,9 +158,16 @@ function checkDefinitionPart(obj, def, path, callStack){
 
 function checkAssertions(obj, model, errorStack = model[ERROR_STACK]){
 	for(let assertion of model[ASSERTIONS]){
-		let assertionResult = assertion.call(model, obj);
+		let assertionResult;
+		try {
+			assertionResult = assertion.call(model, obj)
+		} catch(err){
+			assertionResult = err
+		}
 		if(assertionResult !== true){
-			let message = isFunction(assertion[DESCRIPTION]) ? assertion[DESCRIPTION].call(model, assertionResult) : assertion[DESCRIPTION];
+			let message = isFunction(assertion[DESCRIPTION])
+				? assertion[DESCRIPTION].call(model, assertionResult)
+				: assertion[DESCRIPTION]
 			errorStack.push({
 				[MESSAGE]: `assertion failed: ${message || toString(assertion) }`
 			})

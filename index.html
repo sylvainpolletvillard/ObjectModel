@@ -133,7 +133,7 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>7.2 kB minified, 3 kB gzipped</strong></li>
+			<li>all in <strong>7.4 kB minified, 3.1 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -145,11 +145,11 @@
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v2.2.0</h3>
+		<h3>Current version: v2.3.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
-			<li>Minified file (7.2 kB, 3 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.2.0.zip">object-model-2.2.0.zip</a> </li>
+			<li>Minified file (7.4 kB, 3.1 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.3.0.zip">object-model-2.3.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
 		<p>Checkout the <a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/releases">Github Releases</a></p>
@@ -472,13 +472,14 @@ joe.sendConfirmationMail();</code>
 
 	<section id="doc-assertions">
 		<h2>Assertions for custom validation tests</h2>
-		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
+		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. Exceptions thrown by assertions are catched and considered as assertion failures.</p>
+		<p>For example, we can get an Integer model by adding <code>Number.isInteger</code> as an assertion to a basic <code>Number</code> model.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-<pre><code class="language-javascript">var Integer = Model(Number)
-	.assert(Number.isFinite)
-	.assert(Number.isInteger, "should be an integer");
+<pre><code class="language-javascript">var PositiveInteger = Model(Number)
+	.assert(Number.isInteger)
+	.assert(function(n){ return n >= 0 }, "should be greater or equal to zero")
 
 function isPrime(n) {
 	for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -487,27 +488,27 @@ function isPrime(n) {
 	return n > 1;
 }
 
-var PrimeNumber = Integer.extend().assert(isPrime);
+var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 // extend to not add isPrime assertion to the Integer model
 </code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-<pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
-<code class="language-none log">1</code>
+<pre><code class="language-javascript">PositiveInteger(-1);</code>
+<code class="language-none exception">TypeError: assertion should be greater or equal to zero returned false for value -1</code>
 
-<code class="language-javascript">Integer(Math.sqrt(2));</code>
-<code class="language-none exception">TypeError: assertion failed: should be an integer</code>
+<code class="language-javascript">PositiveInteger(Math.sqrt(2));</code>
+<code class="language-none exception">TypeError: assertion isInteger returned false for value 1.4142135623730951</code>
 
 <code class="language-javascript">PrimeNumber(83);</code>
 <code class="language-none log">83</code>
 
 <code class="language-javascript">PrimeNumber(87);</code>
-<code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
+<code class="language-none exception">TypeError: assertion isPrime returned false for value 87</code></pre>
 			</div>
 		</div>
 
-		<p>Starting from <strong>v2.1</strong>, assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+		<p>Assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -520,8 +521,7 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 	if(extraKeys.length === 0) return true; // validate assertion
 	else return extraKeys; // pass information to the error message
 }, function(extraKeys){
-	return "These properties are not defined in the model:"
-	     + extraKeys.join(', ');
+	return "These properties are not defined in the model: " + extraKeys.join(', ');
 })</code></pre>
 			</div>
 			<div class="panel">
@@ -606,7 +606,7 @@ var Hand = Cards.extend("Joker").assert(function(cards){
 <pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
-<code class="language-none exception">TypeError: assertion failed: should have two cards</code></pre>
+<code class="language-none exception">TypeError: assertion should have two cards returned false for value [7, "Joker", "K"]</code></pre>
 			</div>
 		</div>
 	</section>
@@ -713,7 +713,7 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });
 	received: "sleep"
 }
 {
-	message: "assertion failed: should at least get 60 to validate semester"
+	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "sleep", grade: 0 }"
 }
 </code><code class="language-javascript">
 Student.errorCollector = function(errors){
@@ -724,7 +724,7 @@ Student.errorCollector = function(errors){
 new Student({ name: "Joanna", course: "math", grade: 50 });
 </code><code class="language-none log">Student model collector caught these errors:
 {
-	message: "assertion failed: should at least get 60 to validate semester"
+	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "math", grade: 50 }"
 }
 </code><code class="language-javascript">
 Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(errors){
@@ -870,14 +870,18 @@ joe.sweetie = ann;</code></pre>
 	});
 }
 
-var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])/(3[01]|[12][0-9]|0[1-9])/[0-9]{4}$/;
+var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])\/(3[01]|[12][0-9]|0[1-9])\/[0-9]{4}$/;
 var BirthdayList = Model.ObjectMap([Date, REGEX_MMDDYYYY]);
 var friendsBirthday = BirthdayList({
 	"Joe": new Date(1985,6,3),
 	"Jim": "02/22/1987",
 	"Jack": null
 });</code>
-<code class="language-none exception">TypeError: assertion failed: checkValueTypes</code></pre>
+<code class="language-none exception">TypeError: assertion checkValueTypes returned false for value {
+	Joe: Wed Jul 03 1985 00:00:00,
+	Jim: "02/22/1987",
+	Jack: null
+}</code></pre>
 	</section>
 
 	<section>

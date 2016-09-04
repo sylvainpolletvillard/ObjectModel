@@ -1,7 +1,7 @@
 Model[OBJECT] = function ObjectModel(def){
 
 	var model = function(obj) {
-		if(!(this instanceof model)){
+		if(!is(model, this)){
 			return new model(obj);
 		}
 		merge(this, obj, true);
@@ -10,7 +10,7 @@ Model[OBJECT] = function ObjectModel(def){
 		return proxy;
 	};
 
-	setConstructorProto(model, O[PROTO]);
+	setConstructorProto(model, Object[PROTO]);
 	initModel(model, def, Model[OBJECT]);
 	return model;
 };
@@ -42,18 +42,18 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 });
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model && obj && !(obj instanceof defNode)) {
+	if(is(Model, defNode) && obj && !is(defNode, obj)) {
 		return defNode(obj);
 	} else if(isArray(defNode)){ // union type
 		var suitableModels = [];
 		for(var i=0, l=defNode.length; i<l; i++){
-			var part = defNode[i];
-			if(part instanceof Model){
-				if(obj instanceof part){
+			var defPart = defNode[i];
+			if(is(Model, defPart)){
+				if(is(defPart, obj)){
 					return obj;
 				}
-				if(part.test(obj)){
-					suitableModels.push(part);
+				if(defPart.test(obj)){
+					suitableModels.push(defPart);
 				}
 			}
 		}
@@ -66,8 +66,8 @@ function getProxy(model, obj, defNode, path) {
 	} else if(isLeaf(defNode)){
 		return obj;
 	} else {
-		var wrapper = obj instanceof O ? obj : {};
-		var proxy = O.create(O.getPrototypeOf(wrapper));
+		var wrapper = is(Object, obj) ? obj : {};
+		var proxy = Object.create(Object.getPrototypeOf(wrapper));
 
 		for(var key in wrapper){
 			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
@@ -75,10 +75,10 @@ function getProxy(model, obj, defNode, path) {
 			}
 		}
 
-		O.keys(defNode).forEach(function(key) {
+		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
 			var isConstant = Model[CONVENTION_CONSTANT](key);
-			defineProperty(proxy, key, {
+			Object.defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},

@@ -37,13 +37,13 @@ ModelProto[EXTEND] = function(){
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(this instanceof Model[OBJECT]){
+	if(is(Model[OBJECT], this)){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
 		merge(proto, this[PROTO]);
 		args.forEach(function(arg){
-			if(arg instanceof Model){
+			if(is(Model, arg)){
 				merge(def, arg[DEFINITION], true);
 				merge(proto, arg[PROTO], true);
 			} else {
@@ -61,7 +61,7 @@ ModelProto[EXTEND] = function(){
 	}
 
 	args.forEach(function(arg){
-		if(arg instanceof Model){
+		if(is(Model, arg)){
 			assertions = assertions.concat(arg[ASSERTIONS]);
 		}
 	});
@@ -135,7 +135,7 @@ function parseDefinition(def){
 		if(!isArray(def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
-		O.keys(def).forEach(function(key) {
+		Object.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
 		});
 	}
@@ -144,7 +144,7 @@ function parseDefinition(def){
 
 function checkDefinition(obj, def, path, callStack, errorStack){
 	var err;
-	if(def instanceof Model){
+	if(is(Model, def)){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
@@ -163,7 +163,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		err[PATH] = path;
 		errorStack.push(err);
 	} else {
-		O.keys(def).forEach(function(key) {
+		Object.keys(def).forEach(function(key) {
 			var val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
 		});
@@ -174,17 +174,17 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
+	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
 		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
 	}
-	if(def instanceof RegExp){
+	if(is(RegExp, def)){
 		return def[TEST](obj);
 	}
 
 	return obj === def
-		|| (isFunction(def) && obj instanceof def)
+		|| (isFunction(def) && is(def, obj))
 		|| obj[CONSTRUCTOR] === def;
 }
 

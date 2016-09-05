@@ -107,7 +107,7 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	}
 	var errors = this[ERROR_STACK].map(function(err){
 		if(!err[MESSAGE]){
-			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
+			var def = is(Array, err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
 			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
 			+ def.map(function(d){ return toString(d); }).join(" or ")
 			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
@@ -132,7 +132,7 @@ function initModel(model, def, constructor){
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!isArray(def)) return [def];
+		if(!is(Array, def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
 		Object.keys(def).forEach(function(key) {

@@ -38,8 +38,6 @@ function bettertypeof(obj){
 	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
 }
 
-var isArray = Array.isArray;
-
 function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
@@ -86,7 +84,7 @@ function toString(obj, stack){
 	if(isFunction(obj)){
 		return obj.name || obj.toString(stack);
 	}
-	if(isArray(obj)){
+	if(is(Array, obj)){
 		return '[' + obj.map(function(item) {
 				return toString(item, stack);
 			}).join(', ') + ']';

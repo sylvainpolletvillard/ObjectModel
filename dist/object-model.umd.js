@@ -1,4 +1,4 @@
-// ObjectModel v2.3.1 - http://objectmodel.js.org
+// ObjectModel v2.3.2 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -34,10 +34,11 @@ ARGS                  = "arguments",
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 ;
 var isProxySupported = isFunction(this.Proxy);
+var defineProperty = Object.defineProperty;
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.
 if (!("name" in Function.prototype && "name" in (function x() {}))) {
-	Object.defineProperty(Function.prototype, "name", {
+	defineProperty(Function.prototype, "name", {
 		get: function() {
 			var results = Function.prototype.toString.call(this).match(/\s*function\s+([^\(\s]*)\s*/);
 			return results && results[1];
@@ -91,7 +92,7 @@ function merge(target, src, deep) {
 }
 
 function define(obj, key, val, enumerable) {
-	Object.defineProperty(obj, key, {
+	defineProperty(obj, key, {
 		value: val,
 		enumerable: enumerable,
 		writable: true,
@@ -425,7 +426,7 @@ function getProxy(model, obj, defNode, path) {
 		Object.keys(defNode).forEach(function(key) {
 			var newPath = (path ? path + '.' + key : key);
 			var isConstant = Model[CONVENTION_CONSTANT](key);
-			Object.defineProperty(proxy, key, {
+			defineProperty(proxy, key, {
 				get: function () {
 					return getProxy(model, wrapper[key], defNode[key], newPath);
 				},
@@ -481,7 +482,8 @@ Model[ARRAY] = function ArrayModel(def){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
-			Object.defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "length", { get: function() { return array.length; } });
+			defineProperty(proxy, "toJSON", { value: function() { return array; } });
 			ARRAY_MUTATOR_METHODS.forEach(function (method) {
 				define(proxy, method, proxifyArrayMethod(array, method, model, proxy));
 			});
@@ -520,7 +522,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 });
 
 function proxifyArrayKey(proxy, array, key, model){
-	Object.defineProperty(proxy, key, {
+	defineProperty(proxy, key, {
 		enumerable: true,
 		get: function () {
 			return array[key];

@@ -500,9 +500,19 @@ mark {
   background-color: white;
   box-shadow: 0 0 2px #CCC;
 }
+details {
+  padding: 0.5em;
+}
+details + details {
+  border-top: 1px dashed #f0f0f0;
+}
 summary {
   cursor: pointer;
-  display: inline-block;
+  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+}
+summary:hover {
+  text-decoration: underline;
 }
 summary:active,
 summary:focus {

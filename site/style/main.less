@@ -85,9 +85,21 @@ mark {
 	box-shadow: 0 0 2px #CCC;
 }
 
+details {
+	padding: 0.5em;
+
+	& + details {
+		border-top: 1px dashed #f0f0f0;
+	}
+}
+
 summary {
 	cursor: pointer;
-	display: inline-block;
+	.font-title();
+	font-size: 1.2rem;
+	&:hover {
+		text-decoration: underline;
+	}
 	&:active, &:focus {
 		outline: none;
 	}

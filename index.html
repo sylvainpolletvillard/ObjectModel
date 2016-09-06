@@ -846,11 +846,11 @@ var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 
 		<details>
 			<summary>How can I get the model from an instance ?</summary>
-			<p>You can retrieve a reference to the model from a model instance with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
+			<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
 			<pre><code class="language-javascript">var User = Model({ name: String }),
 	joe = User({ name: "Joe" });
 
-var modelOfJoe = Object.getPrototypeOf(joe).constructor;
+var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 // modelOfJoe === User
 // modelOfJoe.definition.name === String</code></pre>
 		</details>

@@ -1,8 +1,9 @@
 var isProxySupported = isFunction(this.Proxy);
+var defineProperty = Object.defineProperty;
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.
 if (!("name" in Function.prototype && "name" in (function x() {}))) {
-	Object.defineProperty(Function.prototype, "name", {
+	defineProperty(Function.prototype, "name", {
 		get: function() {
 			var results = Function.prototype.toString.call(this).match(/\s*function\s+([^\(\s]*)\s*/);
 			return results && results[1];
@@ -56,7 +57,7 @@ function merge(target, src, deep) {
 }
 
 function define(obj, key, val, enumerable) {
-	Object.defineProperty(obj, key, {
+	defineProperty(obj, key, {
 		value: val,
 		enumerable: enumerable,
 		writable: true,

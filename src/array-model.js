@@ -52,7 +52,7 @@ ArrayModelProto.toString = function(stack){
 
 // private methods
 define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
-	if(!isArray(arr)){
+	if(!is(Array, arr)){
 		var err = {};
 		err[EXPECTED] = this;
 		err[RECEIVED] = arr;

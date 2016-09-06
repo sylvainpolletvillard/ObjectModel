@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// ObjectModel v2.3.0 - http://objectmodel.js.org
+// ObjectModel v2.3.1 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -74,8 +74,6 @@ function bettertypeof(obj){
 	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1];
 }
 
-var isArray = Array.isArray;
-
 function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
@@ -122,7 +120,7 @@ function toString(obj, stack){
 	if(isFunction(obj)){
 		return obj.name || obj.toString(stack);
 	}
-	if(isArray(obj)){
+	if(is(Array, obj)){
 		return '[' + obj.map(function(item) {
 				return toString(item, stack);
 			}).join(', ') + ']';
@@ -248,7 +246,7 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	}
 	var errors = this[ERROR_STACK].map(function(err){
 		if(!err[MESSAGE]){
-			var def = isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
+			var def = is(Array, err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]];
 			err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "")
 			+ def.map(function(d){ return toString(d); }).join(" or ")
 			+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "")
@@ -273,7 +271,7 @@ function initModel(model, def, constructor){
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!isArray(def)) return [def];
+		if(!is(Array, def)) return [def];
 		else if(def.length === 1) return def.concat(undefined, null);
 	} else {
 		Object.keys(def).forEach(function(key) {
@@ -394,7 +392,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 function getProxy(model, obj, defNode, path) {
 	if(is(Model, defNode) && obj && !is(defNode, obj)) {
 		return defNode(obj);
-	} else if(isArray(defNode)){ // union type
+	} else if(is(Array, defNode)){ // union type
 		var suitableModels = [];
 		for(var i=0, l=defNode.length; i<l; i++){
 			var defPart = defNode[i];
@@ -508,7 +506,7 @@ ArrayModelProto.toString = function(stack){
 
 // private methods
 define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
-	if(!isArray(arr)){
+	if(!is(Array, arr)){
 		var err = {};
 		err[EXPECTED] = this;
 		err[RECEIVED] = arr;

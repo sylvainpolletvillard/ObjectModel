@@ -44,7 +44,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 function getProxy(model, obj, defNode, path) {
 	if(is(Model, defNode) && obj && !is(defNode, obj)) {
 		return defNode(obj);
-	} else if(isArray(defNode)){ // union type
+	} else if(is(Array, defNode)){ // union type
 		var suitableModels = [];
 		for(var i=0, l=defNode.length; i<l; i++){
 			var defPart = defNode[i];

@@ -73,7 +73,7 @@
 <div id="page">
 
 	<header class="header">
-		<img src="site/res/logo.png" alt="Object Model" width="400" height="75">
+		<img src="site/res/logo.png" alt="Object Model" width="800" height="150">
 		<hr>
 		<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 	</header>
@@ -506,6 +506,7 @@ var expectedOrder = Order({ price: 42.50 });
 var receivedOrder = Order({ price: 42.50, taxes: 8.33, deliveryCost: 15.00 });</code>
 <code class="language-none exception">TypeError: These properties are not defined in the model: taxes, deliveryCost</code></pre>
 			</div>
+		</div>
 	</section>
 
 	<hr>
@@ -588,7 +589,7 @@ myHand.push("K"); // use this instead</code>
 
 	<section id="doc-function-model">
 		<h2>Function models</h2>
-		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments at call. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -610,7 +611,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 			</div>
 		</div>
 
-		<p>To declare methods with classical JavaScript OOP programming, functions are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method of the object model to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
+		<p>Under classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method of the object model to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -657,28 +658,32 @@ joe.sayMyName();</code>
 	<section id="doc-custom-collectors">
 		<h2>Custom error collectors</h2>
 		<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
-		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:
+		<p>You can change the error collector globally for all models (<code>Model.prototype.errorCollector</code>), specifically by model (<code>myModel.errorCollector</code>), or just for a single use with <code>validate(obj, myErrorCollector)</code>. Error collectors are callback functions called with an array of all the errors collected during the last model inspection. Every error is an object with these properties:</p>
 		<ul>
-		<li><code>message</code>: a message describing all the errors caught</li>
+		<li><code>message</code>: a message describing the error</li>
 		<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
 		<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
 		<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
 		</ul>
-		</p>
 
-<pre><code class="language-javascript">var Student = Model({
+<h3>Global error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Model.prototype.errorCollector = function(errors){
+	console.log("Global error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
+
+var Student = Model({
 	name: String,
 	course: [ "math","english","history" ],
 	grade: Number
 }).assert(function(stu){ return stu.grade >= 60 }, "should at least get 60 to validate semester")
 
-Model.prototype.errorCollector = function(errors){
-	console.log("Global error collector caught these errors:");
-	errors.forEach(function(error){ console.dir(error); });
-};
-
-new Student({ name: "Joanna", course: "sleep", grade: 0 });
-</code><code class="language-none log">Global error collector caught these errors:
+new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">Global error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "sleep"'
 	path: "course"
@@ -687,30 +692,54 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });
 }
 {
 	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "sleep", grade: 0 }"
-}
-</code><code class="language-javascript">
-Student.errorCollector = function(errors){
+}</code></pre>
+	</div>
+</div>
+
+
+<h3>Model error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Student.errorCollector = function(errors){
 	console.log("Student model error collector caught these errors:");
 	errors.forEach(function(error){ console.dir(error); });
 };
 
-new Student({ name: "Joanna", course: "math", grade: 50 });
-</code><code class="language-none log">Student model collector caught these errors:
+new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">Student model collector caught these errors:
 {
 	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "math", grade: 50 }"
-}
-</code><code class="language-javascript">
-Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(errors){
+}</code></pre>
+	</div>
+
+</div>
+
+
+<h3>Single-use error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Student.validate({
+	name: "Joanna",
+	course: "cheating",
+	grade: 90
+}, function(errors){
 	console.log("This specific error collector caught these errors:");
 	errors.forEach(function(error){ console.dir(error); });
-});
-</code><code class="language-none log">This specific error collector caught these errors:
+});</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">This specific error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "cheating"'
 	path: "course"
 	expected: ["math","english","history","science"]
 	received: "cheating"
 }</code></pre>
+	</div>
+</div>
+
 	</section>
 
 	<hr>

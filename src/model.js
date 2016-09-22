@@ -77,7 +77,7 @@ ModelProto[EXTEND] = function(){
 ModelProto.assert = function(assertion, description){
 	description = description || toString(assertion);
 	var onFail = isFunction(description) ? description : function (assertionResult, value) {
-		return "assertion " + description + " returned " + toString(assertionResult) + " for value " + toString(value);
+		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
 	};
 	define(assertion, ON_FAIL, onFail);
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
@@ -181,6 +181,9 @@ function checkDefinitionPart(obj, def, path, callStack){
 	}
 	if(is(RegExp, def)){
 		return def[TEST](obj);
+	}
+	if(def === Number || def === Date){
+		return obj[CONSTRUCTOR] === def && !isNaN(obj)
 	}
 
 	return obj === def

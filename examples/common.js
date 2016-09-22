@@ -21,9 +21,8 @@ Model.NormalizedString = Model(String).assert(function isNormalized(str){ return
 Model.TrimmedString = Model(String).assert(function isTrimmed(str){ return str.trim() === str });
 
 // Dates
-Model.ValidDate = Model(Date).assert(function isValid(date){ return !isNaN(date.getTime()) });
-Model.PastDate = Model.ValidDate.extend().assert(function isInThePast(date){ return date.getTime() < Date.now() });
-Model.FutureDate = Model.ValidDate.extend().assert(function isInTheFuture(date){ return date.getTime() > Date.now() });
+Model.PastDate = Model(Date).assert(function isInThePast(date){ return date.getTime() < Date.now() });
+Model.FutureDate = Model(Date).assert(function isInTheFuture(date){ return date.getTime() > Date.now() });
 
 // Arrays
 Model.ArrayNotEmpty = Model(Array).assert(function isNotEmpty(arr){ return arr.length > 0 });

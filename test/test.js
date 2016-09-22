@@ -804,21 +804,21 @@ function testSuite(Model){
 		var AssertBasic = Model(Number).assert(function(v){ return +v.toString() == v }, "may throw exception")
 		new AssertBasic(0);
 		assert.throws(function(){ new AssertBasic(); },
-			/assertion may throw exception returned TypeError.*for value undefined/,
+			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Basic models");
 
 		var AssertObject = Model.Object({ name: [String] })
 			.assert(function(o){ return o.name.toLowerCase().length == o.name.length }, "may throw exception");
 		new AssertObject({ name: "joe" });
 		assert.throws(function(){ new AssertObject({ name: undefined }); },
-			/assertion may throw exception returned TypeError.*for value {\n.*name: undefined\n}/,
+			/assertion \"may throw exception\" returned TypeError.*for value {\n.*name: undefined\n}/,
 			"assertions catch exceptions on Object models");
 
 		var AssertArray = Model.Array(Number)
 			.assert(function(v){ return v.length >= 0 }, "may throw exception");
 		new AssertArray([]);
 		assert.throws(function(){ new AssertArray(); },
-			/assertion may throw exception returned TypeError.*for value undefined/,
+			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Array models");
 
 	});
@@ -890,7 +890,7 @@ function testSuite(Model){
 		Model.prototype.errorCollector = function(errors){
 			assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message,
-				'assertion shouldnt be nope returned false for value \"nope\"',
+				'assertion \"shouldnt be nope\" returned false for value \"nope\"',
 				'global custom collector assertion error catch 2/2');
 		}
 
@@ -933,7 +933,7 @@ function testSuite(Model){
 			.validate("nope", function(errors){
 				assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
 				assert.equal(errors[0].message,
-					'assertion shouldnt be nope returned false for value \"nope\"',
+					'assertion \"shouldnt be nope\" returned false for value \"nope\"',
 					'local custom collector assertion error catch 2/2');
 			});
 

@@ -28,6 +28,7 @@ function testSuite(Model){
 		assert.ok(typeof NumberModel(42) === "number", "should return the original type");
 		assert.ok(NumberModel(17) === 17, "should return the original value");
 		assert.throws(function(){ NumberModel("12") }, /TypeError/, "test invalid type");
+		assert.throws(function(){ NumberModel(NaN) }, /TypeError/, "test NaN is invalid");
 
 		assert.ok(typeof NumberModel.extend === "function", "test model method extend");
 		assert.ok(typeof NumberModel.assert === "function", "test model method assert");
@@ -46,6 +47,7 @@ function testSuite(Model){
 		myModel(new Date());
 		assert.throws(function(){ myModel() }, /TypeError/, "test undefined value");
 		assert.throws(function(){ myModel(0) }, /TypeError/, "test invalid type");
+		assert.throws(function(){ myModel(new Date("x")) }, /TypeError/, "test invalid date");
 
 		assert.ok(myModel.test("666"), "model.test 1/2");
 		assert.notOk(myModel.test(666), "model.test 2/2");

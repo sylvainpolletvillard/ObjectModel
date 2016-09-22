@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="ObjectModel : Runtime Type Checking and Data Model Definition for JavaScript">
+	<meta name="description" content="ObjectModel : Strong Dynamically Typed Object Modeling for JavaScript">
 	<meta name="author" content="Sylvain Pollet-Villard">
 
 	<title>Object Model</title>
@@ -14,16 +14,10 @@
 	<link rel="shortcut icon" href="site/favicon.ico" type="image/x-icon">
 
 	<link rel="stylesheet" href="site/style/main.css"/>
-	<script src="site/lib/jquery-2.1.0.min.js"></script>
-
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
+	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 
 	<script defer src="site/lib/prism.js"></script>
-	<script defer src="site/js/main.js"></script>
+	<script defer src="site/js/main-compiled.js"></script>
 	<script defer src="dist/object-model.js"></script>
 </head>
 
@@ -37,7 +31,7 @@
 		<h2>Download</h2>
 	</a>
 	<hr>
-	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel">
+	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">
 		<h2>View on Github</h2>
 	</a>
 	<hr>
@@ -79,48 +73,28 @@
 <div id="page">
 
 	<header class="header">
-		<img src="site/res/logo.png" alt="Object Model">
+		<img src="site/res/logo.png" alt="Object Model" width="400" height="75">
 		<hr>
-		<p class="description">Model Definition and Runtime Type Checking for JavaScript</p>
+		<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 	</header>
 
 	<section id="introduction">
-		<div class="panels two">
-			<div class="panel">
-				<span class="legend">Define typed models</span>
-<pre><code class="language-javascript">
-   var User = new Model({
-      name: String,
-      female: Boolean,
-      birth: Date
-   });</code></pre>
-			</div>
-			<div class="panel">
-				<span class="legend left">Validate at runtime</span>
-<pre><code class="language-javascript">
-   var joe = new User({
-      name: "Joe",
-      female: false,
-      birth: 1986
-   });</code>
-<code class="language-none exception">TypeError: expecting birth to be Date, got Number 1986</code></pre>
-			</div>
-		</div>
 
 		<h2 id="what-is-it">What is this library ?</h2>
-		<p>A recurring criticism of JavaScript is that it is a weakly typed language. The lack of strong typing is still responsible for numerous bugs in web applications. As an attempt to get rid of these issues, new typed languages that compile to JavaScript have been invented, like TypeScript from Microsoft. We also have static analysis tools like Flow from Facebook. These solutions bring static typing, which means that it only validate your code at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the right type.</p>
+		<p>A recurring criticism of JavaScript is that it is a weakly typed language. New languages that compile to JavaScript have been invented, such as <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> by Microsoft. We also have static analysis tools like <a href="https://flowtype.org" target="_blank">Flow</a> by Facebook. These solutions bring <mark>static</mark> typing, which means it only validate your code at build time, not runtime. <mark>Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the intended types.</mark></p>
 
-		<p>From my own experience, static typing is insufficient to prevent most of bugs caused by type errors. This is because as part of JavaScript applications, we rely heavily on <strong>unreliable data sources</strong>:  user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their code variables that are under their control.</p>
+		<p><mark>Static typing is insufficient to prevent most of the real and practical bugs caused by type errors</mark>. Indeed, JavaScript applications often involve <mark>unreliable data sources</mark>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
 
-		<p>That's why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get this type validation at runtime without requiring a new language or a compilation step. Whenever a property of your model is modified, the whole model is validated against its typed definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a micro-library.</p>
+		<p>This is why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
-		<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.</p>
+		<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.</p>
+
+		<p>Actually it goes much further than just type safety. Go on and see for yourself.</p>
 
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
 		<ul>
-			<li>Advanced model definition trying to reconcile prototypes and classes</li>
-			<li>Typed object properties</li>
+			<li>Typed object structures</li>
 			<li>Typed arrays</li>
 			<li>Typed functions</li>
 			<li>Union types</li>
@@ -129,7 +103,7 @@
 			<li>Optional properties</li>
 			<li>Default values</li>
 			<li>Null-safe object traversal</li>
-			<li>Easy inheritance through model extensions</li>
+			<li>Easy composition and inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
@@ -137,31 +111,25 @@
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library has been <a href="test">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
-		<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist">v1.2</a>.</p>
+		<p>This library has been <a href="./test/index.html" target="_blank">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+		<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist" target="_blank">v1.2</a>.</p>
 	</section>
 
 	<hr>
 
 	<section id="download">
 		<h2>Download</h2>
-		<h3>Current version: v2.3.2</h3>
+		<h3>Current version: v2.4.0</h3>
 		<ul>
-			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
+			<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
 			<li>Minified file (7.4 kB, 3.1 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.3.2.zip">object-model-2.3.2.zip</a> </li>
+			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.4.0.zip">object-model-2.4.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
-		<p>Checkout the <a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/releases">Github Releases</a></p>
-
-		<h3>Future versions: possible changes under consideration:</h3>
-		<ul>
-			<li>make Model API use function models itself (so meta X_x)</li>
-			<li>more detailed path information in object models type errors</li>
-		</ul>
+		<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank" >Github Releases</a></p>
 
 		<h3>GitHub repository</h3>
-		<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel">GitHub  repository</a>.</p>
+		<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.</p>
 	</section>
 
 	<hr>
@@ -903,17 +871,17 @@ var friendsBirthday = BirthdayList({
 
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>
-		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues">Github repository</a></p>
+		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank">Github repository</a></p>
 	</section>
 
 	<section>
 		<h2>Like what you see ? Share it with the world !</h2>
 
 		<ul class="share-buttons">
-			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="site/res/facebook.svg"></a></li>
-			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="site/res/twitter.svg"></a></li>
-			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="site/res/google+.svg"></a></li>
-			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="site/res/gitter.svg"></a></li>
+			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="site/res/facebook.svg" width="48" height="48"></a></li>
+			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="site/res/twitter.svg" width="48" height="48"></a></li>
+			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="site/res/googleplus.svg" width="48" height="48"></a></li>
+			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="site/res/gitter.svg" width="48" height="48"></a></li>
 		</ul>
 
 	</section>

@@ -376,7 +376,15 @@ function testSuite(Model){
 
 	QUnit.test("Default values", function(assert){
 
-		var myModel = new Model({
+		// Basic models
+		var myModel = Model([String, Boolean, Date]);
+		myModel.defaultTo("blob");
+		assert.strictEqual(myModel.default, "blob", "basic model defaultTo store the value as default property")
+		assert.strictEqual(myModel(), "blob", "basic model default property is applied when undefined is passed");
+		myModel.default = 42;
+		assert.throws(function(){ myModel() }, /TypeError.*got Number 42/, "basic model invalid default property still throws TypeError");
+
+		myModel = new Model({
 			name: String,
 			foo: {
 				bar: {
@@ -392,16 +400,42 @@ function testSuite(Model){
 				}
 			});
 		var model = myModel();
-		assert.strictEqual(model.name,"joe");
-		assert.strictEqual(model.foo.bar.buz, 0);
+		assert.strictEqual(model.name,"joe", "defaults values correctly applied");
+		assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
 
 		var model2 = myModel({ name: "jim", foo:{ bar: { buz: 1 }}});
-		assert.strictEqual(model2.name,"jim");
-		assert.strictEqual(model2.foo.bar.buz, 1);
+		assert.strictEqual(model2.name,"jim", "defaults values not applied if provided");
+		assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
 
 		var op = new Model.Function(Number, Number).return(Number).defaults(11,31);
 		var add = op(function(a,b){ return a + b; });
-		assert.equal(add(), 42);
+		assert.equal(add(), 42, "defaults arguments for function models correctly applied");
+
+		var myModel = new Model.Object({ x: Number, y: String })
+			.defaultTo({ x: 42 })
+			.defaults({ y: "hello" })
+		assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
+		assert.strictEqual(myModel.prototype.y, "hello", "object model defaults store values to proto")
+		assert.strictEqual(myModel().x, 42, "object model default property is applied when undefined is passed");
+		assert.strictEqual(myModel().y, "hello", "defaulted object model still inherit from model proto");
+		assert.strictEqual(myModel.default.y, undefined, "object model default value itself does not inherit from from model proto");
+		myModel.default.x = "nope";
+		assert.throws(function(){ myModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for object models");
+
+		var ArrModel = Model.Array([Number, String]).defaultTo([]);
+		var a = ArrModel();
+		assert.ok(Array.isArray(a) && a.length === 0, "Array model default value");
+		ArrModel.default.push(1,2,3);
+		a = ArrModel();
+		assert.ok(a.length === 3 && a.join(";") == "1;2;3", "array model default value is mutable array");
+		ArrModel.default = "nope";
+		assert.throws(function(){ ArrModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for array models");
+
+		var yell = Model.Function(String).return(String).defaultTo(function(s){ return s.toUpperCase() });
+		assert.strictEqual(yell()("yo!"), "YO!", "Function model default value");
+		assert.throws(function(){ yell()(42) }, /TypeError.*got Number 42/, "invalid arguments still throws TypeError for defaulted function models");
+		yell.default = function(s){ return s.length };
+		assert.throws(function(){ yell()("yo!") }, /TypeError.*got Number 3/, "invalid default property still throws TypeError for function models");
 
 	});
 

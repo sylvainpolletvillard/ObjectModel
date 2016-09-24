@@ -43,6 +43,10 @@ function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
 }
 
+function defaultTo(defaultVal, val){
+	return val === undefined ? defaultVal : val;
+}
+
 function merge(target, src, deep) {
 	Object.keys(src || {}).forEach(function(key){
 		if(deep && isPlainObject(src[key])){

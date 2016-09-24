@@ -1,6 +1,7 @@
 Model[FUNCTION] = function FunctionModel(){
 
 	var model = function(fn) {
+		fn = defaultTo(this[DEFAULT], fn);
 
 		var def = model[DEFINITION];
 		var proxyFn = function () {

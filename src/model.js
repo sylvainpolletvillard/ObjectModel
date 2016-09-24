@@ -2,6 +2,7 @@ function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
+		obj = defaultTo(model[DEFAULT], obj);
 		model[VALIDATE](obj);
 		return obj;
 	};
@@ -83,6 +84,11 @@ ModelProto.assert = function(assertion, description){
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
+
+ModelProto.defaultTo = function(val){
+	this[DEFAULT] = val;
+	return this;
+}
 
 ModelProto[ERROR_COLLECTOR] = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));

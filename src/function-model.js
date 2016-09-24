@@ -5,7 +5,7 @@ Model[FUNCTION] = function FunctionModel(){
 
 		var def = model[DEFINITION];
 		var proxyFn = function () {
-			var args = [];
+			var args = [], returnValue;
 			merge(args, def[DEFAULTS]);
 			merge(args, cloneArray(arguments));
 			if (args.length > def[ARGS].length) {
@@ -18,9 +18,12 @@ Model[FUNCTION] = function FunctionModel(){
 				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
 			checkAssertions(args, model);
-			var returnValue = fn.apply(this, args);
-			if (RETURN in def) {
-				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
+
+			if(!model[ERROR_STACK].length){
+				returnValue = fn.apply(this, args);
+				if (RETURN in def) {
+					checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
+				}
 			}
 			model[UNSTACK]();
 			return returnValue;

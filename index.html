@@ -107,7 +107,7 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>7.4 kB minified, 3.1 kB gzipped</strong></li>
+			<li>all in <strong>7.6 kB minified, 3.2 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
@@ -122,7 +122,7 @@
 		<h3>Current version: v2.4.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-			<li>Minified file (7.4 kB, 3.1 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Minified file (7.6 kB, 3.2 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
 			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.4.0.zip">object-model-2.4.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
@@ -296,7 +296,18 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 	<section id="doc-default-values">
 		<h2>Default values assignment</h2>
-		<p>To specify default values for some properties of your model, put them in the model prototype. You can also use the <code>defaults</code> method as a shorthand for setting all the default values at once. If these are not defined at object instanciation, their default value will be assigned.</p>
+		<p>You can set a default value for any model with <code>model.defaultTo(value)</code>. This default value will be used if the argument passed to the model constructor is undefined.</p>
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
+				<pre><code class="language-javascript">var N = Model(Number).defaultTo(1)</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+				<pre><code class="language-javascript">N(5) + N() === 6</code></pre>
+			</div>
+		</div>
+		<p>To specify default values for some properties of your object models, put them in the model prototype. You can also use the <code>defaults</code> method as a shorthand for setting all the default values at once. If these are not defined at object instanciation, their default value will be assigned.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -611,7 +622,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 			</div>
 		</div>
 
-		<p>Under classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method of the object model to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
+		<p>Under classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -628,8 +639,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 });
 
 // takes one argument of type Person, returns a String
-var greetFnModel = Model.Function(Person).return(String);
-Person.prototype.greet = greetFnModel(function(otherguy){
+Person.prototype.greet = Model.Function(Person).return(String)(function(otherguy){
 	return "Hello "+ otherguy.name + ", " + this.sayMyName();
 });</code></pre>
 			</div>
@@ -646,7 +656,7 @@ joe.sayMyName();</code>
 <code class="language-none exception">TypeError: expecting arguments[0] to be {
 	name: String,
 	age: Number,
-	sayMyName: Model.Function().return(String)
+	sayMyName: Function() => String
 }, got String "dog"</code></pre>
 			</div>
 		</div>
@@ -773,6 +783,9 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
 
+			<dt>default <code>model.default</code></dt>
+			<dd>Returns the default value if defined</dd>
+
 			<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
 			<dd>Function called when validation errors are detected</dd>
 
@@ -781,6 +794,9 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
 			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
+
+			<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
+			<dd>Shorthand to set the default value of the model</dd>
 
 			<dt>validate <code>model.validate(object, [errorCollector])</code></dt>
 			<dd>Manually trigger the validation of an object over the model definition. It is automatically done whenever a property in the model definition is changed.</dd>
@@ -796,7 +812,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<h3>Function models</h3>
 		<dl>
 			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2, ...)</code></dt>
-			<dd>Set a default value for function arguments.</dd>
+			<dd>Set default values for the function arguments.</dd>
 
 			<dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
 			<dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>

@@ -4,7 +4,7 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!is(model, this)){
 			return new model(obj);
 		}
-		obj = defaultTo(this[DEFAULT], obj);
+		obj = defaultTo(model[DEFAULT], obj);
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
 		model[VALIDATE](proxy);

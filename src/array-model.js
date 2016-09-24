@@ -1,7 +1,7 @@
 Model[ARRAY] = function ArrayModel(def){
 
 	var model = function(array) {
-		array = defaultTo(this[DEFAULT], array);
+		array = defaultTo(model[DEFAULT], array);
 
 		var proxy;
 		model[VALIDATE](array);

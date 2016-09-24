@@ -21,7 +21,7 @@ function testSuite(Model){
 
 	QUnit.test( "Basic models", function( assert ) {
 
-		assert.ok(Model instanceof Function);
+		assert.ok(Model instanceof Function, "Model is defined");
 
 		var NumberModel = Model(Number);
 		NumberModel(0);
@@ -85,25 +85,25 @@ function testSuite(Model){
 			}
 		});
 
-		assert.strictEqual(joe.name, "Joe");
-		assert.strictEqual(joe.age, 42);
-		assert.strictEqual(joe.female, false);
-		assert.equal(+joe.birth, +(new Date(1990,3,25)));
-		assert.strictEqual(joe.address.work.city, "Lille", "check nested property");
-		assert.ok(joe instanceof Person && joe instanceof Object);
-		assert.ok(Person instanceof Model && Person instanceof Function);
+		assert.strictEqual(joe.name, "Joe", "String property retrieved");
+		assert.strictEqual(joe.age, 42, "Number property retrieved");
+		assert.strictEqual(joe.female, false, "Boolean property retrieved");
+		assert.equal(+joe.birth, +(new Date(1990,3,25)), "Date property retrieved");
+		assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
+		assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
+		assert.ok(Person instanceof Model && Person instanceof Function, "model is instanceof Model and Function");
 
 		joe.name = "Big Joe";
 		joe.age++;
 		joe.birth = new Date(1990,3,26);
 		delete joe.female;
 
-		assert.throws(function(){ joe.name = 42; }, /TypeError/);
-		assert.throws(function(){ joe.age = true; }, /TypeError/);
-		assert.throws(function(){ joe.birth = function(){}; }, /TypeError/);
-		assert.throws(function(){ joe.female = "nope"; }, /TypeError/);
-		assert.throws(function(){ joe.address.work.city = []; }, /TypeError/);
-		assert.throws(function(){ joe.address.work = { city: 42 }; }, /TypeError/);
+		assert.throws(function(){ joe.name = 42; }, /TypeError.*got Number 42/, "invalid Number set");
+		assert.throws(function(){ joe.age = true; }, /TypeError.*got Boolean true/, "invalid Boolean set");
+		assert.throws(function(){ joe.birth = function(){}; }, /TypeError.*got Function/, "invalid Function set");
+		assert.throws(function(){ joe.female = "nope"; }, /TypeError.*got String "nope"/, "invalid String set");
+		assert.throws(function(){ joe.address.work.city = []; }, /TypeError.*got Array/,"invalid Array set");
+		assert.throws(function(){ joe.address.work = { city: 42 }; }, /TypeError.*got Number 42/,"invalid Object set");
 		assert.throws(function(){
 			joe = Person({
 				name: "Joe",
@@ -111,11 +111,9 @@ function testSuite(Model){
 				birth: new Date(1990,3,25),
 				female: "false"
 			});
-		}, function(err){
-			return /TypeError/.test(err.toString())
-				&& /female/.test(err.toString())
-				&& /false/.test(err.toString())
-		});
+		}, /TypeError.*expecting female to be Boolean.*got String "false"/,
+			"invalid prop at object model instanciation"
+		);
 
 		joe = Person({
 			name: "Joe",
@@ -168,26 +166,26 @@ function testSuite(Model){
 		});
 
 		var joe = Person({ female: false });
-		assert.ok(joe instanceof Person);
+		assert.ok(joe instanceof Person, "instanceof model test");
 		joe.name = "joe";
 		joe.name = undefined;
 		joe.name = null;
 		joe.age = new Date(1995,1,23);
 		joe.age = undefined;
-        assert.throws(function(){ joe.age = null; }, /TypeError/);
+        assert.throws(function(){ joe.age = null; }, /TypeError.*got null/, "invalid set null");
 		joe.female = "ann";
 		joe.female = 2;
 		joe.female = false;
-		assert.throws(function(){ joe.female = undefined; }, /TypeError/);
+		assert.throws(function(){ joe.female = undefined; }, /TypeError.*got undefined/, "invalid set undefined");
 		joe.address.work.city = "Lille";
 		joe.address.work.city = undefined;
 		joe.haircolor = "blond";
 		joe.haircolor = undefined;
-		assert.throws(function(){ joe.name = false; }, /TypeError/);
-		assert.throws(function(){ joe.age = null; }, /TypeError/);
-		assert.throws(function(){ joe.age = []; }, /TypeError/);
-		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError/);
-		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
+		assert.throws(function(){ joe.name = false; }, /TypeError.*expecting name to be String.*got Boolean false/, "invalid type for optional prop");
+		assert.throws(function(){ joe.age = null; }, /TypeError.*expecting age to be Number or Date or String or Boolean or undefined/,"invalid set null for optional union type prop");
+		assert.throws(function(){ joe.age = []; }, /TypeError.*got Array/, "invalid set array for optional union type prop");
+		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError.*expecting address.work.city to be String.*got Number 0/,"invalid type for nested optional prop");
+		assert.throws(function(){ joe.haircolor = ""; }, /TypeError.*expecting haircolor to be "blond" or "brown" or "black" or undefined, got String ""/, "invalid type for value enum prop");
 
 	});
 
@@ -213,12 +211,12 @@ function testSuite(Model){
 		model.x = 666;
 		model.haircolor="brown";
 
-		assert.throws(function(){ model.a = 4; }, /TypeError/);
-		assert.throws(function(){ model.b = 43; }, /TypeError/);
-		assert.throws(function(){ model.c = undefined; }, /TypeError/);
-		assert.throws(function(){ model.haircolor = "roux"; }, /TypeError/);
-		assert.throws(function(){ model.foo = "baz"; }, /TypeError/);
-		assert.throws(function(){ model.x = false; }, /TypeError/);
+		assert.throws(function(){ model.a = 4; }, /TypeError.*expecting a to be 1 or 2 or 3.*got Number 4/,'invalid set on values enum 1/2');
+		assert.throws(function(){ model.b = 43; }, /TypeError.*expecting b to be 42.*got Number 43/,"invalid set on fixed value 1/2");
+		assert.throws(function(){ model.c = undefined; }, /TypeError.*expecting c to be "" or false or null or 0.*got undefined/, "invalid set undefined on mixed typed values enum");
+		assert.throws(function(){ model.haircolor = "roux"; }, /TypeError.*expecting haircolor to be "blond" or "brown" or "black".*got String "roux"/,'invalid set on values enum 2/2');
+		assert.throws(function(){ model.foo = "baz"; }, /TypeError.*expecting foo to be "bar".*got String "baz"/,"invalid set on fixed value 2/2");
+		assert.throws(function(){ model.x = false; }, /TypeError.*expecting x to be Number or true.*got Boolean false/, "invalid set on mixed type/values enum");
 
 	});
 
@@ -298,20 +296,20 @@ function testSuite(Model){
 
 	QUnit.test("Function models", function(assert){
 
-		assert.equal(typeof Model.Function, "function");
+		assert.equal(typeof Model.Function, "function", "Model.Function is defined");
 
 		var op = Model.Function(Number, Number).return(Number);
 
-		assert.ok(op instanceof Model.Function && op instanceof Function);
+		assert.ok(op instanceof Model.Function && op instanceof Function, "model instanceof Model.Function and Function");
 
 		var add = op(function(a,b){ return a + b; });
 		var add3 = op(function(a,b,c){ return a + b + c; });
 		var noop = op(function(a, b){ return undefined; });
 		var addStr = op(function(a,b){ return String(a) + String(b); });
 
-		assert.ok(add instanceof Function && add instanceof op);
+		assert.ok(add instanceof Function && add instanceof op, "fn instanceof functionModel and Function");
 
-		assert.equal(add(15,25),40);
+		assert.equal(add(15,25),40, "valid function model call");
 		assert.throws(function(){ add(15) }, /TypeError/, "too few arguments");
 		assert.throws(function(){ add3(15,25,42) }, /TypeError/, "too much arguments");
 		assert.throws(function(){ noop(15,25) }, /TypeError/, "no return");
@@ -337,8 +335,8 @@ function testSuite(Model){
 		var ann = new Person({ name: "Ann", age: 23 });
 
 
-		assert.equal(joe.sayMyName(), "my name is Joe");
-		assert.equal(joe.greet(ann), "Hello Ann, my name is Joe");
+		assert.equal(joe.sayMyName(), "my name is Joe", "valid function model method call 1/2");
+		assert.equal(joe.greet(ann), "Hello Ann, my name is Joe", "valid function model method call 2/2");
 
 		assert.throws(function(){ joe.greet("dog"); }, /TypeError/, "invalid argument type");
 
@@ -772,13 +770,13 @@ function testSuite(Model){
 
 		function isOdd(n){ return n%2 === 1; }
 		var OddNumber = Model(Number).assert(isOdd);
-		OddNumber(17);
-		assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "test basic assertion new function");
+		assert.strictEqual(OddNumber(17), 17, "passing assertion on basic model 1/2");
+		assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "failing assertion on basic model 1/2");
 
 		var RealNumber = Model(Number).assert(isFinite);
 
-		assert.equal(RealNumber(Math.sqrt(1)), 1);
-		assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "test basic assertion native function");
+		assert.equal(RealNumber(Math.sqrt(1)), 1, "passing assertion on basic model 2/2");
+		assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "failing assertion on basic model 2/2");
 
 		function isPrime(n) {
 			for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -826,8 +824,8 @@ function testSuite(Model){
 		Model.prototype.assert(assertFail, "expected message without data");
 		Model.Object.prototype.assert(assertFailWithData, function(data){ return "expected message with data "+data; });
 
-		assert.equal(Model.prototype.assertions.length, 1)
-		assert.equal(Model.Object.prototype.assertions.length, 2);
+		assert.equal(Model.prototype.assertions.length, 1, "check number of assertions on Model.prototype")
+		assert.equal(Model.Object.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
 		var M = Model({ a: String });
 		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message without data");
@@ -914,11 +912,11 @@ function testSuite(Model){
 		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
 
 		Model.prototype.errorCollector = function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length global collector");
 			var err = errors[0];
-			assert.equal(err.expected, Number);
-			assert.equal(err.received, "nope");
-			assert.equal(err.message, 'expecting Number, got String "nope"');
+			assert.equal(err.expected, Number, "check error.expected global collector");
+			assert.equal(err.received, "nope", "check error.received global collector");
+			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message global collector");
 		}
 
 		Model(Number)("nope");
@@ -941,12 +939,12 @@ function testSuite(Model){
 		});
 
 		M.errorCollector = function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length model collector");
 			var err = errors[0];
-			assert.equal(err.expected, true);
-			assert.equal(err.received, false);
-			assert.equal(err.path, "a.b.c");
-			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false');
+			assert.equal(err.expected, true, "check error.expected model collector");
+			assert.equal(err.received, false, "check error.received model collector");
+			assert.equal(err.path, "a.b.c", "check error.path model collector");
+			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false', "check error message model collector");
 		}
 
 		M({
@@ -958,11 +956,11 @@ function testSuite(Model){
 		})
 
 		Model(Number).validate("nope", function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length custom collector");
 			var err = errors[0];
-			assert.equal(err.expected, Number);
-			assert.equal(err.received, "nope");
-			assert.equal(err.message, 'expecting Number, got String "nope"');
+			assert.equal(err.expected, Number, "check error.expected custom collector");
+			assert.equal(err.received, "nope", "check error.received custom collector");
+			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message custom collector");
 		});
 
 		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
@@ -986,12 +984,12 @@ function testSuite(Model){
 				}
 			}
 		}, function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check nested errors.length custom collector");
 			var err = errors[0];
-			assert.deepEqual(err.expected, null);
-			assert.deepEqual(err.received, undefined);
-			assert.equal(err.path, "d.e.f");
-			assert.equal(err.message, 'expecting d.e.f to be null, got undefined');
+			assert.deepEqual(err.expected, null, "check nested error.expected custom collector");
+			assert.deepEqual(err.received, undefined, "check nested error.received custom collector");
+			assert.equal(err.path, "d.e.f", "check nested error.path custom collector");
+			assert.equal(err.message, 'expecting d.e.f to be null, got undefined', "check nested error.message custom collector");
 		})
 
 		Model.prototype.errorCollector = defaultErrorCollector;

@@ -912,6 +912,59 @@ var friendsBirthday = BirthdayList({
 }</code></pre>
 		</details>
 
+		<details>
+			<summary>How can I serialize/deserialize objects while preserving type information ?</summary>
+			<p>Serializing in JSON necessarily implies that you lose the type information, except if you store it manually with your data, then retrieve it with a custom parsing function. It is for the best to let you decide how you want to store the type information within your data.</p>
+			<p>Here is a proposal of implementation using a simple { _value, _type } wrapper:</p>
+			<div class="panels two">
+				<div class="panel">
+					<span class="legend">Implementation</span>
+<pre><code class="language-javascript">Model.prototype.serialize = function(instance){
+	var availableModels = Object.keys(Model.serializations);
+	return JSON.stringify(instance, function(key, value){
+		var modelName = availableModels.find(function(name){
+			return value instanceof Model.serializations[name];
+		});
+		if(modelName && key !== "_value"){
+			return { _type: modelName, _value: value }
+		}
+		return value;
+	}, '\t');
+}
+
+Model.prototype.parse = function(json){
+	return JSON.parse(json, function(key, o){
+		if(o && o._type in Model.serializations){
+			return new Model.serializations[o._type](o._value);
+		}
+		return o;
+	})
+}</code></pre>
+				</div>
+				<div class="panel">
+					<span class="legend">Example</span>
+		<pre><code class="language-javascript">var Type1 = Model({ content: String }).defaultTo({ content: 'Content 1' }),
+    Type2 = Model({ content: String }).defaultTo({ content: 'Content 2' }),
+	Container = Model({ items: Model.Array(Type1, Type2) });
+
+// List all your models by name here
+Model.serializations = { "Container": Container, "Type1": Type1, "Type2": Type2 };
+
+var a = new Container({ items: [new Type1, new Type2] });
+
+var json = Container.serialize(a);
+console.log(json);
+
+var b = Container.parse(json);
+console.log(
+	b instanceof Container,
+	b.items[0] instanceof Type1,
+	b.items[1] instanceof Type2
+);</code></pre>
+				</div>
+			</div>
+		</details>
+
 	</section>
 
 	<section>

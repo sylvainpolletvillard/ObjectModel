@@ -422,7 +422,7 @@ function testSuite(Model){
 
 		var ArrModel = Model.Array([Number, String]).defaultTo([]);
 		var a = ArrModel();
-		assert.ok(Array.isArray(a) && a.length === 0, "Array model default value");
+		assert.ok(a instanceof Array && a.length === 0, "Array model default value");
 		ArrModel.default.push(1,2,3);
 		a = ArrModel();
 		assert.ok(a.length === 3 && a.join(";") == "1;2;3", "array model default value is mutable array");

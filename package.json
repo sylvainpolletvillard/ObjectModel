@@ -1,7 +1,7 @@
 {
   "name": "objectmodel",
-  "version": "2.3.2",
-  "description": "Runtime Type Checking and Data Model Definition for JavaScript",
+  "version": "2.4.0",
+  "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
   "homepage": "http://objectmodel.js.org",
@@ -11,7 +11,6 @@
   },
   "devDependencies": {
     "grunt": ">=0.4.5",
-    "grunt-browserify": "~5.0.0",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-concat": "~1.0.0",
     "grunt-contrib-connect": "~1.0.0",

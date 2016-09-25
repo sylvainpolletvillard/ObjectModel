@@ -1,4 +1,4 @@
-// ObjectModel v2.3.2 - http://objectmodel.js.org
+// ObjectModel v2.4.0 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -27,6 +27,7 @@ ERROR_COLLECTOR       = "errorCollector",
 UNSTACK               = "unstack",
 PROTO                 = "prototype",
 CONSTRUCTOR           = "constructor",	
+DEFAULT               = "default",
 DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
@@ -76,6 +77,10 @@ function bettertypeof(obj){
 
 function cloneArray(arr){
 	return Array.prototype.slice.call(arr);
+}
+
+function defaultTo(defaultVal, val){
+	return val === undefined ? defaultVal : val;
 }
 
 function merge(target, src, deep) {
@@ -141,6 +146,7 @@ function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
+		obj = defaultTo(model[DEFAULT], obj);
 		model[VALIDATE](obj);
 		return obj;
 	};
@@ -216,12 +222,17 @@ ModelProto[EXTEND] = function(){
 ModelProto.assert = function(assertion, description){
 	description = description || toString(assertion);
 	var onFail = isFunction(description) ? description : function (assertionResult, value) {
-		return "assertion " + description + " returned " + toString(assertionResult) + " for value " + toString(value);
+		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
 	};
 	define(assertion, ON_FAIL, onFail);
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
+
+ModelProto.defaultTo = function(val){
+	this[DEFAULT] = val;
+	return this;
+}
 
 ModelProto[ERROR_COLLECTOR] = function(errors){
 	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
@@ -321,6 +332,9 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(is(RegExp, def)){
 		return def[TEST](obj);
 	}
+	if(def === Number || def === Date){
+		return obj[CONSTRUCTOR] === def && !isNaN(obj)
+	}
 
 	return obj === def
 		|| (isFunction(def) && is(def, obj))
@@ -352,6 +366,7 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!is(model, this)){
 			return new model(obj);
 		}
+		obj = defaultTo(model[DEFAULT], obj);
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
 		model[VALIDATE](proxy);
@@ -455,6 +470,7 @@ function getProxy(model, obj, defNode, path) {
 Model[ARRAY] = function ArrayModel(def){
 
 	var model = function(array) {
+		array = defaultTo(model[DEFAULT], array);
 
 		var proxy;
 		model[VALIDATE](array);
@@ -562,10 +578,11 @@ function setArrayKey(array, key, value, model){
 Model[FUNCTION] = function FunctionModel(){
 
 	var model = function(fn) {
+		fn = defaultTo(model[DEFAULT], fn);
 
 		var def = model[DEFINITION];
 		var proxyFn = function () {
-			var args = [];
+			var args = [], returnValue;
 			merge(args, def[DEFAULTS]);
 			merge(args, cloneArray(arguments));
 			if (args.length > def[ARGS].length) {
@@ -578,9 +595,12 @@ Model[FUNCTION] = function FunctionModel(){
 				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
 			checkAssertions(args, model);
-			var returnValue = fn.apply(this, args);
-			if (RETURN in def) {
-				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
+
+			if(!model[ERROR_STACK].length){
+				returnValue = fn.apply(this, args);
+				if (RETURN in def) {
+					checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
+				}
 			}
 			model[UNSTACK]();
 			return returnValue;

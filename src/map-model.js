@@ -29,10 +29,10 @@ Object.assign(Model[MAP][PROTO], {
 		return MAP + ' of ' + toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](map, path, callStack, errorStack){
+	[VALIDATOR](map, path, errorStack, callStack){
 		if(map instanceof Map){
 			for(let [key,val] of map){
-				checkDefinition(val, this[DEFINITION], `${path||MAP}[${key}]`, callStack, errorStack)
+				checkDefinition(val, this[DEFINITION], `${path||MAP}[${key}]`, errorStack, callStack)
 			}
 		} else {
 			errorStack.push({

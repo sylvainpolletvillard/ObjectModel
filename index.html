@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="ObjectModel : Runtime Type Checking and Data Model Definition for JavaScript">
+	<meta name="description" content="ObjectModel : Strong Dynamically Typed Object Modeling for JavaScript">
 	<meta name="author" content="Sylvain Pollet-Villard">
 
 	<title>Object Model</title>
@@ -14,16 +14,10 @@
 	<link rel="shortcut icon" href="site/favicon.ico" type="image/x-icon">
 
 	<link rel="stylesheet" href="site/style/main.css"/>
-	<script src="site/lib/jquery-2.1.0.min.js"></script>
-
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
+	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 
 	<script defer src="site/lib/prism.js"></script>
-	<script defer src="site/js/main.js"></script>
+	<script defer src="site/js/main-compiled.js"></script>
 	<script defer src="dist/object-model.js"></script>
 </head>
 
@@ -37,7 +31,7 @@
 		<h2>Download</h2>
 	</a>
 	<hr>
-	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel">
+	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">
 		<h2>View on Github</h2>
 	</a>
 	<hr>
@@ -79,48 +73,28 @@
 <div id="page">
 
 	<header class="header">
-		<img src="site/res/logo.png" alt="Object Model">
+		<img src="site/res/logo.png" alt="Object Model" width="800" height="150">
 		<hr>
-		<p class="description">Model Definition and Runtime Type Checking for JavaScript</p>
+		<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 	</header>
 
 	<section id="introduction">
-		<div class="panels two">
-			<div class="panel">
-				<span class="legend">Define typed models</span>
-<pre><code class="language-javascript">
-   var User = new Model({
-      name: String,
-      female: Boolean,
-      birth: Date
-   });</code></pre>
-			</div>
-			<div class="panel">
-				<span class="legend left">Validate at runtime</span>
-<pre><code class="language-javascript">
-   var joe = new User({
-      name: "Joe",
-      female: false,
-      birth: 1986
-   });</code>
-<code class="language-none exception">TypeError: expecting birth to be Date, got Number 1986</code></pre>
-			</div>
-		</div>
 
 		<h2 id="what-is-it">What is this library ?</h2>
-		<p>A recurring criticism of JavaScript is that it is a weakly typed language. The lack of strong typing is still responsible for numerous bugs in web applications. As an attempt to get rid of these issues, new typed languages that compile to JavaScript have been invented, like TypeScript from Microsoft. We also have static analysis tools like Flow from Facebook. These solutions bring static typing, which means that it only validate your code at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the right type.</p>
+		<p>A recurring criticism of JavaScript is that it is a weakly typed language. New languages that compile to JavaScript have been invented, such as <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> by Microsoft. We also have static analysis tools like <a href="https://flowtype.org" target="_blank">Flow</a> by Facebook. These solutions bring <mark>static</mark> typing, which means it only validate your code at build time, not runtime. <mark>Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the intended types.</mark></p>
 
-		<p>From my own experience, static typing is insufficient to prevent most of bugs caused by type errors. This is because as part of JavaScript applications, we rely heavily on <strong>unreliable data sources</strong>:  user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their code variables that are under their control.</p>
+		<p><mark>Static typing is insufficient to prevent most of the real and practical bugs caused by type errors</mark>. Indeed, JavaScript applications often involve <mark>unreliable data sources</mark>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
 
-		<p>That's why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get this type validation at runtime without requiring a new language or a compilation step. Whenever a property of your model is modified, the whole model is validated against its typed definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a micro-library.</p>
+		<p>This is why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
-		<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.</p>
+		<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.</p>
+
+		<p>Actually it goes much further than just type safety. Go on and see for yourself.</p>
 
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
 		<ul>
-			<li>Advanced model definition trying to reconcile prototypes and classes</li>
-			<li>Typed object properties</li>
+			<li>Typed object structures</li>
 			<li>Typed arrays</li>
 			<li>Typed functions</li>
 			<li>Union types</li>
@@ -129,16 +103,16 @@
 			<li>Optional properties</li>
 			<li>Default values</li>
 			<li>Null-safe object traversal</li>
-			<li>Easy inheritance through model extensions</li>
+			<li>Easy composition and inheritance through model extensions</li>
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>5.8 kB minified, 2.6 kB gzipped</strong></li>
+			<li>all in <strong>6.3 kB minified, 2.8 kB gzipped</strong></li>
 		</ul>
 
 		<h2 id="browser-support">Which browsers are supported ?</h2>
 
-		<p>This library is <a href="test">unit tested</a> against these browsers, depending of the version of Object Model:
+		<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers, depending of the version of Object Model:
 			<dl>
 				<dt>v1.x</dt>
 				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
@@ -155,28 +129,22 @@
 		<h2>Download</h2>
 		<h3>Current version: v3.0.0</h3>
 		<ul>
-			<li>From <a href="https://www.npmjs.com/package/objectmodel">NPM</a> : <code>npm install objectmodel</code></li>
-			<li>Minified file (5.8 kB, 2.6 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
+			<li>Minified file (6.3 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
 			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
-		<p>Checkout the <a target="_blank" href="https://github.com/sylvainpolletvillard/ObjectModel/releases">Github Releases</a></p>
-
-		<h3>Future versions: possible changes under consideration:</h3>
-		<ul>
-			<li>make Model API use function models itself (so meta X_x)</li>
-			<li>more detailed path information in object models type errors</li>
-		</ul>
+		<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a></p>
 
 		<h3>GitHub repository</h3>
-		<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel">GitHub  repository</a>.</p>
+		<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.</p>
 	</section>
 
 	<hr>
 
     <section id="doc-basic-model">
         <h2>Basic models</h2>
-        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as an argument a <i>model definition</i>, and returns a <i>model constructor</i>. Basic model constructor validate the argument passed against the model definition, and return the validated value.</p>
+        <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as an argument a <i>model definition</i>, and returns a <i>model</i>. Basic models validate the argument passed against the model definition, and return the validated value.</p>
 
         <div class="panels two">
             <div class="panel">
@@ -251,9 +219,11 @@ var roger = User({ name: "Roger" }); // email is mandatory</code>
 			<div class="panel">
 				<span class="legend">Model</span>
 <pre><code class="language-javascript">var Animation = new Model({
-	delay: [Number, String], // can be a Number or a String
-	easing: [Boolean, String, undefined]
+	// can be a Number or a String
+	delay: [Number, String],
+
 	// optional property which can be a Boolean or a String
+	easing: [Boolean, String, undefined]
 });</code></pre>
 			</div>
 			<div class="panel">
@@ -334,7 +304,18 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 	<section id="doc-default-values">
 		<h2>Default values assignment</h2>
-		<p>To specify default values for some properties of your model, put them in the model prototype. You can also use the <code>defaults</code> method as a shorthand for setting all the default values at once. If these are not defined at object instanciation, their default value will be assigned.</p>
+		<p>You can set a default value for any model with <code>model.defaultTo(value)</code>. This default value will be used if the argument passed to the model constructor is undefined.</p>
+		<div class="panels two">
+			<div class="panel">
+				<span class="legend">Model</span>
+				<pre><code class="language-javascript">var N = Model(Number).defaultTo(1)</code></pre>
+			</div>
+			<div class="panel">
+				<span class="legend">Instance</span>
+				<pre><code class="language-javascript">N(5) + N() === 6</code></pre>
+			</div>
+		</div>
+		<p>To specify default values for some properties of your object models, put them in the model prototype. You can also use the <code>defaults</code> method as a shorthand for setting all the default values at once. If these are not defined at object instanciation, their default value will be assigned.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
@@ -370,7 +351,8 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 	<section id="doc-composition">
 		<h2>Composition with models as types</h2>
-		<p>Models declared can also be used for type checking, so you can compose structures of objects. Note that the sub-models do not necessarily need to be instantiated through the model constructor to be considered valid: only the definition of the sub-model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>. This naive approach is much more flexible and allows you, for example, to parse composed objects from JSON in one step.</p>
+		<p>Models declared can also be used for type checking, so you can compose structures of models. Note that the property values do not necessarily need to be model instances to be considered valid: only the definition of the associated model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>.</p>
+		<p>When a model definition is recognized, the value is automatically replaced by an instance of the corresponding model. This naive approach is very time saving and allows you, for example, to parse composed models from JSON in one step. If there is somehow an ambiguity (such as two possible valid models within an union type), the value is kept unchanged and a warning console message will inform you how to solve this ambiguity.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -381,8 +363,8 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 });
 
 var Lovers = Model({
-	man: Person,
-	woman: Person
+	husband: Person,
+	wife: Person
 });</code></pre>
 			</div>
 			<div class="panel">
@@ -393,10 +375,12 @@ var ann = new Person({
 	age: joe.age - 5
 });
 
-var joe_and_ann = Lovers({
-   man: joe,  // object duck typed
-   woman: ann // object model
-});</code></pre>
+var couple = Lovers({
+   husband: joe,  // object duck typed
+   wife: ann // object model
+});
+
+couple.husband instanceof Person === true // object has been casted to Person</code></pre>
 			</div>
 		</div>
 	</section>
@@ -422,10 +406,12 @@ var Mother = Person.extend({
 			<div class="panel">
 				<span class="legend">Instance</span>
 <pre><code class="language-javascript">var joe = new Person({ name: "Joe", female: false });
+var ann = new Person({ name: "Joe's wife", female: true });
 var joanna = new Person({ name: "Joe's daughter", female: true });
-var ann = new Mother({ name: "Joe's wife", female: true, child: joanna });
 
-ann instanceof Mother && ann instanceof Person</code>
+ann.child = joanna;
+ann = Mother(ann); // cast ann to Mother model
+Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false
@@ -478,13 +464,14 @@ joe.sendConfirmationMail();</code>
 
 	<section id="doc-assertions">
 		<h2>Assertions for custom validation tests</h2>
-		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. For example, we have this weird behaviour in JavaScript that makes <code>NaN</code> and <code>Infinity</code> considered as Number, which is probably not what you want. Just add <code>Number.isFinite</code> as an assertion to get rid of them.</p>
+		<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. Exceptions thrown by assertions are catched and considered as assertion failures.</p>
+		<p>For example, we can get an Integer model by adding <code>Number.isInteger</code> as an assertion to a basic <code>Number</code> model.</p>
 		<div class="panels two">
 			<div class="panel">
 				<span class="legend">Model</span>
-<pre><code class="language-javascript">var Integer = Model(Number)
-	.assert(Number.isFinite)
-	.assert(Number.isInteger, "should be an integer");
+<pre><code class="language-javascript">var PositiveInteger = Model(Number)
+	.assert(Number.isInteger)
+	.assert(function(n){ return n >= 0 }, "should be greater or equal to zero")
 
 function isPrime(n) {
 	for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -493,27 +480,27 @@ function isPrime(n) {
 	return n > 1;
 }
 
-var PrimeNumber = Integer.extend().assert(isPrime);
+var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 // extend to not add isPrime assertion to the Integer model
 </code></pre>
 			</div>
 			<div class="panel">
 				<span class="legend">Instance</span>
-<pre><code class="language-javascript">Integer(Math.sqrt(1));</code>
-<code class="language-none log">1</code>
+<pre><code class="language-javascript">PositiveInteger(-1);</code>
+<code class="language-none exception">TypeError: assertion should be greater or equal to zero returned false for value -1</code>
 
-<code class="language-javascript">Integer(Math.sqrt(2));</code>
-<code class="language-none exception">TypeError: assertion failed: should be an integer</code>
+<code class="language-javascript">PositiveInteger(Math.sqrt(2));</code>
+<code class="language-none exception">TypeError: assertion isInteger returned false for value 1.4142135623730951</code>
 
 <code class="language-javascript">PrimeNumber(83);</code>
 <code class="language-none log">83</code>
 
 <code class="language-javascript">PrimeNumber(87);</code>
-<code class="language-none exception">TypeError: assertion failed: isPrime</code></pre>
+<code class="language-none exception">TypeError: assertion isPrime returned false for value 87</code></pre>
 			</div>
 		</div>
 
-		<p>Starting from <strong>v2.1</strong>, assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+		<p>Assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -526,8 +513,7 @@ var PrimeNumber = Integer.extend().assert(isPrime);
 	if(extraKeys.length === 0) return true; // validate assertion
 	else return extraKeys; // pass information to the error message
 }, function(extraKeys){
-	return "These properties are not defined in the model:"
-	     + extraKeys.join(', ');
+	return "These properties are not defined in the model: " + extraKeys.join(', ');
 })</code></pre>
 			</div>
 			<div class="panel">
@@ -600,7 +586,7 @@ c.UNIT = "cm";</code>
 </pre>
 		</div>
 	</div>
-		<p>The validation is done on initial array elements passed to the model constructor, then on new elements added or modified afterwards.</p>
+		<p>The validation is done on initial array elements passed to the model, then on new elements added or modified afterwards.</p>
 		<p class="note">Note that for <a href="http://kangax.github.io/compat-table/es6/#test-Proxy" target="_blank">browsers which do not support ES6 proxies</a>, if you expand the array by storing an element at an index greater than the current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated. Use a mutator method like <code>push</code> or <code>splice</code> instead.</p>
 		<div class="panels two">
 			<div class="panel">
@@ -613,7 +599,7 @@ var Hand = Cards.extend("Joker").assert(function(cards){
 <pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
-<code class="language-none exception">TypeError: assertion failed: should have two cards</code></pre>
+<code class="language-none exception">TypeError: assertion "should have two cards" returned false for value [7, "Joker", "K"]</code></pre>
 			</div>
 		</div>
 	</section>
@@ -622,7 +608,7 @@ myHand.push("K"); // use this instead</code>
 
 	<section id="doc-function-model">
 		<h2>Function models</h2>
-		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments at call. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+		<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -644,7 +630,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 			</div>
 		</div>
 
-		<p>To declare methods with classical JavaScript OOP programming, functions are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method of the object model to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
+		<p>Under classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
 
 		<div class="panels two">
 			<div class="panel">
@@ -661,8 +647,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 });
 
 // takes one argument of type Person, returns a String
-var greetFnModel = Model.Function(Person).return(String);
-Person.prototype.greet = greetFnModel(function(otherguy){
+Person.prototype.greet = Model.Function(Person).return(String)(function(otherguy){
 	return "Hello "+ otherguy.name + ", " + this.sayMyName();
 });</code></pre>
 			</div>
@@ -679,7 +664,7 @@ joe.sayMyName();</code>
 <code class="language-none exception">TypeError: expecting arguments[0] to be {
 	name: String,
 	age: Number,
-	sayMyName: Model.Function().return(String)
+	sayMyName: Function() => String
 }, got String "dog"</code></pre>
 			</div>
 		</div>
@@ -691,28 +676,32 @@ joe.sayMyName();</code>
 	<section id="doc-custom-collectors">
 		<h2>Custom error collectors</h2>
 		<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
-		<p>You can change the error collector globally (<code>Model.prototype.errorCollector</code>), individually by model (<code>myModel.errorCollector</code>), or just once with <code>validate(obj, myErrorCollector)</code>. Error collectors are functions called with an array of all the errors collected during the last model creation or modification. Every error is an object with these properties:</p>
+		<p>You can change the error collector globally for all models (<code>Model.prototype.errorCollector</code>), specifically by model (<code>myModel.errorCollector</code>), or just for a single use with <code>validate(obj, myErrorCollector)</code>. Error collectors are callback functions called with an array of all the errors collected during the last model inspection. Every error is an object with these properties:</p>
 		<ul>
-		<li><code>message</code>: a message describing all the errors caught</li>
+		<li><code>message</code>: a message describing the error</li>
 		<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
 		<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
 		<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
 		</ul>
 
+<h3>Global error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Model.prototype.errorCollector = function(errors){
+	console.log("Global error collector caught these errors:");
+	errors.forEach(function(error){ console.dir(error); });
+};
 
-<pre><code class="language-javascript">var Student = Model({
+var Student = Model({
 	name: String,
 	course: [ "math","english","history" ],
 	grade: Number
 }).assert(function(stu){ return stu.grade >= 60 }, "should at least get 60 to validate semester")
 
-Model.prototype.errorCollector = function(errors){
-	console.log("Global error collector caught these errors:");
-	errors.forEach(function(error){ console.dir(error); });
-};
-
-new Student({ name: "Joanna", course: "sleep", grade: 0 });
-</code><code class="language-none log">Global error collector caught these errors:
+new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">Global error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "sleep"'
 	path: "course"
@@ -720,31 +709,55 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });
 	received: "sleep"
 }
 {
-	message: "assertion failed: should at least get 60 to validate semester"
-}
-</code><code class="language-javascript">
-Student.errorCollector = function(errors){
+	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "sleep", grade: 0 }"
+}</code></pre>
+	</div>
+</div>
+
+
+<h3>Model error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Student.errorCollector = function(errors){
 	console.log("Student model error collector caught these errors:");
 	errors.forEach(function(error){ console.dir(error); });
 };
 
-new Student({ name: "Joanna", course: "math", grade: 50 });
-</code><code class="language-none log">Student model collector caught these errors:
+new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">Student model collector caught these errors:
 {
-	message: "assertion failed: should at least get 60 to validate semester"
-}
-</code><code class="language-javascript">
-Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(errors){
+	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "math", grade: 50 }"
+}</code></pre>
+	</div>
+
+</div>
+
+
+<h3>Single-use error collector</h3>
+<div class="panels two">
+	<div class="panel">
+		<pre><code class="language-javascript">Student.validate({
+	name: "Joanna",
+	course: "cheating",
+	grade: 90
+}, function(errors){
 	console.log("This specific error collector caught these errors:");
 	errors.forEach(function(error){ console.dir(error); });
-});
-</code><code class="language-none log">This specific error collector caught these errors:
+});</code></pre>
+	</div>
+	<div class="panel">
+		<pre><code class="language-none log">This specific error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "cheating"'
 	path: "course"
 	expected: ["math","english","history","science"]
 	received: "cheating"
 }</code></pre>
+	</div>
+</div>
+
 	</section>
 
 	<hr>
@@ -778,6 +791,9 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
 
+			<dt>default <code>model.default</code></dt>
+			<dd>Returns the default value if defined</dd>
+
 			<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
 			<dd>Function called when validation errors are detected</dd>
 
@@ -787,11 +803,14 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
 			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
 
+			<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
+			<dd>Shorthand to set the default value of the model</dd>
+
 			<dt>validate <code>model.validate(object, [errorCollector])</code></dt>
 			<dd>Manually trigger the validation of an object over the model definition. It is automatically done whenever a property in the model definition is changed.</dd>
 
 			<dt><a href="#doc-composition">test</a> <code>model.test(object)</code></dt>
-			<dd>Returns <code>true</code> if the object passed validates the model definition, without necessarily being instantiated through the model constructor (a.k.a. duck-typing).</dd>
+			<dd>Returns <code>true</code> if the object passed validates the model definition (a.k.a. duck-typing).</dd>
 		</dl>
 		<h3>Object models</h3>
 		<dl>
@@ -801,7 +820,7 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 		<h3>Function models</h3>
 		<dl>
 			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2, ...)</code></dt>
-			<dd>Set a default value for function arguments.</dd>
+			<dd>Set default values for the function arguments.</dd>
 
 			<dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
 			<dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>
@@ -823,12 +842,16 @@ Student.validate({ name: "Joanna", course: "cheating", grade: 90 }, function(err
 
 	<section id="common-questions">
 		<h2>Common questions</h2>
-		<h3>What is the impact on performance ?</h3>
-		<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
 
-		<h3>How do I declare a constructor function to be called on instanciation before validating my model ?</h3>
-		<p>The easiest way is to declare this function as a property of your model constructor, then use it to instanciate your models instead of the model constructor itself:</p>
-<pre><code class="language-javascript">var User = Model.Object({
+		<details>
+			<summary>What is the impact on performance ?</summary>
+			<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
+		</details>
+
+		<details>
+			<summary>How do I declare a constructor function to be called on instanciation before validating my model ?</summary>
+			<p>The recommended way is to use a factory function to instanciate your models. You can declare as many different factories as needed, which makes this pattern both simple and flexible.</p>
+			<pre><code class="language-javascript">var User = Model.Object({
     firstName: String,
     lastName: String,
     fullName: String
@@ -840,19 +863,23 @@ User.create = function(properties){
 };
 
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
+		</details>
 
-		<h3>How can I get the model from an instance ?</h3>
-		<p>If this instance has been properly instantiated with the model constructor, you can retrieve a reference to this model through <code>Object.getPrototypeOf(instance).constructor</code>. This is useful to get the property type of an instance attribute for example.</p>
-<pre><code class="language-javascript">var User = Model({ name: String }),
+		<details>
+			<summary>How can I get the model from an instance ?</summary>
+			<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
+			<pre><code class="language-javascript">var User = Model({ name: String }),
 	joe = User({ name: "Joe" });
 
-var modelOfJoe = Object.getPrototypeOf(joe).constructor;
+var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 // modelOfJoe === User
 // modelOfJoe.definition.name === String</code></pre>
+		</details>
 
-		<h3>How should I deal with circular references in my model definitions ?</h3>
-		<p>You can't refer to a model constructor or model instance that is not yet defined, so you have to update the definition afterwards:</p>
-<pre><code class="language-javascript">var Honey = Model({
+		<details>
+			<summary>How should I deal with circular references in my model definitions ?</summary>
+			<p>You can't refer to a model or instance that is not yet defined, so you have to update the definition afterwards:</p>
+			<pre><code class="language-javascript">var Honey = Model({
    sweetie: undefined // Sweetie is not yet defined
 });
 
@@ -865,10 +892,12 @@ Honey.definition.sweetie = [Sweetie];
 var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
+		</details>
 
-		<h3>I use an object like a map with a number of key-value pairs. How do I check the type of all the values ?</h3>
-		<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
-<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
+		<details>
+			<summary>I use an object like a map with a number of key-value pairs. How do I check the type of all the values ?</summary>
+			<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
+			<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
 	var valueModel = Model(valueType);
 	return Model({}).assert(function checkValueTypes(map){
 		return Object.keys(map).every(function(key){
@@ -877,29 +906,88 @@ joe.sweetie = ann;</code></pre>
 	});
 }
 
-var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])/(3[01]|[12][0-9]|0[1-9])/[0-9]{4}$/;
+var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])\/(3[01]|[12][0-9]|0[1-9])\/[0-9]{4}$/;
 var BirthdayList = Model.ObjectMap([Date, REGEX_MMDDYYYY]);
 var friendsBirthday = BirthdayList({
 	"Joe": new Date(1985,6,3),
 	"Jim": "02/22/1987",
 	"Jack": null
 });</code>
-<code class="language-none exception">TypeError: assertion failed: checkValueTypes</code></pre>
+<code class="language-none exception">TypeError: assertion checkValueTypes returned false for value {
+	Joe: Wed Jul 03 1985 00:00:00,
+	Jim: "02/22/1987",
+	Jack: null
+}</code></pre>
+		</details>
+
+		<details>
+			<summary>How can I serialize/deserialize objects while preserving type information ?</summary>
+			<p>Serializing in JSON necessarily implies that you lose the type information, except if you store it manually with your data, then retrieve it with a custom parsing function. It is for the best to let you decide how you want to store the type information within your data.</p>
+			<p>Here is a proposal of implementation using a simple { _value, _type } wrapper:</p>
+			<div class="panels two">
+				<div class="panel">
+					<span class="legend">Implementation</span>
+<pre><code class="language-javascript">Model.prototype.serialize = function(instance){
+	var availableModels = Object.keys(Model.serializations);
+	return JSON.stringify(instance, function(key, value){
+		var modelName = availableModels.find(function(name){
+			return value instanceof Model.serializations[name];
+		});
+		if(modelName && key !== "_value"){
+			return { _type: modelName, _value: value }
+		}
+		return value;
+	}, '\t');
+}
+
+Model.prototype.parse = function(json){
+	return JSON.parse(json, function(key, o){
+		if(o && o._type in Model.serializations){
+			return new Model.serializations[o._type](o._value);
+		}
+		return o;
+	})
+}</code></pre>
+				</div>
+				<div class="panel">
+					<span class="legend">Example</span>
+		<pre><code class="language-javascript">var Type1 = Model({ content: String }).defaultTo({ content: 'Content 1' }),
+    Type2 = Model({ content: String }).defaultTo({ content: 'Content 2' }),
+	Container = Model({ items: Model.Array(Type1, Type2) });
+
+// List all your models by name here
+Model.serializations = { "Container": Container, "Type1": Type1, "Type2": Type2 };
+
+var a = new Container({ items: [new Type1, new Type2] });
+
+var json = Container.serialize(a);
+console.log(json);
+
+var b = Container.parse(json);
+console.log(
+	b instanceof Container,
+	b.items[0] instanceof Type1,
+	b.items[1] instanceof Type2
+);</code></pre>
+				</div>
+			</div>
+		</details>
+
 	</section>
 
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>
-		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues">Github repository</a></p>
+		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank">Github repository</a></p>
 	</section>
 
 	<section>
 		<h2>Like what you see ? Share it with the world !</h2>
 
 		<ul class="share-buttons">
-			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="site/res/facebook.svg"></a></li>
-			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="site/res/twitter.svg"></a></li>
-			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="site/res/google+.svg"></a></li>
-			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="site/res/gitter.svg"></a></li>
+			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="site/res/facebook.svg" width="48" height="48"></a></li>
+			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="site/res/twitter.svg" width="48" height="48"></a></li>
+			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="site/res/googleplus.svg" width="48" height="48"></a></li>
+			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="site/res/gitter.svg" width="48" height="48"></a></li>
 		</ul>
 
 	</section>

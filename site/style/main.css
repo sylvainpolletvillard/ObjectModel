@@ -431,6 +431,7 @@ body {
   -ms-transition: margin-right 0.3s ease;
   -o-transition: margin-right 0.3s ease;
   transition: margin-right 0.3s ease;
+  color: #344940;
   margin: 0 2em 0.5em 2em;
 }
 h1,
@@ -496,13 +497,21 @@ hr {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 0, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.03) 100%);
 }
 mark {
-  font-weight: bold;
-  background-color: white;
-  box-shadow: 0 0 2px #CCC;
+  background-color: inherit;
+}
+details {
+  padding: 0.5em;
+}
+details + details {
+  border-top: 1px dashed #f0f0f0;
 }
 summary {
   cursor: pointer;
-  display: inline-block;
+  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+}
+summary:hover {
+  text-decoration: underline;
 }
 summary:active,
 summary:focus {
@@ -541,6 +550,7 @@ dt code {
 }
 .header img {
   width: 100%;
+  height: auto;
   max-width: 400px;
 }
 .header .description {
@@ -761,7 +771,7 @@ body.menu-opened .lines-button.arrow .lines:after {
 #menu a {
   padding: .25em 0 .25em 1em;
   text-decoration: none;
-  color: #000000;
+  color: #344940;
 }
 #menu a:hover {
   background: #f8f8f8;
@@ -786,7 +796,7 @@ body.menu-opened .lines-button.arrow .lines:after {
   line-height: 1.5em;
   margin: 0;
   font-size: 100%;
-  color: #000000;
+  color: #344940;
 }
 #menu a.download-link::after,
 #menu a.github-link::after {
@@ -871,6 +881,7 @@ body.menu-opened #menu-button {
 .share-buttons img {
   transform: rotateY(0deg);
   transition: transform 300ms linear;
-  width: 3em;
+  width: 48px;
+  height: 48px;
   border-radius: 0.4em;
 }

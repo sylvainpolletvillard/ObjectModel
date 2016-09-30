@@ -1,10 +1,9 @@
 Model[FUNCTION] = function FunctionModel(){
 
-	const model = function(fn) {
-
+	const model = function(fn = model[DEFAULT]) {
 		const def = model[DEFINITION]
 		const proxyFn = function () {
-			const args = []
+			const args = [];
 			Object.assign(args, def[DEFAULTS])
 			Object.assign(args, [...arguments])
 			if (args.length > def[ARGS].length) {
@@ -13,11 +12,14 @@ Model[FUNCTION] = function FunctionModel(){
 					[RECEIVED]: args.length
 				})
 			}
-			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]))
+			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, `${ARGS}[${i}]`, model[ERROR_STACK], []))
 			checkAssertions(args, model)
-			const returnValue = fn.apply(this, args)
-			if (RETURN in def) {
-				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK])
+
+			let returnValue;
+			if(!model[ERROR_STACK].length){
+				returnValue = fn.apply(this, args)
+				if (RETURN in def)
+					checkDefinition(returnValue, def[RETURN], RETURN+' value', model[ERROR_STACK], [])
 			}
 			model[UNSTACK_ERRORS]()
 			return returnValue
@@ -54,7 +56,7 @@ Object.assign(Model[FUNCTION][PROTO], {
 		this[DEFINITION][DEFAULTS] = [...arguments]
 		return this
 	},
-	[VALIDATOR](f, path, callStack, errorStack){
+	[VALIDATOR](f, path, errorStack){
 		if (!isFunction(f)) {
 			errorStack.push({
 				[EXPECTED]: FUNCTION,

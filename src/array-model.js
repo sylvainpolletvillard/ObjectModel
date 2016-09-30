@@ -1,6 +1,6 @@
 Model[ARRAY] = function ArrayModel(def){
 
-	const model = function(array) {
+	const model = function(array = model[DEFAULT]) {
 		model[VALIDATE](array)
 		return new Proxy(array, {
 			get(arr, key) {
@@ -31,16 +31,14 @@ Object.assign(Model[ARRAY][PROTO], {
 		return ARRAY + ' of ' + toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](arr, path, callStack, errorStack){
-		if(Array.isArray(arr)){
-			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
-		} else {
-			errorStack.push({
-				[EXPECTED]: this,
-				[RECEIVED]: arr,
-				[PATH]: path
-			})
-		}
+	[VALIDATOR](arr, path, errorStack, callStack){
+		if(is(Array, arr))
+			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], `${path||ARRAY}[${i}]`, errorStack, callStack))
+		else errorStack.push({
+			[EXPECTED]: this,
+			[RECEIVED]: arr,
+			[PATH]: path
+		})
 		checkAssertions(arr, this)
 	}
 })
@@ -56,7 +54,7 @@ function proxifyArrayMethod(array, method, model){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK])
+		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', model[ERROR_STACK], [])
 	}
 	const testArray = array.slice()
 	testArray[key] = value

@@ -29,10 +29,10 @@ Object.assign(Model[SET][PROTO], {
 		return SET + ' of ' + toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](_set, path, callStack, errorStack){
+	[VALIDATOR](_set, path, errorStack, callStack){
 		if(_set instanceof Set){
 			for(let item of _set.values()){
-				checkDefinition(item, this[DEFINITION], (path||SET), callStack, errorStack)
+				checkDefinition(item, this[DEFINITION], (path||SET), errorStack, callStack)
 			}
 		} else {
 			errorStack.push({

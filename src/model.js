@@ -1,7 +1,7 @@
 function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def)
 
-	const model = function(obj) {
+	const model = function(obj=model[DEFAULT]) {
 		model[VALIDATE](obj)
 		return obj
 	}
@@ -20,13 +20,13 @@ Object.assign(Model[PROTO], {
 	[ASSERTIONS]: [],
 
 	[VALIDATE](obj, errorCollector){
-		this[VALIDATOR](obj, null, [], this[ERROR_STACK])
+		this[VALIDATOR](obj, null, this[ERROR_STACK], [])
 		this[UNSTACK_ERRORS](errorCollector)
 	},
 
 	[TEST](obj){
 		const errorStack = []
-		this[VALIDATOR](obj, null, [], errorStack)
+		this[VALIDATOR](obj, null, errorStack, [])
 		return !errorStack.length
 	},
 
@@ -34,13 +34,13 @@ Object.assign(Model[PROTO], {
 		let def, proto, assertions = [...this[ASSERTIONS]]
 		const args = [...arguments]
 
-		if(this instanceof Model[OBJECT]){
+		if(is(Model[OBJECT], this)){
 			def = {}
 			proto = {}
 			Object.assign(def, this[DEFINITION])
 			Object.assign(proto, this[PROTO])
 			args.forEach(arg => {
-				if(arg instanceof Model){
+				if(is(Model, arg)){
 					deepAssign(def, arg[DEFINITION])
 					deepAssign(proto, arg[PROTO])
 				} else {
@@ -54,10 +54,10 @@ Object.assign(Model[PROTO], {
 		}
 
 		args.forEach(arg => {
-			if(arg instanceof Model) assertions = assertions.concat(arg[ASSERTIONS])
+			if(is(Model, arg)) assertions = assertions.concat(arg[ASSERTIONS])
 		})
 
-		var submodel = new this[CONSTRUCTOR](def)
+		const submodel = new this[CONSTRUCTOR](def)
 		setConstructorProto(submodel, this[PROTO])
 		Object.assign(submodel[PROTO], proto)
 		submodel[ASSERTIONS] = assertions
@@ -65,18 +65,25 @@ Object.assign(Model[PROTO], {
 		return submodel
 	},
 
-	assert(assertion, message){
-		define(assertion, DESCRIPTION, message)
-		this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
+	assert(assertion, description = toString(assertion)){
+		const onFail = isFunction(description) ? description : (assertionResult, value) =>
+			`assertion "${description}" returned ${toString(assertionResult)} for value ${toString(value)}`
+		define(assertion, ON_FAIL, onFail)
+		this[ASSERTIONS] = this[ASSERTIONS].concat(assertion)
 		return this
+	},
+
+	defaultTo(val){
+		this[DEFAULT] = val;
+		return this;
 	},
 
 	[ERROR_COLLECTOR](errors){
 		throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
 	},
 
-	[VALIDATOR](obj, path, callStack, errorStack){
-		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+	[VALIDATOR](obj, path, errorStack, callStack){
+		checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
 		checkAssertions(obj, this, errorStack)
 	},
 
@@ -86,7 +93,7 @@ Object.assign(Model[PROTO], {
 		if (!errorCollector) errorCollector = this.errorCollector
 		const errors = this[ERROR_STACK].map(err => {
 			if (!err[MESSAGE]) {
-				const def = Array.isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
+				const def = is(Array, err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
 				err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "") + def.map(d => toString(d)).join(" or ")
 				+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "") + toString(err[RECEIVED]))
 			}
@@ -112,7 +119,7 @@ function initModel(model, def, constructor){
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!Array.isArray(def)) return [def]
+		if(!is(Array, def)) return [def]
 		else if(def.length === 1) return [...def, undefined, null]
 	} else {
 		for(let key of def) def[key] = parseDefinition(def[key])
@@ -120,12 +127,12 @@ function parseDefinition(def){
 	return def
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack){
-	if(def instanceof Model){
+function checkDefinition(obj, def, path, errorStack, callStack){
+	if(is(Model, def)){
 		const indexFound = callStack.indexOf(def)
 		//if found twice in call stack, cycle detected, skip validation
 		if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1) return
-		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack)
+		return def[VALIDATOR](obj, path, errorStack, callStack.concat(def))
 	}
 	else if(isLeaf(def)){
 		const pdef = parseDefinition(def)
@@ -136,23 +143,24 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 			[PATH]: path
 		})
 	} else {
-		O.keys(def).forEach(key => {
+		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack)
+			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
 		})
 	}
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null) return obj === def
-	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
+	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
 		const errorStack = []
-		checkDefinition(obj, def, path, callStack, errorStack)
+		checkDefinition(obj, def, path, errorStack, callStack)
 		return !errorStack.length
 	}
-	if(def instanceof RegExp) return def[TEST](obj)
+	if(is(RegExp, def)) return def[TEST](obj)
+	if(def === Number || def === Date) return obj[CONSTRUCTOR] === def && !isNaN(obj)
 	return obj === def
-		|| (isFunction(def) && obj instanceof def)
+		|| (isFunction(def) && is(def, obj))
 		|| obj[CONSTRUCTOR] === def
 }
 
@@ -165,11 +173,8 @@ function checkAssertions(obj, model, errorStack = model[ERROR_STACK]){
 			assertionResult = err
 		}
 		if(assertionResult !== true){
-			let message = isFunction(assertion[DESCRIPTION])
-				? assertion[DESCRIPTION].call(model, assertionResult)
-				: assertion[DESCRIPTION]
 			errorStack.push({
-				[MESSAGE]: `assertion failed: ${message || toString(assertion) }`
+				[MESSAGE]: assertion[ON_FAIL].call(model, assertionResult, obj)
 			})
 		}
 	}

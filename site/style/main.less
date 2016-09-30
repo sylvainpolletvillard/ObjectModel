@@ -7,6 +7,7 @@
 body {
 	.font-paragraph();
 	.transition(margin-right .3s ease);
+	color: @fg-default;
 	margin: 0 2em 0.5em 2em;
 }
 
@@ -80,14 +81,24 @@ hr {
 }
 
 mark {
-	font-weight: bold;
-	background-color: white;
-	box-shadow: 0 0 2px #CCC;
+	background-color: inherit;
+}
+
+details {
+	padding: 0.5em;
+
+	& + details {
+		border-top: 1px dashed #f0f0f0;
+	}
 }
 
 summary {
 	cursor: pointer;
-	display: inline-block;
+	.font-title();
+	font-size: 1.2rem;
+	&:hover {
+		text-decoration: underline;
+	}
 	&:active, &:focus {
 		outline: none;
 	}

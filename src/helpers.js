@@ -1,12 +1,19 @@
+const defineProperty = Object.defineProperty;
+
+function is(Constructor, obj){
+	return obj instanceof Constructor;
+}
+
 function isFunction(o){
 	return typeof o === "function"
 }
+
 function isObject(o){
     return typeof o === "object"
 }
 
 function isPlainObject(o){
-	return o && isObject(o) && O.getPrototypeOf(o) === O.prototype
+	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
 }
 
 function bettertypeof(obj){
@@ -14,7 +21,7 @@ function bettertypeof(obj){
 }
 
 function deepAssign(target, src) {
-	O.keys(src || {}).forEach(key => {
+	Object.keys(src || {}).forEach(key => {
 		if(isPlainObject(src[key])){
 			const o = {}
 			deepAssign(o, target[key])
@@ -31,12 +38,12 @@ function define(obj, key, value, enumerable) {
 }
 
 function setConstructor(model, constructor){
-	O.setPrototypeOf(model, constructor[PROTO])
+	Object.setPrototypeOf(model, constructor[PROTO])
 	define(model, CONSTRUCTOR, constructor)
 }
 
 function setConstructorProto(constructor, proto){
-	constructor[PROTO] = O.create(proto)
+	constructor[PROTO] = Object.create(proto)
 	constructor[PROTO][CONSTRUCTOR] = constructor
 }
 
@@ -44,12 +51,13 @@ function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj == null) return String(obj)
 	if(typeof obj == "string") return `"${obj}"`
-	if(obj instanceof Model) return obj.toString(stack);
+	if(is(Model, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
-	if(Array.isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
+	if(is(Array, obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
+	if(obj.toString !== Object.prototype.toString) return obj.toString();
 	if(obj && isObject(obj)) {
-		const props = O.keys(obj),
+		const props = Object.keys(obj),
 			  indent = '\t'.repeat(stack.length)
 		return `{${props.map(
 			key => `\n${indent+key}: ${toString(obj[key], stack)}`

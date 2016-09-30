@@ -21,13 +21,14 @@ var consoleMock = {
 
 	QUnit.test( "Basic models", function( assert ) {
 
-		assert.ok(Model instanceof Function);
+		assert.ok(Model instanceof Function, "Model is defined");
 
 		var NumberModel = Model(Number);
 		NumberModel(0);
 		assert.ok(typeof NumberModel(42) === "number", "should return the original type");
 		assert.ok(NumberModel(17) === 17, "should return the original value");
 		assert.throws(function(){ NumberModel("12") }, /TypeError/, "test invalid type");
+		assert.throws(function(){ NumberModel(NaN) }, /TypeError/, "test NaN is invalid");
 
 		assert.ok(typeof NumberModel.extend === "function", "test model method extend");
 		assert.ok(typeof NumberModel.assert === "function", "test model method assert");
@@ -46,6 +47,7 @@ var consoleMock = {
 		myModel(new Date());
 		assert.throws(function(){ myModel() }, /TypeError/, "test undefined value");
 		assert.throws(function(){ myModel(0) }, /TypeError/, "test invalid type");
+		assert.throws(function(){ myModel(new Date("x")) }, /TypeError/, "test invalid date");
 
 		assert.ok(myModel.test("666"), "model.test 1/2");
 		assert.notOk(myModel.test(666), "model.test 2/2");
@@ -83,25 +85,25 @@ var consoleMock = {
 			}
 		});
 
-		assert.strictEqual(joe.name, "Joe");
-		assert.strictEqual(joe.age, 42);
-		assert.strictEqual(joe.female, false);
-		assert.equal(+joe.birth, +(new Date(1990,3,25)));
-		assert.strictEqual(joe.address.work.city, "Lille", "check nested property");
-		assert.ok(joe instanceof Person && joe instanceof Object);
-		assert.ok(Person instanceof Model && Person instanceof Function);
+		assert.strictEqual(joe.name, "Joe", "String property retrieved");
+		assert.strictEqual(joe.age, 42, "Number property retrieved");
+		assert.strictEqual(joe.female, false, "Boolean property retrieved");
+		assert.equal(+joe.birth, +(new Date(1990,3,25)), "Date property retrieved");
+		assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
+		assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
+		assert.ok(Person instanceof Model && Person instanceof Function, "model is instanceof Model and Function");
 
 		joe.name = "Big Joe";
 		joe.age++;
 		joe.birth = new Date(1990,3,26);
 		delete joe.female;
 
-		assert.throws(function(){ joe.name = 42; }, /TypeError/);
-		assert.throws(function(){ joe.age = true; }, /TypeError/);
-		assert.throws(function(){ joe.birth = function(){}; }, /TypeError/);
-		assert.throws(function(){ joe.female = "nope"; }, /TypeError/);
-		assert.throws(function(){ joe.address.work.city = []; }, /TypeError/);
-		assert.throws(function(){ joe.address.work = { city: 42 }; }, /TypeError/);
+		assert.throws(function(){ joe.name = 42; }, /TypeError.*got Number 42/, "invalid Number set");
+		assert.throws(function(){ joe.age = true; }, /TypeError.*got Boolean true/, "invalid Boolean set");
+		assert.throws(function(){ joe.birth = function(){}; }, /TypeError.*got Function/, "invalid Function set");
+		assert.throws(function(){ joe.female = "nope"; }, /TypeError.*got String "nope"/, "invalid String set");
+		assert.throws(function(){ joe.address.work.city = []; }, /TypeError.*got Array/,"invalid Array set");
+		assert.throws(function(){ joe.address.work = { city: 42 }; }, /TypeError.*got Number 42/,"invalid Object set");
 		assert.throws(function(){
 			joe = Person({
 				name: "Joe",
@@ -109,11 +111,9 @@ var consoleMock = {
 				birth: new Date(1990,3,25),
 				female: "false"
 			});
-		}, function(err){
-			return /TypeError/.test(err.toString())
-				&& /female/.test(err.toString())
-				&& /false/.test(err.toString())
-		});
+		}, /TypeError.*expecting female to be Boolean.*got String "false"/,
+			"invalid prop at object model instanciation"
+		);
 
 		joe = Person({
 			name: "Joe",
@@ -166,26 +166,26 @@ var consoleMock = {
 		});
 
 		var joe = Person({ female: false });
-		assert.ok(joe instanceof Person);
+		assert.ok(joe instanceof Person, "instanceof model test");
 		joe.name = "joe";
 		joe.name = undefined;
 		joe.name = null;
 		joe.age = new Date(1995,1,23);
 		joe.age = undefined;
-        assert.throws(function(){ joe.age = null; }, /TypeError/);
+        assert.throws(function(){ joe.age = null; }, /TypeError.*got null/, "invalid set null");
 		joe.female = "ann";
 		joe.female = 2;
 		joe.female = false;
-		assert.throws(function(){ joe.female = undefined; }, /TypeError/);
+		assert.throws(function(){ joe.female = undefined; }, /TypeError.*got undefined/, "invalid set undefined");
 		joe.address.work.city = "Lille";
 		joe.address.work.city = undefined;
 		joe.haircolor = "blond";
 		joe.haircolor = undefined;
-		assert.throws(function(){ joe.name = false; }, /TypeError/);
-		assert.throws(function(){ joe.age = null; }, /TypeError/);
-		assert.throws(function(){ joe.age = []; }, /TypeError/);
-		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError/);
-		assert.throws(function(){ joe.haircolor = ""; }, /TypeError/);
+		assert.throws(function(){ joe.name = false; }, /TypeError.*expecting name to be String.*got Boolean false/, "invalid type for optional prop");
+		assert.throws(function(){ joe.age = null; }, /TypeError.*expecting age to be Number or Date or String or Boolean or undefined/,"invalid set null for optional union type prop");
+		assert.throws(function(){ joe.age = []; }, /TypeError.*got Array/, "invalid set array for optional union type prop");
+		assert.throws(function(){ joe.address.work.city = 0; }, /TypeError.*expecting address.work.city to be String.*got Number 0/,"invalid type for nested optional prop");
+		assert.throws(function(){ joe.haircolor = ""; }, /TypeError.*expecting haircolor to be "blond" or "brown" or "black" or undefined, got String ""/, "invalid type for value enum prop");
 
 	});
 
@@ -211,12 +211,12 @@ var consoleMock = {
 		model.x = 666;
 		model.haircolor="brown";
 
-		assert.throws(function(){ model.a = 4; }, /TypeError/);
-		assert.throws(function(){ model.b = 43; }, /TypeError/);
-		assert.throws(function(){ model.c = undefined; }, /TypeError/);
-		assert.throws(function(){ model.haircolor = "roux"; }, /TypeError/);
-		assert.throws(function(){ model.foo = "baz"; }, /TypeError/);
-		assert.throws(function(){ model.x = false; }, /TypeError/);
+		assert.throws(function(){ model.a = 4; }, /TypeError.*expecting a to be 1 or 2 or 3.*got Number 4/,'invalid set on values enum 1/2');
+		assert.throws(function(){ model.b = 43; }, /TypeError.*expecting b to be 42.*got Number 43/,"invalid set on fixed value 1/2");
+		assert.throws(function(){ model.c = undefined; }, /TypeError.*expecting c to be "" or false or null or 0.*got undefined/, "invalid set undefined on mixed typed values enum");
+		assert.throws(function(){ model.haircolor = "roux"; }, /TypeError.*expecting haircolor to be "blond" or "brown" or "black".*got String "roux"/,'invalid set on values enum 2/2');
+		assert.throws(function(){ model.foo = "baz"; }, /TypeError.*expecting foo to be "bar".*got String "baz"/,"invalid set on fixed value 2/2");
+		assert.throws(function(){ model.x = false; }, /TypeError.*expecting x to be Number or true.*got Boolean false/, "invalid set on mixed type/values enum");
 
 	});
 
@@ -296,20 +296,20 @@ var consoleMock = {
 
 	QUnit.test("Function models", function(assert){
 
-		assert.equal(typeof Model.Function, "function");
+		assert.equal(typeof Model.Function, "function", "Model.Function is defined");
 
 		var op = Model.Function(Number, Number).return(Number);
 
-		assert.ok(op instanceof Model.Function && op instanceof Function);
+		assert.ok(op instanceof Model.Function && op instanceof Function, "model instanceof Model.Function and Function");
 
 		var add = op(function(a,b){ return a + b; });
 		var add3 = op(function(a,b,c){ return a + b + c; });
 		var noop = op(function(a, b){ return undefined; });
 		var addStr = op(function(a,b){ return String(a) + String(b); });
 
-		assert.ok(add instanceof Function && add instanceof op);
+		assert.ok(add instanceof Function && add instanceof op, "fn instanceof functionModel and Function");
 
-		assert.equal(add(15,25),40);
+		assert.equal(add(15,25),40, "valid function model call");
 		assert.throws(function(){ add(15) }, /TypeError/, "too few arguments");
 		assert.throws(function(){ add3(15,25,42) }, /TypeError/, "too much arguments");
 		assert.throws(function(){ noop(15,25) }, /TypeError/, "no return");
@@ -335,8 +335,8 @@ var consoleMock = {
 		var ann = new Person({ name: "Ann", age: 23 });
 
 
-		assert.equal(joe.sayMyName(), "my name is Joe");
-		assert.equal(joe.greet(ann), "Hello Ann, my name is Joe");
+		assert.equal(joe.sayMyName(), "my name is Joe", "valid function model method call 1/2");
+		assert.equal(joe.greet(ann), "Hello Ann, my name is Joe", "valid function model method call 2/2");
 
 		assert.throws(function(){ joe.greet("dog"); }, /TypeError/, "invalid argument type");
 
@@ -374,7 +374,15 @@ var consoleMock = {
 
 	QUnit.test("Default values", function(assert){
 
-		var myModel = new Model({
+		// Basic models
+		var myModel = Model([String, Boolean, Date]);
+		myModel.defaultTo("blob");
+		assert.strictEqual(myModel.default, "blob", "basic model defaultTo store the value as default property")
+		assert.strictEqual(myModel(), "blob", "basic model default property is applied when undefined is passed");
+		myModel.default = 42;
+		assert.throws(function(){ myModel() }, /TypeError.*got Number 42/, "basic model invalid default property still throws TypeError");
+
+		myModel = new Model({
 			name: String,
 			foo: {
 				bar: {
@@ -390,16 +398,42 @@ var consoleMock = {
 				}
 			});
 		var model = myModel();
-		assert.strictEqual(model.name,"joe");
-		assert.strictEqual(model.foo.bar.buz, 0);
+		assert.strictEqual(model.name,"joe", "defaults values correctly applied");
+		assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
 
 		var model2 = myModel({ name: "jim", foo:{ bar: { buz: 1 }}});
-		assert.strictEqual(model2.name,"jim");
-		assert.strictEqual(model2.foo.bar.buz, 1);
+		assert.strictEqual(model2.name,"jim", "defaults values not applied if provided");
+		assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
 
 		var op = new Model.Function(Number, Number).return(Number).defaults(11,31);
 		var add = op(function(a,b){ return a + b; });
-		assert.equal(add(), 42);
+		assert.equal(add(), 42, "defaults arguments for function models correctly applied");
+
+		var myModel = new Model.Object({ x: Number, y: String })
+			.defaultTo({ x: 42 })
+			.defaults({ y: "hello" })
+		assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
+		assert.strictEqual(myModel.prototype.y, "hello", "object model defaults store values to proto")
+		assert.strictEqual(myModel().x, 42, "object model default property is applied when undefined is passed");
+		assert.strictEqual(myModel().y, "hello", "defaulted object model still inherit from model proto");
+		assert.strictEqual(myModel.default.y, undefined, "object model default value itself does not inherit from from model proto");
+		myModel.default.x = "nope";
+		assert.throws(function(){ myModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for object models");
+
+		var ArrModel = Model.Array([Number, String]).defaultTo([]);
+		var a = ArrModel();
+		assert.ok(a instanceof Array && a.length === 0, "Array model default value");
+		ArrModel.default.push(1,2,3);
+		a = ArrModel();
+		assert.ok(a.length === 3 && a.join(";") == "1;2;3", "array model default value is mutable array");
+		ArrModel.default = "nope";
+		assert.throws(function(){ ArrModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for array models");
+
+		var yell = Model.Function(String).return(String).defaultTo(function(s){ return s.toUpperCase() });
+		assert.strictEqual(yell()("yo!"), "YO!", "Function model default value");
+		assert.throws(function(){ yell()(42) }, /TypeError.*got Number 42/, "invalid arguments still throws TypeError for defaulted function models");
+		yell.default = function(s){ return s.length };
+		assert.throws(function(){ yell()("yo!") }, /TypeError.*got Number 3/, "invalid default property still throws TypeError for function models");
 
 	});
 
@@ -740,13 +774,13 @@ var consoleMock = {
 
 		function isOdd(n){ return n%2 === 1; }
 		var OddNumber = Model(Number).assert(isOdd);
-		OddNumber(17);
-		assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "test basic assertion new function");
+		assert.strictEqual(OddNumber(17), 17, "passing assertion on basic model 1/2");
+		assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "failing assertion on basic model 1/2");
 
 		var RealNumber = Model(Number).assert(isFinite);
 
-		assert.equal(RealNumber(Math.sqrt(1)), 1);
-		assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "test basic assertion native function");
+		assert.equal(RealNumber(Math.sqrt(1)), 1, "passing assertion on basic model 2/2");
+		assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "failing assertion on basic model 2/2");
 
 		function isPrime(n) {
 			for (var i=2, m=Math.sqrt(n); i <= m ; i++){
@@ -794,8 +828,8 @@ var consoleMock = {
 		Model.prototype.assert(assertFail, "expected message without data");
 		Model.Object.prototype.assert(assertFailWithData, function(data){ return "expected message with data "+data; });
 
-		assert.equal(Model.prototype.assertions.length, 1)
-		assert.equal(Model.Object.prototype.assertions.length, 2);
+		assert.equal(Model.prototype.assertions.length, 1, "check number of assertions on Model.prototype")
+		assert.equal(Model.Object.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
 		var M = Model({ a: String });
 		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message without data");
@@ -804,6 +838,26 @@ var consoleMock = {
 		// clean up global assertions
 		Model.prototype.assertions = [];
 		delete Model.Object.prototype.assertions;
+
+		var AssertBasic = Model(Number).assert(function(v){ return +v.toString() == v }, "may throw exception")
+		new AssertBasic(0);
+		assert.throws(function(){ new AssertBasic(); },
+			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
+			"assertions catch exceptions on Basic models");
+
+		var AssertObject = Model.Object({ name: [String] })
+			.assert(function(o){ return o.name.toLowerCase().length == o.name.length }, "may throw exception");
+		new AssertObject({ name: "joe" });
+		assert.throws(function(){ new AssertObject({ name: undefined }); },
+			/assertion \"may throw exception\" returned TypeError.*for value {\s+name: undefined\s+}/,
+			"assertions catch exceptions on Object models");
+
+		var AssertArray = Model.Array(Number)
+			.assert(function(v){ return v.length >= 0 }, "may throw exception");
+		new AssertArray([]);
+		assert.throws(function(){ new AssertArray(); },
+			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
+			"assertions catch exceptions on Array models");
 
 	});
 
@@ -862,18 +916,20 @@ var consoleMock = {
 		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
 
 		Model.prototype.errorCollector = function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length global collector");
 			var err = errors[0];
-			assert.equal(err.expected, Number);
-			assert.equal(err.received, "nope");
-			assert.equal(err.message, 'expecting Number, got String "nope"');
+			assert.equal(err.expected, Number, "check error.expected global collector");
+			assert.equal(err.received, "nope", "check error.received global collector");
+			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message global collector");
 		}
 
 		Model(Number)("nope");
 
 		Model.prototype.errorCollector = function(errors){
 			assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
-			assert.equal(errors[0].message, 'assertion failed: shouldnt be nope', 'global custom collector assertion error catch 2/2');
+			assert.equal(errors[0].message,
+				'assertion \"shouldnt be nope\" returned false for value \"nope\"',
+				'global custom collector assertion error catch 2/2');
 		}
 
 		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")("nope");
@@ -887,12 +943,12 @@ var consoleMock = {
 		});
 
 		M.errorCollector = function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length model collector");
 			var err = errors[0];
-			assert.equal(err.expected, true);
-			assert.equal(err.received, false);
-			assert.equal(err.path, "a.b.c");
-			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false');
+			assert.equal(err.expected, true, "check error.expected model collector");
+			assert.equal(err.received, false, "check error.received model collector");
+			assert.equal(err.path, "a.b.c", "check error.path model collector");
+			assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false', "check error message model collector");
 		}
 
 		M({
@@ -904,17 +960,19 @@ var consoleMock = {
 		})
 
 		Model(Number).validate("nope", function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check errors.length custom collector");
 			var err = errors[0];
-			assert.equal(err.expected, Number);
-			assert.equal(err.received, "nope");
-			assert.equal(err.message, 'expecting Number, got String "nope"');
+			assert.equal(err.expected, Number, "check error.expected custom collector");
+			assert.equal(err.received, "nope", "check error.received custom collector");
+			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message custom collector");
 		});
 
 		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
 			.validate("nope", function(errors){
 				assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
-				assert.equal(errors[0].message, 'assertion failed: shouldnt be nope', 'local custom collector assertion error catch 2/2');
+				assert.equal(errors[0].message,
+					'assertion \"shouldnt be nope\" returned false for value \"nope\"',
+					'local custom collector assertion error catch 2/2');
 			});
 
 		Model.Object({
@@ -930,12 +988,12 @@ var consoleMock = {
 				}
 			}
 		}, function(errors){
-			assert.ok(errors.length === 1);
+			assert.ok(errors.length === 1, "check nested errors.length custom collector");
 			var err = errors[0];
-			assert.deepEqual(err.expected, null);
-			assert.deepEqual(err.received, undefined);
-			assert.equal(err.path, "d.e.f");
-			assert.equal(err.message, 'expecting d.e.f to be null, got undefined');
+			assert.deepEqual(err.expected, null, "check nested error.expected custom collector");
+			assert.deepEqual(err.received, undefined, "check nested error.received custom collector");
+			assert.equal(err.path, "d.e.f", "check nested error.path custom collector");
+			assert.equal(err.message, 'expecting d.e.f to be null, got undefined', "check nested error.message custom collector");
 		})
 
 		Model.prototype.errorCollector = defaultErrorCollector;

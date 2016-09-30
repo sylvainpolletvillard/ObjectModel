@@ -1,47 +1,49 @@
-$(document).ready(function(){
+{
 
-	$("#menu-button").on("click", function(){
-		$(document.body).toggleClass("menu-opened");
-	});
+	const links = [...document.querySelectorAll("#menu a[href^='#']")],
+		sections = links.map(link => document.querySelector(link.getAttribute("href")));
 
-	var $sections = [],
-		$links = $("#menu a[href^='#']");
+	document.getElementById("menu-button").onclick = function toggleMenu() {
+		document.body.classList.toggle("menu-opened");
+	};
 
-	$links.each(function(){
-		$sections.push($(this.getAttribute("href")));
-	});
-
-	$links.on("focus", function(){
-		$(document.body).addClass("menu-opened");
-	});
-
-	function selectLink(id){
-		$links.removeClass("active").filter("[href='#"+id+"']").addClass("active");
+	for (let link of links){
+		link.addEventListener("focus", function showMenu(){
+			document.body.classList.add("menu-opened");
+		});
 	}
 
-	$(window).on("hashchange", function(){
-		setTimeout(function(){
-			selectLink(location.hash.slice(1));
-		}, 1); //delay to trigger after scroll event
+	function selectLink(hash) {
+		for (let link of links){
+			link.classList.toggle("active", link.getAttribute("href") === hash);
+		}
+	}
+
+	window.addEventListener("hashchange", function () {
+		setTimeout(() => selectLink(location.hash), 1); //delay to trigger after scroll event
 	});
 
-	$(document).scroll(function(){
-		var i,
-			delta,
-			nearest = { id: $sections[0].attr("id"), delta: Infinity },
-			pos = $(this).scrollTop() + $(window).height() / 6;
-		for(i=0; i<$sections.length; i++){
-			delta = Math.abs(pos - $sections[i].offset().top);
-			if(delta < nearest.delta){
-				nearest.id = $sections[i].attr("id");
+	window.addEventListener("scroll", function () {
+		let nearest = { section: sections[0], delta: Infinity },
+			pos = window.scrollY + window.innerHeight / 6;
+
+		for (let section of sections) {
+			let delta = Math.abs(pos - section.offsetTop);
+			if (delta < nearest.delta) {
+				nearest.section = section;
 				nearest.delta = delta;
 			}
 		}
-		selectLink(nearest.id);
+		selectLink('#' + nearest.section.id);
 	});
 
-	$("code[data-source]").each(function(){
-		$(this).load($(this).data("source"), function(){ Prism.highlightElement(this); });
-	});
+	for (let code of [...document.querySelectorAll("code[data-source]")]) {
+		fetch(code.getAttribute("data-source"))
+			.then(res => res.text())
+			.then(source => {
+				code.textContent = source;
+				Prism.highlightElement(code);
+			})
+	}
 
-});
+}

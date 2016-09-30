@@ -1,6 +1,6 @@
 <p align="center"><a href="http://objectmodel.js.org" target="_blank"><img width="400" src="http://objectmodel.js.org/site/res/logo.png"></a></p>
 
-<p align="center">Runtime Type Checking and Data Model Definition for JavaScript</p>
+<p align="center">Strong Dynamically Typed Object Modeling for JavaScript</p>
 
 ---
 

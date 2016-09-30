@@ -1,7 +1,7 @@
 {
   "name": "objectmodel",
   "version": "3.0.0",
-  "description": "Runtime Type Checking and Data Model Definition for JavaScript",
+  "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
   "homepage": "http://objectmodel.js.org",

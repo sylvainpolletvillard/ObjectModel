@@ -106,7 +106,7 @@ var tests = {
 		var Arr = Model.Array(Number);
 		var a, b, c, d;
 		
-		a = Arr();
+		a = Arr([]);
 
 		a.push(1);
 		a[0] = 42;
@@ -116,7 +116,7 @@ var tests = {
 		try { a.splice(1, 0, 7, 'oups', 9); } catch (e){}
 		b = a.length;
 
-		b = Arr(1, 2, 3);
+		b = Arr([1, 2, 3]);
 		try { c = Arr(1, false, 3); } catch (e){}
 		try { d = Arr(1, 2, 3, function () { }); } catch (e){}
 	},
@@ -127,7 +127,7 @@ var tests = {
 		});
 
 		var Arr = Model.Array([Question, String, Boolean]);
-		var a = Arr("test");
+		var a = Arr(["test"]);
 		a.unshift(true);
 		a.push(Question({answer: 42}));
 		a.push({answer: 43});
@@ -142,14 +142,14 @@ var tests = {
 		var Hand = Cards.extend().assert(function(cards){
 			return cards.length === 2;
 		});
-		var pokerHand = new Hand("K",10);
+		var pokerHand = new Hand(["K",10]);
 		
-		Cards("K",10).push(7);
-		try { Hand("K",10).push(7); } catch (e){}
+		Cards(["K",10]).push(7);
+		try { Hand(["K",10]).push(7); } catch (e){}
 
 		var CheaterHand = Cards.extend("joker");
-		CheaterHand("K",10,"joker");
-		try { Hand("K",10, "joker"); } catch (e){}
+		CheaterHand(["K",10,"joker"]);
+		try { Hand(["K",10, "joker"]); } catch (e){}
 
 	},
 
@@ -418,7 +418,7 @@ var tests = {
 		try { PrimeNumber(7.77); } catch (e){}
 
 		var ArrayMax3 = Model.Array(Number).assert(function maxRange(arr){ return arr.length <= 3; });
-		var arr = ArrayMax3(1,2);
+		var arr = ArrayMax3([1,2]);
 		arr.push(3);
 		try { arr.push(4); } catch (e){}
 
@@ -426,7 +426,7 @@ var tests = {
 			return arr.reduce(function(a,b){ return a+b; },0) <= 10;
 		});
 
-		arr = ArraySumMax10(2,3,4);
+		arr = ArraySumMax10([2,3,4]);
 		try { arr[1] = 7; } catch (e){}
 
 		var NestedModel = Model.Object({ foo: { bar: { baz: Boolean }}}).assert(function(o){

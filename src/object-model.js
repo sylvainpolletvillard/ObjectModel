@@ -1,14 +1,14 @@
 Model[OBJECT] = function ObjectModel(def){
 
-	const model = function(obj) {
-		if(!(this instanceof model)) return new model(obj)
+	const model = function(obj = model[DEFAULT]) {
+		if(!is(model, this)) return new model(obj)
 		deepAssign(this, obj)
 		const proxy = getProxy(model, this, model[DEFINITION])
 		model[VALIDATE](proxy)
 		return proxy
 	}
 
-	setConstructorProto(model, O[PROTO])
+	setConstructorProto(model, Object[PROTO])
 	initModel(model, def, Model[OBJECT])
 	return model
 }
@@ -26,7 +26,7 @@ Object.assign(Model[OBJECT][PROTO], {
 		return toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](obj, path, callStack, errorStack){
+	[VALIDATOR](obj, path, errorStack, callStack){
 		if(!isObject(obj)){
 			errorStack.push({
 				[EXPECTED]: this,
@@ -34,22 +34,20 @@ Object.assign(Model[OBJECT][PROTO], {
 				[PATH]: path
 			})
 		} else {
-			checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+			checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
 		}
 		checkAssertions(obj, this)
 	}
 })
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model && obj && !(obj instanceof defNode))
+	if(is(Model, defNode) && obj && !is(defNode, obj))
 		return defNode(obj)
-	else if(Array.isArray(defNode)){ // union type
-		let suitableModels = [];
-		for(let part of defNode.filter(part => part instanceof Model)){
-			if(obj instanceof part)
-				return obj;
-			if(part.test(obj))
-				suitableModels.push(part);
+	else if(is(Array, defNode)){ // union type
+		let suitableModels = []
+		for(let part of defNode.filter(part => is(Model, part))){
+			if(is(part, obj)) return obj
+			if(part.test(obj)) suitableModels.push(part)
 		}
 		if(suitableModels.length === 1)
 			return suitableModels[0](obj); // automatically cast to suitable model when explicit
@@ -78,7 +76,7 @@ function getProxy(model, obj, defNode, path) {
 			}
 			if(defNode.hasOwnProperty(key)){
 				const newProxy = getProxy(model, val, defNode[key], newPath)
-				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
+				checkDefinition(newProxy, defNode[key], newPath, model[ERROR_STACK], [])
 				o[key] = newProxy
 				checkAssertions(obj, model)
 			} else {

@@ -11,11 +11,11 @@ CONVENTION_CONSTANT   = "conventionForConstant",
 CONVENTION_PRIVATE    = "conventionForPrivate",
 DEFINITION            = "definition",
 ASSERTIONS            = "assertions",
+ON_FAIL               = "_onFail",
 VALIDATE              = "validate",
 VALIDATOR             = "_validator",
 TEST                  = "test",
-EXTEND                = "extend",	
-DESCRIPTION           = "description",
+EXTEND                = "extend",
 EXPECTED              = "expected",
 RECEIVED              = "received",
 PATH                  = "path",
@@ -25,6 +25,7 @@ ERROR_COLLECTOR       = "errorCollector",
 UNSTACK_ERRORS        = "unstackErrors",
 PROTO                 = "prototype",
 CONSTRUCTOR           = "constructor",	
+DEFAULT               = "default",
 DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
@@ -32,20 +33,22 @@ ARGS                  = "arguments",
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
 SET_MUTATOR_METHODS   = ["add", "delete", "clear"],	
 MAP_MUTATOR_METHODS   = ["set", "delete", "clear"]
+const defineProperty = Object.defineProperty;
 
-// references shortcuts
-const
-O                     = Object,
-defineProperty        = O.defineProperty
+function is(Constructor, obj){
+	return obj instanceof Constructor;
+}
+
 function isFunction(o){
 	return typeof o === "function"
 }
+
 function isObject(o){
     return typeof o === "object"
 }
 
 function isPlainObject(o){
-	return o && isObject(o) && O.getPrototypeOf(o) === O.prototype
+	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
 }
 
 function bettertypeof(obj){
@@ -53,7 +56,7 @@ function bettertypeof(obj){
 }
 
 function deepAssign(target, src) {
-	O.keys(src || {}).forEach(key => {
+	Object.keys(src || {}).forEach(key => {
 		if(isPlainObject(src[key])){
 			const o = {}
 			deepAssign(o, target[key])
@@ -70,12 +73,12 @@ function define(obj, key, value, enumerable) {
 }
 
 function setConstructor(model, constructor){
-	O.setPrototypeOf(model, constructor[PROTO])
+	Object.setPrototypeOf(model, constructor[PROTO])
 	define(model, CONSTRUCTOR, constructor)
 }
 
 function setConstructorProto(constructor, proto){
-	constructor[PROTO] = O.create(proto)
+	constructor[PROTO] = Object.create(proto)
 	constructor[PROTO][CONSTRUCTOR] = constructor
 }
 
@@ -83,12 +86,13 @@ function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj == null) return String(obj)
 	if(typeof obj == "string") return `"${obj}"`
-	if(obj instanceof Model) return obj.toString(stack);
+	if(is(Model, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
-	if(Array.isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
+	if(is(Array, obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
+	if(obj.toString !== Object.prototype.toString) return obj.toString();
 	if(obj && isObject(obj)) {
-		const props = O.keys(obj),
+		const props = Object.keys(obj),
 			  indent = '\t'.repeat(stack.length)
 		return `{${props.map(
 			key => `\n${indent+key}: ${toString(obj[key], stack)}`
@@ -99,7 +103,7 @@ function toString(obj, stack = []){
 function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def)
 
-	const model = function(obj) {
+	const model = function(obj=model[DEFAULT]) {
 		model[VALIDATE](obj)
 		return obj
 	}
@@ -118,13 +122,13 @@ Object.assign(Model[PROTO], {
 	[ASSERTIONS]: [],
 
 	[VALIDATE](obj, errorCollector){
-		this[VALIDATOR](obj, null, [], this[ERROR_STACK])
+		this[VALIDATOR](obj, null, this[ERROR_STACK], [])
 		this[UNSTACK_ERRORS](errorCollector)
 	},
 
 	[TEST](obj){
 		const errorStack = []
-		this[VALIDATOR](obj, null, [], errorStack)
+		this[VALIDATOR](obj, null, errorStack, [])
 		return !errorStack.length
 	},
 
@@ -132,13 +136,13 @@ Object.assign(Model[PROTO], {
 		let def, proto, assertions = [...this[ASSERTIONS]]
 		const args = [...arguments]
 
-		if(this instanceof Model[OBJECT]){
+		if(is(Model[OBJECT], this)){
 			def = {}
 			proto = {}
 			Object.assign(def, this[DEFINITION])
 			Object.assign(proto, this[PROTO])
 			args.forEach(arg => {
-				if(arg instanceof Model){
+				if(is(Model, arg)){
 					deepAssign(def, arg[DEFINITION])
 					deepAssign(proto, arg[PROTO])
 				} else {
@@ -152,10 +156,10 @@ Object.assign(Model[PROTO], {
 		}
 
 		args.forEach(arg => {
-			if(arg instanceof Model) assertions = assertions.concat(arg[ASSERTIONS])
+			if(is(Model, arg)) assertions = assertions.concat(arg[ASSERTIONS])
 		})
 
-		var submodel = new this[CONSTRUCTOR](def)
+		const submodel = new this[CONSTRUCTOR](def)
 		setConstructorProto(submodel, this[PROTO])
 		Object.assign(submodel[PROTO], proto)
 		submodel[ASSERTIONS] = assertions
@@ -163,18 +167,25 @@ Object.assign(Model[PROTO], {
 		return submodel
 	},
 
-	assert(assertion, message){
-		define(assertion, DESCRIPTION, message)
-		this[ASSERTIONS].push(assertion)
+	assert(assertion, description = toString(assertion)){
+		const onFail = isFunction(description) ? description : (assertionResult, value) =>
+			`assertion "${description}" returned ${toString(assertionResult)} for value ${toString(value)}`
+		define(assertion, ON_FAIL, onFail)
+		this[ASSERTIONS] = this[ASSERTIONS].concat(assertion)
 		return this
+	},
+
+	defaultTo(val){
+		this[DEFAULT] = val;
+		return this;
 	},
 
 	[ERROR_COLLECTOR](errors){
 		throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
 	},
 
-	[VALIDATOR](obj, path, callStack, errorStack){
-		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+	[VALIDATOR](obj, path, errorStack, callStack){
+		checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
 		checkAssertions(obj, this, errorStack)
 	},
 
@@ -184,7 +195,7 @@ Object.assign(Model[PROTO], {
 		if (!errorCollector) errorCollector = this.errorCollector
 		const errors = this[ERROR_STACK].map(err => {
 			if (!err[MESSAGE]) {
-				const def = Array.isArray(err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
+				const def = is(Array, err[EXPECTED]) ? err[EXPECTED] : [err[EXPECTED]]
 				err[MESSAGE] = ("expecting " + (err[PATH] ? err[PATH] + " to be " : "") + def.map(d => toString(d)).join(" or ")
 				+ ", got " + (err[RECEIVED] != null ? bettertypeof(err[RECEIVED]) + " " : "") + toString(err[RECEIVED]))
 			}
@@ -210,7 +221,7 @@ function initModel(model, def, constructor){
 
 function parseDefinition(def){
 	if(isLeaf(def)){
-		if(!Array.isArray(def)) return [def]
+		if(!is(Array, def)) return [def]
 		else if(def.length === 1) return [...def, undefined, null]
 	} else {
 		for(let key of def) def[key] = parseDefinition(def[key])
@@ -218,12 +229,12 @@ function parseDefinition(def){
 	return def
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack){
-	if(def instanceof Model){
+function checkDefinition(obj, def, path, errorStack, callStack){
+	if(is(Model, def)){
 		const indexFound = callStack.indexOf(def)
 		//if found twice in call stack, cycle detected, skip validation
 		if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1) return
-		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack)
+		return def[VALIDATOR](obj, path, errorStack, callStack.concat(def))
 	}
 	else if(isLeaf(def)){
 		const pdef = parseDefinition(def)
@@ -234,48 +245,53 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 			[PATH]: path
 		})
 	} else {
-		O.keys(def).forEach(key => {
+		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack)
+			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
 		})
 	}
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null) return obj === def
-	if(!isLeaf(def) || def instanceof Model){ // object or model as part of union type
+	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
 		const errorStack = []
-		checkDefinition(obj, def, path, callStack, errorStack)
+		checkDefinition(obj, def, path, errorStack, callStack)
 		return !errorStack.length
 	}
-	if(def instanceof RegExp) return def[TEST](obj)
+	if(is(RegExp, def)) return def[TEST](obj)
+	if(def === Number || def === Date) return obj[CONSTRUCTOR] === def && !isNaN(obj)
 	return obj === def
-		|| (isFunction(def) && obj instanceof def)
+		|| (isFunction(def) && is(def, obj))
 		|| obj[CONSTRUCTOR] === def
 }
 
 function checkAssertions(obj, model, errorStack = model[ERROR_STACK]){
 	for(let assertion of model[ASSERTIONS]){
-		let assertionResult = assertion.call(model, obj);
+		let assertionResult;
+		try {
+			assertionResult = assertion.call(model, obj)
+		} catch(err){
+			assertionResult = err
+		}
 		if(assertionResult !== true){
-			let message = isFunction(assertion[DESCRIPTION]) ? assertion[DESCRIPTION].call(model, assertionResult) : assertion[DESCRIPTION];
 			errorStack.push({
-				[MESSAGE]: `assertion failed: ${message || toString(assertion) }`
+				[MESSAGE]: assertion[ON_FAIL].call(model, assertionResult, obj)
 			})
 		}
 	}
 }
 Model[OBJECT] = function ObjectModel(def){
 
-	const model = function(obj) {
-		if(!(this instanceof model)) return new model(obj)
+	const model = function(obj = model[DEFAULT]) {
+		if(!is(model, this)) return new model(obj)
 		deepAssign(this, obj)
 		const proxy = getProxy(model, this, model[DEFINITION])
 		model[VALIDATE](proxy)
 		return proxy
 	}
 
-	setConstructorProto(model, O[PROTO])
+	setConstructorProto(model, Object[PROTO])
 	initModel(model, def, Model[OBJECT])
 	return model
 }
@@ -293,7 +309,7 @@ Object.assign(Model[OBJECT][PROTO], {
 		return toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](obj, path, callStack, errorStack){
+	[VALIDATOR](obj, path, errorStack, callStack){
 		if(!isObject(obj)){
 			errorStack.push({
 				[EXPECTED]: this,
@@ -301,15 +317,28 @@ Object.assign(Model[OBJECT][PROTO], {
 				[PATH]: path
 			})
 		} else {
-			checkDefinition(obj, this[DEFINITION], path, callStack, errorStack)
+			checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
 		}
 		checkAssertions(obj, this)
 	}
 })
 
 function getProxy(model, obj, defNode, path) {
-	if(defNode instanceof Model && obj && !(obj instanceof defNode))
+	if(is(Model, defNode) && obj && !is(defNode, obj))
 		return defNode(obj)
+	else if(is(Array, defNode)){ // union type
+		let suitableModels = []
+		for(let part of defNode.filter(part => is(Model, part))){
+			if(is(part, obj)) return obj
+			if(part.test(obj)) suitableModels.push(part)
+		}
+		if(suitableModels.length === 1)
+			return suitableModels[0](obj); // automatically cast to suitable model when explicit
+		else if(suitableModels.length > 1)
+			console.warn(`Ambiguous model for value ${toString(obj)},
+			 could be ${suitableModels.join(" or ")}`);
+		return obj;
+	}
 	else if(isLeaf(defNode))
 		return obj
 
@@ -330,7 +359,7 @@ function getProxy(model, obj, defNode, path) {
 			}
 			if(defNode.hasOwnProperty(key)){
 				const newProxy = getProxy(model, val, defNode[key], newPath)
-				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK])
+				checkDefinition(newProxy, defNode[key], newPath, model[ERROR_STACK], [])
 				o[key] = newProxy
 				checkAssertions(obj, model)
 			} else {
@@ -349,23 +378,31 @@ function getProxy(model, obj, defNode, path) {
 		},
 		ownKeys(o){
 			return Reflect.ownKeys(o).filter(key => !Model[CONVENTION_PRIVATE](key))
+		},
+		getPrototypeOf(){
+			return model[PROTO];
 		}
 	});
 }
 Model[ARRAY] = function ArrayModel(def){
 
-	const model = function(array) {
+	const model = function(array = model[DEFAULT]) {
 		model[VALIDATE](array)
-		const proxy = new Proxy(array, {
-			get: function (arr, key) {
-				return ARRAY_MUTATOR_METHODS.includes(key) ? proxifyArrayMethod(arr, key, model) : arr[key]
+		return new Proxy(array, {
+			get(arr, key) {
+				if (key === CONSTRUCTOR)
+					return model
+				else if (ARRAY_MUTATOR_METHODS.includes(key))
+					return proxifyArrayMethod(arr, key, model)
+				return arr[key]
 			},
-			set: function (arr, key, val) {
+			set(arr, key, val) {
 				setArrayKey(arr, key, val, model)
+			},
+			getPrototypeOf(){
+				return model[PROTO];
 			}
 		})
-		setConstructor(proxy, model)
-		return proxy
 	}
 
 	setConstructorProto(model, Array[PROTO])
@@ -380,16 +417,14 @@ Object.assign(Model[ARRAY][PROTO], {
 		return ARRAY + ' of ' + toString(this[DEFINITION], stack)
 	},
 
-	[VALIDATOR](arr, path, callStack, errorStack){
-		if(Array.isArray(arr)){
-			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack))
-		} else {
-			errorStack.push({
-				[EXPECTED]: this,
-				[RECEIVED]: arr,
-				[PATH]: path
-			})
-		}
+	[VALIDATOR](arr, path, errorStack, callStack){
+		if(is(Array, arr))
+			arr.forEach((item,i) => checkDefinition(item, this[DEFINITION], `${path||ARRAY}[${i}]`, errorStack, callStack))
+		else errorStack.push({
+			[EXPECTED]: this,
+			[RECEIVED]: arr,
+			[PATH]: path
+		})
 		checkAssertions(arr, this)
 	}
 })
@@ -405,7 +440,7 @@ function proxifyArrayMethod(array, method, model){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK])
+		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', model[ERROR_STACK], [])
 	}
 	const testArray = array.slice()
 	testArray[key] = value
@@ -415,11 +450,10 @@ function setArrayKey(array, key, value, model){
 }
 Model[FUNCTION] = function FunctionModel(){
 
-	const model = function(fn) {
-
+	const model = function(fn = model[DEFAULT]) {
 		const def = model[DEFINITION]
 		const proxyFn = function () {
-			const args = []
+			const args = [];
 			Object.assign(args, def[DEFAULTS])
 			Object.assign(args, [...arguments])
 			if (args.length > def[ARGS].length) {
@@ -428,11 +462,14 @@ Model[FUNCTION] = function FunctionModel(){
 					[RECEIVED]: args.length
 				})
 			}
-			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]))
+			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, `${ARGS}[${i}]`, model[ERROR_STACK], []))
 			checkAssertions(args, model)
-			const returnValue = fn.apply(this, args)
-			if (RETURN in def) {
-				checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK])
+
+			let returnValue;
+			if(!model[ERROR_STACK].length){
+				returnValue = fn.apply(this, args)
+				if (RETURN in def)
+					checkDefinition(returnValue, def[RETURN], RETURN+' value', model[ERROR_STACK], [])
 			}
 			model[UNSTACK_ERRORS]()
 			return returnValue
@@ -469,7 +506,7 @@ Object.assign(Model[FUNCTION][PROTO], {
 		this[DEFINITION][DEFAULTS] = [...arguments]
 		return this
 	},
-	[VALIDATOR](f, path, callStack, errorStack){
+	[VALIDATOR](f, path, errorStack){
 		if (!isFunction(f)) {
 			errorStack.push({
 				[EXPECTED]: FUNCTION,

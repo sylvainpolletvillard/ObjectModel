@@ -26,5 +26,6 @@ DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
 
-ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
+STACKTRACE_BLACKBOX_MATCHER = /\n.*object-model(.|\n)*object-model.*/
 ;

@@ -1,4 +1,4 @@
-// ObjectModel v2.4.1 - http://objectmodel.js.org
+// ObjectModel v2.4.2 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -84,17 +84,19 @@ function defaultTo(defaultVal, val){
 	return val === undefined ? defaultVal : val;
 }
 
-function merge(target, src, deep) {
-	Object.keys(src || {}).forEach(function(key){
-		if(deep && isPlainObject(src[key])){
-			var o = {};
-			merge(o, target[key], deep);
-			merge(o, src[key], deep);
-			target[key] = o;
-		} else {
-			target[key] = src[key]
+function merge(target, src, deep, includingProto) {
+	for(var key in (src || {})){
+		if(includingProto || src.hasOwnProperty(key)){
+			if(deep && isPlainObject(src[key])){
+				var o = {};
+				merge(o, target[key], deep);
+				merge(o, src[key], deep);
+				target[key] = o;
+			} else {
+				target[key] = src[key]
+			}
 		}
-	});
+	}
 }
 
 function define(obj, key, val, enumerable) {
@@ -187,13 +189,16 @@ ModelProto[EXTEND] = function(){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
-		merge(proto, this[PROTO]);
+		merge(proto, this[PROTO], false, true);
 		args.forEach(function(arg){
 			if(is(Model, arg)){
 				merge(def, arg[DEFINITION], true);
-				merge(proto, arg[PROTO], true);
-			} else {
-				merge(def, arg, true);
+			}
+			if(isFunction(arg)){
+				merge(proto, arg[PROTO], true, true);
+			}
+			if(isObject(arg)) {
+				merge(def, arg, true, true);
 			}
 		})
 	} else {

@@ -1,4 +1,4 @@
-// ObjectModel v2.4.0 - http://objectmodel.js.org
+// ObjectModel v2.4.1 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var
@@ -28,7 +28,8 @@ DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
 
-ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
+STACKTRACE_BLACKBOX_MATCHER = /\n.*object-model(.|\n)*object-model.*/
 ;
 var isProxySupported = isFunction(this.Proxy);
 var defineProperty = Object.defineProperty;
@@ -231,7 +232,9 @@ ModelProto.defaultTo = function(val){
 }
 
 ModelProto[ERROR_COLLECTOR] = function(errors){
-	throw new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
+	var e = new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
+	e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+	throw e;
 };
 
 Model[CONVENTION_CONSTANT] = function(key){ return key.toUpperCase() === key };

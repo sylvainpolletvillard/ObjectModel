@@ -42,13 +42,16 @@ ModelProto[EXTEND] = function(){
 		def = {};
 		proto = {};
 		merge(def, this[DEFINITION]);
-		merge(proto, this[PROTO]);
+		merge(proto, this[PROTO], false, true);
 		args.forEach(function(arg){
 			if(is(Model, arg)){
 				merge(def, arg[DEFINITION], true);
-				merge(proto, arg[PROTO], true);
-			} else {
-				merge(def, arg, true);
+			}
+			if(isFunction(arg)){
+				merge(proto, arg[PROTO], true, true);
+			}
+			if(isObject(arg)) {
+				merge(def, arg, true, true);
 			}
 		})
 	} else {

@@ -47,17 +47,19 @@ function defaultTo(defaultVal, val){
 	return val === undefined ? defaultVal : val;
 }
 
-function merge(target, src, deep) {
-	Object.keys(src || {}).forEach(function(key){
-		if(deep && isPlainObject(src[key])){
-			var o = {};
-			merge(o, target[key], deep);
-			merge(o, src[key], deep);
-			target[key] = o;
-		} else {
-			target[key] = src[key]
+function merge(target, src, deep, includingProto) {
+	for(var key in (src || {})){
+		if(includingProto || src.hasOwnProperty(key)){
+			if(deep && isPlainObject(src[key])){
+				var o = {};
+				merge(o, target[key], deep);
+				merge(o, src[key], deep);
+				target[key] = o;
+			} else {
+				target[key] = src[key]
+			}
 		}
-	});
+	}
 }
 
 function define(obj, key, val, enumerable) {

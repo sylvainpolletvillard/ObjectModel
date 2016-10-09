@@ -568,6 +568,22 @@ function testSuite(Model){
 		assert.equal(joe instanceof Woman, false, "joe not instanceof Woman");
 		assert.equal(joe instanceof UnemployedWoman, false, "joe not instanceof UnemployedWoman");
 		assert.equal(ann instanceof UnemployedWoman, false, "ann not instanceof UnemployedWoman");
+
+		var Vehicle = { speed: Number };
+		var Car = Object.create(Vehicle);
+		Car.wheels = 4;
+		var Ferrari = Model({ expensive: true }).extend(Car);
+		assert.ok("speed" in Ferrari.definition, "should retrieve definitions from parent prototypes when extending with objects");
+
+		Vehicle = function(){};
+		Vehicle.prototype.speed = 99;
+		Car = function(){};
+		Car.prototype = new Vehicle();
+		Car.prototype.wheels = 4;
+		Ferrari = Model.Object().extend(Car);
+		assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
+
+
 	});
 
 	QUnit.test("Multiple inheritance", function(assert){

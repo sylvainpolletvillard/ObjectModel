@@ -39,8 +39,8 @@
 		<a href="#introduction" class="title">Introduction</a>
 		<ul>
 			<li><a href="#introduction">What is it</a></li>
+			<li><a href="#video-demo">Video demo</a></li>
 			<li><a href="#features">Features</a></li>
-			<li><a href="#browser-support">Browser support</a></li>
 		</ul>
 	</div>
 	<hr>
@@ -91,6 +91,11 @@
 
 		<p>Actually it goes much further than just type safety. Go on and see for yourself.</p>
 
+		<h2 id="video-demo">Show me a video demonstration !</h2>
+		<div style="text-align: center">
+			<iframe width="640" height="360" src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>
+		</div>
+
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
 		<ul>
@@ -109,10 +114,6 @@
 			<li>Custom error collectors</li>
 			<li>all in <strong>7.7 kB minified, 3.2 kB gzipped</strong></li>
 		</ul>
-
-		<h2 id="browser-support">Which browsers are supported ?</h2>
-		<p>This library has been <a href="./test/index.html" target="_blank">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
-		<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist" target="_blank">v1.2</a>.</p>
 	</section>
 
 	<hr>
@@ -836,6 +837,12 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<h2>Common questions</h2>
 
 		<details>
+			<summary id="browser-support">Which browsers are supported ?</summary>
+			<p>This library has been <a href="./test/index.html" target="_blank">unit tested</a> on latest versions of Chrome, Firefox and Edge, on Internet Explorer 11, Opera 20, and Safari 5.1. It should work on any browser implementing ECMAScript 5 specifications. If you find a fairly recent browser on which the tests do not pass, please post a Github issue and I will try to add support for it.</p>
+			<p>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. The latest version supporting IE9-10 is <a href="https://github.com/sylvainpolletvillard/ObjectModel/tree/master/dist" target="_blank">v1.2</a>.</p>
+		</details>
+
+		<details>
 			<summary>What is the impact on performance ?</summary>
 			<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
 		</details>
@@ -985,7 +992,7 @@ console.log(
 	</section>
 
 	<hr>
-	<footer><a href="LICENSE">MIT licensed</a> - Sylvain Pollet-Villard - syllab.fr</footer>
+	<footer><a href="LICENSE">MIT licensed</a> - Sylvain Pollet-Villard</footer>
 </div>
 
 </body>

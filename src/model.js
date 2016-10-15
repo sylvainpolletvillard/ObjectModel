@@ -38,13 +38,16 @@ Object.assign(Model[PROTO], {
 			def = {}
 			proto = {}
 			Object.assign(def, this[DEFINITION])
-			Object.assign(proto, this[PROTO])
+			merge(proto, this[PROTO], false, true)
 			args.forEach(arg => {
 				if(is(Model, arg)){
-					deepAssign(def, arg[DEFINITION])
-					deepAssign(proto, arg[PROTO])
-				} else {
-					deepAssign(def, arg)
+					merge(def, arg[DEFINITION], true)
+				}
+				if(isFunction(arg)){
+					merge(proto, arg[PROTO], true, true);
+				}
+				if(isObject(arg)) {
+					merge(def, arg, true, true);
 				}
 			})
 		} else {
@@ -79,7 +82,9 @@ Object.assign(Model[PROTO], {
 	},
 
 	[ERROR_COLLECTOR](errors){
-		throw new TypeError(errors.map(function(e){ return e[MESSAGE] }).join('\n'))
+		let e = new TypeError(errors.map(e => e[MESSAGE]).join('\n'))
+		e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+		throw e;
 	},
 
 	[VALIDATOR](obj, path, errorStack, callStack){

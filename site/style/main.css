@@ -627,6 +627,9 @@ table th {
 .panels.three .panel {
   width: 33.3%;
 }
+#video-demo {
+  text-align: center;
+}
 body {
   position: relative;
   -webkit-transition: left 0.4s ease;

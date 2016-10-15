@@ -20,17 +20,19 @@ function bettertypeof(obj){
 	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1]
 }
 
-function deepAssign(target, src) {
-	Object.keys(src || {}).forEach(key => {
-		if(isPlainObject(src[key])){
-			const o = {}
-			deepAssign(o, target[key])
-			deepAssign(o, src[key])
-			target[key] = o
-		} else {
-			target[key] = src[key]
+function merge(target, src={}, deep, includingProto) {
+	for(let key in src){
+		if(includingProto || src.hasOwnProperty(key)){
+			if(deep && isPlainObject(src[key])){
+				const o = {};
+				merge(o, target[key], deep);
+				merge(o, src[key], deep);
+				target[key] = o;
+			} else {
+				target[key] = src[key]
+			}
 		}
-	})
+	}
 }
 
 function define(obj, key, value, enumerable) {

@@ -2,7 +2,7 @@ Model[OBJECT] = function ObjectModel(def){
 
 	const model = function(obj = model[DEFAULT]) {
 		if(!is(model, this)) return new model(obj)
-		deepAssign(this, obj)
+		merge(this, obj, true)
 		const proxy = getProxy(model, this, model[DEFINITION])
 		model[VALIDATE](proxy)
 		return proxy

@@ -30,4 +30,6 @@ ARGS                  = "arguments",
 
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
 SET_MUTATOR_METHODS   = ["add", "delete", "clear"],	
-MAP_MUTATOR_METHODS   = ["set", "delete", "clear"]
+MAP_MUTATOR_METHODS   = ["set", "delete", "clear"],
+
+STACKTRACE_BLACKBOX_MATCHER = /\n.*object-model(.|\n)*object-model.*/

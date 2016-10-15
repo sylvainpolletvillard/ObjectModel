@@ -39,8 +39,8 @@
 		<a href="#introduction" class="title">Introduction</a>
 		<ul>
 			<li><a href="#introduction">What is it</a></li>
+			<li><a href="#video-demo">Video demo</a></li>
 			<li><a href="#features">Features</a></li>
-			<li><a href="#browser-support">Browser support</a></li>
 		</ul>
 	</div>
 	<hr>
@@ -91,6 +91,10 @@
 
 		<p>Actually it goes much further than just type safety. Go on and see for yourself.</p>
 
+		<div id="video-demo">
+			<iframe width="640" height="360" src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>
+		</div>
+
 		<h2 id="features">What's inside the box ?</h2>
 		<p>Many features, hopefully neither too much nor too few:</p>
 		<ul>
@@ -107,20 +111,8 @@
 			<li>Constants and private properties based on name conventions</li>
 			<li>Explicit error messages</li>
 			<li>Custom error collectors</li>
-			<li>all in <strong>6.3 kB minified, 2.8 kB gzipped</strong></li>
+			<li>all in <strong>6.4 kB minified, 2.8 kB gzipped</strong></li>
 		</ul>
-
-		<h2 id="browser-support">Which browsers are supported ?</h2>
-
-		<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers, depending of the version of Object Model:
-			<dl>
-				<dt>v1.x</dt>
-				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
-				<dt>v2.x</dt>
-				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
-				<dt>v3.x</dt>
-				<dd>Next version of ObjectModel relies on ES6 and Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
-			</dl>
 	</section>
 
 	<hr>
@@ -130,7 +122,7 @@
 		<h3>Current version: v3.0.0</h3>
 		<ul>
 			<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-			<li>Minified file (6.3 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+			<li>Minified file (6.4 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
 			<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
 		</ul>
 		<h3>Changelog and previous releases</h3>
@@ -844,6 +836,19 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<h2>Common questions</h2>
 
 		<details>
+			<summary id="browser-support">Which browsers are supported ?</summary>
+			<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers, depending of the version of Object Model:</p>
+			<dl>
+				<dt>v1.x</dt>
+				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
+				<dt>v2.x</dt>
+				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
+				<dt>v3.x</dt>
+				<dd>Next version of ObjectModel relies on ES6 and Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
+			</dl>
+		</details>
+
+		<details>
 			<summary>What is the impact on performance ?</summary>
 			<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
 		</details>
@@ -993,7 +998,7 @@ console.log(
 	</section>
 
 	<hr>
-	<footer><a href="LICENSE">MIT licensed</a> - Sylvain Pollet-Villard - syllab.fr</footer>
+	<footer><a href="LICENSE">MIT licensed</a> - Sylvain Pollet-Villard</footer>
 </div>
 
 </body>

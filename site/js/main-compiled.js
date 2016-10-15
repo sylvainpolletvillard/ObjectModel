@@ -121,15 +121,21 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 			selectLink('#' + nearest.section.id);
 		});
 
-		_arr = [].concat(_toConsumableArray(document.querySelectorAll("code[data-source]")));
+		_arr = [].concat(_toConsumableArray(document.querySelectorAll("[data-source-trigger]")));
 
 		var _loop = function () {
-			var code = _arr[_i];
-			fetch(code.getAttribute("data-source")).then(function (res) {
-				return res.text();
-			}).then(function (source) {
-				code.textContent = source;
-				Prism.highlightElement(code);
+			var trigger = _arr[_i];
+			trigger.addEventListener("click", function () {
+				var code = trigger.parentElement.querySelector("code[data-source]");
+				if (code) {
+					fetch(code.getAttribute("data-source")).then(function (res) {
+						return res.text();
+					}).then(function (source) {
+						code.textContent = source;
+						code.removeAttribute("data-source");
+						Prism.highlightElement(code);
+					});
+				}
 			});
 		};
 

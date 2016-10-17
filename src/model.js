@@ -95,7 +95,9 @@ ModelProto.defaultTo = function(val){
 
 ModelProto[ERROR_COLLECTOR] = function(errors){
 	var e = new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
-	e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+	if(e.stack){
+		e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+	}
 	throw e;
 };
 

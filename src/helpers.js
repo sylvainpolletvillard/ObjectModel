@@ -1,3 +1,4 @@
+var isProxySupported = typeof Proxy === "function";
 var defineProperty = Object.defineProperty;
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.
@@ -107,9 +108,3 @@ function toString(obj, stack){
 	}
 	return String(obj)
 }
-
-var global = (isObject(global) && global.global === global && global)
-		  || (isObject(self) && self.self === self && self)
-		  || this;
-
-var isProxySupported = isFunction(global.Proxy);

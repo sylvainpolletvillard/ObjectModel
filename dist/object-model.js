@@ -1,4 +1,4 @@
-// ObjectModel v2.4.2 - http://objectmodel.js.org
+// ObjectModel v2.4.3 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var
@@ -31,7 +31,6 @@ ARGS                  = "arguments",
 ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"],
 STACKTRACE_BLACKBOX_MATCHER = /\n.*object-model(.|\n)*object-model.*/
 ;
-var isProxySupported = isFunction(this.Proxy);
 var defineProperty = Object.defineProperty;
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.
@@ -141,6 +140,12 @@ function toString(obj, stack){
 	}
 	return String(obj)
 }
+
+var global = (isObject(global) && global.global === global && global)
+		  || (isObject(self) && self.self === self && self)
+		  || this;
+
+var isProxySupported = isFunction(global.Proxy);
 function Model(def){
 	if(!isLeaf(def)) return Model[OBJECT](def);
 
@@ -238,7 +243,9 @@ ModelProto.defaultTo = function(val){
 
 ModelProto[ERROR_COLLECTOR] = function(errors){
 	var e = new TypeError(errors.map(function(e){ return e[MESSAGE]; }).join('\n'));
-	e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+	if(e.stack){
+		e.stack = e.stack.replace(STACKTRACE_BLACKBOX_MATCHER, "");
+	}
 	throw e;
 };
 

@@ -1,4 +1,4 @@
-var isProxySupported = isFunction(this.Proxy);
+var isProxySupported = this && isFunction(this.Proxy);
 var defineProperty = Object.defineProperty;
 
 // shim for Function.name for browsers that don't support it. IE, I'm looking at you.

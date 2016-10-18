@@ -912,8 +912,12 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 		<details>
 			<summary>How do I declare a constructor function to be called on instanciation before validating my model ?</summary>
-			<p>The recommended way is to use a factory function to instanciate your models. You can declare as many different factories as needed, which makes this pattern both simple and flexible.</p>
-			<pre><code class="language-javascript">var User = Model.Object({
+			<div class="grid doc-code">
+				<div class="doc">
+					<p>The recommended way is to use a factory function to instanciate your models. You can declare as many different factories as needed, which makes this pattern both simple and flexible.</p>
+				</div>
+				<div class="panel">
+					<pre><code class="language-javascript">var User = Model.Object({
     firstName: String,
     lastName: String,
     fullName: String
@@ -925,23 +929,35 @@ User.create = function(properties){
 };
 
 var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
+				</div>
+			</div>
 		</details>
 
 		<details>
 			<summary>How can I get the model from an instance ?</summary>
-			<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
-			<pre><code class="language-javascript">var User = Model({ name: String }),
+			<div class="grid doc-code">
+				<div class="doc">
+					<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
+				</div>
+				<div class="panel">
+					<pre><code class="language-javascript">var User = Model({ name: String }),
 	joe = User({ name: "Joe" });
 
 var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 // modelOfJoe === User
 // modelOfJoe.definition.name === String</code></pre>
+				</div>
+			</div>
 		</details>
 
 		<details>
 			<summary>How should I deal with circular references in my model definitions ?</summary>
-			<p>You can't refer to a model or instance that is not yet defined, so you have to update the definition afterwards:</p>
-			<pre><code class="language-javascript">var Honey = Model({
+			<div class="grid doc-code">
+				<div class="doc">
+					<p>You can't refer to a model or instance that is not yet defined, so you have to update the definition afterwards:</p>
+				</div>
+				<div class="panel">
+					<pre><code class="language-javascript">var Honey = Model({
    sweetie: undefined // Sweetie is not yet defined
 });
 
@@ -954,21 +970,30 @@ Honey.definition.sweetie = [Sweetie];
 var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
+				</div>
+			</div>
 		</details>
 
 		<details>
 			<summary>I use an object like a map with a number of key-value pairs. How do I check the type of all the values ?</summary>
-			<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
-			<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
+			<div class="grid doc-code-code">
+				<div class="doc">
+					<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
+				</div>
+				<div class="panel panel1">
+					<span class="legend">Implementation</span>
+<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
 	var valueModel = Model(valueType);
 	return Model({}).assert(function checkValueTypes(map){
 		return Object.keys(map).every(function(key){
 			return valueModel.test(map[key]);
 		});
 	});
-}
-
-var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])\/(3[01]|[12][0-9]|0[1-9])\/[0-9]{4}$/;
+}</code></pre>
+				</div>
+				<div class="panel panel2">
+					<span class="legend">Example</span>
+<pre><code class="language-javascript">var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])\/(3[01]|[12][0-9]|0[1-9])\/[0-9]{4}$/;
 var BirthdayList = Model.ObjectMap([Date, REGEX_MMDDYYYY]);
 var friendsBirthday = BirthdayList({
 	"Joe": new Date(1985,6,3),
@@ -980,20 +1005,25 @@ var friendsBirthday = BirthdayList({
 	Jim: "02/22/1987",
 	Jack: null
 }</code></pre>
+				</div>
+			</div>
 		</details>
 
 		<details>
 			<summary>How can I serialize/deserialize objects while preserving type information ?</summary>
-			<p>Serializing in JSON necessarily implies that you lose the type information, except if you store it manually with your data, then retrieve it with a custom parsing function. It is for the best to let you decide how you want to store the type information within your data.</p>
-			<p>Here is a proposal of implementation using a simple { _value, _type } wrapper:</p>
-			<div class="panels two">
-				<div class="panel">
+			<div class="grid doc-code-code">
+				<div class="doc">
+					<p>Serializing in JSON necessarily implies that you lose the type information, except if you store it manually with your data, then retrieve it with a custom parsing function. It is for the best to let you decide how you want to store the type information within your data.</p>
+					<p>Here is a proposal of implementation using a simple <code>{ _value, _type }</code> wrapper:</p>
+				</div>
+
+				<div class="panel panel1">
 					<span class="legend">Implementation</span>
 <pre><code class="language-javascript">Model.prototype.serialize = function(instance){
-	var availableModels = Object.keys(Model.serializations);
+	var availableModels = Object.keys(Model.serializables);
 	return JSON.stringify(instance, function(key, value){
 		var modelName = availableModels.find(function(name){
-			return value instanceof Model.serializations[name];
+			return value instanceof Model.serializables[name];
 		});
 		if(modelName && key !== "_value"){
 			return { _type: modelName, _value: value }
@@ -1004,21 +1034,21 @@ var friendsBirthday = BirthdayList({
 
 Model.prototype.parse = function(json){
 	return JSON.parse(json, function(key, o){
-		if(o && o._type in Model.serializations){
-			return new Model.serializations[o._type](o._value);
+		if(o && o._type in Model.serializables){
+			return new Model.serializables[o._type](o._value);
 		}
 		return o;
 	})
 }</code></pre>
 				</div>
-				<div class="panel">
+				<div class="panel panel2">
 					<span class="legend">Example</span>
 		<pre><code class="language-javascript">var Type1 = Model({ content: String }).defaultTo({ content: 'Content 1' }),
     Type2 = Model({ content: String }).defaultTo({ content: 'Content 2' }),
 	Container = Model({ items: Model.Array(Type1, Type2) });
 
-// List all your models by name here
-Model.serializations = { "Container": Container, "Type1": Type1, "Type2": Type2 };
+// List all your serializable models here
+Model.serializables = { Container, Type1, Type2 };
 
 var a = new Container({ items: [new Type1, new Type2] });
 

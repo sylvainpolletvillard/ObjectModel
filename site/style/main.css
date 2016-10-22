@@ -2,6 +2,8 @@
 /* apply a natural box layout model to all elements */
 @import "prism.css";
 * {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
 /* ==========================================================================
@@ -336,12 +338,76 @@ table {
     transform: rotate(360deg);
   }
 }
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@-moz-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+  }
+  to {
+    -moz-transform: rotate(360deg);
+  }
+}
+@-o-keyframes spin {
+  from {
+    -o-transform: rotate(0deg);
+  }
+  to {
+    -o-transform: rotate(360deg);
+  }
+}
+@-ms-keyframes spin {
+  from {
+    -ms-transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+  }
+}
 @keyframes spin-inv {
   from {
     transform: rotate(360deg);
   }
   to {
     transform: rotate(0deg);
+  }
+}
+@-webkit-keyframes spin-inv {
+  from {
+    -webkit-transform: rotate(360deg);
+  }
+  to {
+    -webkit-transform: rotate(0deg);
+  }
+}
+@-moz-keyframes spin-inv {
+  from {
+    -moz-transform: rotate(360deg);
+  }
+  to {
+    -moz-transform: rotate(0deg);
+  }
+}
+@-o-keyframes spin-inv {
+  from {
+    -o-transform: rotate(360deg);
+  }
+  to {
+    -o-transform: rotate(0deg);
+  }
+}
+@-ms-keyframes spin-inv {
+  from {
+    -ms-transform: rotate(360deg);
+  }
+  to {
+    -ms-transform: rotate(0deg);
   }
 }
 @font-face {
@@ -360,6 +426,10 @@ table {
 }
 body {
   font-family: 'ClearSans', "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif;
+  -webkit-transition: margin-right 0.3s ease;
+  -moz-transition: margin-right 0.3s ease;
+  -ms-transition: margin-right 0.3s ease;
+  -o-transition: margin-right 0.3s ease;
   transition: margin-right 0.3s ease;
   color: #344940;
   margin: 0 2em 0.5em 2em;
@@ -376,6 +446,7 @@ h3 {
 }
 pre {
   -moz-tab-size: 3;
+  -o-tab-size: 3;
   -webkit-tab-size: 3;
   -ms-tab-size: 3;
   tab-size: 3;
@@ -420,6 +491,9 @@ hr {
   height: 1px;
   border: none;
   background-color: transparent;
+  background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.03) 0, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.03) 100%);
+  background-image: -moz-linear-gradient(left, rgba(0, 0, 0, 0.03) 0, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.03) 100%);
+  background-image: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, 0.03)), color-stop(50%, rgba(0, 0, 0, 0.1)), to(rgba(0, 0, 0, 0.03)));
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 0, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.03) 100%);
 }
 mark {
@@ -544,15 +618,17 @@ table th {
 }
 #video-demo {
   text-align: center;
-  -ms-flex-item-align: center;
-      -ms-grid-row-align: center;
-      align-self: center;
+  align-self: center;
 }
 #video-demo iframe {
   max-width: 100%;
 }
 body {
   position: relative;
+  -webkit-transition: left 0.4s ease;
+  -moz-transition: left 0.4s ease;
+  -ms-transition: left 0.4s ease;
+  -o-transition: left 0.4s ease;
   transition: left 0.4s ease;
   left: 0;
 }
@@ -561,10 +637,7 @@ body {
   padding: 14.4px 9px 18px 9px;
   transition: 0.4s;
   cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  user-select: none;
 }
 .lines-button:active {
   transition: none;
@@ -640,6 +713,10 @@ body.menu-opened .lines-button.arrow .lines:after {
   background: #eee;
   border: none;
   box-shadow: 1.8px 1.8px 9px #999;
+  -webkit-transition: left 0.4s ease, opacity 0.2s ease;
+  -moz-transition: left 0.4s ease, opacity 0.2s ease;
+  -ms-transition: left 0.4s ease, opacity 0.2s ease;
+  -o-transition: left 0.4s ease, opacity 0.2s ease;
   transition: left 0.4s ease, opacity 0.2s ease;
 }
 #menu-button:hover {
@@ -669,14 +746,22 @@ body.menu-opened .lines-button.arrow .lines:after {
   height: 100%;
   background: #f0f0f0;
   box-shadow: 0 0 15px #ccc;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   overflow-y: auto;
   top: 0;
   left: -300px;
   z-index: 100;
   width: 300px;
+  -webkit-transition: left 0.4s ease;
+  -moz-transition: left 0.4s ease;
+  -ms-transition: left 0.4s ease;
+  -o-transition: left 0.4s ease;
   transition: left 0.4s ease;
   text-align: left;
+  -moz-transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
 }
 #menu a {
@@ -773,18 +858,15 @@ section {
   margin: 2em auto;
 }
 .grid {
-  display: -ms-grid;
   display: grid;
   grid-gap: 2em;
 }
 @media (min-width: 1024px) and (max-width: 1600px) {
   .doc-code {
-    -ms-grid-columns: 1fr;
-        grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
   .doc-code-code {
-    -ms-grid-columns: 1fr;
-        grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
 }
 @media (min-width: 1601px) {
@@ -803,36 +885,29 @@ section {
 }
 @media (min-width: 1601px) and (max-width: 2200px) {
   .doc-code {
-    -ms-grid-columns: 1fr 1fr;
-        grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
   .doc-code .doc {
-    -ms-grid-column: 1;
-        grid-column-start: 1;
+    grid-column-start: 1;
     grid-column-end: 3;
   }
   .doc-code .panel {
-    -ms-grid-column: 1;
-        grid-column-start: 1;
+    grid-column-start: 1;
     grid-column-end: 3;
   }
   .doc-code-code {
-    -ms-grid-columns: 1fr 1fr;
-        grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
   .doc-code-code .doc {
-    -ms-grid-column: 1;
-        grid-column-start: 1;
+    grid-column-start: 1;
     grid-column-end: 3;
   }
   #doc-custom-collectors .doc:nth-of-type(1) {
-    -ms-grid-column: 1;
-        grid-column-start: 1;
+    grid-column-start: 1;
     grid-column-end: 2;
   }
   #doc-custom-collectors .doc:nth-of-type(2) {
-    -ms-grid-column: 2;
-        grid-column-start: 2;
+    grid-column-start: 2;
     grid-column-end: 3;
   }
 }
@@ -846,26 +921,21 @@ section {
 }
 @media (min-width: 2201px) {
   .doc-code {
-    -ms-grid-columns: auto 640px 640px;
-        grid-template-columns: auto 640px 640px;
+    grid-template-columns: auto 640px 640px;
   }
   .doc-code .panel {
-    -ms-grid-column: 2;
-        grid-column-start: 2;
+    grid-column-start: 2;
     grid-column-end: 4;
   }
   .doc-code-code {
-    -ms-grid-columns: auto 640px 640px;
-        grid-template-columns: auto 640px 640px;
+    grid-template-columns: auto 640px 640px;
   }
   #doc-custom-collectors .doc:nth-of-type(1) {
-    -ms-grid-column: 1;
-        grid-column-start: 1;
+    grid-column-start: 1;
     grid-column-end: 2;
   }
   #doc-custom-collectors .doc:nth-of-type(2) {
-    -ms-grid-column: 2;
-        grid-column-start: 2;
+    grid-column-start: 2;
     grid-column-end: 4;
   }
 }

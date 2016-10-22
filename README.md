@@ -2,9 +2,9 @@
 
 <p align="center">Strong Dynamically Typed Object Modeling for JavaScript</p>
 <p align="center">
-[![NPM Version][npm-image]][npm-url]
-[![Downloads Stats][npm-downloads]][npm-url]
-[![License][license-badge]](LICENSE)
+  <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/dt/objectmodel.svg" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/v/objectmodel.svg" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/l/objectmodel.svg" alt="License"></a>
 </p>
 ---
 
@@ -71,7 +71,3 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 [TypeScript]:https://www.typescriptlang.org/
 [Flow]:https://flowtype.org/
 [github-releases]:https://github.com/sylvainpolletvillard/ObjectModel/releases
-[npm-url]: https://npmjs.org/package/objectmodel
-[npm-image]: https://img.shields.io/npm/v/objectmodel.svg
-[npm-downloads]: https://img.shields.io/npm/dm/objectmodel.svg
-[license-badge]:https://img.shields.io/badge/license-MIT-blue.svg

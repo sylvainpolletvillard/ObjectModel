@@ -55,8 +55,6 @@ table {
 }
 
 .panel {
-	display: table-cell;
-	vertical-align: top;
 	background: #f5f2f0;
 	border: 1px solid #DEDEDE;
 	position: relative;
@@ -89,12 +87,11 @@ table {
 	}
 }
 
-.panels {
+#video-demo {
+	text-align: center;
+	align-self: center;
 
-	display: table;
-	width: 100%;
-
-	&.two .panel { width: 50%; }
-	&.three .panel { width: 33.3%; }
-
+	iframe {
+		max-width: 100%;
+	}
 }

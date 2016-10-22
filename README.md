@@ -54,7 +54,7 @@ For more examples, documentation and questions, please refer to the project webs
 
 ## Release History
 
-Please refer to [Github Releases](github-releases)
+Please refer to [Github Releases][github-releases]
 
 ## Build, Tests, Contributing
 

@@ -1,4 +1,4 @@
-// ObjectModel v2.4.4 - http://objectmodel.js.org
+// ObjectModel v2.4.5 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node

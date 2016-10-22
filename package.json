@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
@@ -12,13 +12,13 @@
   "devDependencies": {
     "grunt": ">=0.4.5",
     "grunt-cli": "^1.2.0",
-    "grunt-contrib-concat": "~1.0.0",
-    "grunt-contrib-connect": "~1.0.0",
-    "grunt-contrib-qunit": "~1.1.0",
-    "grunt-contrib-uglify": "~1.0.1",
-    "grunt-contrib-watch": "~1.0.0",
-    "grunt-file-info": "1.0.10",
-    "grunt-regex-replace": "~0.2.6"
+    "grunt-contrib-concat": "^1.0.0",
+    "grunt-contrib-connect": "^1.0.0",
+    "grunt-contrib-qunit": "^1.2.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-file-info": "^1.0.14",
+    "grunt-regex-replace": "^0.4.0"
   },
   "main": "dist/object-model.umd.js",
   "keywords": [

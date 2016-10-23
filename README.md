@@ -30,7 +30,7 @@ or with NPM:
 $ npm install objectmodel
 ```
 
-or just [download the library from Github](github-releases)
+or just [download the library from Github][github-releases]
 
 ## Basic usage example
 

@@ -15,6 +15,7 @@ Model[FUNCTION] = function FunctionModel(){
 				model[ERROR_STACK].push(err);
 			}
 			def[ARGS].forEach(function (argDef, i) {
+				args[i] = autocast(args[i], argDef);
 				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
 			checkAssertions(args, model);
@@ -22,6 +23,7 @@ Model[FUNCTION] = function FunctionModel(){
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);
 				if (RETURN in def) {
+					returnValue = autocast(returnValue, def[RETURN]);
 					checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
 				}
 			}

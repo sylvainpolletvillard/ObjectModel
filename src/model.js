@@ -1,5 +1,5 @@
 function Model(def){
-	if(!isLeaf(def)) return Model[OBJECT](def);
+	if(isPlainObject(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
 		obj = defaultTo(model[DEFAULT], obj);
@@ -132,10 +132,6 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	errorCollector.call(this, errors);
 })
 
-function isLeaf(def){
-	return bettertypeof(def) != "Object";
-}
-
 function initModel(model, def, constructor){
 	setConstructor(model, constructor);
 	model[DEFINITION] = def;
@@ -144,9 +140,9 @@ function initModel(model, def, constructor){
 }
 
 function parseDefinition(def){
-	if(isLeaf(def)){
+	if(!isPlainObject(def)){
 		if(!is(Array, def)) return [def];
-		else if(def.length === 1) return def.concat(undefined, null);
+		if(def.length === 1) return def.concat(undefined, null);
 	} else {
 		Object.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
@@ -156,30 +152,30 @@ function parseDefinition(def){
 }
 
 function checkDefinition(obj, def, path, callStack, errorStack){
-	var err;
 	if(is(Model, def)){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
 		}
 		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
-	} else if(isLeaf(def)){
+	}
+	if(isPlainObject(def)) {
+		Object.keys(def).forEach(function (key) {
+			var val = obj != null ? obj[key] : undefined;
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
+		});
+	} else {
 		var pdef = parseDefinition(def);
 		for(var i= 0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
 				return;
 			}
 		}
-		err = {};
+		var err = {};
 		err[EXPECTED] = def;
 		err[RECEIVED] = obj;
 		err[PATH] = path;
 		errorStack.push(err);
-	} else {
-		Object.keys(def).forEach(function(key) {
-			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
-		});
 	}
 }
 
@@ -187,7 +183,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
+	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
 		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
@@ -222,4 +218,32 @@ function checkAssertions(obj, model, errorStack){
 			errorStack.push(err);
 		}
 	}
+}
+
+function autocast(obj, defNode){
+	var def = parseDefinition(defNode || []),
+	    suitableModels = [];
+
+	for(var i=0, l=def.length; i<l; i++){
+		var defPart = def[i];
+		if(is(Model, defPart)){
+			if(is(defPart, obj)){
+				return obj;
+			}
+			if(defPart.test(obj)){
+				suitableModels.push(defPart);
+			}
+		}
+	}
+
+	var nbSuitableModels = suitableModels.length;
+	if(nbSuitableModels === 1) {
+		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+	}
+	if(nbSuitableModels > 0){
+		console.warn("Ambiguous model for value " + toString(obj)
+			+ ", could be " + suitableModels.join(" or "));
+	}
+
+	return obj;
 }

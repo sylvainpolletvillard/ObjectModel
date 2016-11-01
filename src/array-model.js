@@ -98,6 +98,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
+		value = autocast(value, model[DEFINITION]);
 		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
 	}
 	var testArray = array.slice();

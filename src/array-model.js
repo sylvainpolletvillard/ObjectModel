@@ -86,8 +86,9 @@ function proxifyArrayMethod(array, method, model, proxy){
 		var testArray = array.slice();
 		Array[PROTO][method].apply(testArray, arguments);
 		model[VALIDATE](testArray);
+
 		if(!isProxySupported){
-			for(var key in testArray){
+			for(var key in testArray){ // proxify new array keys if any after method call
 				if(testArray.hasOwnProperty(key) && !(key in proxy)){
 					proxifyArrayKey(proxy, array, key, model);
 				}

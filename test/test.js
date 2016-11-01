@@ -383,6 +383,14 @@ function testSuite(Model){
 		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "Model.Function object argument 4/5");
 		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "Model.Function object argument 5/5");
 
+		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+		var F = Model.Function(N, N).return(N);
+		var f = F(function(a,b){ return { x: a.x+b.x, y: a.y+b.y } });
+		var returnValue = f({ x: 1 }, { x: 2 });
+
+		assert.ok(returnValue instanceof N, "test automatic model casting with return value");
+		assert.equal(returnValue.x, 3, "test automatic casting with function args 1/2");
+		assert.equal(returnValue.y, 14, "test automatic casting with function args 2/2");
 	});
 
 	QUnit.test("Default values", function(assert){

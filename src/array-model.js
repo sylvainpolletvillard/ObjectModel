@@ -62,6 +62,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 		errorStack.push(err);
 	} else {
 		for(var i=0, l=arr.length; i<l; i++){
+			arr[i] = autocast(arr[i], this[DEFINITION]);
 			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
 		}
 	}
@@ -92,7 +93,12 @@ function proxifyArrayMethod(array, method, model, proxy){
 				}
 			}
 		}
-		return Array[PROTO][method].apply(array, arguments);
+
+		var returnValue = Array[PROTO][method].apply(array, arguments);
+		for(var i=0, l=array.length; i<l; i++) {
+			array[i] = autocast(array[i], model[DEFINITION]);
+		}
+		return returnValue;
 	};
 }
 

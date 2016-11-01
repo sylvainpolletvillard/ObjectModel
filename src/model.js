@@ -166,7 +166,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		});
 	} else {
 		var pdef = parseDefinition(def);
-		for(var i= 0, l=pdef.length; i<l; i++){
+		for(var i=0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
 				return;
 			}
@@ -240,7 +240,7 @@ function autocast(obj, defNode){
 	if(nbSuitableModels === 1) {
 		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
 	}
-	if(nbSuitableModels > 0){
+	if(nbSuitableModels > 1){
 		console.warn("Ambiguous model for value " + toString(obj)
 			+ ", could be " + suitableModels.join(" or "));
 	}

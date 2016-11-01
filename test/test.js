@@ -292,6 +292,19 @@ function testSuite(Model){
 		childO.arr.push("a");
 		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
 		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
+
+		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+		Arr = Model.Array(N);
+		a = Arr([ { x:9 } ]);
+		assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
+		assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
+		a.push({ x: 3 });
+		assert.ok(a[1] instanceof N, "test automatic model casting with array mutator method 1/2")
+		assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array mutator method 2/2")
+		a[0] = { x: 10 };
+		assert.ok(a[0] instanceof N, "test automatic model casting with array set index 1/2")
+		assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
+
 	});
 
 	QUnit.test("Function models", function(assert){

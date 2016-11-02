@@ -1,4 +1,4 @@
-// ObjectModel v2.4.5 - http://objectmodel.js.org
+// ObjectModel v2.5.0 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -146,7 +146,7 @@ function toString(obj, stack){
 	return String(obj)
 }
 function Model(def){
-	if(!isLeaf(def)) return Model[OBJECT](def);
+	if(isPlainObject(def)) return Model[OBJECT](def);
 
 	var model = function(obj) {
 		obj = defaultTo(model[DEFAULT], obj);
@@ -279,10 +279,6 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	errorCollector.call(this, errors);
 })
 
-function isLeaf(def){
-	return bettertypeof(def) != "Object";
-}
-
 function initModel(model, def, constructor){
 	setConstructor(model, constructor);
 	model[DEFINITION] = def;
@@ -291,9 +287,9 @@ function initModel(model, def, constructor){
 }
 
 function parseDefinition(def){
-	if(isLeaf(def)){
+	if(!isPlainObject(def)){
 		if(!is(Array, def)) return [def];
-		else if(def.length === 1) return def.concat(undefined, null);
+		if(def.length === 1) return def.concat(undefined, null);
 	} else {
 		Object.keys(def).forEach(function(key) {
 			def[key] = parseDefinition(def[key]);
@@ -303,30 +299,30 @@ function parseDefinition(def){
 }
 
 function checkDefinition(obj, def, path, callStack, errorStack){
-	var err;
 	if(is(Model, def)){
 		var indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 			return; //if found twice in call stack, cycle detected, skip validation
 		}
 		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
-	} else if(isLeaf(def)){
+	}
+	if(isPlainObject(def)) {
+		Object.keys(def).forEach(function (key) {
+			var val = obj != null ? obj[key] : undefined;
+			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
+		});
+	} else {
 		var pdef = parseDefinition(def);
-		for(var i= 0, l=pdef.length; i<l; i++){
+		for(var i=0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
 				return;
 			}
 		}
-		err = {};
+		var err = {};
 		err[EXPECTED] = def;
 		err[RECEIVED] = obj;
 		err[PATH] = path;
 		errorStack.push(err);
-	} else {
-		Object.keys(def).forEach(function(key) {
-			var val = obj != null ? obj[key] : undefined;
-			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
-		});
 	}
 }
 
@@ -334,7 +330,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null){
 		return obj === def;
 	}
-	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
+	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
 		var errorStack = [];
 		checkDefinition(obj, def, path, callStack, errorStack);
 		return !errorStack.length;
@@ -369,6 +365,34 @@ function checkAssertions(obj, model, errorStack){
 			errorStack.push(err);
 		}
 	}
+}
+
+function autocast(obj, defNode){
+	var def = parseDefinition(defNode || []),
+	    suitableModels = [];
+
+	for(var i=0, l=def.length; i<l; i++){
+		var defPart = def[i];
+		if(is(Model, defPart)){
+			if(is(defPart, obj)){
+				return obj;
+			}
+			if(defPart.test(obj)){
+				suitableModels.push(defPart);
+			}
+		}
+	}
+
+	var nbSuitableModels = suitableModels.length;
+	if(nbSuitableModels === 1) {
+		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+	}
+	if(nbSuitableModels > 1){
+		console.warn("Ambiguous model for value " + toString(obj)
+			+ ", could be " + suitableModels.join(" or "));
+	}
+
+	return obj;
 }
 Model[OBJECT] = function ObjectModel(def){
 
@@ -415,67 +439,46 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 });
 
 function getProxy(model, obj, defNode, path) {
-	if(is(Model, defNode) && obj && !is(defNode, obj)) {
-		return defNode(obj);
-	} else if(is(Array, defNode)){ // union type
-		var suitableModels = [];
-		for(var i=0, l=defNode.length; i<l; i++){
-			var defPart = defNode[i];
-			if(is(Model, defPart)){
-				if(is(defPart, obj)){
-					return obj;
-				}
-				if(defPart.test(obj)){
-					suitableModels.push(defPart);
-				}
-			}
-		}
-		if(suitableModels.length === 1){
-			return suitableModels[0](obj); // automatically cast to the suitable model when explicit
-		} else if(suitableModels.length > 1){
-			console.warn("Ambiguous model for value "+toString(obj)+", could be "+suitableModels.join(" or "));
-		}
-		return obj;
-	} else if(isLeaf(defNode)){
-		return obj;
-	} else {
-		var wrapper = is(Object, obj) ? obj : {};
-		var proxy = Object.create(Object.getPrototypeOf(wrapper));
-
-		for(var key in wrapper){
-			if(wrapper.hasOwnProperty(key) && !(key in defNode)){
-				proxy[key] = wrapper[key]; // properties out of model definition are kept
-			}
-		}
-
-		Object.keys(defNode).forEach(function(key) {
-			var newPath = (path ? path + '.' + key : key);
-			var isConstant = Model[CONVENTION_CONSTANT](key);
-			defineProperty(proxy, key, {
-				get: function () {
-					return getProxy(model, wrapper[key], defNode[key], newPath);
-				},
-				set: function (val) {
-					if(isConstant && wrapper[key] !== undefined){
-						var err = {};
-						err[MESSAGE] = "cannot redefine constant " + key;
-						model[ERROR_STACK].push(err);
-					}
-					var newProxy = getProxy(model, val, defNode[key], newPath);
-					checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
-					var oldValue = wrapper[key];
-					wrapper[key] = newProxy;
-					checkAssertions(obj, model);
-					if(model[ERROR_STACK].length){
-						wrapper[key] = oldValue;
-						model[UNSTACK]();
-					}
-				},
-				enumerable: !Model[CONVENTION_PRIVATE](key)
-			});
-		});
-		return proxy;
+	if(!isPlainObject(defNode)) {
+		return autocast(obj, defNode);
 	}
+
+	var wrapper = is(Object, obj) ? obj : {};
+	var proxy = Object.create(Object.getPrototypeOf(wrapper));
+
+	for(var key in wrapper){
+		if(wrapper.hasOwnProperty(key) && !(key in defNode)){
+			proxy[key] = wrapper[key]; // properties out of model definition are kept
+		}
+	}
+
+	Object.keys(defNode).forEach(function(key) {
+		var newPath = (path ? path + '.' + key : key);
+		var isConstant = Model[CONVENTION_CONSTANT](key);
+		defineProperty(proxy, key, {
+			get: function () {
+				return getProxy(model, wrapper[key], defNode[key], newPath);
+			},
+			set: function (val) {
+				if(isConstant && wrapper[key] !== undefined){
+					var err = {};
+					err[MESSAGE] = "cannot redefine constant " + key;
+					model[ERROR_STACK].push(err);
+				}
+				var newProxy = getProxy(model, val, defNode[key], newPath);
+				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
+				var oldValue = wrapper[key];
+				wrapper[key] = newProxy;
+				checkAssertions(obj, model);
+				if(model[ERROR_STACK].length){
+					wrapper[key] = oldValue;
+					model[UNSTACK]();
+				}
+			},
+			enumerable: !Model[CONVENTION_PRIVATE](key)
+		});
+	});
+	return proxy;
 }
 Model[ARRAY] = function ArrayModel(def){
 
@@ -541,6 +544,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 		errorStack.push(err);
 	} else {
 		for(var i=0, l=arr.length; i<l; i++){
+			arr[i] = autocast(arr[i], this[DEFINITION]);
 			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
 		}
 	}
@@ -564,19 +568,26 @@ function proxifyArrayMethod(array, method, model, proxy){
 		var testArray = array.slice();
 		Array[PROTO][method].apply(testArray, arguments);
 		model[VALIDATE](testArray);
+
 		if(!isProxySupported){
-			for(var key in testArray){
+			for(var key in testArray){ // proxify new array keys if any after method call
 				if(testArray.hasOwnProperty(key) && !(key in proxy)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
 		}
-		return Array[PROTO][method].apply(array, arguments);
+
+		var returnValue = Array[PROTO][method].apply(array, arguments);
+		for(var i=0, l=array.length; i<l; i++) {
+			array[i] = autocast(array[i], model[DEFINITION]);
+		}
+		return returnValue;
 	};
 }
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
+		value = autocast(value, model[DEFINITION]);
 		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
 	}
 	var testArray = array.slice();
@@ -602,6 +613,7 @@ Model[FUNCTION] = function FunctionModel(){
 				model[ERROR_STACK].push(err);
 			}
 			def[ARGS].forEach(function (argDef, i) {
+				args[i] = autocast(args[i], argDef);
 				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
 			});
 			checkAssertions(args, model);
@@ -609,6 +621,7 @@ Model[FUNCTION] = function FunctionModel(){
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);
 				if (RETURN in def) {
+					returnValue = autocast(returnValue, def[RETURN]);
 					checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
 				}
 			}

@@ -62,8 +62,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 		errorStack.push(err);
 	} else {
 		for(var i=0, l=arr.length; i<l; i++){
-			arr[i] = autocast(arr[i], this[DEFINITION]);
-			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
+			arr[i] = checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack, true);
 		}
 	}
 	checkAssertions(arr, this);
@@ -105,8 +104,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		value = autocast(value, model[DEFINITION]);
-		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
+		value = checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK], true);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;

@@ -28,9 +28,8 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	var errorStack = [];
-	this[VALIDATOR](obj, null, [], errorStack);
-	return !errorStack.length;
+	try { this(obj) } catch(e){ return false; }
+	return true;
 };
 
 ModelProto[EXTEND] = function(){
@@ -151,15 +150,20 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack){
-	if(is(Model, def)){
-		var indexFound = callStack.indexOf(def);
-		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
-			return; //if found twice in call stack, cycle detected, skip validation
-		}
-		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+function checkDefinition(obj, def, path, callStack, errorStack, shouldAutoCast){
+	var indexFound = callStack.indexOf(def);
+	if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
+		return obj; //if found twice in call stack, cycle detected, skip validation
 	}
-	if(isPlainObject(def)) {
+
+	if(shouldAutoCast) {
+		obj = autocast(obj, def);
+	}
+
+	if(is(Model, def)){
+		def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+	}
+	else if(isPlainObject(def)) {
 		Object.keys(def).forEach(function (key) {
 			var val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
@@ -168,7 +172,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		var pdef = parseDefinition(def);
 		for(var i=0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
-				return;
+				return obj;
 			}
 		}
 		var err = {};
@@ -177,6 +181,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		err[PATH] = path;
 		errorStack.push(err);
 	}
+	return obj;
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
@@ -230,7 +235,9 @@ function autocast(obj, defNode){
 			if(is(defPart, obj)){
 				return obj;
 			}
-			if(defPart[TEST](obj)){
+			var isSuitable = true;
+			defPart[VALIDATE](obj, function(){ isSuitable = false });
+			if(isSuitable){
 				suitableModels.push(defPart);
 			}
 		}

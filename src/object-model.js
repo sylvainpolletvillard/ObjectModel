@@ -1,6 +1,9 @@
 Model[OBJECT] = function ObjectModel(def){
 
 	var model = function(obj) {
+		if(is(model, obj)){
+			return obj;
+		}
 		if(!is(model, this)){
 			return new model(obj);
 		}

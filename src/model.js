@@ -226,20 +226,17 @@ function checkAssertions(obj, model, errorStack){
 }
 
 function autocast(obj, defNode){
+	if(!obj || is(Model, obj[CONSTRUCTOR])){
+		return obj; // no value or already a model instance
+	}
+
 	var def = parseDefinition(defNode || []),
 	    suitableModels = [];
 
 	for(var i=0, l=def.length; i<l; i++){
 		var defPart = def[i];
-		if(is(Model, defPart)){
-			if(is(defPart, obj)){
-				return obj;
-			}
-			var isSuitable = true;
-			defPart[VALIDATE](obj, function(){ isSuitable = false });
-			if(isSuitable){
-				suitableModels.push(defPart);
-			}
+		if(is(Model, defPart) && defPart[TEST](obj)){
+			suitableModels.push(defPart);
 		}
 	}
 

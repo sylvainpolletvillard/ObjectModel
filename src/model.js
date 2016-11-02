@@ -189,7 +189,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 		return !errorStack.length;
 	}
 	if(is(RegExp, def)){
-		return def[TEST](obj);
+		return def.test(obj);
 	}
 	if(def === Number || def === Date){
 		return obj[CONSTRUCTOR] === def && !isNaN(obj)
@@ -230,7 +230,7 @@ function autocast(obj, defNode){
 			if(is(defPart, obj)){
 				return obj;
 			}
-			if(defPart.test(obj)){
+			if(defPart[TEST](obj)){
 				suitableModels.push(defPart);
 			}
 		}

@@ -78,7 +78,7 @@ ModelProto[EXTEND] = function(){
 	return submodel;
 };
 
-ModelProto.assert = function(assertion, description){
+ModelProto[ASSERT] = function(assertion, description){
 	description = description || toString(assertion);
 	var onFail = isFunction(description) ? description : function (assertionResult, value) {
 		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
@@ -88,7 +88,7 @@ ModelProto.assert = function(assertion, description){
 	return this;
 };
 
-ModelProto.defaultTo = function(val){
+ModelProto[DEFAULT_TO] = function(val){
 	this[DEFAULT] = val;
 	return this;
 }

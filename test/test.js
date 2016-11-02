@@ -293,18 +293,6 @@ function testSuite(Model){
 		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
 		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
 
-		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
-		Arr = Model.Array(N);
-		a = Arr([ { x:9 } ]);
-		assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
-		assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
-		a.push({ x: 3 });
-		assert.ok(a[1] instanceof N, "test automatic model casting with array mutator method 1/2")
-		assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array mutator method 2/2")
-		a[0] = { x: 10 };
-		assert.ok(a[0] instanceof N, "test automatic model casting with array set index 1/2")
-		assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
-
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -382,15 +370,6 @@ function testSuite(Model){
 		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "Model.Function object argument 3/5");
 		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "Model.Function object argument 4/5");
 		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "Model.Function object argument 5/5");
-
-		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
-		var F = Model.Function(N, N).return(N);
-		var f = F(function(a,b){ return { x: a.x+b.x, y: a.y+b.y } });
-		var returnValue = f({ x: 1 }, { x: 2 });
-
-		assert.ok(returnValue instanceof N, "test automatic model casting with return value");
-		assert.equal(returnValue.x, 3, "test automatic casting with function args 1/2");
-		assert.equal(returnValue.y, 14, "test automatic casting with function args 2/2");
 	});
 
 	QUnit.test("Default values", function(assert){
@@ -421,9 +400,10 @@ function testSuite(Model){
 		var model = myModel();
 		assert.strictEqual(model.name,"joe", "defaults values correctly applied");
 		assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
+		assert.ok(myModel.test({}), "defaults should be applied when testing duck typed objects")
 
 		var model2 = myModel({ name: "jim", foo:{ bar: { buz: 1 }}});
-		assert.strictEqual(model2.name,"jim", "defaults values not applied if provided");
+		assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
 		assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
 
 		var op = new Model.Function(Number, Number).return(Number).defaults(11,31);
@@ -1075,6 +1055,26 @@ function testSuite(Model){
 		assert.ok(consoleMock["warnLastArgs"].length === 0, "should not warn when explicit model cast in ambiguous context");
 		assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 		assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
+
+		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+		var Arr = Model.Array(N);
+		a = Arr([ { x:9 } ]);
+		assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
+		assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
+		a.push({ x: 3 });
+		assert.ok(a[1] instanceof N, "test automatic model casting with array mutator method 1/2")
+		assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array mutator method 2/2")
+		a[0] = { x: 10 };
+		assert.ok(a[0] instanceof N, "test automatic model casting with array set index 1/2")
+		assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
+
+		var F = Model.Function(N, N).return(N);
+		var f = F(function(a,b){ return { x: a.x+b.x, y: a.y+b.y } });
+		var returnValue = f({ x: 1 }, { x: 2 });
+
+		assert.ok(returnValue instanceof N, "test automatic model casting with return value");
+		assert.equal(returnValue.x, 3, "test automatic casting with function args 1/2");
+		assert.equal(returnValue.y, 14, "test automatic casting with function args 2/2");
 
 	})
 

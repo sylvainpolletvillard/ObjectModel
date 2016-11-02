@@ -49,6 +49,7 @@
 		<ul>
 			<li><a href="#doc-basic-model">Basic models</a></li>
 			<li><a href="#doc-object-model">Object models</a></li>
+			<li><a href="#doc-es6-classes">Using ES6 class</a></li>
 			<li><a href="#doc-optional-properties">Optional properties</a></li>
 			<li><a href="#doc-multiple-types">Multiple types</a></li>
 			<li><a href="#doc-value-checking">Value checking and enumerations</a></li>
@@ -118,17 +119,17 @@
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
 				<li>Custom error collectors</li>
-				<li>all in <strong>7.7 kB minified, 3.2 kB gzipped</strong></li>
+				<li>all in <strong>7.8 kB minified, 3.3 kB gzipped</strong></li>
 			</ul>
 		</div>
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v2.4.5</h3>
+			<h3>Current version: v2.5.0</h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-				<li>Minified file (7.7 kB, 3.2 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.4.5.zip">object-model-2.4.5.zip</a> </li>
+				<li>Minified file (7.8 kB, 3.3 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.5.0.zip">object-model-2.5.0.zip</a> </li>
 			</ul>
 			<h3>Changelog and previous releases</h3>
 			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a></p>
@@ -190,6 +191,30 @@
 myOrder.product.quantity = 2; // no exceptions thrown
 myOrder.product.quantity = false; //try to assign a Boolean</code>
 <code class="language-none exception">TypeError: expecting product.quantity to be Number, got Boolean false</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
+	<section id="doc-es6-classes" class="grid doc-code-code">
+		<div class="doc">
+			<h2>Usage with ES6 classes</h2>
+			<p>If you can use ES6 on your project, it is very easy to define a model for your classes:</p>
+		</div>
+
+		<div class="panel panel1">
+			<span class="legend">Model</span>
+			<pre><code class="language-javascript">class Character extends Model({ lastName: String, firstName: String }){
+   get fullName(){ return `${this.firstName} ${this.lastName}`; }
+}</code></pre>
+		</div>
+
+		<div class="panel panel2">
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">var rick = new Character({ lastName: "Sanchez", firstName: "Rick" });
+rick.lastName = 132;</code>
+<code class="language-none exception">TypeError: expecting lastName to be String, got Number 132</code>
+<code class="language-javascript">console.log(rick.fullName); // "Rick Sanchez"</code></pre>
 		</div>
 	</section>
 

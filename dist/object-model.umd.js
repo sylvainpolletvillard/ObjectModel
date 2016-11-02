@@ -17,7 +17,8 @@ ON_FAIL               = "_onFail",
 VALIDATE              = "validate",
 VALIDATOR             = "_validator",
 TEST                  = "test",
-EXTEND                = "extend",	
+EXTEND                = "extend",
+ASSERT                = "assert",
 EXPECTED              = "expected",
 RECEIVED              = "received",
 PATH                  = "path",
@@ -28,6 +29,7 @@ UNSTACK               = "unstack",
 PROTO                 = "prototype",
 CONSTRUCTOR           = "constructor",	
 DEFAULT               = "default",
+DEFAULT_TO            = "defaultTo",
 DEFAULTS              = "defaults",
 RETURN                = "return",
 ARGS                  = "arguments",
@@ -175,9 +177,8 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	var errorStack = [];
-	this[VALIDATOR](obj, null, [], errorStack);
-	return !errorStack.length;
+	try { this(obj) } catch(e){ return false; }
+	return true;
 };
 
 ModelProto[EXTEND] = function(){
@@ -225,7 +226,7 @@ ModelProto[EXTEND] = function(){
 	return submodel;
 };
 
-ModelProto.assert = function(assertion, description){
+ModelProto[ASSERT] = function(assertion, description){
 	description = description || toString(assertion);
 	var onFail = isFunction(description) ? description : function (assertionResult, value) {
 		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
@@ -235,7 +236,7 @@ ModelProto.assert = function(assertion, description){
 	return this;
 };
 
-ModelProto.defaultTo = function(val){
+ModelProto[DEFAULT_TO] = function(val){
 	this[DEFAULT] = val;
 	return this;
 }
@@ -298,15 +299,20 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack){
-	if(is(Model, def)){
-		var indexFound = callStack.indexOf(def);
-		if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
-			return; //if found twice in call stack, cycle detected, skip validation
-		}
-		return def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+function checkDefinition(obj, def, path, callStack, errorStack, shouldAutoCast){
+	var indexFound = callStack.indexOf(def);
+	if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
+		return obj; //if found twice in call stack, cycle detected, skip validation
 	}
-	if(isPlainObject(def)) {
+
+	if(shouldAutoCast) {
+		obj = autocast(obj, def);
+	}
+
+	if(is(Model, def)){
+		def[VALIDATOR](obj, path, callStack.concat(def), errorStack);
+	}
+	else if(isPlainObject(def)) {
 		Object.keys(def).forEach(function (key) {
 			var val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, callStack, errorStack);
@@ -315,7 +321,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		var pdef = parseDefinition(def);
 		for(var i=0, l=pdef.length; i<l; i++){
 			if(checkDefinitionPart(obj, pdef[i], path, callStack)){
-				return;
+				return obj;
 			}
 		}
 		var err = {};
@@ -324,6 +330,7 @@ function checkDefinition(obj, def, path, callStack, errorStack){
 		err[PATH] = path;
 		errorStack.push(err);
 	}
+	return obj;
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
@@ -336,7 +343,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 		return !errorStack.length;
 	}
 	if(is(RegExp, def)){
-		return def[TEST](obj);
+		return def.test(obj);
 	}
 	if(def === Number || def === Date){
 		return obj[CONSTRUCTOR] === def && !isNaN(obj)
@@ -368,18 +375,17 @@ function checkAssertions(obj, model, errorStack){
 }
 
 function autocast(obj, defNode){
+	if(!obj || is(Model, obj[CONSTRUCTOR])){
+		return obj; // no value or already a model instance
+	}
+
 	var def = parseDefinition(defNode || []),
 	    suitableModels = [];
 
 	for(var i=0, l=def.length; i<l; i++){
 		var defPart = def[i];
-		if(is(Model, defPart)){
-			if(is(defPart, obj)){
-				return obj;
-			}
-			if(defPart.test(obj)){
-				suitableModels.push(defPart);
-			}
+		if(is(Model, defPart) && defPart[TEST](obj)){
+			suitableModels.push(defPart);
 		}
 	}
 
@@ -397,6 +403,9 @@ function autocast(obj, defNode){
 Model[OBJECT] = function ObjectModel(def){
 
 	var model = function(obj) {
+		if(is(model, obj)){
+			return obj;
+		}
 		if(!is(model, this)){
 			return new model(obj);
 		}
@@ -544,8 +553,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 		errorStack.push(err);
 	} else {
 		for(var i=0, l=arr.length; i<l; i++){
-			arr[i] = autocast(arr[i], this[DEFINITION]);
-			checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack);
+			arr[i] = checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack, true);
 		}
 	}
 	checkAssertions(arr, this);
@@ -587,8 +595,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0){
-		value = autocast(value, model[DEFINITION]);
-		checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK]);
+		value = checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK], true);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
@@ -613,16 +620,14 @@ Model[FUNCTION] = function FunctionModel(){
 				model[ERROR_STACK].push(err);
 			}
 			def[ARGS].forEach(function (argDef, i) {
-				args[i] = autocast(args[i], argDef);
-				checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK]);
+				args[i] = checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK], true);
 			});
 			checkAssertions(args, model);
 
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);
 				if (RETURN in def) {
-					returnValue = autocast(returnValue, def[RETURN]);
-					checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK]);
+					returnValue = checkDefinition(returnValue, def[RETURN], RETURN+' value', [], model[ERROR_STACK], true);
 				}
 			}
 			model[UNSTACK]();

@@ -1,4 +1,4 @@
-// ObjectModel v2.5.0 - http://objectmodel.js.org
+// ObjectModel v2.5.1 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var

@@ -923,7 +923,7 @@ function testSuite(Model){
 
 	QUnit.test("Custom error collectors", function(assert) {
 
-		assert.expect( 23 );
+		assert.expect( 24 );
 
 		var defaultErrorCollector = Model.prototype.errorCollector;
 		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
@@ -1009,6 +1009,10 @@ function testSuite(Model){
 			assert.equal(err.message, 'expecting d.e.f to be null, got undefined', "check nested error.message custom collector");
 		})
 
+		M = Model({ x: Number });
+		M.errorCollector = function noop(){ };
+		assert.equal(M.test({ x: "nope" }), false, "Model.test should work even when errorCollector does not throw exceptions");
+
 		Model.prototype.errorCollector = defaultErrorCollector;
 
 	});
@@ -1055,6 +1059,7 @@ function testSuite(Model){
 		assert.ok(consoleMock["warnLastArgs"].length === 0, "should not warn when explicit model cast in ambiguous context");
 		assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 		assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
+		consoleMock.revert();
 
 		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 		var Arr = Model.Array(N);

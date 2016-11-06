@@ -47,7 +47,7 @@ module.exports = function(grunt) {
 			dist: {
 				options: {
 					sourceMap: true,
-					presets: [require('babel-preset-minify')],
+					presets: [require('babel-preset-babili')],
 					compact: true,
 					minified: true,
 					comments: false

@@ -6,10 +6,11 @@ const
 	test  = require("./tasks/test")
 
 gulp.task("dist", gulp.series(
-	gulp.parallel(build.es6, build.umd),
+	gulp.parallel(build.bundle, build.minified),
 	docs.updateBuilds
 ))
 
-gulp.task("test", test.qunit)
 
-gulp.task("es6", build.es6)
+gulp.task("build", gulp.parallel(build.bundle, build.minified))
+gulp.task("minify", build.minified)
+gulp.task("test", test.qunit)

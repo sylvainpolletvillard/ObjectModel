@@ -8,12 +8,24 @@ const pkg = require("../package.json");
 
 module.exports = {
 
-	es6: function(){
-		return gulp.src('dist/object-model.js')
+	bundle(){
+		return gulp.src('src/object-model.js')
 			.pipe(sourcemaps.init())
 			.pipe(babel({
 				sourceMaps: true,
-				presets: [require('babel-preset-minify')],
+				presets: []
+			}))
+			.pipe(header(`// ObjectModel v${pkg.version} - ${pkg.homepage}\n`))
+			.pipe(sourcemaps.write('.'))
+			.pipe(gulp.dest('dist'))
+	},
+
+	minified() {
+		return gulp.src('src/object-model.js')
+			.pipe(sourcemaps.init())
+			.pipe(babel({
+				sourceMaps: true,
+				presets: [require('babel-preset-babili')],
 				compact: true,
 				minified: true,
 				comments: false
@@ -22,10 +34,6 @@ module.exports = {
 			.pipe(header(`// ObjectModel v${pkg.version} - ${pkg.homepage}\n`))
 			.pipe(sourcemaps.write('.'))
 			.pipe(gulp.dest('dist'))
-	},
-
-	umd: function () {
-
 	}
 
 }

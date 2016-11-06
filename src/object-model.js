@@ -1,6 +1,7 @@
 Model[OBJECT] = function ObjectModel(def){
 
 	const model = function(obj = model[DEFAULT]) {
+		if(is(model, obj)) return obj;
 		if(!is(model, this)) return new model(obj)
 		merge(this, obj, true)
 		const proxy = getProxy(model, this, model[DEFINITION])
@@ -41,23 +42,9 @@ Object.assign(Model[OBJECT][PROTO], {
 })
 
 function getProxy(model, obj, defNode, path) {
-	if(is(Model, defNode) && obj && !is(defNode, obj))
-		return defNode(obj)
-	else if(is(Array, defNode)){ // union type
-		let suitableModels = []
-		for(let part of defNode.filter(part => is(Model, part))){
-			if(is(part, obj)) return obj
-			if(part.test(obj)) suitableModels.push(part)
-		}
-		if(suitableModels.length === 1)
-			return suitableModels[0](obj); // automatically cast to suitable model when explicit
-		else if(suitableModels.length > 1)
-			console.warn(`Ambiguous model for value ${toString(obj)},
-			 could be ${suitableModels.join(" or ")}`);
-		return obj;
+	if(!isPlainObject(defNode)) {
+		return autocast(obj, defNode);
 	}
-	else if(isLeaf(defNode))
-		return obj
 
 	return new Proxy(obj || {}, {
 		get(o, key) {

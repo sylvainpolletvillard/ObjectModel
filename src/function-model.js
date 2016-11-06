@@ -12,14 +12,16 @@ Model[FUNCTION] = function FunctionModel(){
 					[RECEIVED]: args.length
 				})
 			}
-			def[ARGS].forEach((argDef, i) => checkDefinition(args[i], argDef, `${ARGS}[${i}]`, model[ERROR_STACK], []))
+			def[ARGS].forEach((argDef, i) => {
+				args[i] = checkDefinition(args[i], argDef, `${ARGS}[${i}]`, model[ERROR_STACK], [], true)
+			})
 			checkAssertions(args, model)
 
 			let returnValue;
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args)
 				if (RETURN in def)
-					checkDefinition(returnValue, def[RETURN], RETURN+' value', model[ERROR_STACK], [])
+					returnValue = checkDefinition(returnValue, def[RETURN], RETURN+' value', model[ERROR_STACK], [], true)
 			}
 			model[UNSTACK_ERRORS]()
 			return returnValue

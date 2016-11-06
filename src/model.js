@@ -1,5 +1,5 @@
 function Model(def){
-	if(!isLeaf(def)) return Model[OBJECT](def)
+	if(isPlainObject(def)) return Model[OBJECT](def)
 
 	const model = function(obj=model[DEFAULT]) {
 		model[VALIDATE](obj)
@@ -25,9 +25,12 @@ Object.assign(Model[PROTO], {
 	},
 
 	[TEST](obj){
-		const errorStack = []
-		this[VALIDATOR](obj, null, errorStack, [])
-		return !errorStack.length
+		let failed,
+		    initialErrorCollector = this[ERROR_COLLECTOR]
+		this[ERROR_COLLECTOR] = () => { failed = true }
+		this(obj)
+		this[ERROR_COLLECTOR] = initialErrorCollector
+		return !failed;
 	},
 
 	[EXTEND](){
@@ -68,7 +71,7 @@ Object.assign(Model[PROTO], {
 		return submodel
 	},
 
-	assert(assertion, description = toString(assertion)){
+	[ASSERT](assertion, description = toString(assertion)){
 		const onFail = isFunction(description) ? description : (assertionResult, value) =>
 			`assertion "${description}" returned ${toString(assertionResult)} for value ${toString(value)}`
 		define(assertion, ON_FAIL, onFail)
@@ -76,7 +79,7 @@ Object.assign(Model[PROTO], {
 		return this
 	},
 
-	defaultTo(val){
+	[DEFAULT_TO](val){
 		this[DEFAULT] = val;
 		return this;
 	},
@@ -113,8 +116,6 @@ Object.assign(Model[PROTO], {
 Model[CONVENTION_CONSTANT] = key => key.toUpperCase() === key
 Model[CONVENTION_PRIVATE] = key => key[0] === "_"
 
-const isLeaf = def => bettertypeof(def) != "Object"
-
 function initModel(model, def, constructor){
 	setConstructor(model, constructor)
 	model[DEFINITION] = def
@@ -123,46 +124,57 @@ function initModel(model, def, constructor){
 }
 
 function parseDefinition(def){
-	if(isLeaf(def)){
+	if(!isPlainObject(def)){
 		if(!is(Array, def)) return [def]
-		else if(def.length === 1) return [...def, undefined, null]
+		if(def.length === 1) return [...def, undefined, null]
 	} else {
-		for(let key of def) def[key] = parseDefinition(def[key])
+		for(let key of Object.keys(def))
+			def[key] = parseDefinition(def[key])
 	}
 	return def
 }
 
-function checkDefinition(obj, def, path, errorStack, callStack){
+function checkDefinition(obj, def, path, errorStack, callStack, shouldAutoCast=false){
+	const indexFound = callStack.indexOf(def)
+	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
+		return obj; //if found twice in call stack, cycle detected, skip validation
+
+	if(shouldAutoCast)
+		obj = autocast(obj, def)
+
+
 	if(is(Model, def)){
-		const indexFound = callStack.indexOf(def)
-		//if found twice in call stack, cycle detected, skip validation
-		if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1) return
-		return def[VALIDATOR](obj, path, errorStack, callStack.concat(def))
+		def[VALIDATOR](obj, path, errorStack, callStack.concat(def))
 	}
-	else if(isLeaf(def)){
-		const pdef = parseDefinition(def)
-		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack))) return
-		errorStack.push({
-			[EXPECTED]: def,
-			[RECEIVED]: obj,
-			[PATH]: path
-		})
-	} else {
+	else if(isPlainObject(def)){
 		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined
 			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
 		})
 	}
+	else {
+		const pdef = parseDefinition(def)
+		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack)))
+			return obj
+
+		errorStack.push({
+			[EXPECTED]: def,
+			[RECEIVED]: obj,
+			[PATH]: path
+		})
+	}
+
+	return obj
 }
 
 function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null) return obj === def
-	if(!isLeaf(def) || is(Model, def)){ // object or model as part of union type
+	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
 		const errorStack = []
 		checkDefinition(obj, def, path, errorStack, callStack)
 		return !errorStack.length
 	}
-	if(is(RegExp, def)) return def[TEST](obj)
+	if(is(RegExp, def)) return def.test(obj)
 	if(def === Number || def === Date) return obj[CONSTRUCTOR] === def && !isNaN(obj)
 	return obj === def
 		|| (isFunction(def) && is(def, obj))
@@ -183,4 +195,26 @@ function checkAssertions(obj, model, errorStack = model[ERROR_STACK]){
 			})
 		}
 	}
+}
+
+function autocast(obj, defNode=[]) {
+	if(!obj || isPlainObject(defNode) || is(Model, obj[CONSTRUCTOR]))
+		return obj; // no value or not leaf or already a model instance
+
+	const def = parseDefinition(defNode),
+	      suitableModels = []
+
+	for (let part of def) {
+		if(is(Model, part) && part[TEST](obj))
+			suitableModels.push(part)
+	}
+
+	if (suitableModels.length === 1)
+		return suitableModels[0](obj); // automatically cast to suitable model when explicit
+
+	if (suitableModels.length > 1)
+		console.warn(`Ambiguous model for value ${toString(obj)},
+			 could be ${suitableModels.join(" or ")}`)
+
+	return obj
 }

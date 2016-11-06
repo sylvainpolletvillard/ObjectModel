@@ -1,4 +1,4 @@
-// ObjectModel v2.5.2 - http://objectmodel.js.org
+// ObjectModel v2.5.3 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var
@@ -173,8 +173,12 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	try { this(obj) } catch(e){ return false; }
-	return true;
+	var failed,
+	    initialErrorCollector = this[ERROR_COLLECTOR];
+	this[ERROR_COLLECTOR] = function(){ failed = true };
+	this(obj);
+	this[ERROR_COLLECTOR] = initialErrorCollector;
+	return !failed;
 };
 
 ModelProto[EXTEND] = function(){

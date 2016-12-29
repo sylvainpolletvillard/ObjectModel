@@ -42,7 +42,7 @@ Object.assign(Model[ARRAY][PROTO], {
 			[PATH]: path
 		})
 
-		checkAssertions(arr, this)
+		checkAssertions(arr, this, errorStack)
 	}
 })
 

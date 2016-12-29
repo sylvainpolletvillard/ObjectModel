@@ -37,7 +37,7 @@ Object.assign(Model[OBJECT][PROTO], {
 		} else {
 			checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
 		}
-		checkAssertions(obj, this)
+		checkAssertions(obj, this, errorStack)
 	}
 })
 

@@ -41,6 +41,6 @@ Object.assign(Model[SET][PROTO], {
 				[PATH]: path
 			})
 		}
-		checkAssertions(_set, this)
+		checkAssertions(_set, this, errorStack)
 	}
 })

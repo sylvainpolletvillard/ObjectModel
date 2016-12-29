@@ -1,4 +1,4 @@
-var gzipSize = require('gzip-size').sync;
+const gzipSize = require('gzip-size').sync;
 
 module.exports = function(grunt) {
 
@@ -6,17 +6,17 @@ module.exports = function(grunt) {
 		return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 	}
 
-	var pkg = grunt.file.readJSON('package.json');
-	var BANNER = "// ObjectModel v"+pkg.version+" - "+pkg.homepage + "\n";
+	const pkg  = grunt.file.readJSON('package.json');
+	const BANNER = "// ObjectModel v" + pkg.version + " - " + pkg.homepage + "\n";
 
-	var srcFiles = [
+	const srcFiles = [
 		'src/constants.js',
 		'src/helpers.js',
 		'src/model.js',
 		'src/object-model.js',
 		'src/array-model.js',
 		'src/function-model.js'
-	]
+	];
 
 	// Project configuration.
 	grunt.initConfig({

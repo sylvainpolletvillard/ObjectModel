@@ -210,10 +210,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 }
 
 function checkAssertions(obj, model, errorStack){
-	if(errorStack === undefined){
-		errorStack = model[ERROR_STACK];
-	}
-	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++ ){
+	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++){
 		var assert = model[ASSERTIONS][i],
 			assertionResult;
 		try {

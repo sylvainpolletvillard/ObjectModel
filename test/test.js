@@ -872,6 +872,27 @@ function testSuite(Model){
 			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Array models");
 
+		var Address = new Model({
+			city: String,
+			country: String
+		}).assert(function(a) {
+			return a.country === "GB";
+		}, "Country must be GB");
+
+		var gbAddress = { city: "London", country: "GB" };
+		var frAddress = { city: "Paris", country: "FR" };
+
+		var Order = new Model({
+			sku: String,
+			address: Address
+		});
+
+		var gbOrder = { sku: "ABC123", address: gbAddress };
+		var frOrder = { sku: "ABC123", address: frAddress };
+
+		Order.validate(gbOrder); // no errors
+		assert.throws(function(){ Order.validate(frOrder); }, "should validate sub-objects assertions");
+
 	});
 
 	QUnit.test("Cyclic detection", function(assert){

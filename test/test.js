@@ -292,6 +292,7 @@ var consoleMock = {
 		childO.arr.push("a");
 		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
 		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
+
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -369,7 +370,6 @@ var consoleMock = {
 		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "Model.Function object argument 3/5");
 		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "Model.Function object argument 4/5");
 		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "Model.Function object argument 5/5");
-
 	});
 
 	QUnit.test("Default values", function(assert){
@@ -875,6 +875,27 @@ var consoleMock = {
 		assert.throws(function(){ new AssertArray(); },
 			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Array models");
+
+		var Address = new Model({
+			city: String,
+			country: String
+		}).assert(function(a) {
+			return a.country === "GB";
+		}, "Country must be GB");
+
+		var gbAddress = { city: "London", country: "GB" };
+		var frAddress = { city: "Paris", country: "FR" };
+
+		var Order = new Model({
+			sku: String,
+			address: Address
+		});
+
+		var gbOrder = { sku: "ABC123", address: gbAddress };
+		var frOrder = { sku: "ABC123", address: frAddress };
+
+		Order.validate(gbOrder); // no errors
+		assert.throws(function(){ Order.validate(frOrder); }, "should validate sub-objects assertions");
 
 	});
 

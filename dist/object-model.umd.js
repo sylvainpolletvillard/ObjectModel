@@ -359,10 +359,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 }
 
 function checkAssertions(obj, model, errorStack){
-	if(errorStack === undefined){
-		errorStack = model[ERROR_STACK];
-	}
-	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++ ){
+	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++){
 		var assert = model[ASSERTIONS][i],
 			assertionResult;
 		try {
@@ -448,7 +445,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	} else {
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
 	}
-	checkAssertions(obj, this);
+	checkAssertions(obj, this, errorStack);
 });
 
 function getProxy(model, obj, defNode, path) {
@@ -482,7 +479,7 @@ function getProxy(model, obj, defNode, path) {
 				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 				var oldValue = wrapper[key];
 				wrapper[key] = newProxy;
-				checkAssertions(obj, model);
+				checkAssertions(obj, model, model[ERROR_STACK]);
 				if(model[ERROR_STACK].length){
 					wrapper[key] = oldValue;
 					model[UNSTACK]();
@@ -560,7 +557,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 			arr[i] = checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack, true);
 		}
 	}
-	checkAssertions(arr, this);
+	checkAssertions(arr, this, errorStack);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -603,7 +600,7 @@ function setArrayKey(array, key, value, model){
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	checkAssertions(testArray, model);
+	checkAssertions(testArray, model, model[ERROR_STACK]);
 	model[UNSTACK]();
 	array[key] = value;
 }
@@ -626,7 +623,7 @@ Model[FUNCTION] = function FunctionModel(){
 			def[ARGS].forEach(function (argDef, i) {
 				args[i] = checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK], true);
 			});
-			checkAssertions(args, model);
+			checkAssertions(args, model, model[ERROR_STACK]);
 
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);

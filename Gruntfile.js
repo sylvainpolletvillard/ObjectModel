@@ -31,18 +31,6 @@ module.exports = function(grunt) {
 					banner: BANNER + ";(function(global){\n",
 					footer: "\n\nglobal.Model = Model;\n})(this);"
 				}
-			},
-			dist_umd: {
-				src: srcFiles,
-				dest: 'dist/object-model.umd.js',
-				options: {
-					banner: BANNER + ";(function (globals, factory) {\n"
-					+" if (typeof define === 'function' && define.amd) define(factory); // AMD\n"
-					+" else if (typeof exports === 'object') module.exports = factory(); // Node\n"
-					+" else globals['Model'] = factory(); // globals\n"
-					+"}(this, function () {\n",
-					footer: "\nreturn Model;\n}));"
-				}
 			}
 		},
 		babel: {

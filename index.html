@@ -119,7 +119,7 @@
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
 				<li>Custom error collectors</li>
-				<li>all in <strong>6.4 kB minified, 2.8 kB gzipped</strong></li>
+				<li>all in <strong>8.7 kB minified, 3.2 kB gzipped</strong></li>
 			</ul>
 		</div>
 
@@ -128,7 +128,7 @@
 			<h3>Current version: v3.0.0</h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-				<li>Minified file (6.4 kB, 2.8 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+				<li>Minified file (8.7 kB, 3.2 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
 				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
 			</ul>
 			<h3>Changelog and previous releases</h3>
@@ -151,7 +151,7 @@
 
         <div class="panel panel1">
             <span class="legend">Model</span>
-<pre><code class="language-javascript">var NumberModel = Model(Number);
+<pre><code class="language-javascript">var NumberModel = BasicModel(Number);
 // 'new' keyword is optional for models and model instances</code></pre>
         </div>
 
@@ -172,7 +172,7 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Order = new Model({ // or Model.Object
+<pre><code class="language-javascript">var Order = new ObjectModel({ // or Model.Object
 	product: {
 		name: String,
 		quantity: Number,
@@ -204,7 +204,7 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">class Character extends Model({ lastName: String, firstName: String }){
+			<pre><code class="language-javascript">class Character extends ObjectModel({ lastName: String, firstName: String }){
    get fullName(){ return `${this.firstName} ${this.lastName}`; }
 }</code></pre>
 		</div>
@@ -228,7 +228,7 @@ rick.lastName = 132;</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var User = Model({
+<pre><code class="language-javascript">var User = ObjectModel({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
@@ -252,7 +252,7 @@ var roger = User({ name: "Roger" }); // email is mandatory</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Animation = new Model({
+<pre><code class="language-javascript">var Animation = new ObjectModel({
 	// can be a Number or a String
 	delay: [Number, String],
 
@@ -283,7 +283,7 @@ opening.easing = 1;</code>
 
 		<div class="panel">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Shirt = new Model({
+<pre><code class="language-javascript">var Shirt = new ObjectModel({
 	// the only acceptable value is "clothes"
 	category: "clothes",
 
@@ -306,7 +306,7 @@ opening.easing = 1;</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model and instanciation</span>
-<pre><code class="language-javascript">var Config = new Model({
+<pre><code class="language-javascript">var Config = new ObjectModel({
 	local: {
 		time: {
 			format: ["12h","24h", undefined]
@@ -347,7 +347,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">var N = Model(Number).defaultTo(1)</code></pre>
+			<pre><code class="language-javascript">var N = BasicModel(Number).defaultTo(1)</code></pre>
 		</div>
 
 		<div class="panel panel2">
@@ -361,7 +361,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var FileInfo = Model({
+<pre><code class="language-javascript">var FileInfo = ObjectModel({
 	name: String,
 	size: [Number],
 	creationDate: [Date],
@@ -400,12 +400,12 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	age: [Number]
 });
 
-var Lovers = Model({
+var Lovers = ObjectModel({
 	husband: Person,
 	wife: Person
 });</code></pre>
@@ -438,7 +438,7 @@ couple.husband instanceof Person === true // object has been casted to Person</c
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	female: Boolean
 });
@@ -518,7 +518,7 @@ joe.sendConfirmationMail();</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var PositiveInteger = Model(Number)
+<pre><code class="language-javascript">var PositiveInteger = BasicModel(Number)
 	.assert(Number.isInteger)
 	.assert(n => n >= 0, "should be greater or equal to zero")
 
@@ -571,7 +571,7 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 		<div class="panel panel2">
 			<span class="legend">Example</span>
-<pre><code class="language-javascript">var Order = Model({ price: Number });
+<pre><code class="language-javascript">var Order = ObjectModel({ price: Number });
 
 var expectedOrder = Order({ price: 42.50 });
 
@@ -597,7 +597,7 @@ var receivedOrder = Order({
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Circle = Model({
+<pre><code class="language-javascript">var Circle = ObjectModel({
 	radius: Number, // public
 	_diameter: [Number], // private
 	UNIT: ["px","cm","mm"], // constant
@@ -625,7 +625,7 @@ c.UNIT = "cm";</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Family = Model({
+<pre><code class="language-javascript">var Family = ObjectModel({
 	father: Father,
 	mother: Mother,
 	children: Model.Array(Person), // array of Persons
@@ -699,7 +699,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = Model({
+<pre><code class="language-javascript">var Person = ObjectModel({
 	name: String,
 	age: Number,
 	// function without arguments returning a String
@@ -763,7 +763,7 @@ joe.sayMyName();</code>
 	errors.forEach(function(error){ console.dir(error); });
 };
 
-var Student = Model({
+var Student = ObjectModel({
 	name: String,
 	course: [ "math","english","history" ],
 	grade: Number
@@ -965,7 +965,7 @@ var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 					<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var User = Model({ name: String }),
+					<pre><code class="language-javascript">var User = ObjectModel({ name: String }),
 	joe = User({ name: "Joe" });
 
 var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
@@ -982,11 +982,11 @@ var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 					<p>You can't refer to a model or instance that is not yet defined, so you have to update the definition afterwards:</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var Honey = Model({
+					<pre><code class="language-javascript">var Honey = ObjectModel({
    sweetie: undefined // Sweetie is not yet defined
 });
 
-var Sweetie = Model({
+var Sweetie = ObjectModel({
    honey: Honey
 });
 
@@ -995,41 +995,6 @@ Honey.definition.sweetie = [Sweetie];
 var joe = Honey({ sweetie: undefined }); // ann is not yet defined
 var ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
-				</div>
-			</div>
-		</details>
-
-		<details>
-			<summary>I use an object like a map with a number of key-value pairs. How do I check the type of all the values ?</summary>
-			<div class="grid doc-code-code">
-				<div class="doc">
-					<p>This feature is not built-in so that we can make room later for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank">ES6 Maps</a>, which are made for that job. But it is quite easy to get this kind of model using an assertion. Note that any new keys added to the map afterwards will not trigger validation, as they are not part of the model definition. You will have to call <code>YourMapModel.validate(map)</code> manually.</p>
-				</div>
-				<div class="panel panel1">
-					<span class="legend">Implementation</span>
-<pre><code class="language-javascript">Model.ObjectMap = function(valueType){
-	var valueModel = Model(valueType);
-	return Model({}).assert(function checkValueTypes(map){
-		return Object.keys(map).every(function(key){
-			return valueModel.test(map[key]);
-		});
-	});
-}</code></pre>
-				</div>
-				<div class="panel panel2">
-					<span class="legend">Example</span>
-<pre><code class="language-javascript">var REGEX_MMDDYYYY = /^(1[0-2]|0[1-9])\/(3[01]|[12][0-9]|0[1-9])\/[0-9]{4}$/;
-var BirthdayList = Model.ObjectMap([Date, REGEX_MMDDYYYY]);
-var friendsBirthday = BirthdayList({
-	"Joe": new Date(1985,6,3),
-	"Jim": "02/22/1987",
-	"Jack": null
-});</code>
-<code class="language-none exception">TypeError: assertion checkValueTypes returned false for value {
-	Joe: Wed Jul 03 1985 00:00:00,
-	Jim: "02/22/1987",
-	Jack: null
-}</code></pre>
 				</div>
 			</div>
 		</details>
@@ -1068,9 +1033,9 @@ Model.prototype.parse = function(json){
 				</div>
 				<div class="panel panel2">
 					<span class="legend">Example</span>
-		<pre><code class="language-javascript">var Type1 = Model({ content: String }).defaultTo({ content: 'Content 1' }),
-    Type2 = Model({ content: String }).defaultTo({ content: 'Content 2' }),
-	Container = Model({ items: Model.Array(Type1, Type2) });
+		<pre><code class="language-javascript">var Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
+    Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
+	Container = ObjectModel({ items: Model.Array(Type1, Type2) });
 
 // List all your serializable models here
 Model.serializables = { Container, Type1, Type2 };

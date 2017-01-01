@@ -73,5 +73,4 @@ Object.assign(FunctionModel.prototype, {
 	}
 })
 
-Model.Function = FunctionModel
 export default FunctionModel

@@ -50,5 +50,4 @@ Object.assign(MapModel.prototype, {
 	}
 })
 
-Model.Map = MapModel
 export default MapModel

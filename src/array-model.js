@@ -74,5 +74,4 @@ function setArrayKey(array, key, value, model){
 	array[key] = value
 }
 
-Model.Array = ArrayModel
 export default ArrayModel

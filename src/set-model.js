@@ -50,5 +50,4 @@ Object.assign(SetModel.prototype, {
 	}
 })
 
-Model.Set = SetModel
 export default SetModel

@@ -1,4 +1,5 @@
 // Examples of commonly used models
+import Model from "objectmodel"
 
 Model.Primitive = Model([Boolean, Number, String, Symbol]);
 

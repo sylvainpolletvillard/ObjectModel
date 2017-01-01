@@ -1,10 +1,15 @@
-Model[ARRAY] = function ArrayModel(def){
+import { BasicModel as Model, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { is, setConstructorProto, toString } from "./helpers"
 
-	const model = function(array = model[DEFAULT]) {
-		model[VALIDATE](array)
+const ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+
+function ArrayModel(def){
+
+	const model = function(array = model.default) {
+		model.validate(array)
 		return new Proxy(array, {
 			get(arr, key) {
-				if (key === CONSTRUCTOR)
+				if (key === "constructor")
 					return model
 				else if (ARRAY_MUTATOR_METHODS.includes(key))
 					return proxifyArrayMethod(arr, key, model)
@@ -12,34 +17,35 @@ Model[ARRAY] = function ArrayModel(def){
 			},
 			set(arr, key, val) {
 				setArrayKey(arr, key, val, model)
+				return true
 			},
 			getPrototypeOf(){
-				return model[PROTO];
+				return model.prototype
 			}
 		})
 	}
 
-	setConstructorProto(model, Array[PROTO])
-	initModel(model, def, Model[ARRAY])
+	setConstructorProto(model, Array.prototype)
+	initModel(model, def, ArrayModel)
 	return model
 }
 
-setConstructorProto(Model[ARRAY], Model[PROTO])
-Object.assign(Model[ARRAY][PROTO], {
+setConstructorProto(ArrayModel, Model.prototype)
+Object.assign(ArrayModel.prototype, {
 
 	toString(stack){
-		return ARRAY + ' of ' + toString(this[DEFINITION], stack)
+		return 'Array of ' + toString(this.definition, stack)
 	},
 
-	[VALIDATOR](arr, path, errorStack, callStack){
+	_validate(arr, path, errorStack, callStack){
 		if(is(Array, arr))
 			arr.forEach((a,i) => {
-				arr[i] = checkDefinition(a, this[DEFINITION], `${path || ARRAY}[${i}]`, errorStack, callStack, true)
+				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errorStack, callStack, true)
 			})
 		else errorStack.push({
-			[EXPECTED]: this,
-			[RECEIVED]: arr,
-			[PATH]: path
+			expected: this,
+			received: arr,
+			path
 		})
 
 		checkAssertions(arr, this, errorStack)
@@ -49,21 +55,24 @@ Object.assign(Model[ARRAY][PROTO], {
 function proxifyArrayMethod(array, method, model){
 	return function() {
 		const testArray = array.slice()
-		Array[PROTO][method].apply(testArray, arguments)
-		model[VALIDATE](testArray)
-		const returnValue = Array[PROTO][method].apply(array, arguments)
-		array.forEach((a,i)=> array[i] = autocast(a, model[DEFINITION]))
+		Array.prototype[method].apply(testArray, arguments)
+		model.validate(testArray)
+		const returnValue = Array.prototype[method].apply(array, arguments)
+		array.forEach((a,i)=> array[i] = autocast(a, model.definition))
 		return returnValue
 	}
 }
 
 function setArrayKey(array, key, value, model){
 	if(parseInt(key) === +key && key >= 0)
-		value = checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', model[ERROR_STACK], [], true)
+		value = checkDefinition(value, model.definition, 'Array['+key+']', model.errorStack, [], true)
 
 	const testArray = array.slice()
 	testArray[key] = value
 	checkAssertions(testArray, model)
-	model[UNSTACK_ERRORS]()
+	model.unstackErrors()
 	array[key] = value
 }
+
+Model.Array = ArrayModel
+export default ArrayModel

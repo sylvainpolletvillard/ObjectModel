@@ -1,33 +1,35 @@
-const defineProperty = Object.defineProperty;
+import Model from "./basic-model"
 
-function is(Constructor, obj){
-	return obj instanceof Constructor;
+const defineProperty = Object.defineProperty
+
+export function is(Constructor, obj){
+	return obj instanceof Constructor
 }
 
-function isFunction(o){
+export function isFunction(o){
 	return typeof o === "function"
 }
 
-function isObject(o){
+export function isObject(o){
     return typeof o === "object"
 }
 
-function isPlainObject(o){
+export function isPlainObject(o){
 	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
 }
 
-function bettertypeof(obj){
+export function bettertypeof(obj){
 	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1]
 }
 
-function merge(target, src={}, deep, includingProto) {
+export function merge(target, src={}, deep, includingProto) {
 	for(let key in src){
 		if(includingProto || src.hasOwnProperty(key)){
 			if(deep && isPlainObject(src[key])){
-				const o = {};
-				merge(o, target[key], deep);
-				merge(o, src[key], deep);
-				target[key] = o;
+				const o = {}
+				merge(o, target[key], deep)
+				merge(o, src[key], deep)
+				target[key] = o
 			} else {
 				target[key] = src[key]
 			}
@@ -35,21 +37,21 @@ function merge(target, src={}, deep, includingProto) {
 	}
 }
 
-function define(obj, key, value, enumerable) {
+export function define(obj, key, value, enumerable) {
 	defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
 }
 
-function setConstructor(model, constructor){
-	Object.setPrototypeOf(model, constructor[PROTO])
-	define(model, CONSTRUCTOR, constructor)
+export function setConstructor(model, constructor){
+	Object.setPrototypeOf(model, constructor.prototype)
+	define(model, "constructor", constructor)
 }
 
-function setConstructorProto(constructor, proto){
-	constructor[PROTO] = Object.create(proto)
-	constructor[PROTO][CONSTRUCTOR] = constructor
+export function setConstructorProto(constructor, proto){
+	constructor.prototype = Object.create(proto)
+	constructor.prototype.constructor = constructor
 }
 
-function toString(obj, stack = []){
+export function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj == null) return String(obj)
 	if(typeof obj == "string") return `"${obj}"`
@@ -57,7 +59,7 @@ function toString(obj, stack = []){
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
 	if(is(Array, obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
-	if(obj.toString !== Object.prototype.toString) return obj.toString();
+	if(obj.toString !== Object.prototype.toString) return obj.toString()
 	if(obj && isObject(obj)) {
 		const props = Object.keys(obj),
 			  indent = '\t'.repeat(stack.length)

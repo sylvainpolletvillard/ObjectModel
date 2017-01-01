@@ -15,7 +15,9 @@ module.exports = function(grunt) {
 		'src/model.js',
 		'src/object-model.js',
 		'src/array-model.js',
-		'src/function-model.js'
+		'src/function-model.js',
+		'src/map-model.js',
+		'src/set-model.js'
 	];
 
 	// Project configuration.
@@ -54,6 +56,17 @@ module.exports = function(grunt) {
 				},
 				files: {
 					'dist/object-model.min.js': 'dist/object-model.js'
+				}
+			}
+		},
+		rollup: {
+			dist: {
+				options: {
+					format: "iife",
+					moduleName: "Model"
+				},
+				files: {
+					'dist/object-model.js': ['src/main.js'] // Only one source file is permitted
 				}
 			}
 		},
@@ -116,8 +129,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
 	grunt.loadNpmTasks('grunt-babel');
+	grunt.loadNpmTasks('grunt-rollup');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','babel:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['rollup:dist','babel:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

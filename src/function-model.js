@@ -1,70 +1,77 @@
-Model[FUNCTION] = function FunctionModel(){
+import { BasicModel as Model, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { isFunction, setConstructor, setConstructorProto, toString } from "./helpers"
 
-	const model = function(fn = model[DEFAULT]) {
-		const def = model[DEFINITION]
+function FunctionModel(){
+
+	const model = function(fn = model.default) {
+		const def = model.definition
 		const proxyFn = function () {
-			const args = [];
-			Object.assign(args, def[DEFAULTS])
+			const args = []
+			Object.assign(args, def.defaults)
 			Object.assign(args, [...arguments])
-			if (args.length > def[ARGS].length) {
-				model[ERROR_STACK].push({
-					[EXPECTED]: toString(fn) + " to be called with " + def[ARGS].length + " "+ARGS,
-					[RECEIVED]: args.length
+			if (args.length > def.arguments.length) {
+				model.errorStack.push({
+					expected: toString(fn) + " to be called with " + def.arguments.length + " arguments",
+					received: args.length
 				})
 			}
-			def[ARGS].forEach((argDef, i) => {
-				args[i] = checkDefinition(args[i], argDef, `${ARGS}[${i}]`, model[ERROR_STACK], [], true)
+			def.arguments.forEach((argDef, i) => {
+				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
 			})
 			checkAssertions(args, model)
 
-			let returnValue;
-			if(!model[ERROR_STACK].length){
+			let returnValue
+			if(!model.errorStack.length){
 				returnValue = fn.apply(this, args)
-				if (RETURN in def)
-					returnValue = checkDefinition(returnValue, def[RETURN], RETURN+' value', model[ERROR_STACK], [], true)
+				if ("return" in def)
+					returnValue = checkDefinition(returnValue, def.return, "return value", model.errorStack, [], true)
 			}
-			model[UNSTACK_ERRORS]()
+			model.unstackErrors()
 			return returnValue
 		}
 		setConstructor(proxyFn, model)
 		return proxyFn
 	}
 
-	setConstructorProto(model, Function[PROTO])
+	setConstructorProto(model, Function.prototype)
 
-	const def = { [ARGS]: [...arguments] }
-	initModel(model, def, Model[FUNCTION])
+	const def = { arguments: [...arguments] }
+	initModel(model, def, FunctionModel)
 	return model
 }
 
-setConstructorProto(Model[FUNCTION], Model[PROTO])
+setConstructorProto(FunctionModel, Model.prototype)
 
-Object.assign(Model[FUNCTION][PROTO], {
+Object.assign(FunctionModel.prototype, {
 
 	toString(stack){
-		let out = FUNCTION + '(' + this[DEFINITION][ARGS].map(argDef => toString(argDef, stack)).join(",") +')'
-		if(RETURN in this[DEFINITION]) {
-			out += " => " + toString(this[DEFINITION][RETURN])
+		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") +')'
+		if("return" in this.definition) {
+			out += " => " + toString(this.definition.return)
 		}
 		return out
 	},
 
-	[RETURN](def){
-		this[DEFINITION][RETURN] = def
+	return(def){
+		this.definition.return = def
 		return this
 	},
 
-	[DEFAULTS](){
-		this[DEFINITION][DEFAULTS] = [...arguments]
+	defaults(){
+		this.definition.defaults = [...arguments]
 		return this
 	},
-	[VALIDATOR](f, path, errorStack){
+
+	_validate(f, path, errorStack){
 		if (!isFunction(f)) {
 			errorStack.push({
-				[EXPECTED]: FUNCTION,
-				[RECEIVED]: f,
-				[PATH]: path
+				expected: "Function",
+				received: f,
+				path
 			})
 		}
 	}
 })
+
+Model.Function = FunctionModel
+export default FunctionModel

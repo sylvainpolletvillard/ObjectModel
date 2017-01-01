@@ -17,13 +17,13 @@ var consoleMock = {
 	}
 };
 
-(function testSuite(Model){
+(function testSuite({ BasicModel, ObjectModel, ArrayModel, FunctionModel }){
 
 	QUnit.test( "Basic models", function( assert ) {
 
-		assert.ok(Model instanceof Function, "Model is defined");
+		assert.ok(BasicModel instanceof Function, "Model is defined");
 
-		var NumberModel = Model(Number);
+		var NumberModel = BasicModel(Number);
 		NumberModel(0);
 		assert.ok(typeof NumberModel(42) === "number", "should return the original type");
 		assert.ok(NumberModel(17) === 17, "should return the original value");
@@ -41,7 +41,7 @@ var consoleMock = {
 		assert.throws(function(){ NumberModel() }, /TypeError/, "test undefined value");
 		OptionalNumberModel();
 
-		var myModel = Model([String, Boolean, Date]);
+		var myModel = BasicModel([String, Boolean, Date]);
 		myModel("test");
 		myModel(true);
 		myModel(new Date());
@@ -59,9 +59,9 @@ var consoleMock = {
 
 	QUnit.test( "Object models", function( assert ) {
 
-		assert.ok(Model.Object instanceof Function, "Model.Object instanceof Function");
+		assert.ok(ObjectModel instanceof Function, "ObjectModel instanceof Function");
 
-		var Person = Model({
+		var Person = ObjectModel({
 			name: String,
 			age: Number,
 			birth: Date,
@@ -91,7 +91,7 @@ var consoleMock = {
 		assert.equal(+joe.birth, +(new Date(1990,3,25)), "Date property retrieved");
 		assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
 		assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
-		assert.ok(Person instanceof Model && Person instanceof Function, "model is instanceof Model and Function");
+		assert.ok(Person instanceof ObjectModel && Person instanceof Function, "model is instanceof Model and Function");
 
 		joe.name = "Big Joe";
 		joe.age++;
@@ -153,7 +153,7 @@ var consoleMock = {
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){
-		var Person = Model({
+		var Person = ObjectModel({
 			name: [String],
 			age: [Number, Date, String, Boolean, undefined],
 			female: [Boolean, Number, String, null],
@@ -190,7 +190,7 @@ var consoleMock = {
 	});
 
 	QUnit.test("Fixed values", function(assert){
-		var myModel = Model({
+		var myModel = ObjectModel({
 			a: [1,2,3],
 			b: 42,
 			c: ["",false,null,0],
@@ -222,12 +222,12 @@ var consoleMock = {
 
 	QUnit.test("Array models", function(assert){
 
-		assert.ok(Model.Array instanceof Function, "Model.Array is declared");
+		assert.ok(ArrayModel instanceof Function, "ArrayModel is declared");
 
-		var Arr = Model.Array(Number);
+		var Arr = ArrayModel(Number);
 		var a, b, c, d;
 
-		assert.ok(Arr instanceof Model.Array && Arr instanceof Function, "Array models can be declared");
+		assert.ok(Arr instanceof ArrayModel && Arr instanceof Function, "Array models can be declared");
 		a = Arr([]);
 		assert.ok(a instanceof Arr && a instanceof Array, "Array models can be instanciated");
 
@@ -251,11 +251,11 @@ var consoleMock = {
 		}, /TypeError/, "validation in array model constructor 2/2");
 
 
-		var Question = Model({
+		var Question = ObjectModel({
 			answer: Number
 		});
 
-		Arr = Model.Array([Question,String,Boolean]);
+		Arr = ArrayModel([Question,String,Boolean]);
 		a = Arr(["test"]);
 		a.unshift(true);
 		a.push(Question({ answer: 42 }));
@@ -263,10 +263,10 @@ var consoleMock = {
 		assert.throws(function(){a.unshift(42); }, /TypeError/, "unshift multiple types");
 		assert.throws(function(){a[0] = null; }, /TypeError/, "set index multiple types");
 
-		Arr = Model.Array([true,2,"3"]);
-		assert.throws(function(){ a = Arr(["3",2,true,1]); }, /TypeError[\s\S]*Array\[3]/, "Model.Array fixed values");
+		Arr = ArrayModel([true,2,"3"]);
+		assert.throws(function(){ a = Arr(["3",2,true,1]); }, /TypeError[\s\S]*Array\[3]/, "ArrayModel fixed values");
 
-		var Cards = Model.Array([Number, "J","Q","K"]); // array of Numbers, J, Q or K
+		var Cards = ArrayModel([Number, "J","Q","K"]); // array of Numbers, J, Q or K
 		var Hand = Cards.extend().assert(function(cards){
 			return cards.length === 2;
 		});
@@ -281,8 +281,8 @@ var consoleMock = {
 		CheaterHand(["K",10,"joker"]);
 		assert.throws(function(){ Hand("K",10, "joker"); }, /TypeError/, "array model type extension");
 
-		var ChildO = Model.Object({ arr: Model.Array(String) });
-		var ParentO = Model.Object({ child: ChildO });
+		var ChildO = ObjectModel({ arr: ArrayModel(String) });
+		var ParentO = ObjectModel({ child: ChildO });
 
 		var childO = ChildO({ arr: ["a","b","c"] });
 		assert.ok(childO.arr instanceof Array, "child array model is array");
@@ -297,11 +297,11 @@ var consoleMock = {
 
 	QUnit.test("Function models", function(assert){
 
-		assert.equal(typeof Model.Function, "function", "Model.Function is defined");
+		assert.equal(typeof FunctionModel, "function", "FunctionModel is defined");
 
-		var op = Model.Function(Number, Number).return(Number);
+		var op = FunctionModel(Number, Number).return(Number);
 
-		assert.ok(op instanceof Model.Function && op instanceof Function, "model instanceof Model.Function and Function");
+		assert.ok(op instanceof FunctionModel && op instanceof Function, "model instanceof FunctionModel and Function");
 
 		var add = op(function(a,b){ return a + b; });
 		var add3 = op(function(a,b,c){ return a + b + c; });
@@ -316,18 +316,18 @@ var consoleMock = {
 		assert.throws(function(){ noop(15,25) }, /TypeError/, "no return");
 		assert.throws(function(){ addStr(15,25) }, /TypeError/, "incorrect return type");
 
-		var Person = Model({
+		var Person = ObjectModel({
 			name: String,
 			age: Number,
 			// function without arguments returning a String
-			sayMyName: Model.Function().return(String)
+			sayMyName: FunctionModel().return(String)
 		}).defaults({
 			sayMyName: function(){
 				return "my name is " + this.name;
 			}
 		});
 
-		var greetFnModel = Model.Function(Person).return(String);
+		var greetFnModel = FunctionModel(Person).return(String);
 		Person.prototype.greet = greetFnModel(function(otherguy){
 			return "Hello "+ otherguy.name + ", " + this.sayMyName();
 		});
@@ -341,7 +341,7 @@ var consoleMock = {
 
 		assert.throws(function(){ joe.greet("dog"); }, /TypeError/, "invalid argument type");
 
-		var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
+		var Calculator = FunctionModel(Number, ["+","-","*","/"], Number)
 			.defaults(0,"+",1)
 			.return(Number);
 
@@ -353,8 +353,8 @@ var consoleMock = {
 		assert.equal(calc(41), 42, "defaults arguments values");
 		assert.throws(function(){ calc(6,"*",null); }, /TypeError/, "invalid argument type");
 
-		var api = Model.Function({
-			list: Model.Array(Number),
+		var api = FunctionModel({
+			list: ArrayModel(Number),
 			op: ["sum","product"]
 		})(function(options){
 			return options.list.reduce(function(a, b){
@@ -365,24 +365,24 @@ var consoleMock = {
 			}, options.op === "product" ? 1 : 0);
 		});
 
-		assert.equal(api({ list: [1,2,3,4], op: "sum"}), 10, "Model.Function object argument 1/5");
-		assert.equal(api({ list: [1,2,3,4], op: "product"}), 24,  "Model.Function object argument 2/5");
-		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "Model.Function object argument 3/5");
-		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "Model.Function object argument 4/5");
-		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "Model.Function object argument 5/5");
+		assert.equal(api({ list: [1,2,3,4], op: "sum"}), 10, "FunctionModel object argument 1/5");
+		assert.equal(api({ list: [1,2,3,4], op: "product"}), 24,  "FunctionModel object argument 2/5");
+		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "FunctionModel object argument 3/5");
+		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "FunctionModel object argument 4/5");
+		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "FunctionModel object argument 5/5");
 	});
 
 	QUnit.test("Default values", function(assert){
 
 		// Basic models
-		var myModel = Model([String, Boolean, Date]);
+		var myModel = BasicModel([String, Boolean, Date]);
 		myModel.defaultTo("blob");
 		assert.strictEqual(myModel.default, "blob", "basic model defaultTo store the value as default property")
 		assert.strictEqual(myModel(), "blob", "basic model default property is applied when undefined is passed");
 		myModel.default = 42;
 		assert.throws(function(){ myModel() }, /TypeError.*got Number 42/, "basic model invalid default property still throws TypeError");
 
-		myModel = new Model({
+		myModel = new ObjectModel({
 			name: String,
 			foo: {
 				bar: {
@@ -406,11 +406,11 @@ var consoleMock = {
 		assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
 		assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
 
-		var op = new Model.Function(Number, Number).return(Number).defaults(11,31);
+		var op = new FunctionModel(Number, Number).return(Number).defaults(11,31);
 		var add = op(function(a,b){ return a + b; });
 		assert.equal(add(), 42, "defaults arguments for function models correctly applied");
 
-		var myModel = new Model.Object({ x: Number, y: String })
+		var myModel = new ObjectModel({ x: Number, y: String })
 			.defaultTo({ x: 42 })
 			.defaults({ y: "hello" })
 		assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
@@ -421,7 +421,7 @@ var consoleMock = {
 		myModel.default.x = "nope";
 		assert.throws(function(){ myModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for object models");
 
-		var ArrModel = Model.Array([Number, String]).defaultTo([]);
+		var ArrModel = ArrayModel([Number, String]).defaultTo([]);
 		var a = ArrModel();
 		assert.ok(a instanceof Array && a.length === 0, "Array model default value");
 		ArrModel.default.push(1,2,3);
@@ -430,7 +430,7 @@ var consoleMock = {
 		ArrModel.default = "nope";
 		assert.throws(function(){ ArrModel() }, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for array models");
 
-		var yell = Model.Function(String).return(String).defaultTo(function(s){ return s.toUpperCase() });
+		var yell = FunctionModel(String).return(String).defaultTo(function(s){ return s.toUpperCase() });
 		assert.strictEqual(yell()("yo!"), "YO!", "Function model default value");
 		assert.throws(function(){ yell()(42) }, /TypeError.*got Number 42/, "invalid arguments still throws TypeError for defaulted function models");
 		yell.default = function(s){ return s.length };
@@ -440,7 +440,7 @@ var consoleMock = {
 
 	QUnit.test("RegExp values", function(assert){
 
-		var myModel = Model({
+		var myModel = ObjectModel({
 			phonenumber: /^[0-9]{10}$/,
 			voyels: [/^[aeiouy]+$/]
 		});
@@ -457,7 +457,7 @@ var consoleMock = {
 
 	QUnit.test("Non-enumerable and non-writable properties", function(assert){
 
-		var myModel = Model({
+		var myModel = ObjectModel({
 			CONST: Number,
 			_private: Number,
 			normal: Number
@@ -483,7 +483,7 @@ var consoleMock = {
 
 	QUnit.test("Extensions", function(assert){
 
-		var Person = Model({
+		var Person = ObjectModel({
 			name: String,
 			age: Number,
 			birth: Date,
@@ -577,7 +577,7 @@ var consoleMock = {
 		var Vehicle = { speed: Number };
 		var Car = Object.create(Vehicle);
 		Car.wheels = 4;
-		var Ferrari = Model({ expensive: true }).extend(Car);
+		var Ferrari = ObjectModel({ expensive: true }).extend(Car);
 		assert.ok("speed" in Ferrari.definition, "should retrieve definitions from parent prototypes when extending with objects");
 
 		Vehicle = function(){};
@@ -585,7 +585,7 @@ var consoleMock = {
 		Car = function(){};
 		Car.prototype = new Vehicle();
 		Car.prototype.wheels = 4;
-		Ferrari = Model.Object().extend(Car);
+		Ferrari = ObjectModel().extend(Car);
 		assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
 
 
@@ -593,17 +593,17 @@ var consoleMock = {
 
 	QUnit.test("Multiple inheritance", function(assert){
 
-		var A = new Model({ // or Model.Object
+		var A = new ObjectModel({
 			a: Boolean,
 			b: Boolean
 		});
 
-		var B = Model({
+		var B = ObjectModel({
 			b: Number,
 			c: Number
 		});
 
-		var C = Model({
+		var C = ObjectModel({
 			c: String,
 			d: {
 				d1: Boolean,
@@ -611,7 +611,7 @@ var consoleMock = {
 			}
 		});
 
-		var D = Model({
+		var D = ObjectModel({
 			a: String,
 			d: {
 				d2: Number,
@@ -710,7 +710,7 @@ var consoleMock = {
 
 	QUnit.test("Composition", function(assert){
 
-		var Person = Model({
+		var Person = ObjectModel({
 			name: String,
 			age: [Number, Date],
 			female: [Boolean],
@@ -721,11 +721,11 @@ var consoleMock = {
 			}
 		});
 
-		var Family = Model({
+		var Family = ObjectModel({
 			father: Person,
 			mother: Person.extend({ female: true }),
-			children: Model.Array(Person),
-			grandparents: [Model.Array(Person).assert(function(persons){
+			children: ArrayModel(Person),
+			grandparents: [ArrayModel(Person).assert(function(persons){
 				return persons && persons.length <= 4
 			})]
 		});
@@ -790,11 +790,11 @@ var consoleMock = {
 	QUnit.test("Assertions", function(assert){
 
 		function isOdd(n){ return n%2 === 1; }
-		var OddNumber = Model(Number).assert(isOdd);
+		var OddNumber = BasicModel(Number).assert(isOdd);
 		assert.strictEqual(OddNumber(17), 17, "passing assertion on basic model 1/2");
 		assert.throws(function(){ OddNumber(18) }, /TypeError[\s\S]*isOdd/, "failing assertion on basic model 1/2");
 
-		var RealNumber = Model(Number).assert(isFinite);
+		var RealNumber = BasicModel(Number).assert(isFinite);
 
 		assert.equal(RealNumber(Math.sqrt(1)), 1, "passing assertion on basic model 2/2");
 		assert.throws(function(){ RealNumber(Math.sqrt(-1)) }, /TypeError[\s\S]*isFinite/, "failing assertion on basic model 2/2");
@@ -822,19 +822,19 @@ var consoleMock = {
 		assert.throws(function(){ PrimeNumber(87); }, /TypeError[\s\S]*isPrime/, "test multiple assertions 1");
 		assert.throws(function(){ PrimeNumber(7.77); }, /TypeError[\s\S]*isInteger/, "test multiple assertions 2");
 
-		var ArrayMax3 = Model.Array(Number).assert(function maxRange(arr){ return arr.length <= 3; });
+		var ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr){ return arr.length <= 3; });
 		var arr = ArrayMax3([1,2]);
 		arr.push(3);
 		assert.throws(function(){ arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
 
-		var ArraySumMax10 = Model.Array(Number).assert(function(arr){
+		var ArraySumMax10 = ArrayModel(Number).assert(function(arr){
 			return arr.reduce(function(a,b){ return a+b; },0) <= 10;
 		});
 
 		arr = ArraySumMax10([2,3,4]);
 		assert.throws(function(){ arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
 
-		var NestedModel = Model.Object({ foo: { bar: { baz: Boolean }}}).assert(function(o){
+		var NestedModel = ObjectModel({ foo: { bar: { baz: Boolean }}}).assert(function(o){
 			return o.foo.bar.baz === true;
 		});
 		var nestedModel = NestedModel({ foo: { bar: { baz: true }}});
@@ -842,41 +842,41 @@ var consoleMock = {
 
 		function assertFail(){ return false; }
 		function assertFailWithData(){ return -1; }
-		Model.prototype.assert(assertFail, "expected message without data");
-		Model.Object.prototype.assert(assertFailWithData, function(data){ return "expected message with data "+data; });
+		BasicModel.prototype.assert(assertFail, "expected message without data");
+		ObjectModel.prototype.assert(assertFailWithData, function(data){ return "expected message with data "+data; });
 
-		assert.equal(Model.prototype.assertions.length, 1, "check number of assertions on Model.prototype")
-		assert.equal(Model.Object.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
+		assert.equal(BasicModel.prototype.assertions.length, 1, "check number of assertions on BasicModel.prototype")
+		assert.equal(ObjectModel.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
-		var M = Model({ a: String });
+		var M = ObjectModel({ a: String });
 		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message without data");
 		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message with data -1");
 
 		// clean up global assertions
-		Model.prototype.assertions = [];
-		delete Model.Object.prototype.assertions;
+		BasicModel.prototype.assertions = [];
+		delete ObjectModel.prototype.assertions;
 
-		var AssertBasic = Model(Number).assert(function(v){ return +v.toString() == v }, "may throw exception")
+		var AssertBasic = BasicModel(Number).assert(function(v){ return +v.toString() == v }, "may throw exception")
 		new AssertBasic(0);
 		assert.throws(function(){ new AssertBasic(); },
 			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Basic models");
 
-		var AssertObject = Model.Object({ name: [String] })
+		var AssertObject = ObjectModel({ name: [String] })
 			.assert(function(o){ return o.name.toLowerCase().length == o.name.length }, "may throw exception");
 		new AssertObject({ name: "joe" });
 		assert.throws(function(){ new AssertObject({ name: undefined }); },
 			/assertion \"may throw exception\" returned TypeError.*for value {\s+name: undefined\s+}/,
 			"assertions catch exceptions on Object models");
 
-		var AssertArray = Model.Array(Number)
+		var AssertArray = ArrayModel(Number)
 			.assert(function(v){ return v.length >= 0 }, "may throw exception");
 		new AssertArray([]);
 		assert.throws(function(){ new AssertArray(); },
 			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Array models");
 
-		var Address = new Model({
+		var Address = new ObjectModel({
 			city: String,
 			country: String
 		}).assert(function(a) {
@@ -886,7 +886,7 @@ var consoleMock = {
 		var gbAddress = { city: "London", country: "GB" };
 		var frAddress = { city: "Paris", country: "FR" };
 
-		var Order = new Model({
+		var Order = new ObjectModel({
 			sku: String,
 			address: Address
 		});
@@ -903,8 +903,8 @@ var consoleMock = {
 
 		var A, B, a, b;
 
-		A = Model({ b: [] });
-		B = Model({ a: A });
+		A = ObjectModel({ b: [] });
+		B = ObjectModel({ a: A });
 		A.definition.b = [B];
 
 		a = A();
@@ -913,8 +913,8 @@ var consoleMock = {
 		assert.ok(a.b = b, "valid cyclic value assignment");
 		assert.throws(function(){a.b = a; }, /TypeError/, "invalid cyclic value assignment");
 
-		A = Model({ b: [] });
-		B = Model({ a: A });
+		A = ObjectModel({ b: [] });
+		B = ObjectModel({ a: A });
 
 		A.definition.b = {
 			c: {
@@ -928,11 +928,11 @@ var consoleMock = {
 		assert.ok(a.b = { c: { d: b } }, "valid deep cyclic value assignment");
 		assert.throws(function(){ a.b = { c: { d: a } }; }, /TypeError/, "invalid deep cyclic value assignment");
 
-		var Honey = Model({
+		var Honey = ObjectModel({
 			sweetie: [] // Sweetie is not yet defined
 		});
 
-		var Sweetie = Model({
+		var Sweetie = ObjectModel({
 			honey: Honey
 		});
 
@@ -950,10 +950,10 @@ var consoleMock = {
 
 		assert.expect( 24 );
 
-		var defaultErrorCollector = Model.prototype.errorCollector;
+		var defaultErrorCollector = BasicModel.prototype.errorCollector;
 		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
 
-		Model.prototype.errorCollector = function(errors){
+		BasicModel.prototype.errorCollector = function(errors){
 			assert.ok(errors.length === 1, "check errors.length global collector");
 			var err = errors[0];
 			assert.equal(err.expected, Number, "check error.expected global collector");
@@ -961,18 +961,18 @@ var consoleMock = {
 			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message global collector");
 		}
 
-		Model(Number)("nope");
+		BasicModel(Number)("nope");
 
-		Model.prototype.errorCollector = function(errors){
+		BasicModel.prototype.errorCollector = function(errors){
 			assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message,
 				'assertion \"shouldnt be nope\" returned false for value \"nope\"',
 				'global custom collector assertion error catch 2/2');
 		}
 
-		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")("nope");
+		BasicModel(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")("nope");
 
-		var M = Model.Object({
+		var M = ObjectModel({
 			a: {
 				b: {
 					c: true
@@ -997,7 +997,7 @@ var consoleMock = {
 			}
 		})
 
-		Model(Number).validate("nope", function(errors){
+		BasicModel(Number).validate("nope", function(errors){
 			assert.ok(errors.length === 1, "check errors.length custom collector");
 			var err = errors[0];
 			assert.equal(err.expected, Number, "check error.expected custom collector");
@@ -1005,7 +1005,7 @@ var consoleMock = {
 			assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message custom collector");
 		});
 
-		Model(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
+		BasicModel(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
 			.validate("nope", function(errors){
 				assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
 				assert.equal(errors[0].message,
@@ -1013,7 +1013,7 @@ var consoleMock = {
 					'local custom collector assertion error catch 2/2');
 			});
 
-		Model.Object({
+		ObjectModel({
 			d: {
 				e: {
 					f: null
@@ -1034,19 +1034,19 @@ var consoleMock = {
 			assert.equal(err.message, 'expecting d.e.f to be null, got undefined', "check nested error.message custom collector");
 		})
 
-		M = Model({ x: Number });
+		M = ObjectModel({ x: Number });
 		M.errorCollector = function noop(){ };
-		assert.equal(M.test({ x: "nope" }), false, "Model.test should work even when errorCollector does not throw exceptions");
+		assert.equal(M.test({ x: "nope" }), false, "model.test should work even when errorCollector does not throw exceptions");
 
-		Model.prototype.errorCollector = defaultErrorCollector;
+		BasicModel.prototype.errorCollector = defaultErrorCollector;
 
 	});
 
 	QUnit.test("Automatic model casting", function (assert) {
 
-		var User = new Model({username: String, email: String})
+		var User = new ObjectModel({username: String, email: String})
 			.defaults({username: 'foo', email: 'foo@foo'});
-		var Article = new Model({title: String, user: User})
+		var Article = new ObjectModel({title: String, user: User})
 			.defaults({title: 'bar', user: new User()});
 		var a = new Article();
 		a.user = {username: 'joe', email: 'foo'};
@@ -1054,9 +1054,9 @@ var consoleMock = {
 		assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
 		assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
 
-		User = new Model({username: String, email: String})
+		User = new ObjectModel({username: String, email: String})
 			.defaults({username: 'foo', email: 'foo@foo'});
-		Article = new Model({title: String, user: [User]})
+		Article = new ObjectModel({title: String, user: [User]})
 			.defaults({title: 'bar', user: new User()});
 		a = new Article();
 		a.user = {username: 'joe', email: 'foo'};
@@ -1064,9 +1064,9 @@ var consoleMock = {
 		assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
 		assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
 
-		var Type1 = Model({ name: String, other1: [Boolean] });
-		var Type2 = Model({ name: String, other2: [Number] });
-		var Container = Model({ foo: { bar: [Type1, Type2] }});
+		var Type1 = ObjectModel({ name: String, other1: [Boolean] });
+		var Type2 = ObjectModel({ name: String, other2: [Number] });
+		var Container = ObjectModel({ foo: { bar: [Type1, Type2] }});
 
 
 		consoleMock.apply();
@@ -1086,8 +1086,8 @@ var consoleMock = {
 		assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
 		consoleMock.revert();
 
-		var N = Model({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
-		var Arr = Model.Array(N);
+		var N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+		var Arr = ArrayModel(N);
 		a = Arr([ { x:9 } ]);
 		assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
 		assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
@@ -1098,7 +1098,7 @@ var consoleMock = {
 		assert.ok(a[0] instanceof N, "test automatic model casting with array set index 1/2")
 		assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
 
-		var F = Model.Function(N, N).return(N);
+		var F = FunctionModel(N, N).return(N);
 		var f = F(function(a,b){ return { x: a.x+b.x, y: a.y+b.y } });
 		var returnValue = f({ x: 1 }, { x: 2 });
 

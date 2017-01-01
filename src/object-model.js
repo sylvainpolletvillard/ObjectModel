@@ -1,41 +1,70 @@
-Model[OBJECT] = function ObjectModel(def){
+import { BasicModel as Model, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
-	const model = function(obj = model[DEFAULT]) {
-		if(is(model, obj)) return obj;
+function ObjectModel(def){
+
+	const model = function(obj = model.default) {
+		if(is(model, obj)) return obj
 		if(!is(model, this)) return new model(obj)
 		merge(this, obj, true)
-		const proxy = getProxy(model, this, model[DEFINITION])
-		model[VALIDATE](proxy)
+		const proxy = getProxy(model, this, model.definition)
+		model.validate(proxy)
 		return proxy
 	}
 
-	setConstructorProto(model, Object[PROTO])
-	initModel(model, def, Model[OBJECT])
+	setConstructorProto(model, Object.prototype)
+	initModel(model, def, ObjectModel)
 	return model
 }
 
-setConstructorProto(Model[OBJECT], Model[PROTO])
+setConstructorProto(ObjectModel, Model.prototype)
 
-Object.assign(Model[OBJECT][PROTO], {
+Object.assign(ObjectModel.prototype, {
 
-	[DEFAULTS](p){
-		Object.assign(this[PROTO], p)
+	defaults(p){
+		Object.assign(this.prototype, p)
 		return this
 	},
 
 	toString(stack){
-		return toString(this[DEFINITION], stack)
+		return toString(this.definition, stack)
 	},
 
-	[VALIDATOR](obj, path, errorStack, callStack){
+	extend(){
+		const def = {}
+		const proto = {}
+		const args = [...arguments]
+
+		Object.assign(def, this.definition)
+		merge(proto, this.prototype, false, true)
+		args.forEach(arg => {
+			if(is(Model, arg)) merge(def, arg.definition, true)
+			if(isFunction(arg)) merge(proto, arg.prototype, true, true)
+			if(isObject(arg)) merge(def, arg, true, true)
+		})
+
+		let assertions = [...this.assertions]
+		args.forEach(arg => {
+			if(is(Model, arg)) assertions = assertions.concat(arg.assertions)
+		})
+
+		const submodel = new this.constructor(def)
+		setConstructorProto(submodel, this.prototype)
+		Object.assign(submodel.prototype, proto)
+		submodel.assertions = assertions
+		submodel.errorCollector = this.errorCollector
+		return submodel
+	},
+
+	_validate(obj, path, errorStack, callStack){
 		if(!isObject(obj)){
 			errorStack.push({
-				[EXPECTED]: this,
-				[RECEIVED]: obj,
-				[PATH]: path
+				expected: this,
+				received: obj,
+				path
 			})
 		} else {
-			checkDefinition(obj, this[DEFINITION], path, errorStack, callStack)
+			checkDefinition(obj, this.definition, path, errorStack, callStack)
 		}
 		checkAssertions(obj, this, errorStack)
 	}
@@ -43,48 +72,52 @@ Object.assign(Model[OBJECT][PROTO], {
 
 function getProxy(model, obj, defNode, path) {
 	if(!isPlainObject(defNode)) {
-		return autocast(obj, defNode);
+		return autocast(obj, defNode)
 	}
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
-			const newPath = (path ? path + '.' + key : key);
-			return getProxy(model, o[key], defNode[key], newPath);
+			const newPath = (path ? path + '.' + key : key)
+			return getProxy(model, o[key], defNode[key], newPath)
 		},
 		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),
-				  isConstant = Model[CONVENTION_CONSTANT](key),
-				  initialValue = o[key];
+				  isConstant = Model.conventionForConstant(key),
+				  initialValue = o[key]
 			
 			if(isConstant && initialValue !== undefined){
-				model[ERROR_STACK].push({
-					[MESSAGE]: `cannot redefine constant ${key}`
+				model.errorStack.push({
+					message: `cannot redefine constant ${key}`
 				})
 			}
 			if(defNode.hasOwnProperty(key)){
 				const newProxy = getProxy(model, val, defNode[key], newPath)
-				checkDefinition(newProxy, defNode[key], newPath, model[ERROR_STACK], [])
+				checkDefinition(newProxy, defNode[key], newPath, model.errorStack, [])
 				o[key] = newProxy
 				checkAssertions(obj, model)
 			} else {
-				model[ERROR_STACK].push({
-					[MESSAGE]: `cannot find property ${newPath} in the model definition`
+				model.errorStack.push({
+					message: `cannot find property ${newPath} in the model definition`
 				})
 			}
 		
-			if(model[ERROR_STACK].length){
+			if(model.errorStack.length){
 				o[key] = initialValue
-				model[UNSTACK_ERRORS]()
+				model.unstackErrors()
 			}
+
+			return true
 		},
 		has(o, key){
-			return Reflect.has(o, key) && !Model[CONVENTION_PRIVATE](key)
+			return Reflect.has(o, key) && !Model.conventionForPrivate(key)
 		},
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => !Model[CONVENTION_PRIVATE](key))
+			return Reflect.ownKeys(o).filter(key => !Model.conventionForPrivate(key))
 		},
 		getPrototypeOf(){
-			return model[PROTO];
+			return model.prototype
 		}
-	});
+	})
 }
+
+export default ObjectModel

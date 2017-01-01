@@ -1,46 +1,54 @@
-Model[MAP] = function MapModel(def){
+import { BasicModel as Model, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { setConstructor, setConstructorProto, toString } from "./helpers"
+
+const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]
+
+function MapModel(def){
 
 	const model = function(iterable) {
-		const map = new Map(iterable);
-		model[VALIDATE](map)
+		const map = new Map(iterable)
+		model.validate(map)
 
 		for(let method of MAP_MUTATOR_METHODS){
 			map[method] = function() {
-				const testMap = new Map(map);
-				Map[PROTO][method].apply(testMap, arguments)
-				model[VALIDATE](testMap)
-				return Map[PROTO][method].apply(map, arguments)
+				const testMap = new Map(map)
+				Map.prototype[method].apply(testMap, arguments)
+				model.validate(testMap)
+				return Map.prototype[method].apply(map, arguments)
 			}
 		}
 
 		setConstructor(map, model)
-		return map;
+		return map
 	}
 
-	setConstructorProto(model, Map[PROTO])
-	initModel(model, def, Model[MAP])
+	setConstructorProto(model, Map.prototype)
+	initModel(model, def, MapModel)
 	return model
 }
 
-setConstructorProto(Model[MAP], Model[PROTO])
-Object.assign(Model[MAP][PROTO], {
+setConstructorProto(MapModel, Model.prototype)
+Object.assign(MapModel.prototype, {
 
 	toString(stack){
-		return MAP + ' of ' + toString(this[DEFINITION], stack)
+		return "Map of " + toString(this.definition, stack)
 	},
 
-	[VALIDATOR](map, path, errorStack, callStack){
+	_validate(map, path, errorStack, callStack){
 		if(map instanceof Map){
 			for(let [key,val] of map){
-				checkDefinition(val, this[DEFINITION], `${path||MAP}[${key}]`, errorStack, callStack)
+				checkDefinition(val, this.definition, `${path || "Map"}[${key}]`, errorStack, callStack)
 			}
 		} else {
 			errorStack.push({
-				[EXPECTED]: this,
-				[RECEIVED]: map,
-				[PATH]: path
+				expected: this,
+				received: map,
+				path
 			})
 		}
 		checkAssertions(map, this, errorStack)
 	}
 })
+
+Model.Map = MapModel
+export default MapModel

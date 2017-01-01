@@ -27,9 +27,10 @@
     "grunt-contrib-watch": "~1.0.0",
     "grunt-file-info": "sylvainpolletvillard/grunt-file-info",
     "grunt-regex-replace": "~0.2.9",
+    "grunt-rollup": "^1.0.1",
     "gzip-size": "^3.0.0"
   },
-  "main": "dist/object-model.umd.js",
+  "main": "src/main.js",
   "keywords": [
     "typed",
     "types",

@@ -1,46 +1,54 @@
-Model[SET] = function SetModel(def){
+import { BasicModel as Model, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { setConstructor, setConstructorProto, toString } from "./helpers"
+
+const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
+
+function SetModel(def){
 
 	const model = function(iterable) {
-		const _set = new Set(iterable);
-		model[VALIDATE](_set)
+		const _set = new Set(iterable)
+		model.validate(_set)
 
 		for(let method of SET_MUTATOR_METHODS){
 			_set[method] = function() {
-				const testSet = new Set(_set);
-				Set[PROTO][method].apply(testSet, arguments)
-				model[VALIDATE](testSet)
-				return Set[PROTO][method].apply(_set, arguments)
+				const testSet = new Set(_set)
+				Set.prototype[method].apply(testSet, arguments)
+				model.validate(testSet)
+				return Set.prototype[method].apply(_set, arguments)
 			}
 		}
 
 		setConstructor(_set, model)
-		return _set;
+		return _set
 	}
 
-	setConstructorProto(model, Set[PROTO])
-	initModel(model, def, Model[SET])
+	setConstructorProto(model, Set.prototype)
+	initModel(model, def, SetModel)
 	return model
 }
 
-setConstructorProto(Model[SET], Model[PROTO])
-Object.assign(Model[SET][PROTO], {
+setConstructorProto(SetModel, Model.prototype)
+Object.assign(SetModel.prototype, {
 
 	toString(stack){
-		return SET + ' of ' + toString(this[DEFINITION], stack)
+		return "Set of " + toString(this.definition, stack)
 	},
 
-	[VALIDATOR](_set, path, errorStack, callStack){
+	_validate(_set, path, errorStack, callStack){
 		if(_set instanceof Set){
 			for(let item of _set.values()){
-				checkDefinition(item, this[DEFINITION], (path||SET), errorStack, callStack)
+				checkDefinition(item, this.definition, (path || "Set"), errorStack, callStack)
 			}
 		} else {
 			errorStack.push({
-				[EXPECTED]: this,
-				[RECEIVED]: _set,
-				[PATH]: path
+				expected: this,
+				received: _set,
+				path
 			})
 		}
 		checkAssertions(_set, this, errorStack)
 	}
 })
+
+Model.Set = SetModel
+export default SetModel

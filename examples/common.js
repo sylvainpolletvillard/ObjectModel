@@ -1,37 +1,35 @@
 // Examples of commonly used models
-import Model from "objectmodel"
+import { BasicModel } from "objectmodel"
 
-Model.Primitive = Model([Boolean, Number, String, Symbol]);
+export const Primitive = BasicModel([Boolean, Number, String, Symbol]);
 
 // Booleans-like
-Model.Falsy = Model([Model.Primitive, null, undefined]).assert(function isFalsy(val){ return !val });
-Model.Truthy = Model([Model.Primitive, Object]).assert(function isTruthy(val){ return !!val });
+export const Falsy = BasicModel([Primitive, null, undefined]).assert(function isFalsy(val){ return !val });
+export const Truthy = BasicModel([Primitive, Object]).assert(function isTruthy(val){ return !!val });
 
 // Numbers
-Model.Integer = Model(Number).assert(Number.isInteger);
-Model.SafeInteger = Model(Number).assert(Number.isSafeInteger);
-Model.FiniteNumber = Model(Number).assert(Number.isFinite);
-Model.PositiveNumber = Model(Number).assert(function isPositive(val){ return val >= 0 });
-Model.NegativeNumber = Model(Number).assert(function isNegative(val){ return val <= 0 });
-Model.PositiveInteger = Model.PositiveNumber.extend().assert(Number.isInteger);
-Model.NegativeInteger = Model.NegativeNumber.extend().assert(Number.isInteger);
+export const Integer = BasicModel(Number).assert(Number.isInteger);
+export const SafeInteger = BasicModel(Number).assert(Number.isSafeInteger);
+export const FiniteNumber = BasicModel(Number).assert(Number.isFinite);
+export const PositiveNumber = BasicModel(Number).assert(function isPositive(val){ return val >= 0 });
+export const NegativeNumber = BasicModel(Number).assert(function isNegative(val){ return val <= 0 });
+export const PositiveInteger = PositiveNumber.extend().assert(Number.isInteger);
+export const NegativeInteger = NegativeNumber.extend().assert(Number.isInteger);
 
 // Strings
-Model.StringNotBlank = Model(String).assert(function isNotBlank(str){ return str.trim().length > 0 });
-Model.NormalizedString = Model(String).assert(function isNormalized(str){ return str.normalize() === str });
-Model.TrimmedString = Model(String).assert(function isTrimmed(str){ return str.trim() === str });
+export const StringNotBlank = BasicModel(String).assert(function isNotBlank(str){ return str.trim().length > 0 });
+export const NormalizedString = BasicModel(String).assert(function isNormalized(str){ return str.normalize() === str });
+export const TrimmedString = BasicModel(String).assert(function isTrimmed(str){ return str.trim() === str });
 
 // Dates
-Model.PastDate = Model(Date).assert(function isInThePast(date){ return date.getTime() < Date.now() });
-Model.FutureDate = Model(Date).assert(function isInTheFuture(date){ return date.getTime() > Date.now() });
+export const PastDate = BasicModel(Date).assert(function isInThePast(date){ return date.getTime() < Date.now() });
+export const FutureDate = BasicModel(Date).assert(function isInTheFuture(date){ return date.getTime() > Date.now() });
 
 // Arrays
-Model.ArrayNotEmpty = Model(Array).assert(function isNotEmpty(arr){ return arr.length > 0 });
-Model.ArrayUnique = Model(Array).assert(function hasNoDuplicates(arr){
-	return arr.every(function(val, idx){
-		return arr.indexOf(val) === idx
-	})
+export const ArrayNotEmpty = BasicModel(Array).assert(function isNotEmpty(arr){ return arr.length > 0 });
+export const ArrayUnique = BasicModel(Array).assert(function hasNoDuplicates(arr){
+	return arr.every((val, idx) => arr.indexOf(val) === idx)
 });
-Model.ArrayDense = Model(Array).assert(function hasNoHoles(arr){
-	return arr.filter(function(x){ return true }).length === arr.length
+export const ArrayDense = BasicModel(Array).assert(function hasNoHoles(arr){
+	return arr.filter(() => true).length === arr.length
 });

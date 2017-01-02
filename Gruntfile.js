@@ -23,16 +23,6 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		pkg: pkg,
-		concat: {
-			dist: {
-				src: srcFiles,
-				dest: 'dist/object-model.js',
-				options: {
-					banner: BANNER + ";(function(global){\n",
-					footer: "\n\nglobal.Model = Model;\n})(this);"
-				}
-			}
-		},
 		babel: {
 			dist: {
 				options: {
@@ -50,7 +40,9 @@ module.exports = function(grunt) {
 		rollup: {
 			dist: {
 				options: {
+					banner: BANNER,
 					format: "iife",
+					exports: "named",
 					moduleName: "Model"
 				},
 				files: {
@@ -110,10 +102,8 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-qunit');
-	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
 	grunt.loadNpmTasks('grunt-babel');

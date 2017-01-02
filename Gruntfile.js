@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 	}
 
 	const pkg  = grunt.file.readJSON('package.json');
-	const BANNER = "// ObjectModel v" + pkg.version + " - " + pkg.homepage + "\n";
+	const BANNER = `// ObjectModel v${pkg.version} - ${pkg.homepage}`;
 
 	// Project configuration.
 	grunt.initConfig({
@@ -29,13 +29,22 @@ module.exports = function(grunt) {
 		rollup: {
 			dist: {
 				options: {
-					banner: BANNER,
 					format: "iife",
 					exports: "named",
 					moduleName: "ObjectModelBundle"
 				},
 				files: {
 					'dist/object-model.js': ['src/main.js'] // Only one source file is permitted
+				}
+			}
+		},
+		usebanner: {
+			dist: {
+				options: {
+					banner: BANNER
+				},
+				files: {
+					src: [ 'dist/*.js' ]
 				}
 			}
 		},
@@ -97,8 +106,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-regex-replace');
 	grunt.loadNpmTasks('grunt-babel');
 	grunt.loadNpmTasks('grunt-rollup');
+	grunt.loadNpmTasks('grunt-banner');
 
-	grunt.registerTask('dist', ['rollup:dist','babel:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['rollup:dist','babel:dist','usebanner:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

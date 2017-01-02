@@ -1,3 +1,4 @@
+// ObjectModel v3.0.0 - http://objectmodel.js.org
 (function (exports) {
 	'use strict';
 
@@ -162,8 +163,8 @@
 
 	});
 
-	BasicModel.conventionForConstant = key => key.toUpperCase() === key;
-	BasicModel.conventionForPrivate = key => key[0] === "_";
+	BasicModel.prototype.conventionForConstant = key => key.toUpperCase() === key;
+	BasicModel.prototype.conventionForPrivate = key => key[0] === "_";
 
 	function initModel(model, def, constructor){
 		setConstructor(model, constructor);
@@ -350,7 +351,7 @@
 			},
 			set(o, key, val) {
 				const newPath = (path ? path + '.' + key : key),
-					  isConstant = BasicModel.conventionForConstant(key),
+					  isConstant = model.conventionForConstant(key),
 					  initialValue = o[key];
 				
 				if(isConstant && initialValue !== undefined){
@@ -377,10 +378,10 @@
 				return true
 			},
 			has(o, key){
-				return Reflect.has(o, key) && !BasicModel.conventionForPrivate(key)
+				return Reflect.has(o, key) && !model.conventionForPrivate(key)
 			},
 			ownKeys(o){
-				return Reflect.ownKeys(o).filter(key => !BasicModel.conventionForPrivate(key))
+				return Reflect.ownKeys(o).filter(key => !model.conventionForPrivate(key))
 			},
 			getPrototypeOf(){
 				return model.prototype
@@ -632,16 +633,10 @@
 	});
 
 	exports.BasicModel = BasicModel;
-	exports.Basic = BasicModel;
 	exports.ObjectModel = ObjectModel;
-	exports.Object = ObjectModel;
 	exports.ArrayModel = ArrayModel;
-	exports.Array = ArrayModel;
 	exports.FunctionModel = FunctionModel;
-	exports.Function = FunctionModel;
 	exports.MapModel = MapModel;
-	exports.Map = MapModel;
 	exports.SetModel = SetModel;
-	exports.Set = SetModel;
 
-}((this.Model = this.Model || {})));
+}((this.ObjectModelBundle = this.ObjectModelBundle || {})));

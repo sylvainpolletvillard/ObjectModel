@@ -7,7 +7,7 @@
 	<meta name="description" content="ObjectModel : Strong Dynamically Typed Object Modeling for JavaScript">
 	<meta name="author" content="Sylvain Pollet-Villard">
 
-	<title>Object Model</title>
+	<title>ObjectModel</title>
 
 	<link rel="icon" type="image/png" href="site/favicon-32x32.png" sizes="32x32" />
 	<link rel="icon" type="image/png" href="site/favicon-16x16.png" sizes="16x16" />
@@ -74,7 +74,7 @@
 <div id="page">
 
 	<header class="header">
-		<img src="site/res/logo.png" alt="Object Model" width="800" height="150">
+		<img src="site/res/logo.png" alt="ObjectModel" width="800" height="150">
 		<hr>
 		<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 	</header>
@@ -87,7 +87,7 @@
 
 			<p><mark>Static typing is insufficient to prevent most of the real and practical bugs caused by type errors</mark>. Indeed, JavaScript applications often involve <mark>unreliable data sources</mark>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
 
-			<p>This is why Object Model is about <strong>strong dynamic type checking</strong>: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. Object Model is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
+			<p>This is why ObjectModel is about <strong>strong dynamic type checking</strong>: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
 			<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.</p>
 
@@ -146,7 +146,7 @@
     <section id="doc-basic-model" class="grid doc-code-code">
 	    <div class="doc">
 		    <h2>Basic models</h2>
-		    <p><code>Model</code> is the library namespace and the constructor function for Models. It takes as an argument a <i>model definition</i>, and returns a <i>model</i>. Basic models validate the argument passed against the model definition, and return the validated value.</p>
+		    <p>All the other models inherit from <code>BasicModel</code>. It is the constructor function for <i>basic models</i> and takes a <i>model definition</i> as the only argument. Basic models validate the argument passed against the model definition, and return the validated value.</p>
 	    </div>
 
         <div class="panel panel1">
@@ -172,7 +172,7 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Order = new ObjectModel({ // or Model.Object
+<pre><code class="language-javascript">var Order = new ObjectModel({
 	product: {
 		name: String,
 		quantity: Number,
@@ -301,7 +301,7 @@ opening.easing = 1;</code>
 	<section id="doc-null-safe" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Null-safe object traversal</h2>
-			<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an Object Model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
+			<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an ObjectModel, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -550,12 +550,12 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 		</div>
 
 		<div class="doc">
-			<p>Assertions are inherited from <code>Model.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+			<p>Assertions are inherited from <code>BasicModel.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 
 		<div class="panel panel1">
 			<span class="legend">Configuration</span>
-<pre><code class="language-javascript">Model.Object.prototype.assert(function noUndeclaredProperties(obj) {
+<pre><code class="language-javascript">ObjectModel.prototype.assert(function noUndeclaredProperties(obj) {
 
 	var extraKeys = Object.keys(obj)
 		.filter(key => this.definition.hasOwnProperty(key) === false)
@@ -592,7 +592,7 @@ var receivedOrder = Order({
 			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which
 				should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making
 				<i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
-			<p>You can modify or remove these conventions by overriding <code>Model.conventionForPrivate</code> and <code>Model.conventionForConstant</code> functions.</p>
+			<p>You can modify or remove these conventions by overriding <code>conventionForPrivate</code> and <code>conventionForConstant</code> functions in your model or globally in <code>BasicModel.prototype</code>.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -628,8 +628,8 @@ c.UNIT = "cm";</code>
 <pre><code class="language-javascript">var Family = ObjectModel({
 	father: Father,
 	mother: Mother,
-	children: Model.Array(Person), // array of Persons
-	grandparents: [Model.Array([Mother, Father])]
+	children: ArrayModel(Person), // array of Persons
+	grandparents: [ArrayModel([Mother, Father])]
 	            // optional array of Mothers or Fathers
 });</code></pre>
 		</div>
@@ -651,7 +651,7 @@ c.UNIT = "cm";</code>
 		</div>
 
 		<div class="panel panel1">
-<pre><code class="language-javascript">var Cards = Model.Array([Number, "J","Q","K"]);
+<pre><code class="language-javascript">var Cards = ArrayModel([Number, "J","Q","K"]);
 var Hand = Cards.extend("Joker").assert(function(cards){
 	return cards.length === 2;
 }, "should have two cards");
@@ -671,12 +671,12 @@ myHand.push("K"); // use this instead</code>
 	<section id="doc-function-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Function models</h2>
-			<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>Model.Function</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+			<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>FunctionModel</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
 		</div>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Calculator = Model.Function(Number, ["+","-","*","/"], Number)
+<pre><code class="language-javascript">var Calculator = FunctionModel(Number, ["+","-","*","/"], Number)
 	            .defaults(0, "+", 1)
 	            .return(Number);</code></pre>
 		</div>
@@ -703,7 +703,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 	name: String,
 	age: Number,
 	// function without arguments returning a String
-	sayMyName: Model.Function().return(String)
+	sayMyName: FunctionModel().return(String)
 }).defaults({
 	sayMyName: function(){
 		return "my name is " + this.name;
@@ -711,7 +711,7 @@ calc(3, "+"); // use default value for 3rd argument</code>
 });
 
 // takes one argument of type Person, returns a String
-Person.prototype.greet = Model.Function(Person).return(String)(function(otherguy){
+Person.prototype.greet = FunctionModel(Person).return(String)(function(otherguy){
 	return "Hello "+ otherguy.name + ", " + this.sayMyName();
 });</code></pre>
 		</div>
@@ -758,7 +758,7 @@ joe.sayMyName();</code>
 		</div>
 
 		<div class="panel panel1">
-			<pre><code class="language-javascript">Model.prototype.errorCollector = function(errors){
+			<pre><code class="language-javascript">BasicModel.prototype.errorCollector = function(errors){
 	console.log("Global error collector caught these errors:");
 	errors.forEach(function(error){ console.dir(error); });
 };
@@ -838,24 +838,26 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 	<section id="api">
 		<h2>Full API</h2>
+		<h3>Imported from objectmodel root scope</h3>
 		<dl>
-			<dt><a href="#doc-basic-model">Model</a> <code>Model(definition)</code></dt>
-			<dd>Constructor for basic models. If a litteral object is passed, return an object model.</dd>
+			<dt><a href="#doc-basic-model">BasicModel</a> <code>BasicModel(definition)</code></dt>
+			<dd>Constructor for basic models</dd>
 
-			<dt><a href="#doc-object-model">Model.Object</a> <code>Model.Object(definition)</code></dt>
+			<dt><a href="#doc-object-model">ObjectModel</a> <code>ObjectModel(definition)</code></dt>
 			<dd>Constructor for object models</dd>
 
-			<dt><a href="#doc-array-model">Model.Array</a> <code>Model.Array(itemDefinition)</code></dt>
+			<dt><a href="#doc-array-model">ArrayModel</a> <code>ArrayModel(itemDefinition)</code></dt>
 			<dd>Constructor for array models</dd>
 
-			<dt><a href="#doc-function-model">Model.Function</a> <code>Model.Function(definitionArgument1, definitionArgument2, ...)</code></dt>
+			<dt><a href="#doc-function-model">FunctionModel</a> <code>FunctionModel(definitionArgument1, definitionArgument2, ...)</code></dt>
 			<dd>Constructor for function models</dd>
 
-			<dt><a href="#doc-private-and-constants">Model.conventionForConstant</a> <code>function(variableName)</code></dt>
-			<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit your needs.</dd>
+			<dt><a href="#doc-function-model">MapModel</a> <code>MapModel(definitionArgument1, definitionArgument2, ...)</code></dt>
+			<dd>Constructor for function models</dd>
 
-			<dt><a href="#doc-private-and-constants">Model.conventionForPrivate</a> <code>function(variableName)</code></dt>
-			<dd>Internal function used to identify a non-enumerable property based on naming convention. You can override it to suit your needs.</dd>
+			<dt><a href="#doc-function-model">SetModel</a> <code>SetModel(definitionArgument1, definitionArgument2, ...)</code></dt>
+			<dd>Constructor for function models</dd>
+
 		</dl>
 		<h3>Model methods and properties</h3>
 		<dl>
@@ -885,6 +887,13 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 			<dt><a href="#doc-composition">test</a> <code>model.test(object)</code></dt>
 			<dd>Returns <code>true</code> if the object passed validates the model definition (a.k.a. duck-typing).</dd>
+
+			<dt><a href="#doc-private-and-constants">conventionForConstant</a> <code>function(variableName)</code></dt>
+			<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit your needs.</dd>
+
+			<dt><a href="#doc-private-and-constants">conventionForPrivate</a> <code>function(variableName)</code></dt>
+			<dd>Internal function used to identify a non-enumerable property based on naming convention. You can override it to suit your needs.</dd>
+
 		</dl>
 		<h3>Object models</h3>
 		<dl>
@@ -942,7 +951,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 					<p>The recommended way is to use a factory function to instanciate your models. You can declare as many different factories as needed, which makes this pattern both simple and flexible.</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var User = Model.Object({
+					<pre><code class="language-javascript">var User = ObjectModel({
     firstName: String,
     lastName: String,
     fullName: String
@@ -1009,11 +1018,11 @@ joe.sweetie = ann;</code></pre>
 
 				<div class="panel panel1">
 					<span class="legend">Implementation</span>
-<pre><code class="language-javascript">Model.prototype.serialize = function(instance){
-	var availableModels = Object.keys(Model.serializables);
+<pre><code class="language-javascript">BasicModel.prototype.serialize = function(instance){
+	var availableModels = Object.keys(serializableModels);
 	return JSON.stringify(instance, function(key, value){
 		var modelName = availableModels.find(function(name){
-			return value instanceof Model.serializables[name];
+			return value instanceof serializableModels[name];
 		});
 		if(modelName && key !== "_value"){
 			return { _type: modelName, _value: value }
@@ -1022,10 +1031,10 @@ joe.sweetie = ann;</code></pre>
 	}, '\t');
 }
 
-Model.prototype.parse = function(json){
+BasicModel.prototype.parse = function(json){
 	return JSON.parse(json, function(key, o){
-		if(o && o._type in Model.serializables){
-			return new Model.serializables[o._type](o._value);
+		if(o && o._type in serializableModels){
+			return new serializableModels[o._type](o._value);
 		}
 		return o;
 	})
@@ -1035,10 +1044,10 @@ Model.prototype.parse = function(json){
 					<span class="legend">Example</span>
 		<pre><code class="language-javascript">var Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
     Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
-	Container = ObjectModel({ items: Model.Array(Type1, Type2) });
+	Container = ObjectModel({ items: ArrayModel(Type1, Type2) });
 
 // List all your serializable models here
-Model.serializables = { Container, Type1, Type2 };
+const serializableModels = { Container, Type1, Type2 };
 
 var a = new Container({ items: [new Type1, new Type2] });
 

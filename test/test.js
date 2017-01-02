@@ -1130,4 +1130,4 @@ var consoleMock = {
 
 	})
 
-})(this.Model)
+})(this.ObjectModelBundle)

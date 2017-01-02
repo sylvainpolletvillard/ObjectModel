@@ -9,17 +9,6 @@ module.exports = function(grunt) {
 	const pkg  = grunt.file.readJSON('package.json');
 	const BANNER = "// ObjectModel v" + pkg.version + " - " + pkg.homepage + "\n";
 
-	const srcFiles = [
-		'src/constants.js',
-		'src/helpers.js',
-		'src/model.js',
-		'src/object-model.js',
-		'src/array-model.js',
-		'src/function-model.js',
-		'src/map-model.js',
-		'src/set-model.js'
-	];
-
 	// Project configuration.
 	grunt.initConfig({
 		pkg: pkg,
@@ -43,7 +32,7 @@ module.exports = function(grunt) {
 					banner: BANNER,
 					format: "iife",
 					exports: "named",
-					moduleName: "Model"
+					moduleName: "ObjectModelBundle"
 				},
 				files: {
 					'dist/object-model.js': ['src/main.js'] // Only one source file is permitted

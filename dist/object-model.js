@@ -640,3 +640,5 @@
 	exports.SetModel = SetModel;
 
 }((this.ObjectModelBundle = this.ObjectModelBundle || {})));
+
+//# sourceMappingURL=object-model.js.map

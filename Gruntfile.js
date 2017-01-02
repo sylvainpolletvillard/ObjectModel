@@ -15,7 +15,6 @@ module.exports = function(grunt) {
 		babel: {
 			dist: {
 				options: {
-					sourceMap: true,
 					presets: [require('babel-preset-babili')],
 					compact: true,
 					minified: true,
@@ -31,7 +30,9 @@ module.exports = function(grunt) {
 				options: {
 					format: "iife",
 					exports: "named",
-					moduleName: "ObjectModelBundle"
+					moduleName: "ObjectModelBundle",
+					sourceMap: true,
+					sourceMapRelativePaths: true
 				},
 				files: {
 					'dist/object-model.js': ['src/main.js'] // Only one source file is permitted

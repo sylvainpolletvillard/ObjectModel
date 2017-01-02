@@ -1,4 +1,4 @@
-import { BasicModel as Model, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, checkDefinition, checkAssertions } from "./basic-model"
 import { setConstructor, setConstructorProto, toString } from "./helpers"
 
 const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
@@ -27,7 +27,7 @@ function SetModel(def){
 	return model
 }
 
-setConstructorProto(SetModel, Model.prototype)
+setConstructorProto(SetModel, BasicModel.prototype)
 Object.assign(SetModel.prototype, {
 
 	toString(stack){

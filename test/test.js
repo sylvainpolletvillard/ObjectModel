@@ -21,7 +21,7 @@ var consoleMock = {
 
 	QUnit.test( "Basic models", function( assert ) {
 
-		assert.ok(BasicModel instanceof Function, "Model is defined");
+		assert.ok(BasicModel instanceof Function, "BasicModel is defined");
 
 		var NumberModel = BasicModel(Number);
 		NumberModel(0);
@@ -91,7 +91,7 @@ var consoleMock = {
 		assert.equal(+joe.birth, +(new Date(1990,3,25)), "Date property retrieved");
 		assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
 		assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
-		assert.ok(Person instanceof ObjectModel && Person instanceof Function, "model is instanceof Model and Function");
+		assert.ok(Person instanceof ObjectModel && Person instanceof Function, "model is instanceof ObjectModel and Function");
 
 		joe.name = "Big Joe";
 		joe.age++;
@@ -478,6 +478,28 @@ var consoleMock = {
 		assert.equal(Object.getOwnPropertyNames(m).includes("_private"), false, "non enumerable key not found in Object.getOwnPropertyNames");
 		assert.equal("normal" in m, true, "enumerable key found with operator in")
 		assert.equal("_private" in m, false, "non enumerable key not found with operator in")
+
+		myModel = ObjectModel({
+			PRIVATE: Number,
+			_const: Number,
+			normal: Number
+		});
+		myModel.conventionForConstant = BasicModel.prototype.conventionForPrivate;
+		myModel.conventionForPrivate = BasicModel.prototype.conventionForConstant;
+
+		m = myModel({
+			PRIVATE: 42,
+			_const: 43,
+			normal: 44
+		});
+
+		assert.throws(function(){ m._const++; }, /TypeError[\s\S]*constant/, "try to redefine constant with overridden convention");
+		assert.equal(Object.keys(m).length, 2, "non enumerable key not counted by Object.keys with overridden convention");
+		assert.equal(Object.keys(m).includes("PRIVATE"), false, "non enumerable key not found in Object.keys with overridden convention");
+		assert.equal(Object.getOwnPropertyNames(m).length, 2, "non enumerable key not counted by Object.getOwnPropertyNames with overridden convention");
+		assert.equal(Object.getOwnPropertyNames(m).includes("PRIVATE"), false, "non enumerable key not found in Object.getOwnPropertyNames with overridden convention");
+		assert.equal("normal" in m, true, "enumerable key found with operator in with overridden convention")
+		assert.equal("PRIVATE" in m, false, "non enumerable key not found with operator in with overridden convention")
 
 	});
 
@@ -951,7 +973,7 @@ var consoleMock = {
 		assert.expect( 24 );
 
 		var defaultErrorCollector = BasicModel.prototype.errorCollector;
-		assert.equal(typeof defaultErrorCollector, "function", "Model has default errorCollector");
+		assert.equal(typeof defaultErrorCollector, "function", "BasicModel has default errorCollector");
 
 		BasicModel.prototype.errorCollector = function(errors){
 			assert.ok(errors.length === 1, "check errors.length global collector");

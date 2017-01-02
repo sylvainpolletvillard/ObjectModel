@@ -1,4 +1,4 @@
-import { BasicModel as Model, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
 import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
 function ObjectModel(def){
@@ -17,7 +17,7 @@ function ObjectModel(def){
 	return model
 }
 
-setConstructorProto(ObjectModel, Model.prototype)
+setConstructorProto(ObjectModel, BasicModel.prototype)
 
 Object.assign(ObjectModel.prototype, {
 
@@ -38,14 +38,14 @@ Object.assign(ObjectModel.prototype, {
 		Object.assign(def, this.definition)
 		merge(proto, this.prototype, false, true)
 		args.forEach(arg => {
-			if(is(Model, arg)) merge(def, arg.definition, true)
+			if(is(BasicModel, arg)) merge(def, arg.definition, true)
 			if(isFunction(arg)) merge(proto, arg.prototype, true, true)
 			if(isObject(arg)) merge(def, arg, true, true)
 		})
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
-			if(is(Model, arg)) assertions = assertions.concat(arg.assertions)
+			if(is(BasicModel, arg)) assertions = assertions.concat(arg.assertions)
 		})
 
 		const submodel = new this.constructor(def)
@@ -82,7 +82,7 @@ function getProxy(model, obj, defNode, path) {
 		},
 		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),
-				  isConstant = Model.conventionForConstant(key),
+				  isConstant = model.conventionForConstant(key),
 				  initialValue = o[key]
 			
 			if(isConstant && initialValue !== undefined){
@@ -109,10 +109,10 @@ function getProxy(model, obj, defNode, path) {
 			return true
 		},
 		has(o, key){
-			return Reflect.has(o, key) && !Model.conventionForPrivate(key)
+			return Reflect.has(o, key) && !model.conventionForPrivate(key)
 		},
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => !Model.conventionForPrivate(key))
+			return Reflect.ownKeys(o).filter(key => !model.conventionForPrivate(key))
 		},
 		getPrototypeOf(){
 			return model.prototype

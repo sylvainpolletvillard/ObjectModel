@@ -98,8 +98,8 @@ Object.assign(BasicModel.prototype, {
 
 })
 
-BasicModel.conventionForConstant = key => key.toUpperCase() === key
-BasicModel.conventionForPrivate = key => key[0] === "_"
+BasicModel.prototype.conventionForConstant = key => key.toUpperCase() === key
+BasicModel.prototype.conventionForPrivate = key => key[0] === "_"
 
 export function initModel(model, def, constructor){
 	setConstructor(model, constructor)

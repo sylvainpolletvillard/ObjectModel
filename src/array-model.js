@@ -1,4 +1,4 @@
-import { BasicModel as Model, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
 import { is, setConstructorProto, toString } from "./helpers"
 
 const ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
@@ -30,7 +30,7 @@ function ArrayModel(def){
 	return model
 }
 
-setConstructorProto(ArrayModel, Model.prototype)
+setConstructorProto(ArrayModel, BasicModel.prototype)
 Object.assign(ArrayModel.prototype, {
 
 	toString(stack){

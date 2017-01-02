@@ -1,4 +1,4 @@
-import { BasicModel as Model, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, checkDefinition, checkAssertions } from "./basic-model"
 import { isFunction, setConstructor, setConstructorProto, toString } from "./helpers"
 
 function FunctionModel(){
@@ -40,7 +40,7 @@ function FunctionModel(){
 	return model
 }
 
-setConstructorProto(FunctionModel, Model.prototype)
+setConstructorProto(FunctionModel, BasicModel.prototype)
 
 Object.assign(FunctionModel.prototype, {
 

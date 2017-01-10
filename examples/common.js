@@ -1,6 +1,7 @@
 // Examples of commonly used models
 
 Model.Primitive = Model([Boolean, Number, String, Symbol]);
+Model.Any = Model([Object, Boolean, Number, String, Symbol, null, undefined]);
 
 // Booleans-like
 Model.Falsy = Model([Model.Primitive, null, undefined]).assert(function isFalsy(val){ return !val });

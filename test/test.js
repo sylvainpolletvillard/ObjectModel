@@ -55,6 +55,9 @@ function testSuite(Model){
 		myModel.validate("666");
 		assert.throws(function(){ myModel.validate(666) }, /TypeError/, "test undefined value");
 
+		assert.ok(Model(undefined) instanceof Model, "Model can receive undefined as argument");
+		assert.throws(function(){ Model() }, /Error.*Model definition is required/, "Model without definition throws")
+
 	});
 
 	QUnit.test( "Object models", function( assert ) {
@@ -150,6 +153,8 @@ function testSuite(Model){
 				&& /city/.test(err.toString())
 		}, "check that errors are correctly stacked");
 
+		assert.ok(Model.Object({}) instanceof Model, "ObjectModel can receive empty object as argument");
+		assert.throws(function(){ Model.Object() }, /Error.*Model definition is required/, "ObjectModel without definition throws")
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){
@@ -293,6 +298,9 @@ function testSuite(Model){
 		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
 		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
 
+		assert.ok(Model.Array(undefined) instanceof Model, "ArrayModel can receive undefined as argument");
+		assert.throws(function(){ Model.Array() }, /Error.*Model definition is required/, "ArrayModel without definition throws")
+
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -370,6 +378,8 @@ function testSuite(Model){
 		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "Model.Function object argument 3/5");
 		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "Model.Function object argument 4/5");
 		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "Model.Function object argument 5/5");
+
+		assert.ok(Model.Function() instanceof Model, "FunctionModel does not throw when receiving no arguments");
 	});
 
 	QUnit.test("Default values", function(assert){
@@ -581,7 +591,7 @@ function testSuite(Model){
 		Car = function(){};
 		Car.prototype = new Vehicle();
 		Car.prototype.wheels = 4;
-		Ferrari = Model.Object().extend(Car);
+		Ferrari = Model.Object({}).extend(Car);
 		assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
 
 

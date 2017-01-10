@@ -7,7 +7,7 @@ function Model(def){
 		return obj;
 	};
 
-	initModel(model, def, Model);
+	initModel(model, arguments, Model);
 	return model;
 }
 
@@ -135,9 +135,10 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	errorCollector.call(this, errors);
 })
 
-function initModel(model, def, constructor){
+function initModel(model, args, constructor){
+	if(args.length === 0) throw new Error("Model definition is required");
 	setConstructor(model, constructor);
-	model[DEFINITION] = def;
+	model[DEFINITION] = args[0];
 	model[ASSERTIONS] = model[ASSERTIONS].slice(); // clone from Model.prototype
 	define(model, ERROR_STACK, []);
 }

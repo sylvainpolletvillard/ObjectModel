@@ -15,7 +15,7 @@ Model[OBJECT] = function ObjectModel(def){
 	};
 
 	setConstructorProto(model, Object[PROTO]);
-	initModel(model, def, Model[OBJECT]);
+	initModel(model, arguments, Model[OBJECT]);
 	return model;
 };
 

@@ -41,7 +41,7 @@ Model[ARRAY] = function ArrayModel(def){
 	};
 
 	setConstructorProto(model, Array[PROTO]);
-	initModel(model, def, Model[ARRAY]);
+	initModel(model, arguments, Model[ARRAY]);
 	return model;
 };
 

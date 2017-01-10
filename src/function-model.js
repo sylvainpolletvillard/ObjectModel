@@ -36,7 +36,7 @@ Model[FUNCTION] = function FunctionModel(){
 
 	var def = {};
 	def[ARGS] = cloneArray(arguments);
-	initModel(model, def, Model[FUNCTION]);
+	initModel(model, [def], Model[FUNCTION]);
 	return model;
 };
 

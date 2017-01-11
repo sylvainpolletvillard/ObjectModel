@@ -119,17 +119,17 @@
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
 				<li>Custom error collectors</li>
-				<li>all in <strong>7.8 kB minified, 3.3 kB gzipped</strong></li>
+				<li>all in <strong>7.9 kB minified, 3.3 kB gzipped</strong></li>
 			</ul>
 		</div>
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v2.5.3</h3>
+			<h3>Current version: v2.5.4</h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-				<li>Minified file (7.8 kB, 3.3 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.5.3.zip">object-model-2.5.3.zip</a> </li>
+				<li>Minified file (7.9 kB, 3.3 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.5.4.zip">object-model-2.5.4.zip</a> </li>
 			</ul>
 			<h3>Changelog and previous releases</h3>
 			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a></p>
@@ -433,7 +433,7 @@ couple.husband instanceof Person === true // object has been casted to Person</c
 	<section id="doc-extensions" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Inheritance by extension</h2>
-			<p>Extensions create new models based on existing model definitions. You can declare new properties or override previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
+			<p>Extensions create new models based on existing model definitions. You can declare new properties or override previous ones. Therefore, extending object models is an easy way to reproduce subtyping and class inheritance patterns.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -461,11 +461,19 @@ Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false
-expecting child to be {
-	name: String,
-	female: Boolean
-}, got undefined</code></pre>
+             expecting child to be { name: String, female: Boolean }, got undefined</code></pre>
 		</div>
+		
+		<p>Note that the <code>extend</code> function can receive any number of additional models and/or definitions as arguments. They will be merged using this strategy:</p>
+		<ul>
+			<li><mark>for object models</mark>, the resulting definition is the deep (recursive) merge of the definition objects
+				<br>i.e. <code>Mother</code> model in the example above becomes <code>Model({ name: String, female: true, child: Person })</code></li>
+			<li><mark>for other models</mark>, the resulting definition is the union of the definitions
+				<br>i.e. <code>Model.Array(Number).extend(Model.Array(String))</code> becomes <code>Model.Array([Number, String]) ;</code></li>
+			<li>the <mark>assertions</mark> of every model are retained and concatenated ;</li>
+			<li>the <mark>prototypes</mark> of every model are merged ;</li>
+			<li>the resulting <mark>constructor</mark> and <mark>error collector</mark> are the ones from the initially extended model.</li>
+		</ul>
 	</section>
 
 	<hr>

@@ -13,7 +13,7 @@ function ObjectModel(def){
 	}
 
 	setConstructorProto(model, Object.prototype)
-	initModel(model, def, ObjectModel)
+	initModel(model, arguments, ObjectModel)
 	return model
 }
 

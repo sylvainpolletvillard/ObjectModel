@@ -36,7 +36,7 @@ function FunctionModel(){
 	setConstructorProto(model, Function.prototype)
 
 	const def = { arguments: [...arguments] }
-	initModel(model, def, FunctionModel)
+	initModel(model, [ def ], FunctionModel)
 	return model
 }
 

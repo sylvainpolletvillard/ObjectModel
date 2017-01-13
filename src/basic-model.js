@@ -13,7 +13,7 @@ export function BasicModel(def){
 		return obj
 	}
 
-	initModel(model, def, BasicModel)
+	initModel(model, arguments, BasicModel)
 	return model
 }
 
@@ -101,9 +101,10 @@ Object.assign(BasicModel.prototype, {
 BasicModel.prototype.conventionForConstant = key => key.toUpperCase() === key
 BasicModel.prototype.conventionForPrivate = key => key[0] === "_"
 
-export function initModel(model, def, constructor){
+export function initModel(model, args, constructor){
+	if(args.length === 0) throw new Error("Model definition is required");
 	setConstructor(model, constructor)
-	model.definition = def
+	model.definition = args[0]
 	model.assertions = model.assertions.slice()
 	define(model, "errorStack", [])
 }

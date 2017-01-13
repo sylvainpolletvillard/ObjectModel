@@ -55,6 +55,9 @@ var consoleMock = {
 		myModel.validate("666");
 		assert.throws(function(){ myModel.validate(666) }, /TypeError/, "test undefined value");
 
+		assert.ok(BasicModel(undefined) instanceof BasicModel, "Model can receive undefined as argument");
+		assert.throws(function(){ BasicModel() }, /Error.*Model definition is required/, "Model without definition throws")
+
 	});
 
 	QUnit.test( "Object models", function( assert ) {
@@ -150,6 +153,8 @@ var consoleMock = {
 				&& /city/.test(err.toString())
 		}, "check that errors are correctly stacked");
 
+		assert.ok(ObjectModel({}) instanceof ObjectModel, "ObjectModel can receive empty object as argument");
+		assert.throws(function(){ ObjectModel() }, /Error.*Model definition is required/, "ObjectModel without definition throws")
 	});
 
 	QUnit.test("Optional and multiple parameters", function(assert){
@@ -293,6 +298,9 @@ var consoleMock = {
 		assert.throws(function(){ childO.arr.push(false); }, /TypeError/, "child array model catches push calls");
 		assert.throws(function(){ childO.arr[0] = 1; }, /TypeError/, "child array model catches set index");
 
+		assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
+		assert.throws(function(){ ArrayModel() }, /Error.*Model definition is required/, "ArrayModel without definition throws")
+
 	});
 
 	QUnit.test("Function models", function(assert){
@@ -370,6 +378,8 @@ var consoleMock = {
 		assert.throws(function(){ api({ list: [1,2,"3",4], op: "product"}); }, /TypeError/,  "FunctionModel object argument 3/5");
 		assert.throws(function(){ api({ list: [1,2,3,4], op: "divide"}); }, /TypeError/,  "FunctionModel object argument 4/5");
 		assert.throws(function(){ api({ list: [1,2,3,4]}); }, /TypeError/,  "FunctionModel object argument 5/5");
+
+		assert.ok(FunctionModel() instanceof FunctionModel, "FunctionModel does not throw when receiving no arguments");
 	});
 
 	QUnit.test("Default values", function(assert){
@@ -607,7 +617,7 @@ var consoleMock = {
 		Car = function(){};
 		Car.prototype = new Vehicle();
 		Car.prototype.wheels = 4;
-		Ferrari = ObjectModel().extend(Car);
+		Ferrari = ObjectModel({}).extend(Car);
 		assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
 
 

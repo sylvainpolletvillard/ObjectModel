@@ -26,7 +26,7 @@ function ArrayModel(def){
 	}
 
 	setConstructorProto(model, Array.prototype)
-	initModel(model, def, ArrayModel)
+	initModel(model, arguments, ArrayModel)
 	return model
 }
 

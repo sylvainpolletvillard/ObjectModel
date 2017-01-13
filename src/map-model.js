@@ -23,7 +23,7 @@ function MapModel(def){
 	}
 
 	setConstructorProto(model, Map.prototype)
-	initModel(model, def, MapModel)
+	initModel(model, arguments, MapModel)
 	return model
 }
 

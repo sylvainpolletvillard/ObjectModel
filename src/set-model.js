@@ -23,7 +23,7 @@ function SetModel(def){
 	}
 
 	setConstructorProto(model, Set.prototype)
-	initModel(model, def, SetModel)
+	initModel(model, arguments, SetModel)
 	return model
 }
 

@@ -110,7 +110,7 @@ Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 // private methods
 define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
-	checkAssertions(obj, this, errorStack);
+	checkAssertions(obj, this, path, errorStack);
 });
 
 // throw all errors collected
@@ -210,7 +210,7 @@ function checkDefinitionPart(obj, def, path, callStack){
 		|| obj[CONSTRUCTOR] === def;
 }
 
-function checkAssertions(obj, model, errorStack){
+function checkAssertions(obj, model, path, errorStack){
 	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++){
 		var assert = model[ASSERTIONS][i],
 			assertionResult;
@@ -222,6 +222,8 @@ function checkAssertions(obj, model, errorStack){
 		if(assertionResult !== true){
 			var err = {};
 			err[MESSAGE] = assert[ON_FAIL].call(model, assertionResult, obj)
+			err[RECEIVED] = obj;
+			err[PATH] = path;
 			errorStack.push(err);
 		}
 	}

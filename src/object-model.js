@@ -42,7 +42,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	} else {
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
 	}
-	checkAssertions(obj, this, errorStack);
+	checkAssertions(obj, this, path, errorStack);
 });
 
 function getProxy(model, obj, defNode, path) {
@@ -76,7 +76,7 @@ function getProxy(model, obj, defNode, path) {
 				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 				var oldValue = wrapper[key];
 				wrapper[key] = newProxy;
-				checkAssertions(obj, model, model[ERROR_STACK]);
+				checkAssertions(obj, model, newPath, model[ERROR_STACK]);
 				if(model[ERROR_STACK].length){
 					wrapper[key] = oldValue;
 					model[UNSTACK]();

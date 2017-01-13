@@ -17,7 +17,7 @@ Model[FUNCTION] = function FunctionModel(){
 			def[ARGS].forEach(function (argDef, i) {
 				args[i] = checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK], true);
 			});
-			checkAssertions(args, model, model[ERROR_STACK]);
+			checkAssertions(args, model, ARGS, model[ERROR_STACK]); //TODO: improve path parameter
 
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);

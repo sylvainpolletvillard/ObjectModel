@@ -1,3 +1,5 @@
+/* global QUnit */
+
 var consoleMock = {
 	methods: ["debug","log","warn","error"],
 	apply: function(){
@@ -134,7 +136,7 @@ function testSuite(Model){
 		assert.strictEqual(joe.job, "Taxi", "Properties out of model definition are kept but are not validated");
 
 		assert.throws(function() {
-			var joey = Person({
+			Person({
 				name: false,
 				age: [42],
 				birth: "nope",
@@ -313,7 +315,7 @@ function testSuite(Model){
 
 		var add = op(function(a,b){ return a + b; });
 		var add3 = op(function(a,b,c){ return a + b + c; });
-		var noop = op(function(a, b){ return undefined; });
+		var noop = op(function(){ return undefined; });
 		var addStr = op(function(a,b){ return String(a) + String(b); });
 
 		assert.ok(add instanceof Function && add instanceof op, "fn instanceof functionModel and Function");
@@ -420,7 +422,7 @@ function testSuite(Model){
 		var add = op(function(a,b){ return a + b; });
 		assert.equal(add(), 42, "defaults arguments for function models correctly applied");
 
-		var myModel = new Model.Object({ x: Number, y: String })
+		myModel = new Model.Object({ x: Number, y: String })
 			.defaultTo({ x: 42 })
 			.defaults({ y: "hello" })
 		assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
@@ -520,7 +522,7 @@ function testSuite(Model){
 		assert.throws(function(){ Woman(joe); }, /TypeError[\s\S]*female/, "Woman invalid model for joe");
 
 		assert.throws(function(){
-			var _joe = Woman({
+			Woman({
 				name: "Joe",
 				age: 42,
 				birth: new Date(1990,3,25),
@@ -533,9 +535,7 @@ function testSuite(Model){
 			});
 		}, /TypeError[\s\S]*female/, "cant be woman from joe parameters");
 
-		assert.throws(function(){
-			var _joe = Woman(joe);
-		}, /TypeError[\s\S]*female/, "cant be woman from Person joe");
+		assert.throws(function(){ Woman(joe); }, /TypeError[\s\S]*female/, "cant be woman from Person joe");
 
 		var ann = Woman({
 			name: "Joe's wife",
@@ -582,7 +582,6 @@ function testSuite(Model){
 
 		var Vehicle = { speed: Number };
 		var Car = Object.create(Vehicle);
-		Car.wheels = 4;
 		var Ferrari = Model({ expensive: true }).extend(Car);
 		assert.ok("speed" in Ferrari.definition, "should retrieve definitions from parent prototypes when extending with objects");
 
@@ -590,7 +589,6 @@ function testSuite(Model){
 		Vehicle.prototype.speed = 99;
 		Car = function(){};
 		Car.prototype = new Vehicle();
-		Car.prototype.wheels = 4;
 		Ferrari = Model.Object({}).extend(Car);
 		assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
 
@@ -765,7 +763,7 @@ function testSuite(Model){
 			name: joe.name+"'s wife"
 		};
 
-		var joefamily = new Family({
+		joefamily = new Family({
 			father: joe,
 			mother: duckmother,
 			children: []
@@ -780,7 +778,7 @@ function testSuite(Model){
 		}, /TypeError[\s\S]*female/, "validation of submodel duck typed at modification");
 
 		assert.throws(function(){
-			var joefamily = new Family({
+			new Family({
 				father: joe,
 				mother: {
 					female: false,
@@ -855,8 +853,8 @@ function testSuite(Model){
 		assert.equal(Model.Object.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
 		var M = Model({ a: String });
-		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message without data");
-		assert.throws(function(){ var m = M({ a: "test" }) }, /TypeError/, "expected message with data -1");
+		assert.throws(function(){ M({ a: "test" }) }, /TypeError/, "expected message without data");
+		assert.throws(function(){ M({ a: "test" }) }, /TypeError/, "expected message with data -1");
 
 		// clean up global assertions
 		Model.prototype.assertions = [];
@@ -884,10 +882,10 @@ function testSuite(Model){
 
 		var Address = new Model({
 			city: String,
-			country: String
-		}).assert(function(a) {
-			return a.country === "GB";
-		}, "Country must be GB");
+			country: Model(String).assert(function(c) {
+				return c === "GB";
+			}, "Country must be GB")
+		})
 
 		var gbAddress = { city: "London", country: "GB" };
 		var frAddress = { city: "Paris", country: "FR" };
@@ -902,6 +900,15 @@ function testSuite(Model){
 
 		Order.validate(gbOrder); // no errors
 		assert.throws(function(){ Order.validate(frOrder); }, "should validate sub-objects assertions");
+
+		var errors = [];
+		Order.validate(frOrder, function(err){ errors = err; });
+
+		assert.equal(errors.length, 1, "should throw exactly one error here")
+		assert.equal(errors[0].expected, "Country must be GB", "check assertion error expected parameter");
+		assert.equal(errors[0].received, "FR", "check assertion error received parameter");
+		assert.equal(errors[0].path, "address.country", "check assertion error path parameter");
+		assert.equal(errors[0].message, 'assertion "Country must be GB" returned false for value "FR"', "check assertion error message parameter");
 
 	});
 
@@ -1077,7 +1084,7 @@ function testSuite(Model){
 
 		consoleMock.apply();
 		var c = new Container({ foo: { bar: { name: "dunno" }}});
-		assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number\]/
+		assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
 				.test(consoleMock["warnLastArgs"][0]),
 			"should warn about ambiguous model for object sub prop"
 		);

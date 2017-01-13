@@ -83,10 +83,7 @@ ModelProto[EXTEND] = function(){
 
 ModelProto[ASSERT] = function(assertion, description){
 	description = description || toString(assertion);
-	var onFail = isFunction(description) ? description : function (assertionResult, value) {
-		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
-	};
-	define(assertion, ON_FAIL, onFail);
+	define(assertion, DESCRIPTION, description);
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
@@ -213,7 +210,11 @@ function checkDefinitionPart(obj, def, path, callStack){
 function checkAssertions(obj, model, path, errorStack){
 	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++){
 		var assert = model[ASSERTIONS][i],
-			assertionResult;
+			assertionResult,
+			description = assert[DESCRIPTION],
+		    onFail = isFunction(description) ? description : function (assertionResult, value) {
+				return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
+			};
 		try {
 			assertionResult = assert.call(model, obj);
 		} catch(err){
@@ -221,7 +222,8 @@ function checkAssertions(obj, model, path, errorStack){
 		}
 		if(assertionResult !== true){
 			var err = {};
-			err[MESSAGE] = assert[ON_FAIL].call(model, assertionResult, obj)
+			err[MESSAGE] = onFail.call(model, assertionResult, obj)
+			err[EXPECTED] = description;
 			err[RECEIVED] = obj;
 			err[PATH] = path;
 			errorStack.push(err);

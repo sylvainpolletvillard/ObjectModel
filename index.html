@@ -119,17 +119,17 @@
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
 				<li>Custom error collectors</li>
-				<li>all in <strong>7.9 kB minified, 3.3 kB gzipped</strong></li>
+				<li>all in <strong>8 kB minified, 3.4 kB gzipped</strong></li>
 			</ul>
 		</div>
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v2.5.4</h3>
+			<h3>Current version: v2.6.0</h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> : <code>npm install objectmodel</code></li>
-				<li>Minified file (7.9 kB, 3.3 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
-				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.5.4.zip">object-model-2.5.4.zip</a> </li>
+				<li>Minified file (8 kB, 3.4 kB gzipped) : <a href="dist/object-model.min.js">object-model.min.js</a></li>
+				<li>Source files : <a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v2.6.0.zip">object-model-2.6.0.zip</a> </li>
 			</ul>
 			<h3>Changelog and previous releases</h3>
 			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a></p>
@@ -752,9 +752,9 @@ joe.sayMyName();</code>
 			<p>Error collectors are callback functions called with an array of all the errors collected during the last model inspection. Every error is an object with these properties:</p>
 			<ul>
 				<li><code>message</code>: a message describing the error</li>
-				<li>[<code>expected</code>]: the expected type definition (when suitable)</li>
-				<li>[<code>received</code>]: the received value, to compare to the expected (when suitable)</li>
-				<li>[<code>path</code>]: the path where the error occurred in an object model definition (when suitable)</li>
+				<li>[<code>expected</code>]: the expected type definition or assertion/li>
+				<li>[<code>received</code>]: the received value, to compare to the expected</li>
+				<li>[<code>path</code>]: the path where the error occurred in an object model definition</li>
 			</ul>
 		</div>
 

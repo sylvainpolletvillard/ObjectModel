@@ -1,4 +1,4 @@
-// ObjectModel v2.5.3 - http://objectmodel.js.org
+// ObjectModel v2.6.0 - http://objectmodel.js.org
 ;(function(global){
 // string constants
 var
@@ -9,7 +9,7 @@ CONVENTION_CONSTANT   = "conventionForConstant",
 CONVENTION_PRIVATE    = "conventionForPrivate",
 DEFINITION            = "definition",
 ASSERTIONS            = "assertions",
-ON_FAIL               = "_onFail",
+DESCRIPTION           = "_description",
 VALIDATE              = "validate",
 VALIDATOR             = "_validator",
 TEST                  = "test",
@@ -152,7 +152,7 @@ function Model(def){
 		return obj;
 	};
 
-	initModel(model, def, Model);
+	initModel(model, arguments, Model);
 	return model;
 }
 
@@ -228,10 +228,7 @@ ModelProto[EXTEND] = function(){
 
 ModelProto[ASSERT] = function(assertion, description){
 	description = description || toString(assertion);
-	var onFail = isFunction(description) ? description : function (assertionResult, value) {
-		return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
-	};
-	define(assertion, ON_FAIL, onFail);
+	define(assertion, DESCRIPTION, description);
 	this[ASSERTIONS] = this[ASSERTIONS].concat(assertion);
 	return this;
 };
@@ -255,7 +252,7 @@ Model[CONVENTION_PRIVATE] = function(key){ return key[0] === "_" };
 // private methods
 define(ModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
-	checkAssertions(obj, this, errorStack);
+	checkAssertions(obj, this, path, errorStack);
 });
 
 // throw all errors collected
@@ -280,9 +277,10 @@ define(ModelProto, UNSTACK, function(errorCollector){
 	errorCollector.call(this, errors);
 })
 
-function initModel(model, def, constructor){
+function initModel(model, args, constructor){
+	if(args.length === 0) throw new Error("Model definition is required");
 	setConstructor(model, constructor);
-	model[DEFINITION] = def;
+	model[DEFINITION] = args[0];
 	model[ASSERTIONS] = model[ASSERTIONS].slice(); // clone from Model.prototype
 	define(model, ERROR_STACK, []);
 }
@@ -354,10 +352,16 @@ function checkDefinitionPart(obj, def, path, callStack){
 		|| obj[CONSTRUCTOR] === def;
 }
 
-function checkAssertions(obj, model, errorStack){
+function checkAssertions(obj, model, path, errorStack){
 	for(var i=0, l=model[ASSERTIONS].length; i<l ; i++){
 		var assert = model[ASSERTIONS][i],
-			assertionResult;
+			assertionResult,
+			description = assert[DESCRIPTION],
+		    onFail = isFunction(description) ? description : function (assertionResult, value) {
+				return 'assertion "' + description
+				     + '" returned ' + toString(assertionResult)
+				     + ' for value ' + toString(value);
+			};
 		try {
 			assertionResult = assert.call(model, obj);
 		} catch(err){
@@ -365,7 +369,10 @@ function checkAssertions(obj, model, errorStack){
 		}
 		if(assertionResult !== true){
 			var err = {};
-			err[MESSAGE] = assert[ON_FAIL].call(model, assertionResult, obj)
+			err[MESSAGE] = onFail.call(model, assertionResult, obj)
+			err[EXPECTED] = assert;
+			err[RECEIVED] = obj;
+			err[PATH] = path;
 			errorStack.push(err);
 		}
 	}
@@ -414,7 +421,7 @@ Model[OBJECT] = function ObjectModel(def){
 	};
 
 	setConstructorProto(model, Object[PROTO]);
-	initModel(model, def, Model[OBJECT]);
+	initModel(model, arguments, Model[OBJECT]);
 	return model;
 };
 
@@ -441,7 +448,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	} else {
 		checkDefinition(obj, this[DEFINITION], path, callStack, errorStack);
 	}
-	checkAssertions(obj, this, errorStack);
+	checkAssertions(obj, this, path, errorStack);
 });
 
 function getProxy(model, obj, defNode, path) {
@@ -475,7 +482,7 @@ function getProxy(model, obj, defNode, path) {
 				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
 				var oldValue = wrapper[key];
 				wrapper[key] = newProxy;
-				checkAssertions(obj, model, model[ERROR_STACK]);
+				checkAssertions(obj, model, newPath, model[ERROR_STACK]);
 				if(model[ERROR_STACK].length){
 					wrapper[key] = oldValue;
 					model[UNSTACK]();
@@ -529,7 +536,7 @@ Model[ARRAY] = function ArrayModel(def){
 	};
 
 	setConstructorProto(model, Array[PROTO]);
-	initModel(model, def, Model[ARRAY]);
+	initModel(model, arguments, Model[ARRAY]);
 	return model;
 };
 
@@ -553,7 +560,7 @@ define(ArrayModelProto, VALIDATOR, function(arr, path, callStack, errorStack){
 			arr[i] = checkDefinition(arr[i], this[DEFINITION], (path||ARRAY)+'['+i+']', callStack, errorStack, true);
 		}
 	}
-	checkAssertions(arr, this, errorStack);
+	checkAssertions(arr, this, path, errorStack);
 });
 
 function proxifyArrayKey(proxy, array, key, model){
@@ -591,12 +598,13 @@ function proxifyArrayMethod(array, method, model, proxy){
 }
 
 function setArrayKey(array, key, value, model){
+	var path = ARRAY+'['+key+']';
 	if(parseInt(key) === +key && key >= 0){
-		value = checkDefinition(value, model[DEFINITION], ARRAY+'['+key+']', [], model[ERROR_STACK], true);
+		value = checkDefinition(value, model[DEFINITION], path, [], model[ERROR_STACK], true);
 	}
 	var testArray = array.slice();
 	testArray[key] = value;
-	checkAssertions(testArray, model, model[ERROR_STACK]);
+	checkAssertions(testArray, model, path, model[ERROR_STACK]);
 	model[UNSTACK]();
 	array[key] = value;
 }
@@ -619,7 +627,7 @@ Model[FUNCTION] = function FunctionModel(){
 			def[ARGS].forEach(function (argDef, i) {
 				args[i] = checkDefinition(args[i], argDef, ARGS + '[' + i + ']', [], model[ERROR_STACK], true);
 			});
-			checkAssertions(args, model, model[ERROR_STACK]);
+			checkAssertions(args, model, ARGS, model[ERROR_STACK]); //TODO: improve path parameter
 
 			if(!model[ERROR_STACK].length){
 				returnValue = fn.apply(this, args);
@@ -638,7 +646,7 @@ Model[FUNCTION] = function FunctionModel(){
 
 	var def = {};
 	def[ARGS] = cloneArray(arguments);
-	initModel(model, def, Model[FUNCTION]);
+	initModel(model, [def], Model[FUNCTION]);
 	return model;
 };
 

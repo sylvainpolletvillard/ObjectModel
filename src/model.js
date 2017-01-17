@@ -213,7 +213,9 @@ function checkAssertions(obj, model, path, errorStack){
 			assertionResult,
 			description = assert[DESCRIPTION],
 		    onFail = isFunction(description) ? description : function (assertionResult, value) {
-				return 'assertion "' + description + '" returned ' + toString(assertionResult) + ' for value ' + toString(value);
+				return 'assertion "' + description
+				     + '" returned ' + toString(assertionResult)
+				     + ' for value ' + toString(value);
 			};
 		try {
 			assertionResult = assert.call(model, obj);

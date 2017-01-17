@@ -880,11 +880,13 @@ function testSuite(Model){
 			/assertion \"may throw exception\" returned TypeError.*for value undefined/,
 			"assertions catch exceptions on Array models");
 
+		var assertFunction = function(c) {
+			return c === "GB";
+		};
+		assertFunction.toString = function(){ return "expected assertFunction toString"; }
 		var Address = new Model({
 			city: String,
-			country: Model(String).assert(function(c) {
-				return c === "GB";
-			}, "Country must be GB")
+			country: Model(String).assert(assertFunction, "Country must be GB")
 		})
 
 		var gbAddress = { city: "London", country: "GB" };
@@ -905,7 +907,7 @@ function testSuite(Model){
 		Order.validate(frOrder, function(err){ errors = err; });
 
 		assert.equal(errors.length, 1, "should throw exactly one error here")
-		assert.equal(errors[0].expected, "Country must be GB", "check assertion error expected parameter");
+		assert.equal(errors[0].expected, "expected assertFunction toString", "check assertion error expected parameter");
 		assert.equal(errors[0].received, "FR", "check assertion error received parameter");
 		assert.equal(errors[0].path, "address.country", "check assertion error path parameter");
 		assert.equal(errors[0].message, 'assertion "Country must be GB" returned false for value "FR"', "check assertion error message parameter");

@@ -223,7 +223,7 @@ function checkAssertions(obj, model, path, errorStack){
 		if(assertionResult !== true){
 			var err = {};
 			err[MESSAGE] = onFail.call(model, assertionResult, obj)
-			err[EXPECTED] = description;
+			err[EXPECTED] = assert;
 			err[RECEIVED] = obj;
 			err[PATH] = path;
 			errorStack.push(err);

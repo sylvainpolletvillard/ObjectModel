@@ -48,7 +48,7 @@ Object.assign(ArrayModel.prototype, {
 			path
 		})
 
-		checkAssertions(arr, this, errorStack)
+		checkAssertions(arr, this, path, errorStack)
 	}
 })
 
@@ -64,12 +64,13 @@ function proxifyArrayMethod(array, method, model){
 }
 
 function setArrayKey(array, key, value, model){
+	let path = `Array[${key}]`;
 	if(parseInt(key) === +key && key >= 0)
-		value = checkDefinition(value, model.definition, 'Array['+key+']', model.errorStack, [], true)
+		value = checkDefinition(value, model.definition, path, model.errorStack, [], true)
 
 	const testArray = array.slice()
 	testArray[key] = value
-	checkAssertions(testArray, model)
+	checkAssertions(testArray, model, path)
 	model.unstackErrors()
 	array[key] = value
 }

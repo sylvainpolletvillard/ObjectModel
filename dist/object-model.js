@@ -39,7 +39,7 @@
 		}
 	}
 
-	function define(obj, key, value, enumerable) {
+	function define(obj, key, value, enumerable=false) {
 		defineProperty(obj, key, { value, enumerable, writable: true, configurable: true });
 	}
 
@@ -78,7 +78,7 @@
 			return obj
 		};
 
-		initModel(model, def, BasicModel);
+		initModel(model, arguments, BasicModel);
 		return model
 	}
 
@@ -124,7 +124,7 @@
 		},
 
 		assert(assertion, description = toString(assertion)){
-			assertion.description = description;
+			define(assertion, "description", description);
 			this.assertions = this.assertions.concat(assertion);
 			return this
 		},
@@ -142,7 +142,7 @@
 
 		_validate(obj, path, errorStack, callStack){
 			checkDefinition(obj, this.definition, path, errorStack, callStack);
-			checkAssertions(obj, this, errorStack);
+			checkAssertions(obj, this, path, errorStack);
 		},
 
 		// throw all errors collected
@@ -166,9 +166,10 @@
 	BasicModel.prototype.conventionForConstant = key => key.toUpperCase() === key;
 	BasicModel.prototype.conventionForPrivate = key => key[0] === "_";
 
-	function initModel(model, def, constructor){
+	function initModel(model, args, constructor){
+		if(args.length === 0) throw new Error("Model definition is required");
 		setConstructor(model, constructor);
-		model.definition = def;
+		model.definition = args[0];
 		model.assertions = model.assertions.slice();
 		define(model, "errorStack", []);
 	}
@@ -231,19 +232,22 @@
 			|| obj.constructor === def
 	}
 
-	function checkAssertions(obj, model, errorStack = model.errorStack){
+	function checkAssertions(obj, model, path, errorStack = model.errorStack){
 		for(let assertion of model.assertions){
-			let assertionResult;
+			let result;
 			try {
-				assertionResult = assertion.call(model, obj);
+				result = assertion.call(model, obj);
 			} catch(err){
-				assertionResult = err;
+				result = err;
 			}
-			if(assertionResult !== true){
+			if(result !== true){
 				const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 					`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`;
 				errorStack.push({
-					message: onFail.call(model, assertionResult, obj)
+					message: onFail.call(model, result, obj),
+					expected: assertion,
+					received: obj,
+					path
 				});
 			}
 		}
@@ -282,7 +286,7 @@
 		};
 
 		setConstructorProto(model, Object.prototype);
-		initModel(model, def, ObjectModel);
+		initModel(model, arguments, ObjectModel);
 		return model
 	}
 
@@ -335,7 +339,7 @@
 			} else {
 				checkDefinition(obj, this.definition, path, errorStack, callStack);
 			}
-			checkAssertions(obj, this, errorStack);
+			checkAssertions(obj, this, path, errorStack);
 		}
 	});
 
@@ -363,7 +367,7 @@
 					const newProxy = getProxy(model, val, defNode[key], newPath);
 					checkDefinition(newProxy, defNode[key], newPath, model.errorStack, []);
 					o[key] = newProxy;
-					checkAssertions(obj, model);
+					checkAssertions(obj, model, newPath);
 				} else {
 					model.errorStack.push({
 						message: `cannot find property ${newPath} in the model definition`
@@ -414,7 +418,7 @@
 		};
 
 		setConstructorProto(model, Array.prototype);
-		initModel(model, def, ArrayModel);
+		initModel(model, arguments, ArrayModel);
 		return model
 	}
 
@@ -436,7 +440,7 @@
 				path
 			});
 
-			checkAssertions(arr, this, errorStack);
+			checkAssertions(arr, this, path, errorStack);
 		}
 	});
 
@@ -452,12 +456,13 @@
 	}
 
 	function setArrayKey(array, key, value, model){
+		let path = `Array[${key}]`;
 		if(parseInt(key) === +key && key >= 0)
-			value = checkDefinition(value, model.definition, 'Array['+key+']', model.errorStack, [], true);
+			value = checkDefinition(value, model.definition, path, model.errorStack, [], true);
 
 		const testArray = array.slice();
 		testArray[key] = value;
-		checkAssertions(testArray, model);
+		checkAssertions(testArray, model, path);
 		model.unstackErrors();
 		array[key] = value;
 	}
@@ -479,7 +484,7 @@
 				def.arguments.forEach((argDef, i) => {
 					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true);
 				});
-				checkAssertions(args, model);
+				checkAssertions(args, model, "arguments");
 
 				let returnValue;
 				if(!model.errorStack.length){
@@ -497,7 +502,7 @@
 		setConstructorProto(model, Function.prototype);
 
 		const def = { arguments: [...arguments] };
-		initModel(model, def, FunctionModel);
+		initModel(model, [ def ], FunctionModel);
 		return model
 	}
 
@@ -556,7 +561,7 @@
 		};
 
 		setConstructorProto(model, Map.prototype);
-		initModel(model, def, MapModel);
+		initModel(model, arguments, MapModel);
 		return model
 	}
 
@@ -605,7 +610,7 @@
 		};
 
 		setConstructorProto(model, Set.prototype);
-		initModel(model, def, SetModel);
+		initModel(model, arguments, SetModel);
 		return model
 	}
 

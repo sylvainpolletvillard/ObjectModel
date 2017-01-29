@@ -18,7 +18,7 @@ function FunctionModel(){
 			def.arguments.forEach((argDef, i) => {
 				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
 			})
-			checkAssertions(args, model)
+			checkAssertions(args, model, "arguments")
 
 			let returnValue
 			if(!model.errorStack.length){

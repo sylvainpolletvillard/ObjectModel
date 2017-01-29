@@ -37,7 +37,7 @@ export function merge(target, src={}, deep, includingProto) {
 	}
 }
 
-export function define(obj, key, value, enumerable) {
+export function define(obj, key, value, enumerable=false) {
 	defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
 }
 

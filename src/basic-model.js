@@ -59,7 +59,7 @@ Object.assign(BasicModel.prototype, {
 	},
 
 	assert(assertion, description = toString(assertion)){
-		assertion.description = description
+		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion)
 		return this
 	},
@@ -77,7 +77,7 @@ Object.assign(BasicModel.prototype, {
 
 	_validate(obj, path, errorStack, callStack){
 		checkDefinition(obj, this.definition, path, errorStack, callStack)
-		checkAssertions(obj, this, errorStack)
+		checkAssertions(obj, this, path, errorStack)
 	},
 
 	// throw all errors collected
@@ -167,19 +167,22 @@ export function checkDefinitionPart(obj, def, path, callStack){
 		|| obj.constructor === def
 }
 
-export function checkAssertions(obj, model, errorStack = model.errorStack){
+export function checkAssertions(obj, model, path, errorStack = model.errorStack){
 	for(let assertion of model.assertions){
-		let assertionResult
+		let result
 		try {
-			assertionResult = assertion.call(model, obj)
+			result = assertion.call(model, obj)
 		} catch(err){
-			assertionResult = err
+			result = err
 		}
-		if(assertionResult !== true){
+		if(result !== true){
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`
 			errorStack.push({
-				message: onFail.call(model, assertionResult, obj)
+				message: onFail.call(model, result, obj),
+				expected: assertion,
+				received: obj,
+				path
 			})
 		}
 	}

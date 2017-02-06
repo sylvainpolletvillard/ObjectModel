@@ -96,7 +96,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 		var returnValue = Array[PROTO][method].apply(array, arguments);
 		for(var i=0, l=array.length; i<l; i++) {
-			array[i] = autocast(array[i], model[DEFINITION]);
+			array[i] = cast(array[i], model[DEFINITION]);
 		}
 		return returnValue;
 	};

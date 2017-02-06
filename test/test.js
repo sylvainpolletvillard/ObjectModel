@@ -773,6 +773,7 @@ function testSuite(Model){
 		assert.notOk(duckmother instanceof Person, "Duck typing for object properties 2/2");
 
 		joefamily.mother.name = "Daisy";
+		assert.equal(joefamily.mother.name, "Daisy", "Duck typing submodel property can be modified");
 		assert.throws(function(){
 			joefamily.mother.female = "Quack !";
 		}, /TypeError[\s\S]*female/, "validation of submodel duck typed at modification");

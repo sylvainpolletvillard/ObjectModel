@@ -152,14 +152,14 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack, shouldAutoCast){
+function checkDefinition(obj, def, path, callStack, errorStack, shouldCast){
 	var indexFound = callStack.indexOf(def);
 	if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 		return obj; //if found twice in call stack, cycle detected, skip validation
 	}
 
-	if(shouldAutoCast) {
-		obj = autocast(obj, def);
+	if(shouldCast) {
+		obj = cast(obj, def);
 	}
 
 	if(is(Model, def)){
@@ -233,7 +233,7 @@ function checkAssertions(obj, model, path, errorStack){
 	}
 }
 
-function autocast(obj, defNode){
+function cast(obj, defNode){
 	if(!obj || is(Model, obj[CONSTRUCTOR])){
 		return obj; // no value or already a model instance
 	}

@@ -1,4 +1,4 @@
-// ObjectModel v2.6.0 - http://objectmodel.js.org
+// ObjectModel v2.6.1 - http://objectmodel.js.org
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
  else if (typeof exports === 'object') module.exports = factory(); // Node
@@ -301,14 +301,14 @@ function parseDefinition(def){
 	return def;
 }
 
-function checkDefinition(obj, def, path, callStack, errorStack, shouldAutoCast){
+function checkDefinition(obj, def, path, callStack, errorStack, shouldCast){
 	var indexFound = callStack.indexOf(def);
 	if(indexFound !== -1 && callStack.slice(indexFound+1).indexOf(def) !== -1){
 		return obj; //if found twice in call stack, cycle detected, skip validation
 	}
 
-	if(shouldAutoCast) {
-		obj = autocast(obj, def);
+	if(shouldCast) {
+		obj = cast(obj, def);
 	}
 
 	if(is(Model, def)){
@@ -382,7 +382,7 @@ function checkAssertions(obj, model, path, errorStack){
 	}
 }
 
-function autocast(obj, defNode){
+function cast(obj, defNode){
 	if(!obj || is(Model, obj[CONSTRUCTOR])){
 		return obj; // no value or already a model instance
 	}
@@ -457,7 +457,7 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 
 function getProxy(model, obj, defNode, path) {
 	if(!isPlainObject(defNode)) {
-		return autocast(obj, defNode);
+		return cast(obj, defNode);
 	}
 
 	var wrapper = is(Object, obj) ? obj : {};
@@ -472,9 +472,16 @@ function getProxy(model, obj, defNode, path) {
 	Object.keys(defNode).forEach(function(key) {
 		var newPath = (path ? path + '.' + key : key);
 		var isConstant = Model[CONVENTION_CONSTANT](key);
+		var defPart = defNode[key];
+
+		if(!isPlainObject(defPart) && wrapper[key] && !is(Model, wrapper[key][CONSTRUCTOR])) {
+			// cast nested models immediately at parent instanciation
+			wrapper[key] = cast(wrapper[key], defPart);
+		}
+
 		defineProperty(proxy, key, {
 			get: function () {
-				return getProxy(model, wrapper[key], defNode[key], newPath);
+				return getProxy(model, wrapper[key], defPart, newPath);
 			},
 			set: function (val) {
 				if(isConstant && wrapper[key] !== undefined){
@@ -482,8 +489,8 @@ function getProxy(model, obj, defNode, path) {
 					err[MESSAGE] = "cannot redefine constant " + key;
 					model[ERROR_STACK].push(err);
 				}
-				var newProxy = getProxy(model, val, defNode[key], newPath);
-				checkDefinition(newProxy, defNode[key], newPath, [], model[ERROR_STACK]);
+				var newProxy = getProxy(model, val, defPart, newPath);
+				checkDefinition(newProxy, defPart, newPath, [], model[ERROR_STACK]);
 				var oldValue = wrapper[key];
 				wrapper[key] = newProxy;
 				checkAssertions(obj, model, newPath, model[ERROR_STACK]);
@@ -595,7 +602,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 		var returnValue = Array[PROTO][method].apply(array, arguments);
 		for(var i=0, l=array.length; i<l; i++) {
-			array[i] = autocast(array[i], model[DEFINITION]);
+			array[i] = cast(array[i], model[DEFINITION]);
 		}
 		return returnValue;
 	};

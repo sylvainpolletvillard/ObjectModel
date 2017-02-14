@@ -878,7 +878,8 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dd>Function called when validation errors are detected</dd>
 
 			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
-			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
+			<dd>Returns a new model based on the initial model definition merged with other definitions passed.
+				Assertions are preserved too.</dd>
 
 			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
 			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
@@ -886,16 +887,22 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
 			<dd>Shorthand to set the default value of the model</dd>
 
-			<dt>validate <code>model.validate(object, [errorCollector])</code></dt>
-			<dd>Manually trigger the validation of an object over the model definition. It is automatically done whenever a property in the model definition is changed.</dd>
+			<dt><a href="#doc-composition">test</a> <code>model.test(value)</code></dt>
+			<dd>Returns <code>true</code> if the value passed validates the model definition.
+				Works with <a href="#doc-composition">duck typing</a>.</dd>
 
-			<dt><a href="#doc-composition">test</a> <code>model.test(object)</code></dt>
-			<dd>Returns <code>true</code> if the object passed validates the model definition (a.k.a. duck-typing).</dd>
+			<dt>validate <code>model.validate(instance, [errorCollector])</code></dt>
+			<dd>Manually triggers the validation of a model instance over its definition.
+				It is automatically done whenever an instance property changes.
+				<br>
+				Note that contrary to the <code>test</code> method, the object is not cast to its suitable
+				model (a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
+			</dd>
 		</dl>
 		<h3>Object models</h3>
 		<dl>
 			<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
-			<dd>Merge the object passed with the model prototype to set defaults values for some model properties.</dd>
+			<dd>Merge the object passed within the model prototype to set defaults values for some model properties.</dd>
 		</dl>
 		<h3>Function models</h3>
 		<dl>

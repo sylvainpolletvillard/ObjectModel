@@ -57,6 +57,7 @@ ModelProto[EXTEND] = function(){
 				merge(def, arg, true, true);
 			}
 		})
+		delete proto.constructor;
 	} else {
 		def = args
 			.reduce(function(def, ext){

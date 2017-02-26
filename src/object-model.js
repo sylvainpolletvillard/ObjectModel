@@ -1,4 +1,4 @@
-import { BasicModel, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, cast, checkDefinition, checkAssertions } from "./basic-model"
 import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
 function ObjectModel(def){
@@ -72,7 +72,7 @@ Object.assign(ObjectModel.prototype, {
 
 function getProxy(model, obj, defNode, path) {
 	if(!isPlainObject(defNode)) {
-		return autocast(obj, defNode)
+		return cast(obj, defNode)
 	}
 
 	return new Proxy(obj || {}, {

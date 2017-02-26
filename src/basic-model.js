@@ -120,13 +120,13 @@ export function parseDefinition(def){
 	return def
 }
 
-export function checkDefinition(obj, def, path, errorStack, callStack, shouldAutoCast=false){
+export function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
 	const indexFound = callStack.indexOf(def)
 	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
-	if(shouldAutoCast)
-		obj = autocast(obj, def)
+	if(shouldCast)
+		obj = cast(obj, def)
 
 
 	if(is(BasicModel, def)){
@@ -188,7 +188,7 @@ export function checkAssertions(obj, model, path, errorStack = model.errorStack)
 	}
 }
 
-export function autocast(obj, defNode=[]) {
+export function cast(obj, defNode=[]) {
 	if(!obj || isPlainObject(defNode) || is(BasicModel, obj.constructor))
 		return obj // no value or not leaf or already a model instance
 

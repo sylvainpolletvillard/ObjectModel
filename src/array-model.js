@@ -1,4 +1,4 @@
-import { BasicModel, initModel, autocast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel, cast, checkDefinition, checkAssertions } from "./basic-model"
 import { is, setConstructorProto, toString } from "./helpers"
 
 const ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
@@ -58,7 +58,7 @@ function proxifyArrayMethod(array, method, model){
 		Array.prototype[method].apply(testArray, arguments)
 		model.validate(testArray)
 		const returnValue = Array.prototype[method].apply(array, arguments)
-		array.forEach((a,i)=> array[i] = autocast(a, model.definition))
+		array.forEach((a,i)=> array[i] = cast(a, model.definition))
 		return returnValue
 	}
 }

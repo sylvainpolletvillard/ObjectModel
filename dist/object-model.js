@@ -185,13 +185,13 @@
 		return def
 	}
 
-	function checkDefinition(obj, def, path, errorStack, callStack, shouldAutoCast=false){
+	function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
 		const indexFound = callStack.indexOf(def);
 		if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
 			return obj //if found twice in call stack, cycle detected, skip validation
 
-		if(shouldAutoCast)
-			obj = autocast(obj, def);
+		if(shouldCast)
+			obj = cast(obj, def);
 
 
 		if(is(BasicModel, def)){
@@ -253,7 +253,7 @@
 		}
 	}
 
-	function autocast(obj, defNode=[]) {
+	function cast(obj, defNode=[]) {
 		if(!obj || isPlainObject(defNode) || is(BasicModel, obj.constructor))
 			return obj // no value or not leaf or already a model instance
 
@@ -275,7 +275,6 @@
 	}
 
 	function ObjectModel(def){
-
 		const model = function(obj = model.default) {
 			if(is(model, obj)) return obj
 			if(!is(model, this)) return new model(obj)
@@ -315,6 +314,7 @@
 				if(isFunction(arg)) merge(proto, arg.prototype, true, true);
 				if(isObject(arg)) merge(def, arg, true, true);
 			});
+			delete proto.constructor;
 
 			let assertions = [...this.assertions];
 			args.forEach(arg => {
@@ -345,13 +345,17 @@
 
 	function getProxy(model, obj, defNode, path) {
 		if(!isPlainObject(defNode)) {
-			return autocast(obj, defNode)
+			return cast(obj, defNode)
 		}
 
 		return new Proxy(obj || {}, {
 			get(o, key) {
-				const newPath = (path ? path + '.' + key : key);
-				return getProxy(model, o[key], defNode[key], newPath)
+				const newPath = (path ? path + '.' + key : key),
+				      defPart = defNode[key];
+				if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
+					o[key] = cast(o[key], defPart); // cast nested models
+				}
+				return getProxy(model, o[key], defPart, newPath)
 			},
 			set(o, key, val) {
 				const newPath = (path ? path + '.' + key : key),
@@ -450,7 +454,7 @@
 			Array.prototype[method].apply(testArray, arguments);
 			model.validate(testArray);
 			const returnValue = Array.prototype[method].apply(array, arguments);
-			array.forEach((a,i)=> array[i] = autocast(a, model.definition));
+			array.forEach((a,i)=> array[i] = cast(a, model.definition));
 			return returnValue
 		}
 	}

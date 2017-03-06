@@ -2,7 +2,6 @@ import { BasicModel, initModel, cast, checkDefinition, checkAssertions } from ".
 import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
 function ObjectModel(def){
-
 	const model = function(obj = model.default) {
 		if(is(model, obj)) return obj
 		if(!is(model, this)) return new model(obj)
@@ -42,6 +41,7 @@ Object.assign(ObjectModel.prototype, {
 			if(isFunction(arg)) merge(proto, arg.prototype, true, true)
 			if(isObject(arg)) merge(def, arg, true, true)
 		})
+		delete proto.constructor;
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
@@ -77,8 +77,12 @@ function getProxy(model, obj, defNode, path) {
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
-			const newPath = (path ? path + '.' + key : key)
-			return getProxy(model, o[key], defNode[key], newPath)
+			const newPath = (path ? path + '.' + key : key),
+			      defPart = defNode[key];
+			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
+				o[key] = cast(o[key], defPart) // cast nested models
+			}
+			return getProxy(model, o[key], defPart, newPath)
 		},
 		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),
@@ -120,4 +124,4 @@ function getProxy(model, obj, defNode, path) {
 	})
 }
 
-export default ObjectModel
+export default ObjectModel;

@@ -1051,23 +1051,6 @@ QUnit.test("Object model constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assertions === "object", "test new model prop assertions");
 })
 
-QUnit.test("Object Model edge cases for constructor", function (assert) {
-	assert.throws(function () {
-			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])()
-		}, /Error.*Model definition is required/,
-		"ObjectModel without definition throws")
-
-	assert.throws(function () {
-			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])(undefined)
-		}, /Error.*expected definition to be Object, got undefined/,
-		"ObjectModel with definition undefined throws")
-
-	assert.throws(function () {
-			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])(42)
-		}, /Error.*expected definition to be Object, got 42/,
-		"ObjectModel with definition primitive throws")
-})
-
 QUnit.test("Object model behaviour for properties", function (assert) {
 	var Person = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({
 		name: String,
@@ -1177,6 +1160,18 @@ QUnit.test("ObjectModel edge cases of constructors", function (assert) {
 	assert.throws(function () {
 		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])()
 	}, /Error.*Model definition is required/, "ObjectModel without definition throws")
+
+	/* //TODO
+	 assert.throws(function () {
+	 ObjectModel(undefined)
+	 }, /expecting arguments\[0] to be Object, got undefined/,
+	 "ObjectModel with definition undefined throws")
+
+	 assert.throws(function () {
+	 ObjectModel(42)
+	 }, /expecting arguments\[0] to be Object, got Number 42/,
+	 "ObjectModel with definition primitive throws")
+	 */
 });
 
 QUnit.test("ObjectModel with optional and multiple parameters", function (assert) {
@@ -1878,7 +1873,7 @@ QUnit.test("Cyclic detection", function(assert){
 
 QUnit.test("Custom error collectors for object models", function (assert) {
 
-	assert.expect(12);
+	assert.expect(11);
 
 	let M = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({
 		a: {
@@ -2225,7 +2220,6 @@ Object.assign(MapModel.prototype, {
 
 
 function ObjectModel(def){
-
 	const model = function(obj = model.default) {
 		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(model, obj)) return obj
 		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(model, this)) return new model(obj)
@@ -2265,6 +2259,7 @@ Object.assign(ObjectModel.prototype, {
 			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["h" /* isFunction */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(proto, arg.prototype, true, true)
 			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["j" /* isObject */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(def, arg, true, true)
 		})
+		delete proto.constructor;
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
@@ -2300,8 +2295,12 @@ function getProxy(model, obj, defNode, path) {
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
-			const newPath = (path ? path + '.' + key : key)
-			return getProxy(model, o[key], defNode[key], newPath)
+			const newPath = (path ? path + '.' + key : key),
+			      defPart = defNode[key];
+			if(o[key] && o.hasOwnProperty(key) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["g" /* isPlainObject */])(defPart) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], o[key].constructor)){
+				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["f" /* cast */])(o[key], defPart) // cast nested models
+			}
+			return getProxy(model, o[key], defPart, newPath)
 		},
 		set(o, key, val) {
 			const newPath = (path ? path + '.' + key : key),

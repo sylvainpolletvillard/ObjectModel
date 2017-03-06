@@ -35,7 +35,7 @@ module.exports = function(grunt) {
 					sourceMapRelativePaths: true
 				},
 				files: {
-					'dist/object-model.js': ['src/main.js'] // Only one source file is permitted
+					'dist/object-model.js': ['src/index.js'] // Only one source file is permitted
 				}
 			}
 		},
@@ -109,7 +109,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-rollup');
 	grunt.loadNpmTasks('grunt-banner');
 
-	grunt.registerTask('dist', ['rollup:dist','babel:dist','usebanner:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['rollup','babel','usebanner:dist','file_info:dist','regex-replace:site']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

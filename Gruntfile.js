@@ -12,33 +12,6 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		pkg: pkg,
-		babel: {
-			dist: {
-				options: {
-					presets: [require('babel-preset-babili')],
-					compact: true,
-					minified: true,
-					comments: false
-				},
-				files: {
-					'dist/object-model.min.js': 'dist/object-model.js'
-				}
-			}
-		},
-		rollup: {
-			dist: {
-				options: {
-					format: "iife",
-					exports: "named",
-					moduleName: "ObjectModelBundle",
-					sourceMap: true,
-					sourceMapRelativePaths: true
-				},
-				files: {
-					'dist/object-model.js': ['src/index.js'] // Only one source file is permitted
-				}
-			}
-		},
 		usebanner: {
 			dist: {
 				options: {
@@ -47,20 +20,6 @@ module.exports = function(grunt) {
 				files: {
 					src: [ 'dist/*.js' ]
 				}
-			}
-		},
-		watch: {
-			scripts: {
-				files: ['src/**.js','lib/**.js','test/**.js'],
-				tasks: ['dist'],
-				options: {
-					spawn: false
-				}
-			}
-		},
-		qunit: {
-			dist: {
-				src: ['test/index.html']
 			}
 		},
 		file_info: {
@@ -101,16 +60,11 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
-	grunt.loadNpmTasks('grunt-babel');
-	grunt.loadNpmTasks('grunt-rollup');
 	grunt.loadNpmTasks('grunt-banner');
 
-	grunt.registerTask('dist', ['rollup','babel','usebanner:dist','file_info:dist','regex-replace:site']);
-	grunt.registerTask('test', ['qunit:dist']);
-	grunt.registerTask('default', ['dist','test']);
+	grunt.registerTask('dist', ['usebanner:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('default', ['dist']);
 
 };

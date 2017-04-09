@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -46,7 +46,7 @@
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -55,15 +55,15 @@
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -72,30 +72,27 @@
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
 /* harmony export (immutable) */ __webpack_exports__["c"] = BasicModel;
 /* harmony export (immutable) */ __webpack_exports__["b"] = initModel;
-/* unused harmony export parseDefinition */
-/* harmony export (immutable) */ __webpack_exports__["d"] = checkDefinition;
-/* unused harmony export checkDefinitionPart */
-/* harmony export (immutable) */ __webpack_exports__["e"] = checkAssertions;
-/* harmony export (immutable) */ __webpack_exports__["f"] = cast;
+/* harmony export (immutable) */ __webpack_exports__["d"] = parseDefinition;
+
+
 
 
 function BasicModel(def){
-	const model = function(obj = model.default) {
-		model.validate(obj)
-		return obj
+	const model = function(val = model.default) {
+		model.validate(val)
+		return val
 	}
 
 	initModel(model, arguments, BasicModel)
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* setConstructorProto */])(BasicModel, Function.prototype)
-
 Object.assign(BasicModel.prototype, {
 	toString(stack){
-		return parseDefinition(this.definition).map(d => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(d, stack)).join(" or ")
+		return parseDefinition(this.definition).map(d => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(d, stack)).join(" or ")
 	},
 
 	assertions: [],
@@ -122,18 +119,18 @@ Object.assign(BasicModel.prototype, {
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
-			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(BasicModel, arg)) assertions = assertions.concat(arg.assertions)
+			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(BasicModel, arg)) assertions = assertions.concat(arg.assertions)
 		})
 
 		const submodel = new this.constructor(def)
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* setConstructorProto */])(submodel, this.prototype)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* setConstructorProto */])(submodel, this.prototype)
 		submodel.assertions = assertions
 		submodel.errorCollector = this.errorCollector
 		return submodel
 	},
 
-	assert(assertion, description = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(assertion)){
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* define */])(assertion, "description", description);
+	assert(assertion, description = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(assertion)){
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["f" /* define */])(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion)
 		return this
 	},
@@ -150,8 +147,8 @@ Object.assign(BasicModel.prototype, {
 	},
 
 	_validate(obj, path, errorStack, callStack){
-		checkDefinition(obj, this.definition, path, errorStack, callStack)
-		checkAssertions(obj, this, path, errorStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(obj, this.definition, path, errorStack, callStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(obj, this, path, errorStack)
 	},
 
 	// throw all errors collected
@@ -160,9 +157,9 @@ Object.assign(BasicModel.prototype, {
 		if (!errorCollector) errorCollector = this.errorCollector
 		const errors = this.errorStack.map(err => {
 			if (!err.message) {
-				const def = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(Array, err.expected) ? err.expected : [err.expected]
-				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(d)).join(" or ")
-				+ ", got " + (err.received != null ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["e" /* bettertypeof */])(err.received) + " " : "") + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(err.received))
+				const def = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(Array, err.expected) ? err.expected : [err.expected]
+				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(d)).join(" or ")
+				+ ", got " + (err.received != null ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["g" /* bettertypeof */])(err.received) + " " : "") + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(err.received))
 			}
 			return err
 		})
@@ -177,15 +174,15 @@ BasicModel.prototype.conventionForPrivate = key => key[0] === "_"
 
 function initModel(model, args, constructor){
 	if(args.length === 0) throw new Error("Model definition is required");
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["f" /* setConstructor */])(model, constructor)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["h" /* setConstructor */])(model, constructor)
 	model.definition = args[0]
 	model.assertions = model.assertions.slice()
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* define */])(model, "errorStack", [])
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["f" /* define */])(model, "errorStack", [])
 }
 
 function parseDefinition(def){
-	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["g" /* isPlainObject */])(def)){
-		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(Array, def)) return [def]
+	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* isPlainObject */])(def)){
+		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(Array, def)) return [def]
 		if(def.length === 1) return [...def, undefined, null]
 	} else {
 		for(let key of Object.keys(def))
@@ -194,94 +191,8 @@ function parseDefinition(def){
 	return def
 }
 
-function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
-	const indexFound = callStack.indexOf(def)
-	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
-		return obj //if found twice in call stack, cycle detected, skip validation
-
-	if(shouldCast)
-		obj = cast(obj, def)
 
 
-	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(BasicModel, def)){
-		def._validate(obj, path, errorStack, callStack.concat(def))
-	}
-	else if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["g" /* isPlainObject */])(def)){
-		Object.keys(def).forEach(key => {
-			const val = obj != null ? obj[key] : undefined
-			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
-		})
-	}
-	else {
-		const pdef = parseDefinition(def)
-		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack)))
-			return obj
-
-		errorStack.push({
-			expected: def,
-			received: obj,
-			path
-		})
-	}
-
-	return obj
-}
-
-function checkDefinitionPart(obj, def, path, callStack){
-	if(obj == null) return obj === def
-	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["g" /* isPlainObject */])(def) || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(BasicModel, def)){ // object or model as part of union type
-		const errorStack = []
-		checkDefinition(obj, def, path, errorStack, callStack)
-		return !errorStack.length
-	}
-	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(RegExp, def)) return def.test(obj)
-	if(def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
-	return obj === def
-		|| (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["h" /* isFunction */])(def) && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(def, obj))
-		|| obj.constructor === def
-}
-
-function checkAssertions(obj, model, path, errorStack = model.errorStack){
-	for(let assertion of model.assertions){
-		let result
-		try {
-			result = assertion.call(model, obj)
-		} catch(err){
-			result = err
-		}
-		if(result !== true){
-			const onFail = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["h" /* isFunction */])(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(assertionResult)} for value ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(value)}`
-			errorStack.push({
-				message: onFail.call(model, result, obj),
-				expected: assertion,
-				received: obj,
-				path
-			})
-		}
-	}
-}
-
-function cast(obj, defNode=[]) {
-	if(!obj || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["g" /* isPlainObject */])(defNode) || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(BasicModel, obj.constructor))
-		return obj // no value or not leaf or already a model instance
-
-	const def = parseDefinition(defNode),
-	      suitableModels = []
-
-	for (let part of def) {
-		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* is */])(BasicModel, part) && part.test(obj))
-			suitableModels.push(part)
-	}
-
-	if (suitableModels.length === 1)
-		return suitableModels[0](obj) // automatically cast to suitable model when explicit
-
-	if (suitableModels.length > 1)
-		console.warn(`Ambiguous model for value ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["b" /* toString */])(obj)}, could be ${suitableModels.join(" or ")}`)
-
-	return obj
-}
 
 /* harmony default export */ __webpack_exports__["a"] = BasicModel;
 
@@ -291,16 +202,16 @@ function cast(obj, defNode=[]) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony export (immutable) */ __webpack_exports__["c"] = is;
-/* harmony export (immutable) */ __webpack_exports__["h"] = isFunction;
+/* harmony export (immutable) */ __webpack_exports__["a"] = is;
+/* harmony export (immutable) */ __webpack_exports__["e"] = isFunction;
 /* harmony export (immutable) */ __webpack_exports__["j"] = isObject;
-/* harmony export (immutable) */ __webpack_exports__["g"] = isPlainObject;
-/* harmony export (immutable) */ __webpack_exports__["e"] = bettertypeof;
+/* harmony export (immutable) */ __webpack_exports__["d"] = isPlainObject;
+/* harmony export (immutable) */ __webpack_exports__["g"] = bettertypeof;
 /* harmony export (immutable) */ __webpack_exports__["i"] = merge;
-/* harmony export (immutable) */ __webpack_exports__["d"] = define;
-/* harmony export (immutable) */ __webpack_exports__["f"] = setConstructor;
-/* harmony export (immutable) */ __webpack_exports__["a"] = setConstructorProto;
-/* harmony export (immutable) */ __webpack_exports__["b"] = toString;
+/* harmony export (immutable) */ __webpack_exports__["f"] = define;
+/* harmony export (immutable) */ __webpack_exports__["h"] = setConstructor;
+/* harmony export (immutable) */ __webpack_exports__["b"] = setConstructorProto;
+/* harmony export (immutable) */ __webpack_exports__["c"] = toString;
 
 
 const defineProperty = Object.defineProperty
@@ -378,12 +289,116 @@ function toString(obj, stack = []){
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__basic_model__ = __webpack_require__(0);
+/* harmony export (immutable) */ __webpack_exports__["a"] = checkDefinition;
+/* unused harmony export checkDefinitionPart */
+/* harmony export (immutable) */ __webpack_exports__["b"] = checkAssertions;
+/* harmony export (immutable) */ __webpack_exports__["c"] = cast;
+
+
+
+function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
+	const indexFound = callStack.indexOf(def)
+	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
+		return obj //if found twice in call stack, cycle detected, skip validation
+
+	if(shouldCast)
+		obj = cast(obj, def)
+
+
+	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_1__basic_model__["c" /* BasicModel */], def)){
+		def._validate(obj, path, errorStack, callStack.concat(def))
+	}
+	else if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* isPlainObject */])(def)){
+		Object.keys(def).forEach(key => {
+			const val = obj != null ? obj[key] : undefined
+			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
+		})
+	}
+	else {
+		const pdef = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__basic_model__["d" /* parseDefinition */])(def)
+		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack)))
+			return obj
+
+		errorStack.push({
+			expected: def,
+			received: obj,
+			path
+		})
+	}
+
+	return obj
+}
+
+function checkDefinitionPart(obj, def, path, callStack){
+	if(obj == null) return obj === def
+	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* isPlainObject */])(def) || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_1__basic_model__["c" /* BasicModel */], def)){ // object or model as part of union type
+		const errorStack = []
+		checkDefinition(obj, def, path, errorStack, callStack)
+		return !errorStack.length
+	}
+	if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(RegExp, def)) return def.test(obj)
+	if(def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
+	return obj === def
+		|| (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["e" /* isFunction */])(def) && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(def, obj))
+		|| obj.constructor === def
+}
+
+
+function checkAssertions(obj, model, path, errorStack = model.errorStack){
+	for(let assertion of model.assertions){
+		let result
+		try {
+			result = assertion.call(model, obj)
+		} catch(err){
+			result = err
+		}
+		if(result !== true){
+			const onFail = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["e" /* isFunction */])(assertion.description) ? assertion.description : (assertionResult, value) =>
+				`assertion "${assertion.description}" returned ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(assertionResult)} for value ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(value)}`
+			errorStack.push({
+				message: onFail.call(model, result, obj),
+				expected: assertion,
+				received: obj,
+				path
+			})
+		}
+	}
+}
+
+function cast(obj, defNode=[]) {
+	if(!obj || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["d" /* isPlainObject */])(defNode) || __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_1__basic_model__["c" /* BasicModel */], obj.constructor))
+		return obj // no value or not leaf or already a model instance
+
+	const def = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__basic_model__["d" /* parseDefinition */])(defNode),
+	      suitableModels = []
+
+	for (let part of def) {
+		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_1__basic_model__["c" /* BasicModel */], part) && part.test(obj))
+			suitableModels.push(part)
+	}
+
+	if (suitableModels.length === 1)
+		return suitableModels[0](obj) // automatically cast to suitable model when explicit
+
+	if (suitableModels.length > 1)
+		console.warn(`Ambiguous model for value ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__helpers__["c" /* toString */])(obj)}, could be ${suitableModels.join(" or ")}`)
+
+	return obj
+}
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__object_model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__array_model__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__function_model__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__map_model__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__set_model__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__object_model__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__array_model__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__function_model__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__map_model__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__set_model__ = __webpack_require__(12);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_0__basic_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_1__object_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_2__array_model__["a"]; });
@@ -400,12 +415,12 @@ function toString(obj, stack = []){
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
 
 
 QUnit.module("Array models");
@@ -416,7 +431,7 @@ QUnit.test("Array model constructor && proto", function (assert) {
 
 	const Arr = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["b" /* ArrayModel */])(Number);
 
-	assert.ok(Arr instanceof __WEBPACK_IMPORTED_MODULE_0__src_index__["b" /* ArrayModel */] && Arr instanceof Function, "Array models can be declared");
+	assert.ok(Arr instanceof __WEBPACK_IMPORTED_MODULE_0__src_index__["b" /* ArrayModel */], "Array models can be declared");
 
 	assert.ok(typeof Arr.extend === "function", "test Array model method extend");
 	assert.ok(typeof Arr.assert === "function", "test Array model method assert");
@@ -606,12 +621,12 @@ QUnit.test("Automatic model casting in array models", function (assert) {
 });
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
 
 
 QUnit.module("Basic Models");
@@ -825,12 +840,12 @@ QUnit.test("Custom error collectors for basic models", function(assert) {
 });
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
 
 
 QUnit.module("Function models");
@@ -842,7 +857,6 @@ QUnit.test("Function models constructor && proto", function (assert) {
 	const Operation = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["d" /* FunctionModel */])(Number, Number).return(Number);
 
 	assert.ok(Operation instanceof __WEBPACK_IMPORTED_MODULE_0__src_index__["d" /* FunctionModel */], "model instance of FunctionModel");
-	assert.ok(Operation instanceof Function, "model instanceof Function");
 
 	assert.ok(typeof Operation.extend === "function", "test Function model method extend");
 	assert.ok(typeof Operation.assert === "function", "test Function model method assert");
@@ -861,18 +875,10 @@ QUnit.test("Function models instanciation and controls", function (assert) {
 
 	const op = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["d" /* FunctionModel */])(Number, Number).return(Number);
 
-	const add    = op(function (a, b) {
-		return a + b;
-	});
-	const add3   = op(function (a, b, c) {
-		return a + b + c;
-	});
-	const noop   = op(function () {
-		return undefined;
-	});
-	const addStr = op(function (a, b) {
-		return String(a) + String(b);
-	});
+	const add = op(function (a, b) { return a + b; });
+	const add3 = op(function (a, b, c) { return a + b + c; });
+	const noop = op(function () { return undefined; });
+	const addStr = op(function (a, b) { return String(a) + String(b); });
 
 	assert.ok(add instanceof Function && add instanceof op, "fn instanceof functionModel and Function");
 
@@ -1016,13 +1022,13 @@ QUnit.test("Automatic model casting with Function models", function (assert) {
 })
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mocks_console__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mocks_console__ = __webpack_require__(13);
 
 
 
@@ -1082,7 +1088,7 @@ QUnit.test("Object model behaviour for properties", function (assert) {
 	assert.equal(+joe.birth, +(new Date(1990, 3, 25)), "Date property retrieved");
 	assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
 	assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
-	assert.ok(Person instanceof __WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */] && Person instanceof Function, "model is instanceof ObjectModel and Function");
+	assert.ok(Person instanceof __WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */], "model is instanceof ObjectModel");
 
 	joe.name = "Big Joe";
 	joe.age++;
@@ -1979,27 +1985,27 @@ QUnit.test("Automatic model casting", function (assert) {
 })
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(1);
 
 
 
-const ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+
+const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
 function ArrayModel(def){
 
 	const model = function(array = model.default) {
+		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(model, this)) return new model(array)
 		model.validate(array)
 		return new Proxy(array, {
 			get(arr, key) {
-				if (key === "constructor")
-					return model
-				else if (ARRAY_MUTATOR_METHODS.includes(key))
-					return proxifyArrayMethod(arr, key, model)
+				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, key, model)
 				return arr[key]
 			},
 			set(arr, key, val) {
@@ -2012,22 +2018,22 @@ function ArrayModel(def){
 		})
 	}
 
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(model, Array.prototype)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Array.prototype)
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["b" /* initModel */])(model, arguments, ArrayModel)
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(ArrayModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(ArrayModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
 Object.assign(ArrayModel.prototype, {
 
 	toString(stack){
-		return 'Array of ' + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(this.definition, stack)
+		return 'Array of ' + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this.definition, stack)
 	},
 
 	_validate(arr, path, errorStack, callStack){
-		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(Array, arr))
+		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(Array, arr))
 			arr.forEach((a,i) => {
-				arr[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(a, this.definition, `${path || "Array"}[${i}]`, errorStack, callStack, true)
+				arr[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(a, this.definition, `${path || "Array"}[${i}]`, errorStack, callStack, true)
 			})
 		else errorStack.push({
 			expected: this,
@@ -2035,17 +2041,17 @@ Object.assign(ArrayModel.prototype, {
 			path
 		})
 
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(arr, this, path, errorStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(arr, this, path, errorStack)
 	}
 })
 
-function proxifyArrayMethod(array, method, model){
+function proxifyMethod(array, method, model){
 	return function() {
 		const testArray = array.slice()
 		Array.prototype[method].apply(testArray, arguments)
 		model.validate(testArray)
 		const returnValue = Array.prototype[method].apply(array, arguments)
-		array.forEach((a,i)=> array[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["f" /* cast */])(a, model.definition))
+		array.forEach((a,i)=> array[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(a, model.definition))
 		return returnValue
 	}
 }
@@ -2053,11 +2059,11 @@ function proxifyArrayMethod(array, method, model){
 function setArrayKey(array, key, value, model){
 	let path = `Array[${key}]`;
 	if(parseInt(key) === +key && key >= 0)
-		value = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(value, model.definition, path, model.errorStack, [], true)
+		value = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(value, model.definition, path, model.errorStack, [], true)
 
 	const testArray = array.slice()
 	testArray[key] = value
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(testArray, model, path)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(testArray, model, path)
 	model.unstackErrors()
 	array[key] = value
 }
@@ -2065,62 +2071,60 @@ function setArrayKey(array, key, value, model){
 /* harmony default export */ __webpack_exports__["a"] = ArrayModel;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(1);
+
 
 
 
 function FunctionModel(){
 
 	const model = function(fn = model.default) {
-		const def = model.definition
-		const proxyFn = function () {
-			const args = []
-			Object.assign(args, def.defaults)
-			Object.assign(args, [...arguments])
-			if (args.length > def.arguments.length) {
-				model.errorStack.push({
-					expected: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(fn) + " to be called with " + def.arguments.length + " arguments",
-					received: args.length
-				})
-			}
-			def.arguments.forEach((argDef, i) => {
-				args[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
-			})
-			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(args, model, "arguments")
+		return new Proxy(fn, {
+			getPrototypeOf: () => model.prototype,
+			apply (fn, ctx, args) {
+				const def = model.definition
+				args = Object.assign([], def.defaults, args)
 
-			let returnValue
-			if(!model.errorStack.length){
-				returnValue = fn.apply(this, args)
-				if ("return" in def)
-					returnValue = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(returnValue, def.return, "return value", model.errorStack, [], true)
+				def.arguments.forEach((argDef, i) => {
+					args[i] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
+				})
+
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(args, model, "arguments")
+
+				let result
+				if(!model.errorStack.length){
+					result = Reflect.apply(fn, ctx, args)
+					if ("return" in def)
+						result = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(result, def.return, "return value", model.errorStack, [], true)
+				}
+				model.unstackErrors()
+				return result
 			}
-			model.unstackErrors()
-			return returnValue
-		}
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["f" /* setConstructor */])(proxyFn, model)
-		return proxyFn
+		});
 	}
 
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(model, Function.prototype)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Function.prototype)
 
 	const def = { arguments: [...arguments] }
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["b" /* initModel */])(model, [ def ], FunctionModel)
+
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(FunctionModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(FunctionModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
 
 Object.assign(FunctionModel.prototype, {
 
 	toString(stack){
-		let out = 'Function(' + this.definition.arguments.map(argDef => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(argDef, stack)).join(",") +')'
+		let out = 'Function(' + this.definition.arguments.map(argDef => __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(argDef, stack)).join(",") +')'
 		if("return" in this.definition) {
-			out += " => " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(this.definition.return)
+			out += " => " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this.definition.return)
 		}
 		return out
 	},
@@ -2136,7 +2140,7 @@ Object.assign(FunctionModel.prototype, {
 	},
 
 	_validate(f, path, errorStack){
-		if (!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["h" /* isFunction */])(f)) {
+		if (!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["e" /* isFunction */])(f)) {
 			errorStack.push({
 				expected: "Function",
 				received: f,
@@ -2146,15 +2150,24 @@ Object.assign(FunctionModel.prototype, {
 	}
 })
 
+FunctionModel.prototype.assert(function(args){
+	if (args.length > this.definition.arguments.length) return args
+	return true
+}, function(args){
+	return `expecting ${this.definition.arguments.length} arguments for ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this)}, got ${args.length}`
+})
+
 /* harmony default export */ __webpack_exports__["a"] = FunctionModel;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(1);
+
 
 
 
@@ -2175,26 +2188,26 @@ function MapModel(def){
 			}
 		}
 
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["f" /* setConstructor */])(map, model)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["h" /* setConstructor */])(map, model)
 		return map
 	}
 
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(model, Map.prototype)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Map.prototype)
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["b" /* initModel */])(model, arguments, MapModel)
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(MapModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(MapModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
 Object.assign(MapModel.prototype, {
 
 	toString(stack){
-		return "Map of " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(this.definition, stack)
+		return "Map of " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this.definition, stack)
 	},
 
 	_validate(map, path, errorStack, callStack){
 		if(map instanceof Map){
 			for(let [key,val] of map){
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(val, this.definition, `${path || "Map"}[${key}]`, errorStack, callStack)
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(val, this.definition, `${path || "Map"}[${key}]`, errorStack, callStack)
 			}
 		} else {
 			errorStack.push({
@@ -2203,38 +2216,40 @@ Object.assign(MapModel.prototype, {
 				path
 			})
 		}
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(map, this, errorStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(map, this, errorStack)
 	}
 })
 
 /* unused harmony default export */ var _unused_webpack_default_export = MapModel;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(1);
+
 
 
 
 function ObjectModel(def){
 	const model = function(obj = model.default) {
-		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(model, obj)) return obj
-		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(model, this)) return new model(obj)
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(this, obj, true)
+		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(model, this)) return new model(obj)
+		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(model, obj)) return obj
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(this, obj, true)
 		const proxy = getProxy(model, this, model.definition)
 		model.validate(proxy)
 		return proxy
 	}
 
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(model, Object.prototype)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Object.prototype)
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["b" /* initModel */])(model, arguments, ObjectModel)
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(ObjectModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(ObjectModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
 
 Object.assign(ObjectModel.prototype, {
 
@@ -2244,7 +2259,7 @@ Object.assign(ObjectModel.prototype, {
 	},
 
 	toString(stack){
-		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(this.definition, stack)
+		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this.definition, stack)
 	},
 
 	extend(){
@@ -2253,21 +2268,21 @@ Object.assign(ObjectModel.prototype, {
 		const args = [...arguments]
 
 		Object.assign(def, this.definition)
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(proto, this.prototype, false, true)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(proto, this.prototype, false, true)
 		args.forEach(arg => {
-			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(def, arg.definition, true)
-			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["h" /* isFunction */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(proto, arg.prototype, true, true)
-			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["j" /* isObject */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["i" /* merge */])(def, arg, true, true)
+			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(def, arg.definition, true)
+			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["e" /* isFunction */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(proto, arg.prototype, true, true)
+			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["j" /* isObject */])(arg)) __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(def, arg, true, true)
 		})
 		delete proto.constructor;
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
-			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], arg)) assertions = assertions.concat(arg.assertions)
+			if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], arg)) assertions = assertions.concat(arg.assertions)
 		})
 
 		const submodel = new this.constructor(def)
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(submodel, this.prototype)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(submodel, this.prototype)
 		Object.assign(submodel.prototype, proto)
 		submodel.assertions = assertions
 		submodel.errorCollector = this.errorCollector
@@ -2275,30 +2290,30 @@ Object.assign(ObjectModel.prototype, {
 	},
 
 	_validate(obj, path, errorStack, callStack){
-		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["j" /* isObject */])(obj)){
+		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["j" /* isObject */])(obj)){
 			errorStack.push({
 				expected: this,
 				received: obj,
 				path
 			})
 		} else {
-			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(obj, this.definition, path, errorStack, callStack)
+			__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(obj, this.definition, path, errorStack, callStack)
 		}
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(obj, this, path, errorStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(obj, this, path, errorStack)
 	}
 })
 
 function getProxy(model, obj, defNode, path) {
-	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["g" /* isPlainObject */])(defNode)) {
-		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["f" /* cast */])(obj, defNode)
+	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(defNode)) {
+		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(obj, defNode)
 	}
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = defNode[key];
-			if(o[key] && o.hasOwnProperty(key) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["g" /* isPlainObject */])(defPart) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["c" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], o[key].constructor)){
-				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["f" /* cast */])(o[key], defPart) // cast nested models
+			if(o[key] && o.hasOwnProperty(key) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(defPart) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], o[key].constructor)){
+				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(o[key], defPart) // cast nested models
 			}
 			return getProxy(model, o[key], defPart, newPath)
 		},
@@ -2314,9 +2329,9 @@ function getProxy(model, obj, defNode, path) {
 			}
 			if(defNode.hasOwnProperty(key)){
 				const newProxy = getProxy(model, val, defNode[key], newPath)
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(newProxy, defNode[key], newPath, model.errorStack, [])
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(newProxy, defNode[key], newPath, model.errorStack, [])
 				o[key] = newProxy
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(obj, model, newPath)
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(obj, model, newPath)
 			} else {
 				model.errorStack.push({
 					message: `cannot find property ${newPath} in the model definition`
@@ -2345,12 +2360,14 @@ function getProxy(model, obj, defNode, path) {
 /* harmony default export */ __webpack_exports__["a"] = ObjectModel;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__basic_model__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__definition__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(1);
+
 
 
 
@@ -2371,26 +2388,26 @@ function SetModel(def){
 			}
 		}
 
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["f" /* setConstructor */])(_set, model)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["h" /* setConstructor */])(_set, model)
 		return _set
 	}
 
-	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(model, Set.prototype)
+	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Set.prototype)
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["b" /* initModel */])(model, arguments, SetModel)
 	return model
 }
 
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["a" /* setConstructorProto */])(SetModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
+__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(SetModel, __WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */].prototype)
 Object.assign(SetModel.prototype, {
 
 	toString(stack){
-		return "Set of " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__helpers__["b" /* toString */])(this.definition, stack)
+		return "Set of " + __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this.definition, stack)
 	},
 
 	_validate(_set, path, errorStack, callStack){
 		if(_set instanceof Set){
 			for(let item of _set.values()){
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["d" /* checkDefinition */])(item, this.definition, (path || "Set"), errorStack, callStack)
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(item, this.definition, (path || "Set"), errorStack, callStack)
 			}
 		} else {
 			errorStack.push({
@@ -2399,14 +2416,14 @@ Object.assign(SetModel.prototype, {
 				path
 			})
 		}
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__basic_model__["e" /* checkAssertions */])(_set, this, errorStack)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(_set, this, errorStack)
 	}
 })
 
 /* unused harmony default export */ var _unused_webpack_default_export = SetModel;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2432,13 +2449,13 @@ const consoleMock = {
 /* harmony default export */ __webpack_exports__["a"] = consoleMock;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(3);
 __webpack_require__(4);
 __webpack_require__(5);
-module.exports = __webpack_require__(6);
+__webpack_require__(6);
+module.exports = __webpack_require__(7);
 
 
 /***/ })

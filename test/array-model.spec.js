@@ -8,7 +8,7 @@ QUnit.test("Array model constructor && proto", function (assert) {
 
 	const Arr = ArrayModel(Number);
 
-	assert.ok(Arr instanceof ArrayModel && Arr instanceof Function, "Array models can be declared");
+	assert.ok(Arr instanceof ArrayModel, "Array models can be declared");
 
 	assert.ok(typeof Arr.extend === "function", "test Array model method extend");
 	assert.ok(typeof Arr.assert === "function", "test Array model method assert");

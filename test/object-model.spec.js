@@ -57,7 +57,7 @@ QUnit.test("Object model behaviour for properties", function (assert) {
 	assert.equal(+joe.birth, +(new Date(1990, 3, 25)), "Date property retrieved");
 	assert.strictEqual(joe.address.work.city, "Lille", "nested property retrieved");
 	assert.ok(joe instanceof Person && joe instanceof Object, "instance is instanceof model and Object");
-	assert.ok(Person instanceof ObjectModel && Person instanceof Function, "model is instanceof ObjectModel and Function");
+	assert.ok(Person instanceof ObjectModel, "model is instanceof ObjectModel");
 
 	joe.name = "Big Joe";
 	joe.age++;

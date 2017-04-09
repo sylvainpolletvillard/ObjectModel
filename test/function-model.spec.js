@@ -9,7 +9,6 @@ QUnit.test("Function models constructor && proto", function (assert) {
 	const Operation = FunctionModel(Number, Number).return(Number);
 
 	assert.ok(Operation instanceof FunctionModel, "model instance of FunctionModel");
-	assert.ok(Operation instanceof Function, "model instanceof Function");
 
 	assert.ok(typeof Operation.extend === "function", "test Function model method extend");
 	assert.ok(typeof Operation.assert === "function", "test Function model method assert");
@@ -28,18 +27,10 @@ QUnit.test("Function models instanciation and controls", function (assert) {
 
 	const op = FunctionModel(Number, Number).return(Number);
 
-	const add    = op(function (a, b) {
-		return a + b;
-	});
-	const add3   = op(function (a, b, c) {
-		return a + b + c;
-	});
-	const noop   = op(function () {
-		return undefined;
-	});
-	const addStr = op(function (a, b) {
-		return String(a) + String(b);
-	});
+	const add = op(function (a, b) { return a + b; });
+	const add3 = op(function (a, b, c) { return a + b + c; });
+	const noop = op(function () { return undefined; });
+	const addStr = op(function (a, b) { return String(a) + String(b); });
 
 	assert.ok(add instanceof Function && add instanceof op, "fn instanceof functionModel and Function");
 

@@ -512,7 +512,7 @@ joe.sendConfirmationMail();</code>
 	<section id="doc-assertions" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Assertions for custom validation tests</h2>
-			<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. Exceptions thrown by assertions are catched and considered as assertion failures.</p>
+			<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. Exceptions thrown in assertions are catched and considered as assertion failures.</p>
 			<p>For example, we can get an Integer model by adding <code>Number.isInteger</code> as an assertion to a basic <code>Number</code> model.</p>
 		</div>
 

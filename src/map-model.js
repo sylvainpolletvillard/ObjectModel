@@ -1,4 +1,5 @@
-import { BasicModel, initModel, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel } from "./basic-model"
+import { checkDefinition, checkAssertions } from "./definition"
 import { setConstructor, setConstructorProto, toString } from "./helpers"
 
 const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]

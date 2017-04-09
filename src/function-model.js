@@ -1,42 +1,39 @@
-import { BasicModel, initModel, checkDefinition, checkAssertions } from "./basic-model"
-import { isFunction, setConstructor, setConstructorProto, toString } from "./helpers"
+import { BasicModel, initModel } from "./basic-model"
+import {checkDefinition, checkAssertions} from "./definition"
+import { isFunction, setConstructorProto, toString } from "./helpers"
 
 function FunctionModel(){
 
 	const model = function(fn = model.default) {
-		const def = model.definition
-		const proxyFn = function () {
-			const args = []
-			Object.assign(args, def.defaults)
-			Object.assign(args, [...arguments])
-			if (args.length > def.arguments.length) {
-				model.errorStack.push({
-					expected: toString(fn) + " to be called with " + def.arguments.length + " arguments",
-					received: args.length
-				})
-			}
-			def.arguments.forEach((argDef, i) => {
-				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
-			})
-			checkAssertions(args, model, "arguments")
+		return new Proxy(fn, {
+			getPrototypeOf: () => model.prototype,
+			apply (fn, ctx, args) {
+				const def = model.definition
+				args = Object.assign([], def.defaults, args)
 
-			let returnValue
-			if(!model.errorStack.length){
-				returnValue = fn.apply(this, args)
-				if ("return" in def)
-					returnValue = checkDefinition(returnValue, def.return, "return value", model.errorStack, [], true)
+				def.arguments.forEach((argDef, i) => {
+					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
+				})
+
+				checkAssertions(args, model, "arguments")
+
+				let result
+				if(!model.errorStack.length){
+					result = Reflect.apply(fn, ctx, args)
+					if ("return" in def)
+						result = checkDefinition(result, def.return, "return value", model.errorStack, [], true)
+				}
+				model.unstackErrors()
+				return result
 			}
-			model.unstackErrors()
-			return returnValue
-		}
-		setConstructor(proxyFn, model)
-		return proxyFn
+		});
 	}
 
 	setConstructorProto(model, Function.prototype)
 
 	const def = { arguments: [...arguments] }
 	initModel(model, [ def ], FunctionModel)
+
 	return model
 }
 
@@ -71,6 +68,13 @@ Object.assign(FunctionModel.prototype, {
 			})
 		}
 	}
+})
+
+FunctionModel.prototype.assert(function(args){
+	if (args.length > this.definition.arguments.length) return args
+	return true
+}, function(args){
+	return `expecting ${this.definition.arguments.length} arguments for ${toString(this)}, got ${args.length}`
 })
 
 export default FunctionModel

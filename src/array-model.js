@@ -1,18 +1,17 @@
-import { BasicModel, initModel, cast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel } from "./basic-model"
+import { checkDefinition, checkAssertions, cast } from "./definition"
 import { is, setConstructorProto, toString } from "./helpers"
 
-const ARRAY_MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
 function ArrayModel(def){
 
 	const model = function(array = model.default) {
+		if(!is(model, this)) return new model(array)
 		model.validate(array)
 		return new Proxy(array, {
 			get(arr, key) {
-				if (key === "constructor")
-					return model
-				else if (ARRAY_MUTATOR_METHODS.includes(key))
-					return proxifyArrayMethod(arr, key, model)
+				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, key, model)
 				return arr[key]
 			},
 			set(arr, key, val) {
@@ -52,7 +51,7 @@ Object.assign(ArrayModel.prototype, {
 	}
 })
 
-function proxifyArrayMethod(array, method, model){
+function proxifyMethod(array, method, model){
 	return function() {
 		const testArray = array.slice()
 		Array.prototype[method].apply(testArray, arguments)

@@ -1,10 +1,11 @@
-import { BasicModel, initModel, cast, checkDefinition, checkAssertions } from "./basic-model"
+import { BasicModel, initModel } from "./basic-model"
+import { cast, checkDefinition, checkAssertions } from "./definition"
 import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
 function ObjectModel(def){
 	const model = function(obj = model.default) {
-		if(is(model, obj)) return obj
 		if(!is(model, this)) return new model(obj)
+		if(is(model, obj)) return obj
 		merge(this, obj, true)
 		const proxy = getProxy(model, this, model.definition)
 		model.validate(proxy)

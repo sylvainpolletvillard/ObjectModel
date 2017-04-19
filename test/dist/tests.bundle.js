@@ -6,9 +6,9 @@
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-/******/
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -194,7 +194,7 @@ function parseDefinition(def){
 
 
 
-/* harmony default export */ __webpack_exports__["a"] = BasicModel;
+/* harmony default export */ __webpack_exports__["a"] = (BasicModel);
 
 /***/ }),
 /* 1 */
@@ -2068,7 +2068,7 @@ function setArrayKey(array, key, value, model){
 	array[key] = value
 }
 
-/* harmony default export */ __webpack_exports__["a"] = ArrayModel;
+/* harmony default export */ __webpack_exports__["a"] = (ArrayModel);
 
 /***/ }),
 /* 9 */
@@ -2157,7 +2157,7 @@ FunctionModel.prototype.assert(function(args){
 	return `expecting ${this.definition.arguments.length} arguments for ${__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["c" /* toString */])(this)}, got ${args.length}`
 })
 
-/* harmony default export */ __webpack_exports__["a"] = FunctionModel;
+/* harmony default export */ __webpack_exports__["a"] = (FunctionModel);
 
 /***/ }),
 /* 10 */
@@ -2220,7 +2220,7 @@ Object.assign(MapModel.prototype, {
 	}
 })
 
-/* unused harmony default export */ var _unused_webpack_default_export = MapModel;
+/* unused harmony default export */ var _unused_webpack_default_export = (MapModel);
 
 /***/ }),
 /* 11 */
@@ -2357,7 +2357,7 @@ function getProxy(model, obj, defNode, path) {
 	})
 }
 
-/* harmony default export */ __webpack_exports__["a"] = ObjectModel;
+/* harmony default export */ __webpack_exports__["a"] = (ObjectModel);
 
 /***/ }),
 /* 12 */
@@ -2420,7 +2420,7 @@ Object.assign(SetModel.prototype, {
 	}
 })
 
-/* unused harmony default export */ var _unused_webpack_default_export = SetModel;
+/* unused harmony default export */ var _unused_webpack_default_export = (SetModel);
 
 /***/ }),
 /* 13 */
@@ -2446,7 +2446,7 @@ const consoleMock = {
 	}
 };
 
-/* harmony default export */ __webpack_exports__["a"] = consoleMock;
+/* harmony default export */ __webpack_exports__["a"] = (consoleMock);
 
 /***/ }),
 /* 14 */

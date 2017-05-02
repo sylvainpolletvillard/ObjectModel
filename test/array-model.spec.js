@@ -1,6 +1,6 @@
 import {ArrayModel, ObjectModel} from "../src/index";
 
-QUnit.module("Array models");
+QUnit.module("Array Models");
 
 QUnit.test("Array model constructor && proto", function (assert) {
 

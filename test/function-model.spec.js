@@ -1,6 +1,6 @@
 import {FunctionModel, ObjectModel, ArrayModel} from "../src/index";
 
-QUnit.module("Function models");
+QUnit.module("Function Models");
 
 QUnit.test("Function models constructor && proto", function (assert) {
 

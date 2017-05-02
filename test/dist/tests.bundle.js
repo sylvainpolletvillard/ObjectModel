@@ -267,8 +267,8 @@ function setConstructorProto(constructor, proto){
 
 function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
-	if(obj == null) return String(obj)
-	if(typeof obj == "string") return `"${obj}"`
+	if(obj === null || obj === undefined) return String(obj)
+	if(typeof obj === "string") return `"${obj}"`
 	if(is(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], obj)) return obj.toString(stack)
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
@@ -423,7 +423,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
 
 
-QUnit.module("Array models");
+QUnit.module("Array Models");
 
 QUnit.test("Array model constructor && proto", function (assert) {
 
@@ -848,7 +848,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_index__ = __webpack_require__(3);
 
 
-QUnit.module("Function models");
+QUnit.module("Function Models");
 
 QUnit.test("Function models constructor && proto", function (assert) {
 
@@ -1360,11 +1360,14 @@ QUnit.test("Non-enumerable and non-writable properties", function (assert) {
 	});
 
 	m.normal++;
-	m._private++;
+
+	assert.throws(function () {
+		m._private++;
+	}, /TypeError[\s\S]*private/, "try to modify private");
 
 	assert.throws(function () {
 		m.CONST++;
-	}, /TypeError[\s\S]*constant/, "try to redefine constant");
+	}, /TypeError[\s\S]*constant/, "try to modify constant");
 	assert.equal(Object.keys(m).length, 2, "non enumerable key not counted by Object.keys");
 	assert.equal(Object.keys(m).includes("_private"), false, "non enumerable key not found in Object.keys");
 	assert.equal(Object.getOwnPropertyNames(m).length, 2, "non enumerable key not counted by Object.getOwnPropertyNames");
@@ -1510,9 +1513,12 @@ QUnit.test("Extensions", function (assert) {
 	Vehicle.prototype.speed = 99;
 	Car = function () {};
 	Car.prototype = new Vehicle();
-	Ferrari = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({}).extend(Car);
+	Ferrari = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ price: [Number] }).extend(Car);
 
-	assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
+	let ferrari = new Ferrari({ price: 999999 });
+	assert.equal(ferrari.speed, 99, "should retrieve properties from parent prototypes when extending with constructors");
+	assert.equal("price" in ferrari, true, "should trap in operator and return true for properties in definition");
+	assert.equal("speed" in ferrari, false, "should trap in operator and return false for properties out of definition");
 
 });
 
@@ -1984,6 +1990,20 @@ QUnit.test("Automatic model casting", function (assert) {
 
 })
 
+QUnit.test("ObjectModel delete trap", function (assert) {
+
+	const M = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
+	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
+
+	assert.throws(function(){ delete m._p }, /TypeError.*private/, "cannot delete private prop");
+	assert.throws(function(){ delete m.C }, /TypeError.*constant/, "cannot delete constant prop");
+	delete m.u; // can delete undefined properties
+	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
+	delete m.x // can delete optional properties
+	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete undefined prop");
+
+})
+
 /***/ }),
 /* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -2303,58 +2323,74 @@ Object.assign(ObjectModel.prototype, {
 	}
 })
 
-function getProxy(model, obj, defNode, path) {
-	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(defNode)) {
-		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(obj, defNode)
+function getProxy(model, obj, def, path) {
+	if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(def)) {
+		return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(obj, def)
 	}
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
-			      defPart = defNode[key];
+			      defPart = def[key];
 			if(o[key] && o.hasOwnProperty(key) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(defPart) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], o[key].constructor)){
 				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(o[key], defPart) // cast nested models
 			}
 			return getProxy(model, o[key], defPart, newPath)
 		},
-		set(o, key, val) {
-			const newPath = (path ? path + '.' + key : key),
-				  isConstant = model.conventionForConstant(key),
-				  initialValue = o[key]
-			
-			if(isConstant && initialValue !== undefined){
-				model.errorStack.push({
-					message: `cannot redefine constant ${key}`
-				})
-			}
-			if(defNode.hasOwnProperty(key)){
-				const newProxy = getProxy(model, val, defNode[key], newPath)
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(newProxy, defNode[key], newPath, model.errorStack, [])
-				o[key] = newProxy
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(obj, model, newPath)
-			} else {
-				model.errorStack.push({
-					message: `cannot find property ${newPath} in the model definition`
-				})
-			}
-		
-			if(model.errorStack.length){
-				o[key] = initialValue
-				model.unstackErrors()
-			}
 
-			return true
+		set(o, key, val) {
+			return controlMutation(model, def, path, o, key, (newPath) => {
+				Reflect.set(o, key, getProxy(model, val, def[key], newPath))
+			})
 		},
+
+		deleteProperty(o, key) {
+			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
+		},
+
 		has(o, key){
-			return Reflect.has(o, key) && !model.conventionForPrivate(key)
+			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
+
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => !model.conventionForPrivate(key))
+			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
 		},
+
 		getPrototypeOf(){
 			return model.prototype
 		}
 	})
+}
+
+function controlMutation(model, def, path, o, key, applyMutation){
+	const newPath = (path ? path + '.' + key : key),
+	      isPrivate = model.conventionForPrivate(key),
+	      isConstant = model.conventionForConstant(key),
+	      initialValue = o[key]
+
+	if(isPrivate || (isConstant && initialValue !== undefined)){
+		model.errorStack.push({
+			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
+		})
+	}
+
+	if(def.hasOwnProperty(key)){
+		applyMutation(newPath)
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["a" /* checkDefinition */])(o[key], def[key], newPath, model.errorStack, [])
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["b" /* checkAssertions */])(o, model, newPath)
+	} else {
+		model.errorStack.push({
+			message: `cannot find property ${newPath} in the model definition`
+		})
+	}
+
+	if(model.errorStack.length){
+		o[key] = initialValue
+		model.unstackErrors()
+		return false
+	}
+
+	return true
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (ObjectModel);

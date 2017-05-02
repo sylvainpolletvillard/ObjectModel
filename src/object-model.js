@@ -71,58 +71,74 @@ Object.assign(ObjectModel.prototype, {
 	}
 })
 
-function getProxy(model, obj, defNode, path) {
-	if(!isPlainObject(defNode)) {
-		return cast(obj, defNode)
+function getProxy(model, obj, def, path) {
+	if(!isPlainObject(def)) {
+		return cast(obj, def)
 	}
 
 	return new Proxy(obj || {}, {
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
-			      defPart = defNode[key];
+			      defPart = def[key];
 			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 			return getProxy(model, o[key], defPart, newPath)
 		},
-		set(o, key, val) {
-			const newPath = (path ? path + '.' + key : key),
-				  isConstant = model.conventionForConstant(key),
-				  initialValue = o[key]
-			
-			if(isConstant && initialValue !== undefined){
-				model.errorStack.push({
-					message: `cannot redefine constant ${key}`
-				})
-			}
-			if(defNode.hasOwnProperty(key)){
-				const newProxy = getProxy(model, val, defNode[key], newPath)
-				checkDefinition(newProxy, defNode[key], newPath, model.errorStack, [])
-				o[key] = newProxy
-				checkAssertions(obj, model, newPath)
-			} else {
-				model.errorStack.push({
-					message: `cannot find property ${newPath} in the model definition`
-				})
-			}
-		
-			if(model.errorStack.length){
-				o[key] = initialValue
-				model.unstackErrors()
-			}
 
-			return true
+		set(o, key, val) {
+			return controlMutation(model, def, path, o, key, (newPath) => {
+				Reflect.set(o, key, getProxy(model, val, def[key], newPath))
+			})
 		},
+
+		deleteProperty(o, key) {
+			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
+		},
+
 		has(o, key){
-			return Reflect.has(o, key) && !model.conventionForPrivate(key)
+			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
+
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => !model.conventionForPrivate(key))
+			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
 		},
+
 		getPrototypeOf(){
 			return model.prototype
 		}
 	})
+}
+
+function controlMutation(model, def, path, o, key, applyMutation){
+	const newPath = (path ? path + '.' + key : key),
+	      isPrivate = model.conventionForPrivate(key),
+	      isConstant = model.conventionForConstant(key),
+	      initialValue = o[key]
+
+	if(isPrivate || (isConstant && initialValue !== undefined)){
+		model.errorStack.push({
+			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
+		})
+	}
+
+	if(def.hasOwnProperty(key)){
+		applyMutation(newPath)
+		checkDefinition(o[key], def[key], newPath, model.errorStack, [])
+		checkAssertions(o, model, newPath)
+	} else {
+		model.errorStack.push({
+			message: `cannot find property ${newPath} in the model definition`
+		})
+	}
+
+	if(model.errorStack.length){
+		o[key] = initialValue
+		model.unstackErrors()
+		return false
+	}
+
+	return true
 }
 
 export default ObjectModel;

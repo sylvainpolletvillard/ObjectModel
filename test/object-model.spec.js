@@ -329,11 +329,14 @@ QUnit.test("Non-enumerable and non-writable properties", function (assert) {
 	});
 
 	m.normal++;
-	m._private++;
+
+	assert.throws(function () {
+		m._private++;
+	}, /TypeError[\s\S]*private/, "try to modify private");
 
 	assert.throws(function () {
 		m.CONST++;
-	}, /TypeError[\s\S]*constant/, "try to redefine constant");
+	}, /TypeError[\s\S]*constant/, "try to modify constant");
 	assert.equal(Object.keys(m).length, 2, "non enumerable key not counted by Object.keys");
 	assert.equal(Object.keys(m).includes("_private"), false, "non enumerable key not found in Object.keys");
 	assert.equal(Object.getOwnPropertyNames(m).length, 2, "non enumerable key not counted by Object.getOwnPropertyNames");
@@ -479,9 +482,12 @@ QUnit.test("Extensions", function (assert) {
 	Vehicle.prototype.speed = 99;
 	Car = function () {};
 	Car.prototype = new Vehicle();
-	Ferrari = ObjectModel({}).extend(Car);
+	Ferrari = ObjectModel({ price: [Number] }).extend(Car);
 
-	assert.ok("speed" in new Ferrari(), "should retrieve properties from parent prototypes when extending with constructors");
+	let ferrari = new Ferrari({ price: 999999 });
+	assert.equal(ferrari.speed, 99, "should retrieve properties from parent prototypes when extending with constructors");
+	assert.equal("price" in ferrari, true, "should trap in operator and return true for properties in definition");
+	assert.equal("speed" in ferrari, false, "should trap in operator and return false for properties out of definition");
 
 });
 
@@ -950,5 +956,19 @@ QUnit.test("Automatic model casting", function (assert) {
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
 	consoleMock.revert();
+
+})
+
+QUnit.test("ObjectModel delete trap", function (assert) {
+
+	const M = ObjectModel({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
+	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
+
+	assert.throws(function(){ delete m._p }, /TypeError.*private/, "cannot delete private prop");
+	assert.throws(function(){ delete m.C }, /TypeError.*constant/, "cannot delete constant prop");
+	delete m.u; // can delete undefined properties
+	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
+	delete m.x // can delete optional properties
+	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete undefined prop");
 
 })

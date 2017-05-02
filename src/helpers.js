@@ -53,8 +53,8 @@ export function setConstructorProto(constructor, proto){
 
 export function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
-	if(obj == null) return String(obj)
-	if(typeof obj == "string") return `"${obj}"`
+	if(obj === null || obj === undefined) return String(obj)
+	if(typeof obj === "string") return `"${obj}"`
 	if(is(BasicModel, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)

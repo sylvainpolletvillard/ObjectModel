@@ -2031,6 +2031,36 @@ QUnit.test("ObjectModel defineProperty trap", function (assert) {
 
 })
 
+QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
+
+	const A = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ _pa: Boolean, a: Boolean })
+	const B = A.extend({ _pb: Boolean, b: Boolean })
+	const m = B({ _pa: true, _pb: true, a: true, b: true })
+	B.prototype.B = true;
+	B.prototype._PB = true;
+	A.prototype.A = true;
+	A.prototype._PA = true;
+
+	assert.equal("a" in m, true)
+	assert.equal("b" in m, true)
+	assert.equal("toString" in m, true)
+
+	assert.equal("A" in m, false)
+	assert.equal("B" in m, false)
+	assert.equal("_pa" in m, false)
+	assert.equal("_pb" in m, false)
+	assert.equal("_PA" in m, false)
+	assert.equal("_PB" in m, false)
+	assert.equal("unknown" in m, false)
+
+	const oKeys = Object.keys(m);
+
+	const ownKeys = Object.getOwnPropertyNames(m);
+
+	assert.equal(oKeys.sort().join(","), "a,b")
+	assert.equal(ownKeys.sort().join(","), "a,b")
+})
+
 /***/ }),
 /* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {

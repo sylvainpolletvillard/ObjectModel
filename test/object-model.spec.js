@@ -999,3 +999,33 @@ QUnit.test("ObjectModel defineProperty trap", function (assert) {
 	assert.throws(function(){ Object.defineProperty(m, "undefined", { value: "test" }) }, /TypeError.*cannot find property/, "cannot define property out of model definition");
 
 })
+
+QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
+
+	const A = ObjectModel({ _pa: Boolean, a: Boolean })
+	const B = A.extend({ _pb: Boolean, b: Boolean })
+	const m = B({ _pa: true, _pb: true, a: true, b: true })
+	B.prototype.B = true;
+	B.prototype._PB = true;
+	A.prototype.A = true;
+	A.prototype._PA = true;
+
+	assert.equal("a" in m, true)
+	assert.equal("b" in m, true)
+	assert.equal("toString" in m, true)
+
+	assert.equal("A" in m, false)
+	assert.equal("B" in m, false)
+	assert.equal("_pa" in m, false)
+	assert.equal("_pb" in m, false)
+	assert.equal("_PA" in m, false)
+	assert.equal("_PB" in m, false)
+	assert.equal("unknown" in m, false)
+
+	const oKeys = Object.keys(m);
+
+	const ownKeys = Object.getOwnPropertyNames(m);
+
+	assert.equal(oKeys.sort().join(","), "a,b")
+	assert.equal(ownKeys.sort().join(","), "a,b")
+})

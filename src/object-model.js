@@ -96,6 +96,10 @@ function getProxy(model, obj, def, path) {
 			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
 		},
 
+		defineProperty(o, key, args){
+			return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
+		},
+
 		has(o, key){
 			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
@@ -114,9 +118,10 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	const newPath = (path ? path + '.' + key : key),
 	      isPrivate = model.conventionForPrivate(key),
 	      isConstant = model.conventionForConstant(key),
-	      initialValue = o[key]
+	      isOwnProperty = o.hasOwnProperty(key),
+	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-	if(isPrivate || (isConstant && initialValue !== undefined)){
+	if(isPrivate || (isConstant && o[key] !== undefined)){
 		model.errorStack.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})
@@ -133,7 +138,9 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	}
 
 	if(model.errorStack.length){
-		o[key] = initialValue
+		if(isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
+		else delete o[key] // back to the initial property defined in prototype chain
+
 		model.unstackErrors()
 		return false
 	}

@@ -2000,7 +2000,21 @@ QUnit.test("ObjectModel delete trap", function (assert) {
 	delete m.u; // can delete undefined properties
 	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
 	delete m.x // can delete optional properties
-	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete undefined prop");
+	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete property out of model definition");
+
+})
+
+QUnit.test("ObjectModel defineProperty trap", function (assert) {
+
+	const M = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
+	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
+
+	assert.throws(function(){ Object.defineProperty(m, "_p", { value: true }) }, /TypeError.*private/, "cannot define private prop");
+	assert.throws(function(){ Object.defineProperty(m, "C", { value: 43 })}, /TypeError.*constant/, "cannot define constant prop");
+	assert.throws(function(){ Object.defineProperty(m, "u", { value: "test" })}, /TypeError.*expecting u to be undefined/, "check type after defineProperty");
+	assert.throws(function(){ Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
+	Object.defineProperty(m, "x", { value: undefined }) // can define optional properties
+	assert.throws(function(){ Object.defineProperty(m, "undefined", { value: "test" }) }, /TypeError.*cannot find property/, "cannot define property out of model definition");
 
 })
 
@@ -2348,6 +2362,10 @@ function getProxy(model, obj, def, path) {
 			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
 		},
 
+		defineProperty(o, key, args){
+			return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
+		},
+
 		has(o, key){
 			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
@@ -2366,9 +2384,10 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	const newPath = (path ? path + '.' + key : key),
 	      isPrivate = model.conventionForPrivate(key),
 	      isConstant = model.conventionForConstant(key),
-	      initialValue = o[key]
+	      isOwnProperty = o.hasOwnProperty(key),
+	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-	if(isPrivate || (isConstant && initialValue !== undefined)){
+	if(isPrivate || (isConstant && o[key] !== undefined)){
 		model.errorStack.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})
@@ -2385,7 +2404,9 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	}
 
 	if(model.errorStack.length){
-		o[key] = initialValue
+		if(isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
+		else delete o[key] // back to the initial property defined in prototype chain
+
 		model.unstackErrors()
 		return false
 	}

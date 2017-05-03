@@ -7,9 +7,8 @@ function ObjectModel(def){
 		if(!is(model, this)) return new model(obj)
 		if(is(model, obj)) return obj
 		merge(this, obj, true)
-		const proxy = getProxy(model, this, model.definition)
-		model.validate(proxy)
-		return proxy
+		model.validate(this)
+		return getProxy(model, this, model.definition)
 	}
 
 	setConstructorProto(model, Object.prototype)
@@ -80,9 +79,23 @@ function getProxy(model, obj, def, path) {
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
+
+			if(key in def && model.conventionForPrivate(key)){
+				model.errorStack.push({
+					message: `cannot access to private property ${newPath}`
+				})
+				model.unstackErrors()
+				return
+			}
+
 			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
+
+			if (isFunction(o[key])) {
+				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+			}
+
 			return getProxy(model, o[key], defPart, newPath)
 		},
 
@@ -121,7 +134,7 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	      isOwnProperty = o.hasOwnProperty(key),
 	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-	if(isPrivate || (isConstant && o[key] !== undefined)){
+	if(key in def && (isPrivate || (isConstant && o[key] !== undefined))){
 		model.errorStack.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})

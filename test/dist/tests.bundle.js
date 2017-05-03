@@ -1345,15 +1345,15 @@ QUnit.test("RegExp values", function (assert) {
 
 });
 
-QUnit.test("Non-enumerable and non-writable properties", function (assert) {
+QUnit.test("Private and constant properties", function (assert) {
 
-	const myModel = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({
+	let myModel = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({
 		CONST: Number,
 		_private: Number,
 		normal: Number
 	});
 
-	const m = myModel({
+	let m = myModel({
 		CONST: 42,
 		_private: 43,
 		normal: 44
@@ -1374,6 +1374,18 @@ QUnit.test("Non-enumerable and non-writable properties", function (assert) {
 	assert.equal(Object.getOwnPropertyNames(m).includes("_private"), false, "non enumerable key not found in Object.getOwnPropertyNames");
 	assert.equal("normal" in m, true, "enumerable key found with operator in")
 	assert.equal("_private" in m, false, "non enumerable key not found with operator in")
+
+	let M = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ _p: Number })
+	m = M({ _p: 42 })
+
+	assert.throws(function () {
+		m._p
+	}, /TypeError[\s\S]*cannot access to private/, "try to access private from outside");
+
+	M.prototype.incrementPrivate = function(){ this._p++ }
+	M.prototype.getPrivate = function(){ return this._p }
+	m.incrementPrivate();
+	assert.equal(m.getPrivate(), 43, "can access and mutate private props through methods")
 
 });
 
@@ -1971,8 +1983,9 @@ QUnit.test("Automatic model casting", function (assert) {
 	const Type2 = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ name: String, other2: [Number] });
 	const Container = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__src_index__["a" /* ObjectModel */])({ foo: { bar: [Type1, Type2] }});
 
-	__WEBPACK_IMPORTED_MODULE_1__mocks_console__["a" /* default */].apply();
 	let c = new Container({ foo: { bar: { name: "dunno" }}});
+	__WEBPACK_IMPORTED_MODULE_1__mocks_console__["a" /* default */].apply();
+	c.foo.bar; //get ambiguous key
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number]/
 			.test(__WEBPACK_IMPORTED_MODULE_1__mocks_console__["a" /* default */]["warnLastArgs"][0]),
 		"should warn about ambiguous model for object sub prop"
@@ -2273,9 +2286,8 @@ function ObjectModel(def){
 		if(!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(model, this)) return new model(obj)
 		if(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(model, obj)) return obj
 		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["i" /* merge */])(this, obj, true)
-		const proxy = getProxy(model, this, model.definition)
-		model.validate(proxy)
-		return proxy
+		model.validate(this)
+		return getProxy(model, this, model.definition)
 	}
 
 	__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["b" /* setConstructorProto */])(model, Object.prototype)
@@ -2346,9 +2358,23 @@ function getProxy(model, obj, def, path) {
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
+
+			if(key in def && model.conventionForPrivate(key)){
+				model.errorStack.push({
+					message: `cannot access to private property ${newPath}`
+				})
+				model.unstackErrors()
+				return
+			}
+
 			if(o[key] && o.hasOwnProperty(key) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["d" /* isPlainObject */])(defPart) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* is */])(__WEBPACK_IMPORTED_MODULE_0__basic_model__["c" /* BasicModel */], o[key].constructor)){
 				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(o[key], defPart) // cast nested models
 			}
+
+			if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["e" /* isFunction */])(o[key])) {
+				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+			}
+
 			return getProxy(model, o[key], defPart, newPath)
 		},
 
@@ -2387,7 +2413,7 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	      isOwnProperty = o.hasOwnProperty(key),
 	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-	if(isPrivate || (isConstant && o[key] !== undefined)){
+	if(key in def && (isPrivate || (isConstant && o[key] !== undefined))){
 		model.errorStack.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})

@@ -314,15 +314,15 @@ QUnit.test("RegExp values", function (assert) {
 
 });
 
-QUnit.test("Non-enumerable and non-writable properties", function (assert) {
+QUnit.test("Private and constant properties", function (assert) {
 
-	const myModel = ObjectModel({
+	let myModel = ObjectModel({
 		CONST: Number,
 		_private: Number,
 		normal: Number
 	});
 
-	const m = myModel({
+	let m = myModel({
 		CONST: 42,
 		_private: 43,
 		normal: 44
@@ -343,6 +343,18 @@ QUnit.test("Non-enumerable and non-writable properties", function (assert) {
 	assert.equal(Object.getOwnPropertyNames(m).includes("_private"), false, "non enumerable key not found in Object.getOwnPropertyNames");
 	assert.equal("normal" in m, true, "enumerable key found with operator in")
 	assert.equal("_private" in m, false, "non enumerable key not found with operator in")
+
+	let M = ObjectModel({ _p: Number })
+	m = M({ _p: 42 })
+
+	assert.throws(function () {
+		m._p
+	}, /TypeError[\s\S]*cannot access to private/, "try to access private from outside");
+
+	M.prototype.incrementPrivate = function(){ this._p++ }
+	M.prototype.getPrivate = function(){ return this._p }
+	m.incrementPrivate();
+	assert.equal(m.getPrivate(), 43, "can access and mutate private props through methods")
 
 });
 
@@ -940,8 +952,9 @@ QUnit.test("Automatic model casting", function (assert) {
 	const Type2 = ObjectModel({ name: String, other2: [Number] });
 	const Container = ObjectModel({ foo: { bar: [Type1, Type2] }});
 
-	consoleMock.apply();
 	let c = new Container({ foo: { bar: { name: "dunno" }}});
+	consoleMock.apply();
+	c.foo.bar; //get ambiguous key
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number]/
 			.test(consoleMock["warnLastArgs"][0]),
 		"should warn about ambiguous model for object sub prop"

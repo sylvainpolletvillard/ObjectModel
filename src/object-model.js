@@ -92,7 +92,7 @@ function getProxy(model, obj, def, path) {
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
-			if (isFunction(o[key])) {
+			if (isFunction(o[key]) && o[key].bind) {
 				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
 			}
 

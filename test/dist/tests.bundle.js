@@ -2371,7 +2371,7 @@ function getProxy(model, obj, def, path) {
 				o[key] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__definition__["c" /* cast */])(o[key], defPart) // cast nested models
 			}
 
-			if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["e" /* isFunction */])(o[key])) {
+			if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__helpers__["e" /* isFunction */])(o[key]) && o[key].bind) {
 				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
 			}
 

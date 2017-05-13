@@ -121,6 +121,10 @@ function getProxy(model, obj, def, path) {
 			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
 		},
 
+		getOwnPropertyDescriptor(o, key){
+			return model.conventionForPrivate(key) ? undefined : Reflect.getOwnPropertyDescriptor(o, key)
+		},
+
 		getPrototypeOf(){
 			return model.prototype
 		}

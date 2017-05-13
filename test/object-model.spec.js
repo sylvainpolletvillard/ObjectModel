@@ -343,6 +343,8 @@ QUnit.test("Private and constant properties", function (assert) {
 	assert.equal(Object.getOwnPropertyNames(m).includes("_private"), false, "non enumerable key not found in Object.getOwnPropertyNames");
 	assert.equal("normal" in m, true, "enumerable key found with operator in")
 	assert.equal("_private" in m, false, "non enumerable key not found with operator in")
+	assert.equal(Object.getOwnPropertyDescriptor(m, "normal").value, 45, "getOwnProperyDescriptor trap for normal prop")
+	assert.equal(Object.getOwnPropertyDescriptor(m, "_private"), undefined, "getOwnProperyDescriptor for private prop")
 
 	let M = ObjectModel({ _p: Number })
 	m = M({ _p: 42 })

@@ -7,6 +7,9 @@ function ObjectModel(def){
 		if(!is(model, this)) return new model(obj)
 		if(is(model, obj)) return obj
 		merge(this, obj, true)
+		if(model.hasOwnProperty("constructor")){
+			model.constructor.call(this, obj)
+		}
 		model.validate(this)
 		return getProxy(model, this, model.definition)
 	}

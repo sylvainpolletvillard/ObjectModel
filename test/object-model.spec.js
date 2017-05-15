@@ -1031,3 +1031,23 @@ QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
 	assert.equal(oKeys.sort().join(","), "a,b")
 	assert.equal(ownKeys.sort().join(","), "a,b")
 })
+
+QUnit.test("ObjectModel constructors", function (assert) {
+
+	class User extends ObjectModel({ firstName: String, lastName: String, fullName: String }){
+		constructor({ firstName, lastName }){
+			const fullName = `${firstName} ${lastName}`
+			super({ firstName, lastName, fullName })
+		}
+	}
+
+	assert.equal((new User({ firstName: "John", lastName: "Smith" })).fullName, "John Smith",
+		"check es6 class constructor")
+
+	const Bill = ObjectModel({ unitPrice: Number, quantity: Number, total: Number });
+	Bill.constructor = function({ unitPrice, quantity }) { this.total = unitPrice * quantity }
+
+	assert.equal((new Bill({ unitPrice: 2.50, quantity: 4 })).total, 10,
+		"check constructor method")
+
+})

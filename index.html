@@ -592,7 +592,7 @@ var receivedOrder = Order({
 			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which
 				should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making
 				<i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
-			<p>You can modify or remove these conventions by overriding <code>conventionForPrivate</code> and <code>conventionForConstant</code> functions in your model or globally in <code>BasicModel.prototype</code>.</p>
+			<p>You can modify or remove these conventions by overriding the <code>conventionForPrivate</code> and <code>conventionForConstant</code> methods in your model or globally in <code>Model.prototype</code>.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -671,14 +671,12 @@ myHand.push("K"); // use this instead</code>
 	<section id="doc-function-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Function models</h2>
-			<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>FunctionModel</code> are the types of the arguments the function will receive. The <code>defaults</code> method of Function models let you specify default values for missing arguments. Finally, the <code> return</code> method is used to specify the type of the function return value.</p>
+			<p>Function models provide validation on input (arguments) and output (return value). All the validation options for Object models are also available for Function models. The arguments passed to <code>FunctionModel</code> are the types of the arguments the function will receive, and the <code> return</code> method is used to specify the type of the function return value.</p>
 		</div>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Calculator = FunctionModel(Number, ["+","-","*","/"], Number)
-	            .defaults(0, "+", 1)
-	            .return(Number);</code></pre>
+<pre><code class="language-javascript">var Calculator = FunctionModel(Number, ["+","-","*","/"], Number) .return(Number);</code></pre>
 		</div>
 
 		<div class="panel panel2">
@@ -915,9 +913,6 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</dl>
 		<h3>Function models</h3>
 		<dl>
-			<dt>defaults <code>functionModel.defaults(defaultValueArgument1, defaultValueArgument2, ...)</code></dt>
-			<dd>Set default values for the function arguments.</dd>
-
 			<dt>return <code>functionModel.return(returnValueDefinition)</code></dt>
 			<dd>Set the definition of the return value. Each call to the function must return a validated value, otherwise an exception will be raised.</dd>
 		</dl>

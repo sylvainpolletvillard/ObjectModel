@@ -14,7 +14,6 @@ QUnit.test("Function models constructor && proto", function (assert) {
 	assert.ok(typeof Operation.assert === "function", "test Function model method assert");
 	assert.ok(typeof Operation.test === "function", "test Function model method test");
 	assert.ok(typeof Operation.validate === "function", "test Function model method validate");
-	assert.ok(typeof Operation.defaults === "function", "test Function model method defaults");
 	assert.ok(typeof Operation.return === "function", "test Function model method return");
 	assert.equal(Operation.definition.arguments.map(a => a.name).join(','),
 		'Number,Number', "test Function model prop definition");
@@ -83,18 +82,17 @@ QUnit.test("Function models as object models methods", function (assert) {
 
 QUnit.test("Function model defaults arguments & arguments control", function (assert) {
 
-	const Calculator = FunctionModel(Number, ["+", "-", "*", "/"], Number)
-		.defaults(0, "+", 1)
+	const Calculator = FunctionModel(Number, ["+", "-", "*", "/", undefined], [Number])
 		.return(Number);
 
-	const calc = new Calculator(function (a, operator, b) {
+	const calc = new Calculator(function (a=0, operator='+', b=1) {
 		return eval(a + operator + b);
 	});
 
 	assert.equal(calc(3, "+"), 4, "default argument value");
 	assert.equal(calc(41), 42, "defaults arguments values");
 	assert.throws(function () {
-		calc(6, "*", null);
+		calc(6, "*", false);
 	}, /TypeError/, "invalid argument type");
 
 });
@@ -130,14 +128,6 @@ QUnit.test("Function model with other models & objects as arguments", function (
 	}, /TypeError/, "FunctionModel object argument 5/5");
 
 	assert.ok(FunctionModel() instanceof FunctionModel, "FunctionModel does not throw when receiving no arguments");
-
-});
-
-QUnit.test("Function model defaults", function (assert) {
-
-	const op  = new FunctionModel(Number, Number).return(Number).defaults(11, 31);
-	const add = op((a, b) => a + b);
-	assert.equal(add(), 42, "defaults arguments for function models correctly applied");
 
 });
 

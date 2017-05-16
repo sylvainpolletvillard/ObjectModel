@@ -10,7 +10,6 @@ function FunctionModel(){
 
 			apply (fn, ctx, args) {
 				const def = model.definition
-				args = Object.assign([], def.defaults, args)
 
 				def.arguments.forEach((argDef, i) => {
 					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
@@ -52,11 +51,6 @@ Object.assign(FunctionModel.prototype, {
 
 	return(def){
 		this.definition.return = def
-		return this
-	},
-
-	defaults(){
-		this.definition.defaults = [...arguments]
 		return this
 	},
 

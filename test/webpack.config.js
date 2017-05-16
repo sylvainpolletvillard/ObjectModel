@@ -1,5 +1,5 @@
-const glob = require("glob");
-const path = require("path");
+const glob = require('glob');
+const path = require('path');
 
 module.exports = {
 	devtool: "cheap-module-eval-source-map",

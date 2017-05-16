@@ -10,7 +10,7 @@
     "url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
   },
   "scripts": {
-    "build": "npm-run-all build:* && npm run info:banner",
+    "build": "npm-run-all build:* && npm run info",
     "build:js": "rollup --format iife --name ObjectModelBundle src/index.js -o dist/object-model.js",
     "build:min": "babili dist/object-model.js --out-file dist/object-model.min.js",
     "build:tests": "webpack --config test/webpack.config.js",
@@ -18,18 +18,17 @@
     "watch:js": "npm run build:js -- --watch",
     "watch:min": "npm run build:min -- --watch",
     "watch:tests": "npm run build:tests -- --watch",
-    "info:banner": "banner-cli dist/*.js"
+    "info": "npm-run-all --parallel info:*",
+    "info:banner": "banner-cli dist/*.js",
+    "info:index": "node site/build/update-index"
   },
   "devDependencies": {
     "babel-cli": "^6.23.0",
     "babel-preset-babili": "^0.0.12",
     "babili": "^0.0.12",
     "banner-cli": "^0.11.0",
+    "filesize": "^3.5.9",
     "glob": "^7.1.1",
-    "grunt": "~1.0.1",
-    "grunt-cli": "^1.2.0",
-    "grunt-file-info": "1.0.14",
-    "grunt-regex-replace": "~0.4.0",
     "gzip-size": "^3.0.0",
     "npm-run-all": "^4.0.2",
     "rollup": "^0.41.4",

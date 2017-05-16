@@ -10,16 +10,19 @@ function ArrayModel(def){
 		if(!is(model, this)) return new model(array)
 		model.validate(array)
 		return new Proxy(array, {
+			getPrototypeOf: () => model.prototype,
+
 			get(arr, key) {
 				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, key, model)
 				return arr[key]
 			},
+
 			set(arr, key, val) {
-				setArrayKey(arr, key, val, model)
-				return true
+				return setArrayKey(arr, key, val, model)
 			},
-			getPrototypeOf(){
-				return model.prototype
+
+			deleteProperty(arr, key){
+				return !(key in arr) || setArrayKey(arr, key, undefined, model)
 			}
 		})
 	}
@@ -70,8 +73,11 @@ function setArrayKey(array, key, value, model){
 	const testArray = array.slice()
 	testArray[key] = value
 	checkAssertions(testArray, model, path)
-	model.unstackErrors()
-	array[key] = value
+	const isSuccess = !model.unstackErrors()
+	if(isSuccess){
+		array[key] = value
+	}
+	return isSuccess
 }
 
 export default ArrayModel

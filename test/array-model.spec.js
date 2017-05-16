@@ -196,3 +196,22 @@ QUnit.test("Automatic model casting in array models", function (assert) {
 	assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
 
 });
+
+QUnit.test("Other traps", function(assert){
+
+	const Arr = ArrayModel(Number);
+	const a = Arr([ 1, 2, 3 ])
+
+	delete a.unknownProperty;
+	delete a[3];
+
+	assert.throws(function(){
+		delete a[2]
+	}, /TypeError/, "deleteProperty trap block array holes if def != undefined")
+
+	const ArrB = ArrayModel([Number]);
+	const b = ArrB([ 1, 2, 3 ])
+
+	delete b[2]
+	assert.equal(b[2], undefined, "deleteProperty trap does not block when def is optional")
+})

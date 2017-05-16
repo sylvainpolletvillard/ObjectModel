@@ -7,6 +7,7 @@ function FunctionModel(){
 	const model = function(fn = model.default) {
 		return new Proxy(fn, {
 			getPrototypeOf: () => model.prototype,
+
 			apply (fn, ctx, args) {
 				const def = model.definition
 				args = Object.assign([], def.defaults, args)

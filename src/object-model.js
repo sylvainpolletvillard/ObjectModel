@@ -79,6 +79,8 @@ function getProxy(model, obj, def, path) {
 	}
 
 	return new Proxy(obj || {}, {
+		getPrototypeOf: () => model.prototype,
+
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
@@ -126,10 +128,6 @@ function getProxy(model, obj, def, path) {
 
 		getOwnPropertyDescriptor(o, key){
 			return model.conventionForPrivate(key) ? undefined : Reflect.getOwnPropertyDescriptor(o, key)
-		},
-
-		getPrototypeOf(){
-			return model.prototype
 		}
 	})
 }

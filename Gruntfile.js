@@ -12,16 +12,6 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		pkg: pkg,
-		usebanner: {
-			dist: {
-				options: {
-					banner: BANNER
-				},
-				files: {
-					src: [ 'dist/*.js' ]
-				}
-			}
-		},
 		file_info: {
 			dist: {
 				src: ['dist/object-model.js','dist/object-model.min.js'],
@@ -62,9 +52,8 @@ module.exports = function(grunt) {
 
 	grunt.loadNpmTasks('grunt-file-info');
 	grunt.loadNpmTasks('grunt-regex-replace');
-	grunt.loadNpmTasks('grunt-banner');
 
-	grunt.registerTask('dist', ['usebanner:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['file_info:dist','regex-replace:site']);
 	grunt.registerTask('default', ['dist']);
 
 };

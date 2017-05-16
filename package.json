@@ -10,7 +10,7 @@
     "url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
   },
   "scripts": {
-    "build": "npm-run-all --parallel build:* && npm run info:banner",
+    "build": "npm-run-all build:* && npm run info:banner",
     "build:js": "rollup --format iife --name ObjectModelBundle src/index.js -o dist/object-model.js",
     "build:min": "babili dist/object-model.js --out-file dist/object-model.min.js",
     "build:tests": "webpack --config test/webpack.config.js",
@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "babel-cli": "^6.23.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.23.0",
     "babel-preset-babili": "^0.0.12",
     "babili": "^0.0.12",
     "banner-cli": "^0.11.0",

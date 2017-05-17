@@ -79,7 +79,7 @@ function getProxy(model, obj, def, path) {
 	}
 
 	return new Proxy(obj || {}, {
-		getPrototypeOf: () => model.prototype,
+		getPrototypeOf: () => def === model.definition ? model.prototype : Reflect.getPrototypeOf(obj),
 
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),

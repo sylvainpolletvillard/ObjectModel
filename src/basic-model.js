@@ -35,7 +35,7 @@ Object.assign(BasicModel.prototype, {
 		let failed,
 		    initialErrorCollector = this.errorCollector
 		this.errorCollector = () => { failed = true }
-		this(obj)
+		new this(obj)
 		this.errorCollector = initialErrorCollector
 		return !failed
 	},

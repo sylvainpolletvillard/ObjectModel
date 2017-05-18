@@ -24,7 +24,6 @@ function iterateKeys(o, model, config){
 			return ['li', { style: styles.listItem },
 				['span', { style: isPrivate ? styles.private : styles.property }, prop], ': ',
 				getValue(o[prop], config)
-
 			]
 		}),
 		'}'

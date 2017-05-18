@@ -1,16 +1,6 @@
-import BasicModel from "./basic-model"
-import ObjectModel from "./object-model"
-import ArrayModel from "./array-model"
-import FunctionModel from "./function-model"
-import MapModel from "./map-model"
-import SetModel from "./set-model"
-import "./devtool-formatter";
-
-export {
-	BasicModel,
-	ObjectModel,
-	ArrayModel,
-	FunctionModel,
-	MapModel,
-	SetModel
-}
+export { default as BasicModel } from "./basic-model"
+export { default as ObjectModel } from "./object-model"
+export { default as ArrayModel } from "./array-model"
+export { default as FunctionModel } from "./function-model"
+export { default as MapModel } from "./map-model"
+export { default as SetModel } from "./set-model"

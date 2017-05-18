@@ -8,44 +8,60 @@ const styles = {
 	model: `color: #43a047; font-style: italic`,
 	function: `color: #4271ae`,
 	string: `color: #C41A16`,
-	value: `color: #1C00CF`,
+	number: `color: #1C00CF`,
+	boolean: `color: #AA0D91`,
 	property: `color: #881391`,
 	private: `color: #B871BD`,
 	null: `color: #808080`
 };
 
-function isPrivate(prop, model){
-	return is(BasicModel, model) && model.conventionForPrivate(prop)
+function iterateKeys(o, model, config){
+	return [
+		'ol', { style: styles.list },
+		'{',
+		...Object.keys(o).map(prop => {
+			let isPrivate = is(BasicModel, model) && model.conventionForPrivate(prop);
+			return ['li', { style: styles.listItem },
+				['span', { style: isPrivate ? styles.private : styles.property }, prop], ': ',
+				getValue(o[prop], config)
+
+			]
+		}),
+		'}'
+	];
 }
 
-function toJsonML(x, config){
+function getValue(x, config){
 	if(x === null || x === undefined)
 		return ["span", { style: styles.null }, String(x)];
 
+	if(typeof x === "boolean")
+		return ["span", { style: styles.boolean }, x];
+
+	if(typeof x === "number")
+		return ["span", { style: styles.number }, x];
+
+	if(typeof x === "string")
+		return ["span", { style: styles.string }, `"${x}"`];
+
+	if(isFunction(x) && !is(BasicModel, x))
+		return ["span", { style: styles.function }, x.name || x.toString()];
+
+	return ['object', { object: x, config }]
+}
+
+function getHeader(x, config){
 	if(is(BasicModel, x))
 		return ["span", { style: styles.model }, is(ObjectModel, x) ? x.name : x.toString()];
 
-	if(isPlainObject(x)){
-		const model = Object.getPrototypeOf(x).constructor;
-		return [
-			'ol', { style: styles.list },
-			'{',
-			...Object.keys(x).map(prop => ['li', { style: styles.listItem },
-				['span', { style: isPrivate(prop, model) ? styles.private : styles.property }, prop], ': ',
-				x[prop] ? ['object', {object: x[prop], config}] : toJsonML(x[prop], config)
-			]),
-			'}'
-		];
-	}
-
-	if(isFunction(x))
-		return ["span", { style: styles.function }, x.name || x.toString()];
+	if(isPlainObject(x))
+		return iterateKeys(x, Object.getPrototypeOf(x).constructor, config)
 
 	if(is(Array, x)){
 		let def = [];
 		if(x.length === 1) x.push(undefined, null);
 		for(let i=0; i < x.length; i++){
-			def.push(x[i] ? ['object', { object: x[i], config }] : toJsonML(x[i]))
+			def.push( getValue(x[i]) )
 			if(i < x.length - 1) def.push(' or ')
 		}
 		return ["span", {}, ...def]
@@ -57,7 +73,7 @@ function toJsonML(x, config){
 const ModelFormatter = {
 	header: function(x, config={}) {
 		if (config.fromObjectModel || is(BasicModel, x))
-			return toJsonML(x, config);
+			return getHeader(x, config);
 
 		return null;
 	},
@@ -65,12 +81,7 @@ const ModelFormatter = {
 		return x instanceof ObjectModel
 	},
 	body: function(x) {
-		const o = (x instanceof ObjectModel ? x.definition : x);
-		return ['ol', { style: styles.list }]
-			.concat(Object.keys(o).map(prop => ['li', { style: styles.listItem },
-				['span', { style: isPrivate(prop, x) ? styles.private : styles.property }, prop], ': ',
-				['object', { object: o[prop], config: { fromObjectModel: true } }]
-			]))
+		return iterateKeys(x instanceof ObjectModel ? x.definition : x, x, { fromObjectModel: true })
 	}
 }
 
@@ -78,7 +89,7 @@ const ModelInstanceFormatter = {
 	header: function(x, config={}) {
 		if(!x) return null;
 		if(config.fromModelInstance && isPlainObject(x)){
-			return toJsonML(x, config)
+			return getHeader(x, config)
 		}
 
 		const proto = Object.getPrototypeOf(x);
@@ -94,16 +105,11 @@ const ModelInstanceFormatter = {
 		return (x && is(ObjectModel, Object.getPrototypeOf(x).constructor));
 	},
 	body: function(x) {
-		const model = Object.getPrototypeOf(x).constructor;
-		return ['ol', { style: styles.list }]
-			.concat(Object.keys(x).map(prop => ['li', { style: styles.listItem },
-				['span', { style: isPrivate(prop, model) ? styles.private : styles.property }, prop], ': ',
-				x[prop] ? ['object', { object: x[prop], config: { fromModelInstance: true } }] : toJsonML(x[prop])
-			]))
+		return iterateKeys(x, Object.getPrototypeOf(x).constructor, { fromModelInstance: true })
 	}
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
 	window.devtoolsFormatters = (window.devtoolsFormatters || [])
 		.concat(ModelFormatter, ModelInstanceFormatter);
 }

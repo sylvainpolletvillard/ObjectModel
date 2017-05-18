@@ -4,30 +4,39 @@ import {is, isFunction, isPlainObject} from "./helpers"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
-	listitem: `padding: 0 0 0 1em;`,
-	model: `color: #8959a8; font-weight: bold`,
+	listItem: `padding: 0 0 0 1em;`,
+	model: `color: #43a047; font-style: italic`,
 	function: `color: #4271ae`,
 	string: `color: #C41A16`,
-	value: `color: #1C00CF`
+	value: `color: #1C00CF`,
+	property: `color: #881391`,
+	private: `color: #B871BD`,
+	null: `color: #808080`
 };
+
+function isPrivate(prop, model){
+	return is(BasicModel, model) && model.conventionForPrivate(prop)
+}
 
 function toJsonML(x, config){
 	if(x === null || x === undefined)
-		return ["span", { style: styles.value }, String(x)];
+		return ["span", { style: styles.null }, String(x)];
 
 	if(is(BasicModel, x))
 		return ["span", { style: styles.model }, is(ObjectModel, x) ? x.name : x.toString()];
 
-	if(isPlainObject(x))
+	if(isPlainObject(x)){
+		const model = Object.getPrototypeOf(x).constructor;
 		return [
 			'ol', { style: styles.list },
 			'{',
-			...Object.keys(x).map(prop => ['li', { style: styles.listitem },
-				['span', {}, prop + ': '],
+			...Object.keys(x).map(prop => ['li', { style: styles.listItem },
+				['span', { style: isPrivate(prop, model) ? styles.private : styles.property }, prop], ': ',
 				x[prop] ? ['object', {object: x[prop], config}] : toJsonML(x[prop], config)
 			]),
 			'}'
 		];
+	}
 
 	if(isFunction(x))
 		return ["span", { style: styles.function }, x.name || x.toString()];
@@ -58,8 +67,8 @@ const ModelFormatter = {
 	body: function(x) {
 		const o = (x instanceof ObjectModel ? x.definition : x);
 		return ['ol', { style: styles.list }]
-			.concat(Object.keys(o).map(prop => ['li', { style: styles.listitem },
-				['span', {}, prop + ': '],
+			.concat(Object.keys(o).map(prop => ['li', { style: styles.listItem },
+				['span', { style: isPrivate(prop, x) ? styles.private : styles.property }, prop], ': ',
 				['object', { object: o[prop], config: { fromObjectModel: true } }]
 			]))
 	}
@@ -68,13 +77,15 @@ const ModelFormatter = {
 const ModelInstanceFormatter = {
 	header: function(x, config={}) {
 		if(!x) return null;
-
-		const model = Object.getPrototypeOf(x).constructor;
-		if(is(ObjectModel, model)){
-			return ["span", { style: styles.model }, model.name];
-		}
 		if(config.fromModelInstance && isPlainObject(x)){
 			return toJsonML(x, config)
+		}
+
+		const proto = Object.getPrototypeOf(x);
+		if(!proto || !proto.constructor) return null;
+		const model = proto.constructor;
+		if(is(ObjectModel, model)){
+			return ["span", { style: styles.model }, x.constructor.name];
 		}
 
 		return null;
@@ -85,8 +96,8 @@ const ModelInstanceFormatter = {
 	body: function(x) {
 		const model = Object.getPrototypeOf(x).constructor;
 		return ['ol', { style: styles.list }]
-			.concat(Object.keys(model.definition).map(prop => ['li', { style: styles.listitem },
-				['span', {}, prop + ': '],
+			.concat(Object.keys(x).map(prop => ['li', { style: styles.listItem },
+				['span', { style: isPrivate(prop, model) ? styles.private : styles.property }, prop], ': ',
 				x[prop] ? ['object', { object: x[prop], config: { fromModelInstance: true } }] : toJsonML(x[prop])
 			]))
 	}

@@ -79,7 +79,12 @@ function getProxy(model, obj, def, path) {
 	}
 
 	return new Proxy(obj || {}, {
-		getPrototypeOf: () => def === model.definition ? model.prototype : Reflect.getPrototypeOf(obj),
+		getPrototypeOf(){
+			if (def === model.definition)
+				return model.prototype
+
+			return Object.prototype
+		},
 
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
@@ -122,12 +127,18 @@ function getProxy(model, obj, def, path) {
 			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
 
-		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
+		ownKeys(){
+			return Reflect.ownKeys(def).filter(key => !model.conventionForPrivate(key))
 		},
 
 		getOwnPropertyDescriptor(o, key){
-			return model.conventionForPrivate(key) ? undefined : Reflect.getOwnPropertyDescriptor(o, key)
+			let descriptor;
+			if(!model.conventionForPrivate(key)){
+				descriptor = Object.getOwnPropertyDescriptor(def, key);
+				if(descriptor !== undefined) descriptor.value = o[key];
+			}
+
+			return descriptor
 		}
 	})
 }

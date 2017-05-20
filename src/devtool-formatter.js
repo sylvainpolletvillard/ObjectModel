@@ -15,22 +15,18 @@ const styles = {
 	null: `color: #808080`
 };
 
-function iterateKeys(o, model, config){
-	return [
-		'ol', { style: styles.list },
-		'{',
-		...Object.keys(o).map(prop => {
-			let isPrivate = is(BasicModel, model) && model.conventionForPrivate(prop);
-			return ['li', { style: styles.listItem },
-				['span', { style: isPrivate ? styles.private : styles.property }, prop], ': ',
-				getValue(o[prop], config)
-			]
-		}),
-		'}'
-	];
+function getModel(instance){
+	if(instance === undefined || instance === null)
+		return null;
+
+	const proto = Object.getPrototypeOf(instance);
+	if(!proto || !proto.constructor || !is(BasicModel, proto.constructor))
+		return null;
+
+	return proto.constructor
 }
 
-function getValue(x, config){
+function format(x, config){
 	if(x === null || x === undefined)
 		return ["span", { style: styles.null }, String(x)];
 
@@ -43,68 +39,83 @@ function getValue(x, config){
 	if(typeof x === "string")
 		return ["span", { style: styles.string }, `"${x}"`];
 
-	if(isFunction(x) && !is(BasicModel, x))
-		return ["span", { style: styles.function }, x.name || x.toString()];
-
-	return ['object', { object: x, config }]
-}
-
-function getHeader(x, config){
-	if(is(BasicModel, x))
-		return ["span", { style: styles.model }, is(ObjectModel, x) ? x.name : x.toString()];
-
-	if(isPlainObject(x))
-		return iterateKeys(x, Object.getPrototypeOf(x).constructor, config)
-
 	if(is(Array, x)){
 		let def = [];
 		if(x.length === 1) x.push(undefined, null);
 		for(let i=0; i < x.length; i++){
-			def.push( getValue(x[i]) )
+			def.push(format(x[i]) )
 			if(i < x.length - 1) def.push(' or ')
 		}
 		return ["span", {}, ...def]
 	}
+
+	if(isPlainObject(x))
+		return formatObject(x, getModel(x), config)
+
+	if(isFunction(x) && !is(BasicModel, x))
+		return ["span", { style: styles.function }, x.name || x.toString()];
+
+	return x ? ['object', { object: x, config }] : null
+}
+
+function formatObject(o, model, config){
+	return [
+		'ol', { style: styles.list },
+		'{',
+		...Object.keys(o).map(prop => {
+			let isPrivate = model && model.conventionForPrivate(prop);
+			return ['li', { style: styles.listItem },
+				['span', { style: isPrivate ? styles.private : styles.property }, prop], ': ',
+				format(o[prop], config)
+			]
+		}),
+		'}'
+	];
+}
+
+function formatHeader(x, config){
+	if(is(BasicModel, x))
+		return ["span", { style: styles.model }, x.name];
+
+	if(config.fromModel || isPlainObject(x) || Array.isArray(x))
+		return format(x)
 
 	return null;
 }
 
 const ModelFormatter = {
 	header: function(x, config={}) {
-		if (config.fromObjectModel || is(BasicModel, x))
-			return getHeader(x, config);
+		if (config.fromModel || is(BasicModel, x))
+			return formatHeader(x, config);
 
 		return null;
 	},
 	hasBody: function(x) {
-		return x instanceof ObjectModel
+		return is(BasicModel, x)
 	},
 	body: function(x) {
-		return iterateKeys(x instanceof ObjectModel ? x.definition : x, x, { fromObjectModel: true })
+		return format(x.definition, { fromModel: true })
 	}
 }
 
 const ModelInstanceFormatter = {
 	header: function(x, config={}) {
-		if(!x) return null;
-		if(config.fromModelInstance && isPlainObject(x)){
-			return getHeader(x, config)
+		if(config.fromInstance && isPlainObject(x)){
+			return formatHeader(x, config)
 		}
 
-		const proto = Object.getPrototypeOf(x);
-		if(!proto || !proto.constructor) return null;
-		const model = proto.constructor;
-		if(is(ObjectModel, model)){
+		const model = getModel(x);
+		if(is(BasicModel, model)){
 			return ["span", { style: styles.model }, x.constructor.name];
 		}
 
 		return null;
 	},
 	hasBody: function(x) {
-		return (x && is(ObjectModel, Object.getPrototypeOf(x).constructor));
+		return x && is(ObjectModel, getModel(x))
 	},
 	body: function(x) {
-		return iterateKeys(x, Object.getPrototypeOf(x).constructor, { fromModelInstance: true })
+		return formatObject(x, getModel(x), { fromInstance: true })
 	}
 }
 

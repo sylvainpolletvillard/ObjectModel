@@ -82,8 +82,11 @@ export function cast(obj, defNode=[]) {
 			suitableModels.push(part)
 	}
 
-	if (suitableModels.length === 1)
-		return new suitableModels[0](obj) // automatically cast to suitable model when explicit
+	if (suitableModels.length === 1) {
+		// automatically cast to suitable model when explicit
+		const model = suitableModels[0];
+		return is(BasicModel, model) ? model(obj) : new model(obj) // basic models should not be called with new
+	}
 
 	if (suitableModels.length > 1)
 		console.warn(`Ambiguous model for value ${toString(obj)}, could be ${suitableModels.join(" or ")}`)

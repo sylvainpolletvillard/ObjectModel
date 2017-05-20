@@ -209,3 +209,24 @@ QUnit.test("Custom error collectors for basic models", function(assert) {
 	BasicModel.prototype.errorCollector = defaultErrorCollector;
 
 });
+
+QUnit.test("Extensions", function(assert){
+
+	var PositiveInteger = BasicModel(Number)
+		.assert(Number.isInteger)
+		.assert(n => n >= 0, "should be greater or equal to zero")
+
+	function isPrime(n) {
+		for (var i=2, m=Math.sqrt(n); i <= m ; i++){
+			if(n%i === 0) return false;
+		}
+		return n > 1;
+	}
+
+	var PrimeNumber = PositiveInteger.extend().assert(isPrime);
+
+	assert.equal(PrimeNumber.definition, Number, "Extension retrieve original definition");
+	assert.equal(PrimeNumber.assertions.length, 3, "Extension can add assertions");
+	assert.equal(PositiveInteger.assertions.length, 2, "Extension assertions are not added to original model");
+
+})

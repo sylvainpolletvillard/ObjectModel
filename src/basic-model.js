@@ -24,6 +24,12 @@ Object.assign(BasicModel.prototype, {
 		return parseDefinition(this.definition).map(d => toString(d, stack)).join(" or ")
 	},
 
+	name: "Model",
+	as(name){
+		define(this, "name", name);
+		return this
+	},
+
 	assertions: [],
 
 	validate(obj, errorCollector){
@@ -107,6 +113,7 @@ export function initModel(model, args, constructor){
 	model.definition = args[0]
 	model.assertions = model.assertions.slice()
 	define(model, "errorStack", [])
+	delete model.name;
 }
 
 export function parseDefinition(def){

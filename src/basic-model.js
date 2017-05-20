@@ -46,15 +46,17 @@ Object.assign(BasicModel.prototype, {
 		return !failed
 	},
 
-	extend(){
-		const args = [...arguments]
-		const def = args
-			.reduce((def, ext) => def.concat(parseDefinition(ext)), parseDefinition(this.definition))
-			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
+	extend(...newParts){
+		let def = this.definition;
+		if(newParts.length > 0){
+			def = newParts
+				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
+		}
 
 		let assertions = [...this.assertions]
-		args.forEach(arg => {
-			if(is(BasicModel, arg)) assertions = assertions.concat(arg.assertions)
+		newParts.forEach(part => {
+			if(is(BasicModel, part)) assertions = assertions.concat(part.assertions)
 		})
 
 		const submodel = new this.constructor(def)

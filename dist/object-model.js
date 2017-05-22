@@ -851,3 +851,4 @@ exports.MapModel = MapModel;
 exports.SetModel = SetModel;
 
 }((this.window = this.window || {})));
+//# sourceMappingURL=object-model.js.map

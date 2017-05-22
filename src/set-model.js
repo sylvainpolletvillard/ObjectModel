@@ -1,4 +1,4 @@
-import { BasicModel, initModel } from "./basic-model"
+import { Model, initModel } from "./model"
 import { checkDefinition, checkAssertions } from "./definition"
 import { setConstructor, setConstructorProto, toString } from "./helpers"
 
@@ -28,7 +28,7 @@ function SetModel(def){
 	return model
 }
 
-setConstructorProto(SetModel, BasicModel.prototype)
+setConstructorProto(SetModel, Model.prototype)
 Object.assign(SetModel.prototype, {
 
 	toString(stack){

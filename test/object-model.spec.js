@@ -1,4 +1,4 @@
-import {ObjectModel, BasicModel, ArrayModel} from "../src/index";
+import {Model, BasicModel, ObjectModel, ArrayModel} from "../src/index";
 import consoleMock from "./mocks/console";
 
 QUnit.module("Object Models");
@@ -740,12 +740,12 @@ QUnit.test("Object model Assertions", function (assert) {
 		return -1;
 	}
 
-	BasicModel.prototype.assert(assertFail, "expected message without data");
+	Model.prototype.assert(assertFail, "expected message without data");
 	ObjectModel.prototype.assert(assertFailWithData, function (data) {
 		return "expected message with data " + data;
 	});
 
-	assert.equal(BasicModel.prototype.assertions.length, 1, "check number of assertions on BasicModel.prototype")
+	assert.equal(Model.prototype.assertions.length, 1, "check number of assertions on BasicModel.prototype")
 	assert.equal(ObjectModel.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
 	const M = ObjectModel({a: String});
@@ -759,7 +759,7 @@ QUnit.test("Object model Assertions", function (assert) {
 	}, /TypeError/, "expected message with data -1");
 
 	// clean up global assertions
-	BasicModel.prototype.assertions = [];
+	Model.prototype.assertions = [];
 	delete ObjectModel.prototype.assertions;
 
 	const AssertObject = ObjectModel({name: [String]})

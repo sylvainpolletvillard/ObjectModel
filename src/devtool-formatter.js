@@ -1,5 +1,5 @@
 import ObjectModel from "./object-model"
-import BasicModel from "./basic-model"
+import Model from "./model"
 import {is, isFunction, isPlainObject} from "./helpers"
 
 const styles = {
@@ -20,7 +20,7 @@ function getModel(instance){
 		return null;
 
 	const proto = Object.getPrototypeOf(instance);
-	if(!proto || !proto.constructor || !is(BasicModel, proto.constructor))
+	if(!proto || !proto.constructor || !is(Model, proto.constructor))
 		return null;
 
 	return proto.constructor
@@ -52,7 +52,7 @@ function format(x, config){
 	if(isPlainObject(x))
 		return formatObject(x, getModel(x), config)
 
-	if(isFunction(x) && !is(BasicModel, x))
+	if(isFunction(x) && !is(Model, x))
 		return ["span", { style: styles.function }, x.name || x.toString()];
 
 	return x ? ['object', { object: x, config }] : null
@@ -74,7 +74,7 @@ function formatObject(o, model, config){
 }
 
 function formatHeader(x, config){
-	if(is(BasicModel, x))
+	if(is(Model, x))
 		return ["span", { style: styles.model }, x.name];
 
 	if(config.fromModel || isPlainObject(x) || Array.isArray(x))
@@ -85,13 +85,13 @@ function formatHeader(x, config){
 
 const ModelFormatter = {
 	header: function(x, config={}) {
-		if (config.fromModel || is(BasicModel, x))
+		if (config.fromModel || is(Model, x))
 			return formatHeader(x, config);
 
 		return null;
 	},
 	hasBody: function(x) {
-		return is(BasicModel, x)
+		return is(Model, x)
 	},
 	body: function(x) {
 		return format(x.definition, { fromModel: true })
@@ -105,7 +105,7 @@ const ModelInstanceFormatter = {
 		}
 
 		const model = getModel(x);
-		if(is(BasicModel, model)){
+		if(is(Model, model)){
 			return ["span", { style: styles.model }, x.constructor.name];
 		}
 

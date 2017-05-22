@@ -1,8 +1,9 @@
-import { BasicModel, initModel } from "./basic-model"
+import { Model, initModel } from "./model"
 import {checkDefinition, checkAssertions} from "./definition"
 import { isFunction, setConstructorProto, toString } from "./helpers"
 
-function FunctionModel(){
+
+function FunctionModel() {
 
 	const model = function(fn = model.default) {
 		return new Proxy(fn, {
@@ -37,7 +38,7 @@ function FunctionModel(){
 	return model
 }
 
-setConstructorProto(FunctionModel, BasicModel.prototype)
+setConstructorProto(FunctionModel, Model.prototype)
 
 Object.assign(FunctionModel.prototype, {
 

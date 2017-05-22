@@ -1,4 +1,4 @@
-import { BasicModel, initModel } from "./basic-model"
+import { Model, initModel } from "./model"
 import { checkDefinition, checkAssertions, cast } from "./definition"
 import { is, setConstructorProto, toString } from "./helpers"
 
@@ -32,7 +32,7 @@ function ArrayModel(def){
 	return model
 }
 
-setConstructorProto(ArrayModel, BasicModel.prototype)
+setConstructorProto(ArrayModel, Model.prototype)
 Object.assign(ArrayModel.prototype, {
 
 	toString(stack){

@@ -1,3 +1,11 @@
+/*!
+ * Objectmodel v3.0.0
+ * http://objectmodel.js.org
+ *
+ * Copyright (c) 2017 Sylvain Pollet-Villard
+ * Licensed under the MIT license
+ */
+
 (function (exports) {
 'use strict';
 
@@ -19,8 +27,8 @@ function isPlainObject(o){
 	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
 }
 
-function bettertypeof(obj){
-	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1]
+function bettertypeof(x){
+	return ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 }
 
 function merge(target, src={}, deep, includingProto) {
@@ -56,7 +64,7 @@ function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj === null || obj === undefined) return String(obj)
 	if(typeof obj === "string") return `"${obj}"`
-	if(is(BasicModel, obj)) return obj.toString(stack)
+	if(is(Model, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack);
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
 	if(is(Array, obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
@@ -71,6 +79,18 @@ function toString(obj, stack = []){
 	return String(obj)
 }
 
+function parseDefinition(def){
+	if(!isPlainObject(def)){
+		if(!is(Array, def)) return [def]
+		if(def.length === 1) return [...def, undefined, null]
+	} else {
+		for(let key of Object.keys(def))
+			def[key] = parseDefinition(def[key]);
+	}
+	return def
+}
+
+
 function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
 	const indexFound = callStack.indexOf(def);
 	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
@@ -80,7 +100,7 @@ function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false
 		obj = cast(obj, def);
 
 
-	if(is(BasicModel, def)){
+	if(is(Model, def)){
 		def._validate(obj, path, errorStack, callStack.concat(def));
 	}
 	else if(isPlainObject(def)){
@@ -106,7 +126,7 @@ function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false
 
 function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null) return obj === def
-	if(isPlainObject(def) || is(BasicModel, def)){ // object or model as part of union type
+	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
 		const errorStack = [];
 		checkDefinition(obj, def, path, errorStack, callStack);
 		return !errorStack.length
@@ -141,19 +161,22 @@ function checkAssertions(obj, model, path, errorStack = model.errorStack){
 }
 
 function cast(obj, defNode=[]) {
-	if(!obj || isPlainObject(defNode) || is(BasicModel, obj.constructor))
+	if(!obj || isPlainObject(defNode) || is(Model, obj.constructor))
 		return obj // no value or not leaf or already a model instance
 
 	const def = parseDefinition(defNode),
 	      suitableModels = [];
 
 	for (let part of def) {
-		if(is(BasicModel, part) && part.test(obj))
+		if(is(Model, part) && part.test(obj))
 			suitableModels.push(part);
 	}
 
-	if (suitableModels.length === 1)
-		return suitableModels[0](obj) // automatically cast to suitable model when explicit
+	if (suitableModels.length === 1) {
+		// automatically cast to suitable model when explicit
+		const model = suitableModels[0];
+		return is(Model, model) ? model(obj) : new model(obj) // basic models should not be called with new
+	}
 
 	if (suitableModels.length > 1)
 		console.warn(`Ambiguous model for value ${toString(obj)}, could be ${suitableModels.join(" or ")}`);
@@ -171,112 +194,16 @@ function BasicModel(def){
 	return model
 }
 
-Object.assign(BasicModel.prototype, {
-	toString(stack){
-		return parseDefinition(this.definition).map(d => toString(d, stack)).join(" or ")
-	},
-
-	assertions: [],
-
-	validate(obj, errorCollector){
-		this._validate(obj, null, this.errorStack, []);
-		this.unstackErrors(errorCollector);
-	},
-
-	test(obj){
-		let failed,
-		    initialErrorCollector = this.errorCollector;
-		this.errorCollector = () => { failed = true; };
-		this(obj);
-		this.errorCollector = initialErrorCollector;
-		return !failed
-	},
-
-	extend(){
-		const args = [...arguments];
-		const def = args
-			.reduce((def, ext) => def.concat(parseDefinition(ext)), parseDefinition(this.definition))
-			.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
-
-		let assertions = [...this.assertions];
-		args.forEach(arg => {
-			if(is(BasicModel, arg)) assertions = assertions.concat(arg.assertions);
-		});
-
-		const submodel = new this.constructor(def);
-		setConstructorProto(submodel, this.prototype);
-		submodel.assertions = assertions;
-		submodel.errorCollector = this.errorCollector;
-		return submodel
-	},
-
-	assert(assertion, description = toString(assertion)){
-		define(assertion, "description", description);
-		this.assertions = this.assertions.concat(assertion);
-		return this
-	},
-
-	defaultTo(val){
-		this.default = val;
-		return this
-	},
-
-	errorCollector(errors){
-		let e = new TypeError(errors.map(e => e.message).join('\n'));
-		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, ""); // blackbox objectmodel in stacktrace
-		throw e
-	},
-
-	_validate(obj, path, errorStack, callStack){
-		checkDefinition(obj, this.definition, path, errorStack, callStack);
-		checkAssertions(obj, this, path, errorStack);
-	},
-
-	// throw all errors collected
-	unstackErrors(errorCollector){
-		if (!this.errorStack.length) return
-		if (!errorCollector) errorCollector = this.errorCollector;
-		const errors = this.errorStack.map(err => {
-			if (!err.message) {
-				const def = is(Array, err.expected) ? err.expected : [err.expected];
-				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
-				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received));
-			}
-			return err
-		});
-		this.errorStack = [];
-		errorCollector.call(this, errors);
-	}
-
-});
-
-BasicModel.prototype.conventionForConstant = key => key.toUpperCase() === key;
-BasicModel.prototype.conventionForPrivate = key => key[0] === "_";
-
-function initModel(model, args, constructor){
-	if(args.length === 0) throw new Error("Model definition is required");
-	setConstructor(model, constructor);
-	model.definition = args[0];
-	model.assertions = model.assertions.slice();
-	define(model, "errorStack", []);
-}
-
-function parseDefinition(def){
-	if(!isPlainObject(def)){
-		if(!is(Array, def)) return [def]
-		if(def.length === 1) return [...def, undefined, null]
-	} else {
-		for(let key of Object.keys(def))
-			def[key] = parseDefinition(def[key]);
-	}
-	return def
-}
+setConstructorProto(BasicModel, Model.prototype);
 
 function ObjectModel(def){
 	const model = function(obj = model.default) {
 		if(!is(model, this)) return new model(obj)
 		if(is(model, obj)) return obj
 		merge(this, obj, true);
+		if(model.hasOwnProperty("constructor")){
+			model.constructor.call(this, obj);
+		}
 		model.validate(this);
 		return getProxy(model, this, model.definition)
 	};
@@ -286,7 +213,7 @@ function ObjectModel(def){
 	return model
 }
 
-setConstructorProto(ObjectModel, BasicModel.prototype);
+setConstructorProto(ObjectModel, Model.prototype);
 
 Object.assign(ObjectModel.prototype, {
 
@@ -307,7 +234,7 @@ Object.assign(ObjectModel.prototype, {
 		Object.assign(def, this.definition);
 		merge(proto, this.prototype, false, true);
 		args.forEach(arg => {
-			if(is(BasicModel, arg)) merge(def, arg.definition, true);
+			if(is(Model, arg)) merge(def, arg.definition, true);
 			if(isFunction(arg)) merge(proto, arg.prototype, true, true);
 			if(isObject(arg)) merge(def, arg, true, true);
 		});
@@ -315,7 +242,7 @@ Object.assign(ObjectModel.prototype, {
 
 		let assertions = [...this.assertions];
 		args.forEach(arg => {
-			if(is(BasicModel, arg)) assertions = assertions.concat(arg.assertions);
+			if(is(Model, arg)) assertions = assertions.concat(arg.assertions);
 		});
 
 		const submodel = new this.constructor(def);
@@ -346,6 +273,13 @@ function getProxy(model, obj, def, path) {
 	}
 
 	return new Proxy(obj || {}, {
+		getPrototypeOf(){
+			if (def === model.definition)
+				return model.prototype
+
+			return Object.prototype
+		},
+
 		get(o, key) {
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
@@ -358,7 +292,7 @@ function getProxy(model, obj, def, path) {
 				return
 			}
 
-			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
+			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)){
 				o[key] = cast(o[key], defPart); // cast nested models
 			}
 
@@ -387,16 +321,18 @@ function getProxy(model, obj, def, path) {
 			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
 
-		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
+		ownKeys(){
+			return Reflect.ownKeys(def).filter(key => !model.conventionForPrivate(key))
 		},
 
 		getOwnPropertyDescriptor(o, key){
-			return model.conventionForPrivate(key) ? undefined : Reflect.getOwnPropertyDescriptor(o, key)
-		},
+			let descriptor;
+			if(!model.conventionForPrivate(key)){
+				descriptor = Object.getOwnPropertyDescriptor(def, key);
+				if(descriptor !== undefined) descriptor.value = o[key];
+			}
 
-		getPrototypeOf(){
-			return model.prototype
+			return descriptor
 		}
 	})
 }
@@ -435,6 +371,109 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	return true
 }
 
+function Model(def){
+	return isPlainObject(def) ? ObjectModel(def) : BasicModel(def)
+}
+
+Object.assign(Model.prototype, {
+	name: "Model",
+	assertions: [],
+
+	conventionForConstant: key => key.toUpperCase() === key,
+	conventionForPrivate: key => key[0] === "_",
+
+	toString(stack){
+		return parseDefinition(this.definition).map(d => toString(d, stack)).join(" or ")
+	},
+
+	as(name){
+		define(this, "name", name);
+		return this
+	},
+
+	defaultTo(val){
+		this.default = val;
+		return this
+	},
+
+	_validate(obj, path, errorStack, callStack){
+		checkDefinition(obj, this.definition, path, errorStack, callStack);
+		checkAssertions(obj, this, path, errorStack);
+	},
+
+	validate(obj, errorCollector){
+		this._validate(obj, null, this.errorStack, []);
+		this.unstackErrors(errorCollector);
+	},
+
+	test(obj){
+		let failed,
+		    initialErrorCollector = this.errorCollector;
+		this.errorCollector = () => { failed = true; };
+		new this(obj);
+		this.errorCollector = initialErrorCollector;
+		return !failed
+	},
+
+	// throw all errors collected
+	unstackErrors(errorCollector){
+		if (!this.errorStack.length) return
+		if (!errorCollector) errorCollector = this.errorCollector;
+		const errors = this.errorStack.map(err => {
+			if (!err.message) {
+				const def = is(Array, err.expected) ? err.expected : [err.expected];
+				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
+				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received));
+			}
+			return err
+		});
+		this.errorStack = [];
+		errorCollector.call(this, errors);
+	},
+
+	errorCollector(errors){
+		let e = new TypeError(errors.map(e => e.message).join('\n'));
+		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, ""); // blackbox objectmodel in stacktrace
+		throw e
+	},
+
+	extend(...newParts){
+		let def = this.definition;
+		if(newParts.length > 0){
+			def = newParts
+				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+				.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
+		}
+
+		let assertions = [...this.assertions];
+		newParts.forEach(part => {
+			if(is(BasicModel, part)) assertions = assertions.concat(part.assertions);
+		});
+
+		const submodel = new this.constructor(def);
+		setConstructorProto(submodel, this.prototype);
+		submodel.assertions = assertions;
+		submodel.errorCollector = this.errorCollector;
+		return submodel
+	},
+
+	assert(assertion, description = toString(assertion)){
+		define(assertion, "description", description);
+		this.assertions = this.assertions.concat(assertion);
+		return this
+	}
+});
+
+
+function initModel(model, args, constructor){
+	if(args.length === 0) throw new Error("Model definition is required");
+	setConstructor(model, constructor);
+	model.definition = args[0];
+	model.assertions = model.assertions.slice();
+	define(model, "errorStack", []);
+	delete model.name;
+}
+
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
 function ArrayModel(def){
@@ -443,16 +482,19 @@ function ArrayModel(def){
 		if(!is(model, this)) return new model(array)
 		model.validate(array);
 		return new Proxy(array, {
+			getPrototypeOf: () => model.prototype,
+
 			get(arr, key) {
 				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, key, model)
 				return arr[key]
 			},
+
 			set(arr, key, val) {
-				setArrayKey(arr, key, val, model);
-				return true
+				return setArrayKey(arr, key, val, model)
 			},
-			getPrototypeOf(){
-				return model.prototype
+
+			deleteProperty(arr, key){
+				return !(key in arr) || setArrayKey(arr, key, undefined, model)
 			}
 		})
 	};
@@ -462,7 +504,7 @@ function ArrayModel(def){
 	return model
 }
 
-setConstructorProto(ArrayModel, BasicModel.prototype);
+setConstructorProto(ArrayModel, Model.prototype);
 Object.assign(ArrayModel.prototype, {
 
 	toString(stack){
@@ -503,18 +545,21 @@ function setArrayKey(array, key, value, model){
 	const testArray = array.slice();
 	testArray[key] = value;
 	checkAssertions(testArray, model, path);
-	model.unstackErrors();
-	array[key] = value;
+	const isSuccess = !model.unstackErrors();
+	if(isSuccess){
+		array[key] = value;
+	}
+	return isSuccess
 }
 
-function FunctionModel(){
+function FunctionModel() {
 
 	const model = function(fn = model.default) {
 		return new Proxy(fn, {
 			getPrototypeOf: () => model.prototype,
+
 			apply (fn, ctx, args) {
 				const def = model.definition;
-				args = Object.assign([], def.defaults, args);
 
 				def.arguments.forEach((argDef, i) => {
 					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true);
@@ -542,7 +587,7 @@ function FunctionModel(){
 	return model
 }
 
-setConstructorProto(FunctionModel, BasicModel.prototype);
+setConstructorProto(FunctionModel, Model.prototype);
 
 Object.assign(FunctionModel.prototype, {
 
@@ -556,11 +601,6 @@ Object.assign(FunctionModel.prototype, {
 
 	return(def){
 		this.definition.return = def;
-		return this
-	},
-
-	defaults(){
-		this.definition.defaults = [...arguments];
 		return this
 	},
 
@@ -608,7 +648,7 @@ function MapModel(def){
 	return model
 }
 
-setConstructorProto(MapModel, BasicModel.prototype);
+setConstructorProto(MapModel, Model.prototype);
 Object.assign(MapModel.prototype, {
 
 	toString(stack){
@@ -657,7 +697,7 @@ function SetModel(def){
 	return model
 }
 
-setConstructorProto(SetModel, BasicModel.prototype);
+setConstructorProto(SetModel, Model.prototype);
 Object.assign(SetModel.prototype, {
 
 	toString(stack){
@@ -680,6 +720,129 @@ Object.assign(SetModel.prototype, {
 	}
 });
 
+const styles = {
+	list: `list-style-type: none; padding: 0; margin: 0;`,
+	listItem: `padding: 0 0 0 1em;`,
+	model: `color: #43a047; font-style: italic`,
+	function: `color: #4271ae`,
+	string: `color: #C41A16`,
+	number: `color: #1C00CF`,
+	boolean: `color: #AA0D91`,
+	property: `color: #881391`,
+	private: `color: #B871BD`,
+	null: `color: #808080`
+};
+
+function getModel(instance){
+	if(instance === undefined || instance === null)
+		return null;
+
+	const proto = Object.getPrototypeOf(instance);
+	if(!proto || !proto.constructor || !is(Model, proto.constructor))
+		return null;
+
+	return proto.constructor
+}
+
+function format(x, config){
+	if(x === null || x === undefined)
+		return ["span", { style: styles.null }, String(x)];
+
+	if(typeof x === "boolean")
+		return ["span", { style: styles.boolean }, x];
+
+	if(typeof x === "number")
+		return ["span", { style: styles.number }, x];
+
+	if(typeof x === "string")
+		return ["span", { style: styles.string }, `"${x}"`];
+
+	if(is(Array, x)){
+		let def = [];
+		if(x.length === 1) x.push(undefined, null);
+		for(let i=0; i < x.length; i++){
+			def.push(format(x[i]) );
+			if(i < x.length - 1) def.push(' or ');
+		}
+		return ["span", {}, ...def]
+	}
+
+	if(isPlainObject(x))
+		return formatObject(x, getModel(x), config)
+
+	if(isFunction(x) && !is(Model, x))
+		return ["span", { style: styles.function }, x.name || x.toString()];
+
+	return x ? ['object', { object: x, config }] : null
+}
+
+function formatObject(o, model, config){
+	return [
+		'ol', { style: styles.list },
+		'{',
+		...Object.keys(o).map(prop => {
+			let isPrivate = model && model.conventionForPrivate(prop);
+			return ['li', { style: styles.listItem },
+				['span', { style: isPrivate ? styles.private : styles.property }, prop], ': ',
+				format(o[prop], config)
+			]
+		}),
+		'}'
+	];
+}
+
+function formatHeader(x, config){
+	if(is(Model, x))
+		return ["span", { style: styles.model }, x.name];
+
+	if(config.fromModel || isPlainObject(x) || Array.isArray(x))
+		return format(x)
+
+	return null;
+}
+
+const ModelFormatter = {
+	header: function(x, config={}) {
+		if (config.fromModel || is(Model, x))
+			return formatHeader(x, config);
+
+		return null;
+	},
+	hasBody: function(x) {
+		return is(Model, x)
+	},
+	body: function(x) {
+		return format(x.definition, { fromModel: true })
+	}
+};
+
+const ModelInstanceFormatter = {
+	header: function(x, config={}) {
+		if(config.fromInstance && isPlainObject(x)){
+			return formatHeader(x, config)
+		}
+
+		const model = getModel(x);
+		if(is(Model, model)){
+			return ["span", { style: styles.model }, x.constructor.name];
+		}
+
+		return null;
+	},
+	hasBody: function(x) {
+		return x && is(ObjectModel, getModel(x))
+	},
+	body: function(x) {
+		return formatObject(x, getModel(x), { fromInstance: true })
+	}
+};
+
+if (typeof window !== "undefined") {
+	window.devtoolsFormatters = (window.devtoolsFormatters || [])
+		.concat(ModelFormatter, ModelInstanceFormatter);
+}
+
+exports.Model = Model;
 exports.BasicModel = BasicModel;
 exports.ObjectModel = ObjectModel;
 exports.ArrayModel = ArrayModel;
@@ -687,4 +850,4 @@ exports.FunctionModel = FunctionModel;
 exports.MapModel = MapModel;
 exports.SetModel = SetModel;
 
-}((this.ObjectModelBundle = this.ObjectModelBundle || {})));
+}((this.window = this.window || {})));

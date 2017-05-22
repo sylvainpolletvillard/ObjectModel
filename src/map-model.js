@@ -1,4 +1,4 @@
-import { BasicModel, initModel } from "./basic-model"
+import { Model, initModel } from "./model"
 import { checkDefinition, checkAssertions } from "./definition"
 import { setConstructor, setConstructorProto, toString } from "./helpers"
 
@@ -28,7 +28,7 @@ function MapModel(def){
 	return model
 }
 
-setConstructorProto(MapModel, BasicModel.prototype)
+setConstructorProto(MapModel, Model.prototype)
 Object.assign(MapModel.prototype, {
 
 	toString(stack){

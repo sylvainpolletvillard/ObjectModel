@@ -1,3 +1,4 @@
+export { default as Model } from "./model"
 export { default as BasicModel } from "./basic-model"
 export { default as ObjectModel } from "./object-model"
 export { default as ArrayModel } from "./array-model"

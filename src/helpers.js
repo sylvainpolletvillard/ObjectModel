@@ -1,4 +1,4 @@
-import { BasicModel } from "./basic-model"
+import Model from "./model"
 
 const defineProperty = Object.defineProperty
 
@@ -18,8 +18,8 @@ export function isPlainObject(o){
 	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
 }
 
-export function bettertypeof(obj){
-	return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1]
+export function bettertypeof(x){
+	return ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 }
 
 export function merge(target, src={}, deep, includingProto) {
@@ -55,7 +55,7 @@ export function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj === null || obj === undefined) return String(obj)
 	if(typeof obj === "string") return `"${obj}"`
-	if(is(BasicModel, obj)) return obj.toString(stack)
+	if(is(Model, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack)
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
 	if(is(Array, obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`

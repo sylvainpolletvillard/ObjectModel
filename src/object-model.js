@@ -1,8 +1,9 @@
-import { BasicModel, initModel } from "./basic-model"
+import { Model, initModel } from "./model"
 import { cast, checkDefinition, checkAssertions } from "./definition"
 import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
-function ObjectModel(def){
+
+export default function ObjectModel(def){
 	const model = function(obj = model.default) {
 		if(!is(model, this)) return new model(obj)
 		if(is(model, obj)) return obj
@@ -19,7 +20,7 @@ function ObjectModel(def){
 	return model
 }
 
-setConstructorProto(ObjectModel, BasicModel.prototype)
+setConstructorProto(ObjectModel, Model.prototype)
 
 Object.assign(ObjectModel.prototype, {
 
@@ -40,7 +41,7 @@ Object.assign(ObjectModel.prototype, {
 		Object.assign(def, this.definition)
 		merge(proto, this.prototype, false, true)
 		args.forEach(arg => {
-			if(is(BasicModel, arg)) merge(def, arg.definition, true)
+			if(is(Model, arg)) merge(def, arg.definition, true)
 			if(isFunction(arg)) merge(proto, arg.prototype, true, true)
 			if(isObject(arg)) merge(def, arg, true, true)
 		})
@@ -48,7 +49,7 @@ Object.assign(ObjectModel.prototype, {
 
 		let assertions = [...this.assertions]
 		args.forEach(arg => {
-			if(is(BasicModel, arg)) assertions = assertions.concat(arg.assertions)
+			if(is(Model, arg)) assertions = assertions.concat(arg.assertions)
 		})
 
 		const submodel = new this.constructor(def)
@@ -98,7 +99,7 @@ function getProxy(model, obj, def, path) {
 				return
 			}
 
-			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(BasicModel, o[key].constructor)){
+			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)){
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
@@ -176,5 +177,3 @@ function controlMutation(model, def, path, o, key, applyMutation){
 
 	return true
 }
-
-export default ObjectModel;

@@ -1,5 +1,17 @@
 import {is, isPlainObject, isFunction, toString} from "./helpers"
-import {BasicModel, parseDefinition} from "./basic-model"
+import {Model} from "./model"
+
+export function parseDefinition(def){
+	if(!isPlainObject(def)){
+		if(!is(Array, def)) return [def]
+		if(def.length === 1) return [...def, undefined, null]
+	} else {
+		for(let key of Object.keys(def))
+			def[key] = parseDefinition(def[key])
+	}
+	return def
+}
+
 
 export function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
 	const indexFound = callStack.indexOf(def)
@@ -10,7 +22,7 @@ export function checkDefinition(obj, def, path, errorStack, callStack, shouldCas
 		obj = cast(obj, def)
 
 
-	if(is(BasicModel, def)){
+	if(is(Model, def)){
 		def._validate(obj, path, errorStack, callStack.concat(def))
 	}
 	else if(isPlainObject(def)){
@@ -36,7 +48,7 @@ export function checkDefinition(obj, def, path, errorStack, callStack, shouldCas
 
 export function checkDefinitionPart(obj, def, path, callStack){
 	if(obj == null) return obj === def
-	if(isPlainObject(def) || is(BasicModel, def)){ // object or model as part of union type
+	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
 		const errorStack = []
 		checkDefinition(obj, def, path, errorStack, callStack)
 		return !errorStack.length
@@ -71,21 +83,21 @@ export function checkAssertions(obj, model, path, errorStack = model.errorStack)
 }
 
 export function cast(obj, defNode=[]) {
-	if(!obj || isPlainObject(defNode) || is(BasicModel, obj.constructor))
+	if(!obj || isPlainObject(defNode) || is(Model, obj.constructor))
 		return obj // no value or not leaf or already a model instance
 
 	const def = parseDefinition(defNode),
 	      suitableModels = []
 
 	for (let part of def) {
-		if(is(BasicModel, part) && part.test(obj))
+		if(is(Model, part) && part.test(obj))
 			suitableModels.push(part)
 	}
 
 	if (suitableModels.length === 1) {
 		// automatically cast to suitable model when explicit
 		const model = suitableModels[0];
-		return is(BasicModel, model) ? model(obj) : new model(obj) // basic models should not be called with new
+		return is(Model, model) ? model(obj) : new model(obj) // basic models should not be called with new
 	}
 
 	if (suitableModels.length > 1)

@@ -498,6 +498,7 @@ hr {
 }
 mark {
   background-color: inherit;
+  font-style: italic;
 }
 details {
   padding: 0.5em;

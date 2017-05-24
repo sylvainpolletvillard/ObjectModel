@@ -83,11 +83,11 @@
 
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
-			<p>A recurring criticism of JavaScript is that it is a weakly typed language. New languages that compile to JavaScript have been invented, such as <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> by Microsoft. We also have static analysis tools like <a href="https://flowtype.org" target="_blank">Flow</a> by Facebook. These solutions bring <mark>static</mark> typing, which means it only validate your code at build time, not runtime. <mark>Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the intended types.</mark></p>
+			<p>A recurring criticism of JavaScript is that it is a <mark>weakly</mark> typed language. Solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> (Microsoft) or <a href="https://flowtype.org" target="_blank">Flow</a> (Facebook) try to address this problem by extending the language with static type annotation, which means it only validate your code at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no guarantee that the variables you are working with have the intended types.</p>
 
-			<p><mark>Static typing is insufficient to prevent most of the real and practical bugs caused by type errors</mark>. Indeed, JavaScript applications often involve <mark>unreliable data sources</mark>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
+			<p>Static typing is <mark>insufficient</mark> to prevent most of the real and practical bugs caused by type errors. Indeed, JavaScript applications often involve <strong>unreliable data sources</strong>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static analysis can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
 
-			<p>This is why ObjectModel is about <strong>strong dynamic type checking</strong>: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
+			<p>This is why ObjectModel is about <strong>strong dynamic type checking</strong>: it aims to add validation constraints on any of your variables at runtime. Thanks to the generated exceptions, it will save you time and help you spot potential bugs. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
 			<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.</p>
 
@@ -106,23 +106,21 @@
 			<h2 >What's inside the box ?</h2>
 			<p>Many features, hopefully neither too much nor too few:</p>
 			<ul>
-				<li>Typed object structures</li>
-				<li>Typed arrays</li>
-				<li>Typed functions</li>
+				<li>Typed object structures, arrays, maps, sets, and functions</li>
 				<li>Union types</li>
 				<li>Enumerations</li>
 				<li>Custom assertions</li>
 				<li>Optional properties</li>
 				<li>Default values</li>
 				<li>Null-safe object traversal</li>
-				<li>Easy composition and inheritance through model extensions</li>
+				<li>Easy composition or inheritance</li>
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
-				<li>Custom error collectors</li>
+				<li>Customizable error handlers</li>
 				<li>all in
 					<strong class="size-min">11.46 KB</strong> minified,
 					<strong class="size-gzip">4.02 KB</strong> gzipped,
-					even less with tree-shaking
+					even less when using tree-shaking
 				</li>
 			</ul>
 		</div>
@@ -140,12 +138,17 @@
 				<li>Source files : <a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
 			</ul>
 			<h3>Changelog and previous releases</h3>
-			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a></p>
+
+			<aside role="alert">
+				<strong>Note: ObjectModel v3 only targets ES2015-compliant environments. If you need to support other browsers (IE, mobile...), please use the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases/tag/v2.6.0" target="_blank">2.x version</a>.</strong>
+			</aside>
+
+			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a> for more info</p>
 		</div>
 
 		<div>
-			<h2>GitHub repository</h2>
-			<p>You can report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.</p>
+			<h2>Support</h2>
+			<p>Please report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.</p>
 		</div>
 	</section>
 

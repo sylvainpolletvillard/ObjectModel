@@ -20,7 +20,7 @@
     "watch:tests": "npm run build:tests -- --watch",
     "info": "npm-run-all --parallel info:*",
     "info:banner": "banner-cli dist/*.js",
-    "info:index": "node site/build/update-index"
+    "info:index": "node docs/build/update-index"
   },
   "devDependencies": {
     "babel-cli": "^6.23.0",

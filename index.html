@@ -9,15 +9,15 @@
 
 	<title>ObjectModel</title>
 
-	<link rel="icon" type="image/png" href="site/favicon-32x32.png" sizes="32x32" />
-	<link rel="icon" type="image/png" href="site/favicon-16x16.png" sizes="16x16" />
-	<link rel="shortcut icon" href="site/favicon.ico" type="image/x-icon">
+	<link rel="icon" type="image/png" href="docs/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="docs/favicon-16x16.png" sizes="16x16" />
+	<link rel="shortcut icon" href="docs/favicon.ico" type="image/x-icon">
 
-	<link rel="stylesheet" href="site/style/main.css"/>
+	<link rel="stylesheet" href="docs/style/main.css"/>
 	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 
-	<script defer src="site/lib/prism.js"></script>
-	<script defer src="site/js/main-compiled.js"></script>
+	<script defer src="docs/lib/prism.js"></script>
+	<script defer src="docs/js/main-compiled.js"></script>
 	<script defer src="dist/object-model.js"></script>
 </head>
 
@@ -74,7 +74,7 @@
 <div id="page">
 
 	<header class="header">
-		<img src="site/res/logo.png" alt="ObjectModel" width="800" height="150">
+		<img src="docs/res/logo.png" alt="ObjectModel" width="800" height="150">
 		<hr>
 		<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 	</header>
@@ -120,8 +120,10 @@
 				<li>Explicit error messages</li>
 				<li>Custom error collectors</li>
 				<li>all in
-					<strong class="size-min">9.48 KB</strong> minified,
-					<strong class="size-gzip">3.29 KB</strong> gzipped</li>
+					<strong class="size-min">11.46 KB</strong> minified,
+					<strong class="size-gzip">4.02 KB</strong> gzipped,
+					even less with tree-shaking
+				</li>
 			</ul>
 		</div>
 
@@ -132,7 +134,7 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.48 KB</strong>, <strong class="size-gzip">3.29 KB</strong> gzipped) :
+				<li>Minified file (<strong class="size-min">11.46 KB</strong>, <strong class="size-gzip">4.02 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files : <a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
@@ -461,8 +463,7 @@ var Mother = Person.extend({
 var ann = new Person({ name: "Joe's wife", female: true });
 var joanna = new Person({ name: "Joe's daughter", female: true });
 
-ann.child = joanna;
-ann = Mother(ann); // cast ann to Mother model
+ann = Mother(Object.assign({ child: joanna }, ann)) // cast ann to Mother model
 Mother.test(ann) && Person.test(ann)</code>
 <code class="language-none log">true</code>
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
@@ -556,37 +557,7 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 		</div>
 
 		<div class="doc">
-			<p>Assertions are inherited from <code>BasicModel.prototype</code> so you can add global assertions on all models. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
-		</div>
-
-		<div class="panel panel1">
-			<span class="legend">Configuration</span>
-<pre><code class="language-javascript">ObjectModel.prototype.assert(function noUndeclaredProperties(obj) {
-
-	var extraKeys = Object.keys(obj)
-		.filter(key => this.definition.hasOwnProperty(key) === false)
-
-	if(extraKeys.length === 0) return true; // validate assertion
-	else return extraKeys; // pass information to the error message
-
-}, function(extraKeys){
-	return "These properties are not defined in the model: "
-	      + extraKeys.join(', ');
-})</code></pre>
-		</div>
-
-		<div class="panel panel2">
-			<span class="legend">Example</span>
-<pre><code class="language-javascript">var Order = ObjectModel({ price: Number });
-
-var expectedOrder = Order({ price: 42.50 });
-
-var receivedOrder = Order({
-	price: 42.50,
-	taxes: 8.33,
-	deliveryCost: 15.00
-});</code>
-<code class="language-none exception">TypeError: These properties are not defined in the model: taxes, deliveryCost</code></pre>
+			<p>Assertions are inherited from <code>BasicModel.prototype</code> so you can add global assertions on all models by setting them in the prototype. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 	</section>
 
@@ -1089,10 +1060,10 @@ console.log(
 		<h2>Like what you see ? Share it with the world !</h2>
 
 		<ul class="share-buttons">
-			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="site/res/facebook.svg" width="48" height="48"></a></li>
-			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="site/res/twitter.svg" width="48" height="48"></a></li>
-			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="site/res/googleplus.svg" width="48" height="48"></a></li>
-			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="site/res/gitter.svg" width="48" height="48"></a></li>
+			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="docs/res/facebook.svg" width="48" height="48"></a></li>
+			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="docs/res/twitter.svg" width="48" height="48"></a></li>
+			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="docs/res/googleplus.svg" width="48" height="48"></a></li>
+			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="docs/res/gitter.svg" width="48" height="48"></a></li>
 		</ul>
 
 	</section>

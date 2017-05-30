@@ -65,7 +65,6 @@ After cloning or forking this project, use `npm install` to install development 
 Distributed under the MIT license. See ``LICENSE`` for more information.
 
 [website]:http://objectmodel.js.org
-[Grunt]:http://gruntjs.com/getting-started
 [TypeScript]:https://www.typescriptlang.org/
 [Flow]:https://flowtype.org/
 [github-releases]:https://github.com/sylvainpolletvillard/ObjectModel/releases

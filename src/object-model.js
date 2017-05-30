@@ -1,6 +1,6 @@
 import { Model, initModel } from "./model"
 import { cast, checkDefinition, checkAssertions } from "./definition"
-import { is, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
+import { is, isString, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
 
 
 export default function ObjectModel(def){
@@ -88,6 +88,8 @@ function getProxy(model, obj, def, path) {
 		},
 
 		get(o, key) {
+			if(!isString(key)) return Reflect.get(o, key)
+
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
 

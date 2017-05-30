@@ -6,6 +6,7 @@
   <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/v/objectmodel.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/l/objectmodel.svg" alt="License"></a>
 </p>
+
 ---
 
 ## What is this library ?

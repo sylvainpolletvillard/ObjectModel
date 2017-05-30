@@ -21,11 +21,7 @@
    Actually it goes much further than just type safety. Go on and see for yourself. 
 
 ## Installation
-Add the library to your project dependencies with Yarn:
-```bash
-$ yarn add objectmodel
-```
-or with NPM:
+Add the library to your project dependencies with NPM:
 ```bash
 $ npm install objectmodel
 ```
@@ -62,7 +58,7 @@ Please refer to [Github Releases][github-releases]
 
 Automatic minifying/concatenating/testing process is done with [Grunt]
 
-After cloning or forking this project, use `yarn` or `npm install` to install development dependencies. To build the library, use `grunt dist` and to run the QUnit tests, use `grunt test`.
+After cloning or forking this project, use `npm install` to install development dependencies. To build the library, use `npm run build` and to run the QUnit tests, use `npm test`.
 
 *Bug reports and pull requests are welcome.*
 

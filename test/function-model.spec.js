@@ -1,4 +1,4 @@
-import {FunctionModel, ObjectModel, ArrayModel} from "../src/index";
+/* global ObjectModel, ArrayModel, FunctionModel */
 
 QUnit.module("Function Models");
 
@@ -86,7 +86,13 @@ QUnit.test("Function model defaults arguments & arguments control", function (as
 		.return(Number);
 
 	const calc = new Calculator(function (a=0, operator='+', b=1) {
-		return eval(a + operator + b);
+		switch(operator){
+			case "+": return a+b
+			case "-": return a-b
+			case "*": return a*b
+			case "/": return a/b
+		}
+		return null
 	});
 
 	assert.equal(calc(3, "+"), 4, "default argument value");

@@ -1,4 +1,4 @@
-import {ArrayModel, ObjectModel} from "../src/index";
+/* global ArrayModel */
 
 QUnit.module("Array Models");
 

@@ -1,0 +1,5 @@
+require("./model.spec")
+require("./basic-model.spec")
+require("./object-model.spec")
+require("./array-model.spec")
+require("./function-model.spec")

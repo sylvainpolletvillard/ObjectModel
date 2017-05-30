@@ -1,4 +1,4 @@
-import {BasicModel} from "../src/index";
+/* global BasicModel */
 
 QUnit.module("Basic Models");
 

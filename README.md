@@ -21,11 +21,7 @@
    Actually it goes much further than just type safety. Go on and see for yourself. 
 
 ## Installation
-Add the library to your project dependencies with Yarn:
-```bash
-$ yarn add objectmodel
-```
-or with NPM:
+Add the library to your project dependencies with NPM:
 ```bash
 $ npm install objectmodel
 ```
@@ -50,7 +46,7 @@ myOrder.product.quantity = false; //try to assign a Boolean
 > TypeError: expecting product.quantity to be Number, got Boolean false
 ```
 
-For more examples, documentation and questions, please refer to the project website: [objectmodel.js.org] [website]
+For more examples, documentation and questions, please refer to the [project website][website]
 
 ## Release History
 

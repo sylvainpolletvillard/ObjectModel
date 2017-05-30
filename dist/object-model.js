@@ -6,13 +6,20 @@
  * Licensed under the MIT license
  */
 
-(function (exports) {
-'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.window = global.window || {})));
+}(this, (function (exports) { 'use strict';
 
 const defineProperty = Object.defineProperty;
 
 function is(Constructor, obj){
 	return obj instanceof Constructor
+}
+
+function isString(o){
+	return typeof o === "string"
 }
 
 function isFunction(o){
@@ -63,7 +70,7 @@ function setConstructorProto(constructor, proto){
 function toString(obj, stack = []){
 	if(stack.length > 15 || stack.includes(obj)) return '...'
 	if(obj === null || obj === undefined) return String(obj)
-	if(typeof obj === "string") return `"${obj}"`
+	if(isString(obj)) return `"${obj}"`
 	if(is(Model, obj)) return obj.toString(stack)
 	stack = [obj].concat(stack);
 	if(isFunction(obj)) return obj.name || obj.toString(stack)
@@ -281,6 +288,8 @@ function getProxy(model, obj, def, path) {
 		},
 
 		get(o, key) {
+			if(!isString(key)) return Reflect.get(o, key)
+
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
 
@@ -850,5 +859,7 @@ exports.FunctionModel = FunctionModel;
 exports.MapModel = MapModel;
 exports.SetModel = SetModel;
 
-}((this.window = this.window || {})));
+Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
 //# sourceMappingURL=object-model.js.map

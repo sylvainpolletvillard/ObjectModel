@@ -5,7 +5,7 @@ import ObjectModel from "./object-model"
 
 
 export function Model(def){
-	return isPlainObject(def) ? ObjectModel(def) : BasicModel(def)
+	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
 }
 
 Object.assign(Model.prototype, {

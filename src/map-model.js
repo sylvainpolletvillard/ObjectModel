@@ -4,51 +4,58 @@ import { extend, setConstructor, toString } from "./helpers"
 
 const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]
 
-function MapModel(def){
+function MapModel(key, value) {
 
 	const model = function(iterable) {
 		const map = new Map(iterable)
 		model.validate(map)
+		return new Proxy(map, {
+			getPrototypeOf: () => model.prototype,
 
-		for(let method of MAP_MUTATOR_METHODS){
-			map[method] = function() {
-				const testMap = new Map(map)
-				Map.prototype[method].apply(testMap, arguments)
-				model.validate(testMap)
-				return Map.prototype[method].apply(map, arguments)
+			get(map, key) {
+				if (MAP_MUTATOR_METHODS.includes(key)) return proxifyMethod(map, key, model)
+				return map[key]
 			}
-		}
-
-		setConstructor(map, model)
-		return map
+		})
 	}
 
 	extend(model, Map)
 	setConstructor(model, MapModel)
-	model._init(arguments)
+	model._init([ { key, value } ])
 	return model
 }
 
 extend(MapModel, Model, {
-
 	toString(stack){
 		return "Map of " + toString(this.definition, stack)
 	},
 
 	_validate(map, path, errors, stack){
-		if(map instanceof Map){
-			for(let [key,val] of map){
-				checkDefinition(val, this.definition, `${path || "Map"}[${key}]`, errors, stack)
+		if(map instanceof Map) {
+			for(let [key, value] of map){
+				let subPath = `${path || "Map"}[${toString(key)}]`
+				checkDefinition(key, this.definition.key, subPath, errors, stack)
+				checkDefinition(value, this.definition.value, subPath, errors, stack)
 			}
-		} else {
-			errors.push({
-				expected: this,
-				received: map,
-				path
-			})
-		}
+		} else errors.push({
+			expected: this,
+			received: map,
+			path
+		})
+
 		checkAssertions(map, this, errors)
 	}
 })
+
+function proxifyMethod(map, method, model){
+	return function() {
+		const testMap = new Map(map)
+		Map.prototype[method].apply(testMap, arguments)
+		model.validate(testMap)
+		return Map.prototype[method].apply(map, arguments)
+	}
+}
+
+
 
 export default MapModel

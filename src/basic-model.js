@@ -1,7 +1,7 @@
 import { extend, setConstructor } from "./helpers"
 import { Model } from "./model"
 
-export default function BasicModel(def){
+export default function BasicModel(){
 	const model = function(val = model.default) {
 		model.validate(val)
 		return val

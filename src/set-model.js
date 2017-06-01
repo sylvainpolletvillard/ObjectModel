@@ -4,7 +4,7 @@ import { extend, setConstructor, toString } from "./helpers"
 
 const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
 
-function SetModel(def){
+function SetModel(){
 
 	const model = function(iterable) {
 		const _set = new Set(iterable)

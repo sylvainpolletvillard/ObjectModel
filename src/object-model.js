@@ -3,7 +3,7 @@ import { cast, checkDefinition, checkAssertions } from "./definition"
 import { extend, is, isString, isFunction, isObject, isPlainObject, merge, setConstructor, toString } from "./helpers"
 
 
-export default function ObjectModel(def){
+export default function ObjectModel(){
 	const model = function(obj = model.default) {
 		if(!is(model, this)) return new model(obj)
 		if(is(model, obj)) return obj

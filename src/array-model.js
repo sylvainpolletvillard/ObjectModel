@@ -4,7 +4,7 @@ import { extend, is, setConstructor, toString } from "./helpers"
 
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
-function ArrayModel(def){
+function ArrayModel() {
 
 	const model = function(array = model.default) {
 		if(!is(model, this)) return new model(array)

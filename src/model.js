@@ -33,17 +33,17 @@ Object.assign(Model.prototype, {
 		if(args.length === 0) throw new Error("Model definition is required");
 		this.definition = args[0]
 		this.assertions = this.assertions.slice()
-		define(this, "errorStack", [])
+		define(this, "errors", [])
 		delete this.name;
 	},
 
-	_validate(obj, path, errorStack, callStack){
-		checkDefinition(obj, this.definition, path, errorStack, callStack)
-		checkAssertions(obj, this, path, errorStack)
+	_validate(obj, path, errors, stack){
+		checkDefinition(obj, this.definition, path, errors, stack)
+		checkAssertions(obj, this, path, errors)
 	},
 
 	validate(obj, errorCollector){
-		this._validate(obj, null, this.errorStack, [])
+		this._validate(obj, null, this.errors, [])
 		this.unstackErrors(errorCollector)
 	},
 
@@ -58,9 +58,9 @@ Object.assign(Model.prototype, {
 
 	// throw all errors collected
 	unstackErrors(errorCollector){
-		if (!this.errorStack.length) return
+		if (!this.errors.length) return
 		if (!errorCollector) errorCollector = this.errorCollector
-		const errors = this.errorStack.map(err => {
+		const errors = this.errors.map(err => {
 			if (!err.message) {
 				const def = is(Array, err.expected) ? err.expected : [err.expected]
 				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
@@ -68,7 +68,7 @@ Object.assign(Model.prototype, {
 			}
 			return err
 		})
-		this.errorStack = []
+		this.errors = []
 		errorCollector.call(this, errors)
 	},
 

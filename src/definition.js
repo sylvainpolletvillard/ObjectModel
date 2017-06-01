@@ -13,9 +13,9 @@ export function parseDefinition(def){
 }
 
 
-export function checkDefinition(obj, def, path, errorStack, callStack, shouldCast=false){
-	const indexFound = callStack.indexOf(def)
-	if(indexFound !== -1 && callStack.indexOf(def, indexFound+1) !== -1)
+export function checkDefinition(obj, def, path, errors, stack, shouldCast=false){
+	const indexFound = stack.indexOf(def)
+	if(indexFound !== -1 && stack.indexOf(def, indexFound+1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
 	if(shouldCast)
@@ -23,20 +23,20 @@ export function checkDefinition(obj, def, path, errorStack, callStack, shouldCas
 
 
 	if(is(Model, def)){
-		def._validate(obj, path, errorStack, callStack.concat(def))
+		def._validate(obj, path, errors, stack.concat(def))
 	}
 	else if(isPlainObject(def)){
 		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined
-			checkDefinition(val, def[key], path ? path + '.' + key : key, errorStack, callStack)
+			checkDefinition(val, def[key], path ? path + '.' + key : key, errors, stack)
 		})
 	}
 	else {
 		const pdef = parseDefinition(def)
-		if(pdef.some(part => checkDefinitionPart(obj, part, path, callStack)))
+		if(pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
 			return obj
 
-		errorStack.push({
+		errors.push({
 			expected: def,
 			received: obj,
 			path
@@ -46,12 +46,12 @@ export function checkDefinition(obj, def, path, errorStack, callStack, shouldCas
 	return obj
 }
 
-export function checkDefinitionPart(obj, def, path, callStack){
+export function checkDefinitionPart(obj, def, path, stack){
 	if(obj == null) return obj === def
 	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
-		const errorStack = []
-		checkDefinition(obj, def, path, errorStack, callStack)
-		return !errorStack.length
+		const errors = []
+		checkDefinition(obj, def, path, errors, stack)
+		return !errors.length
 	}
 	if(is(RegExp, def)) return def.test(obj)
 	if(def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
@@ -61,7 +61,7 @@ export function checkDefinitionPart(obj, def, path, callStack){
 }
 
 
-export function checkAssertions(obj, model, path, errorStack = model.errorStack){
+export function checkAssertions(obj, model, path, errors = model.errors){
 	for(let assertion of model.assertions){
 		let result
 		try {
@@ -72,7 +72,7 @@ export function checkAssertions(obj, model, path, errorStack = model.errorStack)
 		if(result !== true){
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`
-			errorStack.push({
+			errors.push({
 				message: onFail.call(model, result, obj),
 				expected: assertion,
 				received: obj,

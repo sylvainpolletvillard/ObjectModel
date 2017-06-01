@@ -57,17 +57,17 @@ extend(ObjectModel, Model, {
 		return submodel
 	},
 
-	_validate(obj, path, errorStack, callStack){
+	_validate(obj, path, errors, stack){
 		if(!isObject(obj)){
-			errorStack.push({
+			errors.push({
 				expected: this,
 				received: obj,
 				path
 			})
 		} else {
-			checkDefinition(obj, this.definition, path, errorStack, callStack)
+			checkDefinition(obj, this.definition, path, errors, stack)
 		}
-		checkAssertions(obj, this, path, errorStack)
+		checkAssertions(obj, this, path, errors)
 	}
 })
 
@@ -88,7 +88,7 @@ function getProxy(model, obj, def, path) {
 			      defPart = def[key];
 
 			if(key in def && model.conventionForPrivate(key)){
-				model.errorStack.push({
+				model.errors.push({
 					message: `cannot access to private property ${newPath}`
 				})
 				model.unstackErrors()
@@ -148,22 +148,22 @@ function controlMutation(model, def, path, o, key, applyMutation){
 	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 	if(key in def && (isPrivate || (isConstant && o[key] !== undefined))){
-		model.errorStack.push({
+		model.errors.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})
 	}
 
 	if(def.hasOwnProperty(key)){
 		applyMutation(newPath)
-		checkDefinition(o[key], def[key], newPath, model.errorStack, [])
+		checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
 	} else {
-		model.errorStack.push({
+		model.errors.push({
 			message: `cannot find property ${newPath} in the model definition`
 		})
 	}
 
-	if(model.errorStack.length){
+	if(model.errors.length){
 		if(isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
 		else delete o[key] // back to the initial property defined in prototype chain
 

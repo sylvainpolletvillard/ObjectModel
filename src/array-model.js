@@ -38,18 +38,18 @@ extend(ArrayModel, Model, {
 		return 'Array of ' + toString(this.definition, stack)
 	},
 
-	_validate(arr, path, errorStack, callStack){
+	_validate(arr, path, errors, stack){
 		if(is(Array, arr))
 			arr.forEach((a,i) => {
-				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errorStack, callStack, true)
+				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true)
 			})
-		else errorStack.push({
+		else errors.push({
 			expected: this,
 			received: arr,
 			path
 		})
 
-		checkAssertions(arr, this, path, errorStack)
+		checkAssertions(arr, this, path, errors)
 	}
 })
 
@@ -67,7 +67,7 @@ function proxifyMethod(array, method, model){
 function setArrayKey(array, key, value, model){
 	let path = `Array[${key}]`;
 	if(parseInt(key) === +key && key >= 0)
-		value = checkDefinition(value, model.definition, path, model.errorStack, [], true)
+		value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
 	const testArray = array.slice()
 	testArray[key] = value

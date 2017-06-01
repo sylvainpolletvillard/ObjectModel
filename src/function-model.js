@@ -13,16 +13,16 @@ function FunctionModel() {
 				const def = model.definition
 
 				def.arguments.forEach((argDef, i) => {
-					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errorStack, [], true)
+					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
 				})
 
 				checkAssertions(args, model, "arguments")
 
 				let result
-				if(!model.errorStack.length){
+				if(!model.errors.length){
 					result = Reflect.apply(fn, ctx, args)
 					if ("return" in def)
-						result = checkDefinition(result, def.return, "return value", model.errorStack, [], true)
+						result = checkDefinition(result, def.return, "return value", model.errors, [], true)
 				}
 				model.unstackErrors()
 				return result
@@ -51,9 +51,9 @@ extend(FunctionModel, Model, {
 		return this
 	},
 
-	_validate(f, path, errorStack){
+	_validate(f, path, errors){
 		if (!isFunction(f)) {
-			errorStack.push({
+			errors.push({
 				expected: "Function",
 				received: f,
 				path

@@ -34,19 +34,19 @@ extend(SetModel, Model, {
 		return "Set of " + toString(this.definition, stack)
 	},
 
-	_validate(_set, path, errorStack, callStack){
+	_validate(_set, path, errors, stack){
 		if(_set instanceof Set){
 			for(let item of _set.values()){
-				checkDefinition(item, this.definition, (path || "Set"), errorStack, callStack)
+				checkDefinition(item, this.definition, (path || "Set"), errors, stack)
 			}
 		} else {
-			errorStack.push({
+			errors.push({
 				expected: this,
 				received: _set,
 				path
 			})
 		}
-		checkAssertions(_set, this, errorStack)
+		checkAssertions(_set, this, errors)
 	}
 })
 

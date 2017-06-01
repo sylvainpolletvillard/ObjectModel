@@ -35,19 +35,19 @@ extend(MapModel, Model, {
 		return "Map of " + toString(this.definition, stack)
 	},
 
-	_validate(map, path, errorStack, callStack){
+	_validate(map, path, errors, stack){
 		if(map instanceof Map){
 			for(let [key,val] of map){
-				checkDefinition(val, this.definition, `${path || "Map"}[${key}]`, errorStack, callStack)
+				checkDefinition(val, this.definition, `${path || "Map"}[${key}]`, errors, stack)
 			}
 		} else {
-			errorStack.push({
+			errors.push({
 				expected: this,
 				received: map,
 				path
 			})
 		}
-		checkAssertions(map, this, errorStack)
+		checkAssertions(map, this, errors)
 	}
 })
 

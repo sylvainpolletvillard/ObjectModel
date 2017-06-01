@@ -1,6 +1,6 @@
-import { Model, initModel } from "./model"
+import { Model } from "./model"
 import { cast, checkDefinition, checkAssertions } from "./definition"
-import { is, isString, isFunction, isObject, isPlainObject, merge, setConstructorProto, toString } from "./helpers"
+import { extend, is, isString, isFunction, isObject, isPlainObject, merge, setConstructor, toString } from "./helpers"
 
 
 export default function ObjectModel(def){
@@ -15,15 +15,13 @@ export default function ObjectModel(def){
 		return getProxy(model, this, model.definition)
 	}
 
-	setConstructorProto(model, Object.prototype)
-	initModel(model, arguments, ObjectModel)
+	extend(model, Object)
+	setConstructor(model, ObjectModel)
+	model._init(arguments)
 	return model
 }
 
-setConstructorProto(ObjectModel, Model.prototype)
-
-Object.assign(ObjectModel.prototype, {
-
+extend(ObjectModel, Model, {
 	defaults(p){
 		Object.assign(this.prototype, p)
 		return this
@@ -53,8 +51,7 @@ Object.assign(ObjectModel.prototype, {
 		})
 
 		const submodel = new this.constructor(def)
-		setConstructorProto(submodel, this.prototype)
-		Object.assign(submodel.prototype, proto)
+		extend(submodel, this, proto)
 		submodel.assertions = assertions
 		submodel.errorCollector = this.errorCollector
 		return submodel

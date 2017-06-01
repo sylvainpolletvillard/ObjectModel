@@ -1,5 +1,5 @@
-import {setConstructorProto} from "./helpers"
-import {initModel, Model} from "./model"
+import { extend, setConstructor } from "./helpers"
+import { Model } from "./model"
 
 export default function BasicModel(def){
 	const model = function(val = model.default) {
@@ -7,8 +7,9 @@ export default function BasicModel(def){
 		return val
 	}
 
-	initModel(model, arguments, BasicModel)
+	setConstructor(model, BasicModel)
+	model._init(arguments)
 	return model
 }
 
-setConstructorProto(BasicModel, Model.prototype)
+extend(BasicModel, Model)

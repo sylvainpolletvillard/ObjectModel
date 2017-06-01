@@ -1,4 +1,4 @@
-import {bettertypeof, define, is, isPlainObject, setConstructor, setConstructorProto, toString} from "./helpers"
+import {bettertypeof, define, extend, is, isPlainObject, toString} from "./helpers"
 import {checkAssertions, checkDefinition, parseDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
@@ -27,6 +27,14 @@ Object.assign(Model.prototype, {
 	defaultTo(val){
 		this.default = val
 		return this
+	},
+
+	_init(args){
+		if(args.length === 0) throw new Error("Model definition is required");
+		this.definition = args[0]
+		this.assertions = this.assertions.slice()
+		define(this, "errorStack", [])
+		delete this.name;
 	},
 
 	_validate(obj, path, errorStack, callStack){
@@ -84,7 +92,7 @@ Object.assign(Model.prototype, {
 		})
 
 		const submodel = new this.constructor(def)
-		setConstructorProto(submodel, this.prototype)
+		extend(submodel, this)
 		submodel.assertions = assertions
 		submodel.errorCollector = this.errorCollector
 		return submodel
@@ -96,15 +104,5 @@ Object.assign(Model.prototype, {
 		return this
 	}
 })
-
-
-export function initModel(model, args, constructor){
-	if(args.length === 0) throw new Error("Model definition is required");
-	setConstructor(model, constructor)
-	model.definition = args[0]
-	model.assertions = model.assertions.slice()
-	define(model, "errorStack", [])
-	delete model.name;
-}
 
 export default Model;

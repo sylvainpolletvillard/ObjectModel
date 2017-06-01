@@ -50,9 +50,8 @@ export function setConstructor(model, constructor){
 	define(model, "constructor", constructor)
 }
 
-export function setConstructorProto(constructor, proto){
-	constructor.prototype = Object.create(proto)
-	constructor.prototype.constructor = constructor
+export function extend(child, parent, props){
+	child.prototype = Object.assign(Object.create(parent.prototype), { constructor: child }, props)
 }
 
 export function toString(obj, stack = []){

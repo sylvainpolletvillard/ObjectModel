@@ -1,6 +1,6 @@
-import { Model, initModel } from "./model"
-import {checkDefinition, checkAssertions} from "./definition"
-import { isFunction, setConstructorProto, toString } from "./helpers"
+import { Model } from "./model"
+import { checkDefinition, checkAssertions } from "./definition"
+import { extend, isFunction, setConstructor, toString } from "./helpers"
 
 
 function FunctionModel() {
@@ -30,18 +30,14 @@ function FunctionModel() {
 		});
 	}
 
-	setConstructorProto(model, Function.prototype)
-
-	const def = { arguments: [...arguments] }
-	initModel(model, [ def ], FunctionModel)
+	extend(model, Function)
+	setConstructor(model, FunctionModel)
+	model._init([ { arguments: [...arguments] } ])
 
 	return model
 }
 
-setConstructorProto(FunctionModel, Model.prototype)
-
-Object.assign(FunctionModel.prototype, {
-
+extend(FunctionModel, Model, {
 	toString(stack){
 		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") +')'
 		if("return" in this.definition) {

@@ -1,6 +1,6 @@
-import { Model, initModel } from "./model"
+import { Model } from "./model"
 import { checkDefinition, checkAssertions } from "./definition"
-import { setConstructor, setConstructorProto, toString } from "./helpers"
+import { extend, setConstructor, toString } from "./helpers"
 
 const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
 
@@ -23,14 +23,13 @@ function SetModel(def){
 		return _set
 	}
 
-	setConstructorProto(model, Set.prototype)
-	initModel(model, arguments, SetModel)
+	extend(model, Set)
+	setConstructor(model, SetModel);
+	model._init(arguments)
 	return model
 }
 
-setConstructorProto(SetModel, Model.prototype)
-Object.assign(SetModel.prototype, {
-
+extend(SetModel, Model, {
 	toString(stack){
 		return "Set of " + toString(this.definition, stack)
 	},

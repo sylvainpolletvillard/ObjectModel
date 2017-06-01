@@ -1,6 +1,6 @@
-import { Model, initModel } from "./model"
+import { Model } from "./model"
 import { checkDefinition, checkAssertions } from "./definition"
-import { setConstructor, setConstructorProto, toString } from "./helpers"
+import { extend, setConstructor, toString } from "./helpers"
 
 const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]
 
@@ -23,13 +23,13 @@ function MapModel(def){
 		return map
 	}
 
-	setConstructorProto(model, Map.prototype)
-	initModel(model, arguments, MapModel)
+	extend(model, Map)
+	setConstructor(model, MapModel)
+	model._init(arguments)
 	return model
 }
 
-setConstructorProto(MapModel, Model.prototype)
-Object.assign(MapModel.prototype, {
+extend(MapModel, Model, {
 
 	toString(stack){
 		return "Map of " + toString(this.definition, stack)

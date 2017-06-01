@@ -1,6 +1,6 @@
-import { Model, initModel } from "./model"
+import { Model } from "./model"
 import { checkDefinition, checkAssertions, cast } from "./definition"
-import { is, setConstructorProto, toString } from "./helpers"
+import { extend, is, setConstructor, toString } from "./helpers"
 
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
@@ -27,14 +27,13 @@ function ArrayModel(def){
 		})
 	}
 
-	setConstructorProto(model, Array.prototype)
-	initModel(model, arguments, ArrayModel)
+	extend(model, Array)
+	setConstructor(model, ArrayModel)
+	model._init(arguments)
 	return model
 }
 
-setConstructorProto(ArrayModel, Model.prototype)
-Object.assign(ArrayModel.prototype, {
-
+extend(ArrayModel, Model, {
 	toString(stack){
 		return 'Array of ' + toString(this.definition, stack)
 	},

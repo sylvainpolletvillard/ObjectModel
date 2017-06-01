@@ -55,10 +55,10 @@ extend(ArrayModel, Model, {
 
 function proxifyMethod(array, method, model){
 	return function() {
-		const testArray = array.slice()
-		Array.prototype[method].apply(testArray, arguments)
+		const testArray = array.slice();
+		[][method].apply(testArray, arguments)
 		model.validate(testArray)
-		const returnValue = Array.prototype[method].apply(array, arguments)
+		const returnValue = [][method].apply(array, arguments)
 		array.forEach((a,i)=> array[i] = cast(a, model.definition))
 		return returnValue
 	}

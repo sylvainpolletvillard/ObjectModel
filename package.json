@@ -11,20 +11,17 @@
 	},
 	"scripts": {
 		"build": "npm-run-all build:* && npm run info",
-		"build:js": "rollup --format umd --name window src/bundle-entry.js -o dist/object-model.js --sourcemap",
-		"build:min": "babel dist/object-model.js --out-file dist/object-model.min.js --presets=babili --source-maps",
+		"build:js": "rollup -c",
+		"build:min": "rollup -c --environment BUILD:production",
 		"watch": "npm-run-all --parallel watch:*",
 		"watch:js": "npm run build:js -- --watch",
 		"watch:min": "npm run build:min -- --watch",
 		"info": "npm-run-all --parallel info:*",
 		"info:banner": "banner-cli dist/*.js",
-		"info:index": "node docs/build/update-index",
+		"info:docs": "node build/update-docs",
 		"test": "qunit -c ./dist/object-model.js -t ./test/index.js"
 	},
 	"devDependencies": {
-		"babel-cli": "^6.23.0",
-		"babel-preset-babili": "^0.1.1",
-		"babili": "^0.1.1",
 		"banner-cli": "^0.11.0",
 		"filesize": "^3.5.10",
 		"glob": "^7.1.2",
@@ -32,6 +29,7 @@
 		"npm-run-all": "^4.0.2",
 		"qunit": "^1.0.0",
 		"rollup": "^0.41.4",
+		"rollup-plugin-uglify-es": "0.0.1",
 		"rollup-watch": "^3.2.2"
 	},
 	"main": "src/index.js",

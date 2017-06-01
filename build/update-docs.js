@@ -2,7 +2,7 @@ const fs = require('fs');
 const filesize = require('filesize')
 const getGzipSize = require('gzip-size').sync;
 
-const pkg  = require('../../package.json');
+const pkg  = require('../package.json');
 
 function updateIndex(html){
 	const libPath = "./dist/object-model.min.js"

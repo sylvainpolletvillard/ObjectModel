@@ -1,4 +1,4 @@
-import { Model } from "./model"
+import {extendModel, Model} from "./model"
 import { checkDefinition, checkAssertions, extendDefinition } from "./definition"
 import { extend, setConstructor, toString } from "./helpers"
 
@@ -47,10 +47,8 @@ extend(MapModel, Model, {
 	},
 
 	extend(newKeys, newValues){
-		return Model.prototype.extend.call(this, {
-			key: extendDefinition(this.definition.key, newKeys),
-			value: extendDefinition(this.definition.value, newValues)
-		})
+		const { key, value } = this.definition
+		return extendModel(new MapModel(extendDefinition(key, newKeys), extendDefinition(value, newValues)), this)
 	}
 })
 

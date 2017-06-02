@@ -1,4 +1,4 @@
-import { Model } from "./model"
+import {extendModel, Model} from "./model"
 import {checkDefinition, checkAssertions, cast, extendDefinition} from "./definition"
 import { extend, is, setConstructor, toString } from "./helpers"
 
@@ -53,7 +53,7 @@ extend(ArrayModel, Model, {
 	},
 
 	extend(...newParts){
-		return Model.prototype.extend.call(this, extendDefinition(this.definition, newParts))
+		return extendModel(new ArrayModel(extendDefinition(this.definition, newParts)), this)
 	}
 })
 

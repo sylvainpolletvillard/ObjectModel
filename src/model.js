@@ -32,7 +32,7 @@ Object.assign(Model.prototype, {
 	_init(args){
 		if(args.length === 0) throw new Error("Model definition is required");
 		this.definition = args[0]
-		this.assertions = this.assertions.slice()
+		this.assertions = [...this.assertions]
 		define(this, "errors", [])
 		delete this.name;
 	},
@@ -78,19 +78,18 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	extend(newDef, newProps){
-		const submodel = new this.constructor(newDef)
-		extend(submodel, this, newProps)
-		submodel.assertions = [...this.assertions]
-		submodel.errorCollector = this.errorCollector
-		return submodel
-	},
-
 	assert(assertion, description = toString(assertion)){
 		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion)
 		return this
 	}
 })
+
+export function extendModel(child, parent, newProps){
+	extend(child, parent, newProps)
+	child.assertions.push(...parent.assertions)
+	child.errorCollector = parent.errorCollector
+	return child
+}
 
 export default Model;

@@ -1,4 +1,4 @@
-import { Model } from "./model"
+import {extendModel, Model} from "./model"
 import { cast, checkDefinition, checkAssertions } from "./definition"
 import { extend, is, isString, isFunction, isObject, isPlainObject, merge, setConstructor, toString } from "./helpers"
 
@@ -31,24 +31,25 @@ extend(ObjectModel, Model, {
 		return toString(this.definition, stack)
 	},
 
-	extend(...args){
+	extend(...newParts){
 		const def = {}
 		const proto = {}
+		const newAssertions = []
 
 		Object.assign(def, this.definition)
 		merge(proto, this.prototype, false, true)
-		args.forEach(arg => {
-			if(is(Model, arg)) merge(def, arg.definition, true)
-			if(isFunction(arg)) merge(proto, arg.prototype, true, true)
-			if(isObject(arg)) merge(def, arg, true, true)
-		})
-		delete proto.constructor;
+		for(let part of newParts){
+			if(is(Model, part)){
+				merge(def, part.definition, true)
+				newAssertions.push(...part.assertions)
+			}
+			if(isFunction(part)) merge(proto, part.prototype, true, true)
+			if(isObject(part)) merge(def, part, true, true)
+		}
+		delete proto.constructor
 
-		const submodel = Model.prototype.extend.call(this, def, proto)
-		args.forEach(arg => {
-			if(is(Model, arg)) submodel.assertions.push(...arg.assertions)
-		})
-
+		const submodel = extendModel(new ObjectModel(def), this, proto)
+		submodel.assertions.push(...newAssertions)
 		return submodel
 	},
 

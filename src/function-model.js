@@ -1,4 +1,4 @@
-import { Model } from "./model"
+import {extendModel, Model} from "./model"
 import {checkDefinition, checkAssertions, extendDefinition} from "./definition"
 import { extend, isFunction, setConstructor, toString } from "./helpers"
 
@@ -52,10 +52,10 @@ extend(FunctionModel, Model, {
 	},
 
 	extend(newArgs, newReturns) {
-		return Model.prototype.extend.call(this, {
-			key: extendDefinition(this.definition.arguments, newArgs),
-			value: extendDefinition(this.definition.return, newReturns)
-		})
+		const args = this.definition.arguments
+		const mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i]))
+		const mixedReturns = extendDefinition(this.definition.return, newReturns)
+		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
 	_validate(f, path, errors){

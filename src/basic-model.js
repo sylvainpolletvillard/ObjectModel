@@ -1,5 +1,5 @@
 import {extend, is, setConstructor} from "./helpers"
-import { Model } from "./model"
+import {extendModel, Model} from "./model"
 import {extendDefinition} from "./definition"
 
 export default function BasicModel() {
@@ -15,11 +15,11 @@ export default function BasicModel() {
 
 extend(BasicModel, Model, {
 	extend(...newParts) {
-		const extension = Model.prototype.extend.call(this, extendDefinition(this.definition, newParts))
+		const child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
 		for(let part of newParts){
-			if(is(BasicModel, part)) extension.assertions.push(...part.assertions)
+			if(is(BasicModel, part)) child.assertions.push(...part.assertions)
 		}
 
-		return extension
+		return child
 	}
 })

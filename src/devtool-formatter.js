@@ -1,6 +1,6 @@
 import ObjectModel from "./object-model"
 import Model from "./model"
-import {is, isFunction, isPlainObject} from "./helpers"
+import {is, isArray, isFunction, isPlainObject} from "./helpers"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -77,7 +77,7 @@ function formatHeader(x, config){
 	if(is(Model, x))
 		return ["span", { style: styles.model }, x.name];
 
-	if(config.fromModel || isPlainObject(x) || Array.isArray(x))
+	if(config.fromModel || isPlainObject(x) || isArray(x))
 		return format(x)
 
 	return null;

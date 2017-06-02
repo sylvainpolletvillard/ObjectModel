@@ -1,9 +1,9 @@
-import {is, isPlainObject, isFunction, toString} from "./helpers"
+import {is, isArray, isPlainObject, isFunction, toString } from "./helpers"
 import {Model} from "./model"
 
 export function parseDefinition(def){
 	if(!isPlainObject(def)){
-		if(!is(Array, def)) return [def]
+		if(!isArray(def)) return [def]
 		if(def.length === 1) return [...def, undefined, null]
 	} else {
 		for(let key of Object.keys(def))
@@ -13,9 +13,10 @@ export function parseDefinition(def){
 }
 
 export function extendDefinition(def, newParts=[]){
+	if(!isArray(newParts)) newParts = [ newParts ]
 	if(newParts.length > 0){
 		def = newParts
-			.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+			.reduce((def, ext) => def.concat(ext), isArray(def) ? def.slice() : [def]) // clone to lose ref
 			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
 	}
 

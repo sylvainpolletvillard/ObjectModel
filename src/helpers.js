@@ -1,30 +1,12 @@
 import Model from "./model"
 
-const defineProperty = Object.defineProperty
-
-export function is(Constructor, obj){
-	return obj instanceof Constructor
-}
-
-export function isString(o){
-	return typeof o === "string"
-}
-
-export function isFunction(o){
-	return typeof o === "function"
-}
-
-export function isObject(o){
-    return typeof o === "object"
-}
-
-export function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
-}
-
-export function bettertypeof(x){
-	return ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
-}
+export const is = (Constructor, obj) => obj instanceof Constructor
+export const isString = s => typeof s === "string"
+export const isFunction = f => typeof f === "function"
+export const isObject = o => typeof o === "object"
+export const isArray = a => Array.isArray(a)
+export const isPlainObject = o => o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
+export const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 
 export function merge(target, src={}, deep, includingProto) {
 	for(let key in src){
@@ -42,7 +24,7 @@ export function merge(target, src={}, deep, includingProto) {
 }
 
 export function define(obj, key, value, enumerable=false) {
-	defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
+	Object.defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
 }
 
 export function setConstructor(model, constructor){

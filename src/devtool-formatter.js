@@ -39,7 +39,7 @@ function format(x, config) {
 	if (typeof x === "string")
 		return ["span", {style: styles.string}, `"${x}"`];
 
-	if (is(Array, x)) {
+	if (isArray(x)) {
 		let def = [];
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {

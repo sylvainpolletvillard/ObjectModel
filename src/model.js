@@ -1,4 +1,4 @@
-import {bettertypeof, define, extend, is, isPlainObject, toString} from "./helpers"
+import {bettertypeof, define, extend, isArray, isPlainObject, toString} from "./helpers"
 import {checkAssertions, checkDefinition, parseDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
@@ -86,7 +86,7 @@ export function unstackErrors(model, errorCollector = model.errorCollector) {
 
 	const errors = model.errors.map(err => {
 		if (!err.message) {
-			const def = is(Array, err.expected) ? err.expected : [err.expected]
+			const def = isArray(err.expected) ? err.expected : [err.expected]
 			err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
 			+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
 		}

@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, is, setConstructor, toString} from "./helpers"
+import {extend, is, isArray, setConstructor, toString} from "./helpers"
 
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
@@ -39,7 +39,7 @@ extend(ArrayModel, Model, {
 	},
 
 	_validate(arr, path, errors, stack){
-		if (is(Array, arr))
+		if (isArray(arr))
 			arr.forEach((a, i) => {
 				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true)
 			})

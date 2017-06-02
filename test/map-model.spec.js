@@ -82,33 +82,36 @@ QUnit.test("Map model with union types & submodels", function (assert) {
 	}, /TypeError.*test/, "map set multiple types for values");
 
 })
-/*
+
 QUnit.test("Map model with union types & fixed values", function (assert) {
 
-	const Dict = MapModel([true, 2, "3"], [4, "5"]);
+	const DictA = MapModel([true, 2, "3"], [4, "5"]);
 	assert.throws(function () {
-		Dict(["3", 4], ["2", "5"]);
-	}, /TypeError[\s\S]*Map\[3]/, "MapModel fixed values");
+		DictA([["3", 4], ["2", "5"]]);
+	}, /TypeError[\s\S]*Map\["2"]/, "MapModel fixed values");
 
-	const Cards     = ArrayModel([Number, "J", "Q", "K"]); // array of Numbers, J, Q or K
-	const Hand      = Cards.extend().assert(cards => cards.length === 2);
-	const pokerHand = new Hand(["K", 10]);
+	const dictA = DictA([ [true, 4], [2, "5"] ]);
+	const DictB = DictA.extend().assert(m => m.size === 2);
+	const dictB = new DictB([ [2, 4], ["3", "5"] ]);
 
-	assert.ok(Object.getPrototypeOf(Hand.prototype) === Cards.prototype, "extension respect prototypal chain");
-	assert.ok(pokerHand instanceof Hand && pokerHand instanceof Cards, "array model inheritance");
-	Cards(["K", 10]).push(7);
+	assert.ok(Object.getPrototypeOf(DictB.prototype) === DictA.prototype, "extension respect prototypal chain");
+	assert.ok(dictB instanceof DictB && dictB instanceof DictA, "map model inheritance");
+	DictA([ [true, 4], [2, "5"] ]).set("3", 4);
 	assert.throws(function () {
-		Hand(["K", 10]).push(7);
-	}, /TypeError/, "min/max of inherit array model");
+		DictB([ [true, 4], [2, "5"] ]).set("3", 4);
+	}, /TypeError/, "min/max of inherit map model");
 
-	const CheaterHand = Cards.extend("joker");
-	CheaterHand(["K", 10, "joker"]);
+	const DictC = DictB.extend("new", "val");
+	DictC([ ["new", "5"], [true, "val"] ]);
 	assert.throws(function () {
-		Hand("K", 10, "joker");
-	}, /TypeError/, "array model type extension");
+		DictB([ ["new", "5"], ["3", 4] ]);
+	}, /TypeError/, "map model type extension 1/2");
+	assert.throws(function () {
+		DictB([ ["3", 4], [true, "val"] ]);
+	}, /TypeError/, "map model type extension 2/2");
 
 })
-
+/*
 QUnit.test("Child array models in object models", function (assert) {
 
 	const Child  = ObjectModel({arr: ArrayModel(String)});

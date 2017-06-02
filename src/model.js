@@ -78,22 +78,10 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	extend(...newParts){
-		let def = this.definition;
-		if(newParts.length > 0){
-			def = newParts
-				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
-				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
-		}
-
-		let assertions = [...this.assertions]
-		newParts.forEach(part => {
-			if(is(BasicModel, part)) assertions = assertions.concat(part.assertions)
-		})
-
-		const submodel = new this.constructor(def)
-		extend(submodel, this)
-		submodel.assertions = assertions
+	extend(newDef, newProps){
+		const submodel = new this.constructor(newDef)
+		extend(submodel, this, newProps)
+		submodel.assertions = [...this.assertions]
 		submodel.errorCollector = this.errorCollector
 		return submodel
 	},

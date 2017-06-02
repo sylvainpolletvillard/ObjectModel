@@ -1,5 +1,5 @@
 import { Model } from "./model"
-import { checkDefinition, checkAssertions, cast } from "./definition"
+import {checkDefinition, checkAssertions, cast, extendDefinition} from "./definition"
 import { extend, is, setConstructor, toString } from "./helpers"
 
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
@@ -50,6 +50,10 @@ extend(ArrayModel, Model, {
 		})
 
 		checkAssertions(arr, this, path, errors)
+	},
+
+	extend(...newParts){
+		return Model.prototype.extend.call(this, extendDefinition(this.definition, newParts))
 	}
 })
 

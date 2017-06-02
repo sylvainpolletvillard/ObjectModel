@@ -1,5 +1,5 @@
 import { Model } from "./model"
-import { checkDefinition, checkAssertions } from "./definition"
+import { checkDefinition, checkAssertions, extendDefinition } from "./definition"
 import { extend, setConstructor, toString } from "./helpers"
 
 const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]
@@ -44,6 +44,13 @@ extend(MapModel, Model, {
 		})
 
 		checkAssertions(map, this, errors)
+	},
+
+	extend(newKeys, newValues){
+		return Model.prototype.extend.call(this, {
+			key: extendDefinition(this.definition.key, newKeys),
+			value: extendDefinition(this.definition.value, newValues)
+		})
 	}
 })
 
@@ -55,7 +62,5 @@ function proxifyMethod(map, method, model){
 		return Map.prototype[method].apply(map, arguments)
 	}
 }
-
-
 
 export default MapModel

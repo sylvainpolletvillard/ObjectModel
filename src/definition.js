@@ -12,6 +12,15 @@ export function parseDefinition(def){
 	return def
 }
 
+export function extendDefinition(def, newParts=[]){
+	if(newParts.length > 0){
+		def = newParts
+			.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
+	}
+
+	return def
+}
 
 export function checkDefinition(obj, def, path, errors, stack, shouldCast=false){
 	const indexFound = stack.indexOf(def)

@@ -31,10 +31,9 @@ extend(ObjectModel, Model, {
 		return toString(this.definition, stack)
 	},
 
-	extend(){
+	extend(...args){
 		const def = {}
 		const proto = {}
-		const args = [...arguments]
 
 		Object.assign(def, this.definition)
 		merge(proto, this.prototype, false, true)
@@ -45,15 +44,11 @@ extend(ObjectModel, Model, {
 		})
 		delete proto.constructor;
 
-		let assertions = [...this.assertions]
+		const submodel = Model.prototype.extend.call(this, def, proto)
 		args.forEach(arg => {
-			if(is(Model, arg)) assertions = assertions.concat(arg.assertions)
+			if(is(Model, arg)) submodel.assertions.push(...arg.assertions)
 		})
 
-		const submodel = new this.constructor(def)
-		extend(submodel, this, proto)
-		submodel.assertions = assertions
-		submodel.errorCollector = this.errorCollector
 		return submodel
 	},
 

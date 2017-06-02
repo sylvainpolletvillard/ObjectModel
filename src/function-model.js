@@ -1,5 +1,5 @@
 import { Model } from "./model"
-import { checkDefinition, checkAssertions } from "./definition"
+import {checkDefinition, checkAssertions, extendDefinition} from "./definition"
 import { extend, isFunction, setConstructor, toString } from "./helpers"
 
 
@@ -49,6 +49,13 @@ extend(FunctionModel, Model, {
 	return(def){
 		this.definition.return = def
 		return this
+	},
+
+	extend(newArgs, newReturns) {
+		return Model.prototype.extend.call(this, {
+			key: extendDefinition(this.definition.arguments, newArgs),
+			value: extendDefinition(this.definition.return, newReturns)
+		})
 	},
 
 	_validate(f, path, errors){

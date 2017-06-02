@@ -31,7 +31,8 @@
 		"rollup-plugin-uglify-es": "0.0.1",
 		"rollup-watch": "^3.2.2"
 	},
-	"main": "src/index.js",
+	"main": "dist/object-model.js",
+	"module": "src/index.js",
 	"keywords": [
 		"typed",
 		"types",

@@ -29,14 +29,6 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	_init(args){
-		if (args.length === 0) throw new Error("Model definition is required");
-		this.definition = args[0]
-		this.assertions = [...this.assertions]
-		define(this, "errors", [])
-		delete this.name;
-	},
-
 	_validate(obj, path, errors, stack){
 		checkDefinition(obj, this.definition, path, errors, stack)
 		checkAssertions(obj, this, path, errors)
@@ -44,7 +36,7 @@ Object.assign(Model.prototype, {
 
 	validate(obj, errorCollector){
 		this._validate(obj, null, this.errors, [])
-		this.unstackErrors(errorCollector)
+		unstackErrors(this, errorCollector)
 	},
 
 	test(obj){
@@ -61,22 +53,6 @@ Object.assign(Model.prototype, {
 		return !failed
 	},
 
-	// throw all errors collected
-	unstackErrors(errorCollector){
-		if (!this.errors.length) return
-		if (!errorCollector) errorCollector = this.errorCollector
-		const errors = this.errors.map(err => {
-			if (!err.message) {
-				const def = is(Array, err.expected) ? err.expected : [err.expected]
-				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
-				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
-			}
-			return err
-		})
-		this.errors = []
-		errorCollector.call(this, errors)
-	},
-
 	errorCollector(errors){
 		let e = new TypeError(errors.map(e => e.message).join('\n'))
 		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, "") // blackbox objectmodel in stacktrace
@@ -90,6 +66,14 @@ Object.assign(Model.prototype, {
 	}
 })
 
+export function initModel(model, args) {
+	if (args.length === 0) throw new Error("Model definition is required");
+	model.definition = args[0]
+	model.assertions = [...model.assertions]
+	define(model, "errors", [])
+	delete model.name;
+}
+
 export function extendModel(child, parent, newProps) {
 	extend(child, parent, newProps)
 	child.assertions.push(...parent.assertions)
@@ -97,4 +81,19 @@ export function extendModel(child, parent, newProps) {
 	return child
 }
 
-export default Model;
+export function unstackErrors(model, errorCollector = model.errorCollector) {
+	if (!model.errors.length) return
+
+	const errors = model.errors.map(err => {
+		if (!err.message) {
+			const def = is(Array, err.expected) ? err.expected : [err.expected]
+			err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
+			+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
+		}
+		return err
+	})
+	model.errors = []
+	errorCollector.call(model, errors) // throw all errors collected
+}
+
+export default Model

@@ -1,4 +1,4 @@
-import {extendModel, Model} from "./model"
+import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
@@ -24,7 +24,7 @@ export default function FunctionModel() {
 					if ("return" in def)
 						result = checkDefinition(result, def.return, "return value", model.errors, [], true)
 				}
-				model.unstackErrors()
+				unstackErrors(model)
 				return result
 			}
 		});
@@ -32,7 +32,7 @@ export default function FunctionModel() {
 
 	extend(model, Function)
 	setConstructor(model, FunctionModel)
-	model._init([{arguments: [...arguments]}])
+	initModel(model, [{arguments: [...arguments]}])
 
 	return model
 }

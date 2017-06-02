@@ -1,5 +1,5 @@
 import {is, isArray, isFunction, isPlainObject, toString} from "./helpers"
-import {Model} from "./model"
+import Model from "./model"
 
 export function parseDefinition(def) {
 	if (isPlainObject(def)) {
@@ -32,7 +32,6 @@ export function checkDefinition(obj, def, path, errors, stack, shouldCast = fals
 
 	if (shouldCast)
 		obj = cast(obj, def)
-
 
 	if (is(Model, def)) {
 		def._validate(obj, path, errors, stack.concat(def))

@@ -1,6 +1,7 @@
 import {extend, is, setConstructor} from "./helpers"
-import {extendModel, Model} from "./model"
 import {extendDefinition} from "./definition"
+import {extendModel, initModel, Model} from "./model"
+
 
 export default function BasicModel() {
 	const model = function (val = model.default) {
@@ -9,7 +10,7 @@ export default function BasicModel() {
 	}
 
 	setConstructor(model, BasicModel)
-	model._init(arguments)
+	initModel(model, arguments)
 	return model
 }
 

@@ -1,4 +1,4 @@
-import {extendModel, Model} from "./model"
+import {extendModel, initModel, Model} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, setConstructor, toString} from "./helpers"
 
@@ -21,7 +21,7 @@ export default function MapModel(key, value) {
 
 	extend(model, Map)
 	setConstructor(model, MapModel)
-	model._init([{key, value}])
+	initModel(model, [{key, value}])
 	return model
 }
 

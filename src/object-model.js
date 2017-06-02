@@ -1,4 +1,4 @@
-import {extendModel, Model} from "./model"
+import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
 import {extend, is, isFunction, isObject, isPlainObject, isString, merge, setConstructor, toString} from "./helpers"
 
@@ -17,7 +17,7 @@ export default function ObjectModel() {
 
 	extend(model, Object)
 	setConstructor(model, ObjectModel)
-	model._init(arguments)
+	initModel(model, arguments)
 	return model
 }
 
@@ -85,7 +85,7 @@ function getProxy(model, obj, def, path) {
 				model.errors.push({
 					message: `cannot access to private property ${newPath}`
 				})
-				model.unstackErrors()
+				unstackErrors(model)
 				return
 			}
 
@@ -162,7 +162,7 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 		if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
 		else delete o[key] // back to the initial property defined in prototype chain
 
-		model.unstackErrors()
+		unstackErrors(model)
 		return false
 	}
 

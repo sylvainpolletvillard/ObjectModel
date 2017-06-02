@@ -1,4 +1,4 @@
-import {extendModel, Model} from "./model"
+import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, is, setConstructor, toString} from "./helpers"
 
@@ -29,7 +29,7 @@ export default function ArrayModel() {
 
 	extend(model, Array)
 	setConstructor(model, ArrayModel)
-	model._init(arguments)
+	initModel(model, arguments)
 	return model
 }
 
@@ -76,7 +76,7 @@ function setArrayKey(array, key, value, model) {
 	const testArray = array.slice()
 	testArray[key] = value
 	checkAssertions(testArray, model, path)
-	const isSuccess = !model.unstackErrors()
+	const isSuccess = !unstackErrors(model)
 	if (isSuccess) array[key] = value
 	return isSuccess
 }

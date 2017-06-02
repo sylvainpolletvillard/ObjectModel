@@ -1,4 +1,4 @@
-import {Model} from "./model"
+import {initModel, Model} from "./model"
 import {checkAssertions, checkDefinition} from "./definition"
 import {extend, setConstructor, toString} from "./helpers"
 
@@ -25,7 +25,7 @@ export default function SetModel() {
 
 	extend(model, Set)
 	setConstructor(model, SetModel);
-	model._init(arguments)
+	initModel(model, arguments)
 	return model
 }
 

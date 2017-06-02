@@ -4,7 +4,7 @@ import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
 
 
-export function Model(def){
+export function Model(def) {
 	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
 }
 
@@ -30,7 +30,7 @@ Object.assign(Model.prototype, {
 	},
 
 	_init(args){
-		if(args.length === 0) throw new Error("Model definition is required");
+		if (args.length === 0) throw new Error("Model definition is required");
 		this.definition = args[0]
 		this.assertions = [...this.assertions]
 		define(this, "errors", [])
@@ -50,8 +50,13 @@ Object.assign(Model.prototype, {
 	test(obj){
 		let failed,
 		    initialErrorCollector = this.errorCollector
-		this.errorCollector = () => { failed = true }
-		new this(obj)
+
+		this.errorCollector = () => {
+			failed = true
+		}
+
+		new this(obj) // may trigger this.errorCollector
+
 		this.errorCollector = initialErrorCollector
 		return !failed
 	},
@@ -85,7 +90,7 @@ Object.assign(Model.prototype, {
 	}
 })
 
-export function extendModel(child, parent, newProps){
+export function extendModel(child, parent, newProps) {
 	extend(child, parent, newProps)
 	child.assertions.push(...parent.assertions)
 	child.errorCollector = parent.errorCollector

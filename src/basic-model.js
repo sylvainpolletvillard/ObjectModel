@@ -3,7 +3,7 @@ import {extendModel, Model} from "./model"
 import {extendDefinition} from "./definition"
 
 export default function BasicModel() {
-	const model = function(val = model.default) {
+	const model = function (val = model.default) {
 		model.validate(val)
 		return val
 	}
@@ -16,8 +16,8 @@ export default function BasicModel() {
 extend(BasicModel, Model, {
 	extend(...newParts) {
 		const child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
-		for(let part of newParts){
-			if(is(BasicModel, part)) child.assertions.push(...part.assertions)
+		for (let part of newParts) {
+			if (is(BasicModel, part)) child.assertions.push(...part.assertions)
 		}
 
 		return child

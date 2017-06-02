@@ -1,20 +1,22 @@
-import {is, isArray, isPlainObject, isFunction, toString } from "./helpers"
+import {is, isArray, isFunction, isPlainObject, toString} from "./helpers"
 import {Model} from "./model"
 
-export function parseDefinition(def){
-	if(!isPlainObject(def)){
-		if(!isArray(def)) return [def]
-		if(def.length === 1) return [...def, undefined, null]
-	} else {
-		for(let key of Object.keys(def))
+export function parseDefinition(def) {
+	if (isPlainObject(def)) {
+		for (let key of Object.keys(def)) {
 			def[key] = parseDefinition(def[key])
+		}
+	} else {
+		if (!isArray(def)) return [def]
+		if (def.length === 1) return [...def, undefined, null]
 	}
+
 	return def
 }
 
-export function extendDefinition(def, newParts=[]){
-	if(!isArray(newParts)) newParts = [ newParts ]
-	if(newParts.length > 0){
+export function extendDefinition(def, newParts = []) {
+	if (!isArray(newParts)) newParts = [newParts]
+	if (newParts.length > 0) {
 		def = newParts
 			.reduce((def, ext) => def.concat(ext), isArray(def) ? def.slice() : [def]) // clone to lose ref
 			.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
@@ -23,19 +25,19 @@ export function extendDefinition(def, newParts=[]){
 	return def
 }
 
-export function checkDefinition(obj, def, path, errors, stack, shouldCast=false){
+export function checkDefinition(obj, def, path, errors, stack, shouldCast = false) {
 	const indexFound = stack.indexOf(def)
-	if(indexFound !== -1 && stack.indexOf(def, indexFound+1) !== -1)
+	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
-	if(shouldCast)
+	if (shouldCast)
 		obj = cast(obj, def)
 
 
-	if(is(Model, def)){
+	if (is(Model, def)) {
 		def._validate(obj, path, errors, stack.concat(def))
 	}
-	else if(isPlainObject(def)){
+	else if (isPlainObject(def)) {
 		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined
 			checkDefinition(val, def[key], path ? path + '.' + key : key, errors, stack)
@@ -43,7 +45,7 @@ export function checkDefinition(obj, def, path, errors, stack, shouldCast=false)
 	}
 	else {
 		const pdef = parseDefinition(def)
-		if(pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
+		if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
 			return obj
 
 		errors.push({
@@ -56,30 +58,30 @@ export function checkDefinition(obj, def, path, errors, stack, shouldCast=false)
 	return obj
 }
 
-export function checkDefinitionPart(obj, def, path, stack){
-	if(obj == null) return obj === def
-	if(isPlainObject(def) || is(Model, def)){ // object or model as part of union type
+export function checkDefinitionPart(obj, def, path, stack) {
+	if (obj == null) return obj === def
+	if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
 		const errors = []
 		checkDefinition(obj, def, path, errors, stack)
 		return !errors.length
 	}
-	if(is(RegExp, def)) return def.test(obj)
-	if(def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
+	if (is(RegExp, def)) return def.test(obj)
+	if (def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
 	return obj === def
 		|| (isFunction(def) && is(def, obj))
 		|| obj.constructor === def
 }
 
 
-export function checkAssertions(obj, model, path, errors = model.errors){
-	for(let assertion of model.assertions){
+export function checkAssertions(obj, model, path, errors = model.errors) {
+	for (let assertion of model.assertions) {
 		let result
 		try {
 			result = assertion.call(model, obj)
-		} catch(err){
+		} catch (err) {
 			result = err
 		}
-		if(result !== true){
+		if (result !== true) {
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`
 			errors.push({
@@ -92,15 +94,15 @@ export function checkAssertions(obj, model, path, errors = model.errors){
 	}
 }
 
-export function cast(obj, defNode=[]) {
-	if(!obj || isPlainObject(defNode) || is(Model, obj.constructor))
+export function cast(obj, defNode = []) {
+	if (!obj || isPlainObject(defNode) || is(Model, obj.constructor))
 		return obj // no value or not leaf or already a model instance
 
-	const def = parseDefinition(defNode),
-	      suitableModels = []
+	const def = parseDefinition(defNode);
+	const suitableModels = []
 
 	for (let part of def) {
-		if(is(Model, part) && part.test(obj))
+		if (is(Model, part) && part.test(obj))
 			suitableModels.push(part)
 	}
 

@@ -1,12 +1,12 @@
 import {extendModel, Model} from "./model"
-import { checkDefinition, checkAssertions, extendDefinition } from "./definition"
-import { extend, setConstructor, toString } from "./helpers"
+import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
+import {extend, setConstructor, toString} from "./helpers"
 
 const MAP_MUTATOR_METHODS = ["set", "delete", "clear"]
 
-function MapModel(key, value) {
+export default function MapModel(key, value) {
 
-	const model = function(iterable) {
+	const model = function (iterable) {
 		const map = new Map(iterable)
 		model.validate(map)
 		return new Proxy(map, {
@@ -21,7 +21,7 @@ function MapModel(key, value) {
 
 	extend(model, Map)
 	setConstructor(model, MapModel)
-	model._init([ { key, value } ])
+	model._init([{key, value}])
 	return model
 }
 
@@ -31,8 +31,8 @@ extend(MapModel, Model, {
 	},
 
 	_validate(map, path, errors, stack){
-		if(map instanceof Map) {
-			for(let [key, value] of map){
+		if (map instanceof Map) {
+			for (let [key, value] of map) {
 				let subPath = `${path || "Map"}[${toString(key)}]`
 				checkDefinition(key, this.definition.key, subPath, errors, stack)
 				checkDefinition(value, this.definition.value, subPath, errors, stack)
@@ -47,18 +47,16 @@ extend(MapModel, Model, {
 	},
 
 	extend(newKeys, newValues){
-		const { key, value } = this.definition
+		const {key, value} = this.definition
 		return extendModel(new MapModel(extendDefinition(key, newKeys), extendDefinition(value, newValues)), this)
 	}
 })
 
-function proxifyMethod(map, method, model){
-	return function() {
+function proxifyMethod(map, method, model) {
+	return function () {
 		const testMap = new Map(map)
 		Map.prototype[method].apply(testMap, arguments)
 		model.validate(testMap)
 		return Map.prototype[method].apply(map, arguments)
 	}
 }
-
-export default MapModel

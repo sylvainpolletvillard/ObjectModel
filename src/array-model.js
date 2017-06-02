@@ -1,19 +1,19 @@
 import {extendModel, Model} from "./model"
-import {checkDefinition, checkAssertions, cast, extendDefinition} from "./definition"
-import { extend, is, setConstructor, toString } from "./helpers"
+import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
+import {extend, is, setConstructor, toString} from "./helpers"
 
 const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
-function ArrayModel() {
+export default function ArrayModel() {
 
-	const model = function(array = model.default) {
-		if(!is(model, this)) return new model(array)
+	const model = function (array = model.default) {
+		if (!is(model, this)) return new model(array)
 		model.validate(array)
 		return new Proxy(array, {
 			getPrototypeOf: () => model.prototype,
 
 			get(arr, key) {
-				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, key, model)
+				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, [][key], model)
 				return arr[key]
 			},
 
@@ -39,8 +39,8 @@ extend(ArrayModel, Model, {
 	},
 
 	_validate(arr, path, errors, stack){
-		if(is(Array, arr))
-			arr.forEach((a,i) => {
+		if (is(Array, arr))
+			arr.forEach((a, i) => {
 				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true)
 			})
 		else errors.push({
@@ -57,30 +57,26 @@ extend(ArrayModel, Model, {
 	}
 })
 
-function proxifyMethod(array, method, model){
-	return function() {
-		const testArray = array.slice();
-		[][method].apply(testArray, arguments)
+function proxifyMethod(array, method, model) {
+	return function () {
+		const testArray = array.slice()
+		method.apply(testArray, arguments)
 		model.validate(testArray)
-		const returnValue = [][method].apply(array, arguments)
-		array.forEach((a,i)=> array[i] = cast(a, model.definition))
+		const returnValue = method.apply(array, arguments)
+		array.forEach((a, i) => array[i] = cast(a, model.definition))
 		return returnValue
 	}
 }
 
-function setArrayKey(array, key, value, model){
+function setArrayKey(array, key, value, model) {
 	let path = `Array[${key}]`;
-	if(parseInt(key) === +key && key >= 0)
+	if (parseInt(key) === +key && key >= 0)
 		value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
 	const testArray = array.slice()
 	testArray[key] = value
 	checkAssertions(testArray, model, path)
 	const isSuccess = !model.unstackErrors()
-	if(isSuccess){
-		array[key] = value
-	}
+	if (isSuccess) array[key] = value
 	return isSuccess
 }
-
-export default ArrayModel

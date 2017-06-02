@@ -1,11 +1,11 @@
 import {extendModel, Model} from "./model"
-import {checkDefinition, checkAssertions, extendDefinition} from "./definition"
-import { extend, isFunction, setConstructor, toString } from "./helpers"
+import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
+import {extend, isFunction, setConstructor, toString} from "./helpers"
 
 
-function FunctionModel() {
+export default function FunctionModel() {
 
-	const model = function(fn = model.default) {
+	const model = function (fn = model.default) {
 		return new Proxy(fn, {
 			getPrototypeOf: () => model.prototype,
 
@@ -19,7 +19,7 @@ function FunctionModel() {
 				checkAssertions(args, model, "arguments")
 
 				let result
-				if(!model.errors.length){
+				if (!model.errors.length) {
 					result = Reflect.apply(fn, ctx, args)
 					if ("return" in def)
 						result = checkDefinition(result, def.return, "return value", model.errors, [], true)
@@ -32,15 +32,15 @@ function FunctionModel() {
 
 	extend(model, Function)
 	setConstructor(model, FunctionModel)
-	model._init([ { arguments: [...arguments] } ])
+	model._init([{arguments: [...arguments]}])
 
 	return model
 }
 
 extend(FunctionModel, Model, {
 	toString(stack){
-		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") +')'
-		if("return" in this.definition) {
+		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") + ')'
+		if ("return" in this.definition) {
 			out += " => " + toString(this.definition.return)
 		}
 		return out
@@ -69,11 +69,9 @@ extend(FunctionModel, Model, {
 	}
 })
 
-FunctionModel.prototype.assert(function(args){
+FunctionModel.prototype.assert(function (args) {
 	if (args.length > this.definition.arguments.length) return args
 	return true
-}, function(args){
+}, function (args) {
 	return `expecting ${this.definition.arguments.length} arguments for ${toString(this)}, got ${args.length}`
 })
-
-export default FunctionModel

@@ -1,17 +1,17 @@
-import { Model } from "./model"
-import { checkDefinition, checkAssertions } from "./definition"
-import { extend, setConstructor, toString } from "./helpers"
+import {Model} from "./model"
+import {checkAssertions, checkDefinition} from "./definition"
+import {extend, setConstructor, toString} from "./helpers"
 
 const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
 
-function SetModel(){
+export default function SetModel() {
 
-	const model = function(iterable) {
+	const model = function (iterable) {
 		const _set = new Set(iterable)
 		model.validate(_set)
 
-		for(let method of SET_MUTATOR_METHODS){
-			_set[method] = function() {
+		for (let method of SET_MUTATOR_METHODS) {
+			_set[method] = function () {
 				const testSet = new Set(_set)
 				Set.prototype[method].apply(testSet, arguments)
 				model.validate(testSet)
@@ -35,8 +35,8 @@ extend(SetModel, Model, {
 	},
 
 	_validate(_set, path, errors, stack){
-		if(_set instanceof Set){
-			for(let item of _set.values()){
+		if (_set instanceof Set) {
+			for (let item of _set.values()) {
 				checkDefinition(item, this.definition, (path || "Set"), errors, stack)
 			}
 		} else {
@@ -49,5 +49,3 @@ extend(SetModel, Model, {
 		checkAssertions(_set, this, errors)
 	}
 })
-
-export default SetModel

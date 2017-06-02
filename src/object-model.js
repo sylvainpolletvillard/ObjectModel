@@ -1,14 +1,14 @@
 import {extendModel, Model} from "./model"
-import { cast, checkDefinition, checkAssertions } from "./definition"
-import { extend, is, isString, isFunction, isObject, isPlainObject, merge, setConstructor, toString } from "./helpers"
+import {cast, checkAssertions, checkDefinition} from "./definition"
+import {extend, is, isFunction, isObject, isPlainObject, isString, merge, setConstructor, toString} from "./helpers"
 
 
-export default function ObjectModel(){
-	const model = function(obj = model.default) {
-		if(!is(model, this)) return new model(obj)
-		if(is(model, obj)) return obj
+export default function ObjectModel() {
+	const model = function (obj = model.default) {
+		if (!is(model, this)) return new model(obj)
+		if (is(model, obj)) return obj
 		merge(this, obj, true)
-		if(model.hasOwnProperty("constructor")){
+		if (model.hasOwnProperty("constructor")) {
 			model.constructor.call(this, obj)
 		}
 		model.validate(this)
@@ -38,13 +38,13 @@ extend(ObjectModel, Model, {
 
 		Object.assign(def, this.definition)
 		merge(proto, this.prototype, false, true)
-		for(let part of newParts){
-			if(is(Model, part)){
+		for (let part of newParts) {
+			if (is(Model, part)) {
 				merge(def, part.definition, true)
 				newAssertions.push(...part.assertions)
 			}
-			if(isFunction(part)) merge(proto, part.prototype, true, true)
-			if(isObject(part)) merge(def, part, true, true)
+			if (isFunction(part)) merge(proto, part.prototype, true, true)
+			if (isObject(part)) merge(def, part, true, true)
 		}
 		delete proto.constructor
 
@@ -54,23 +54,20 @@ extend(ObjectModel, Model, {
 	},
 
 	_validate(obj, path, errors, stack){
-		if(!isObject(obj)){
-			errors.push({
-				expected: this,
-				received: obj,
-				path
-			})
-		} else {
-			checkDefinition(obj, this.definition, path, errors, stack)
-		}
+		if (isObject(obj)) checkDefinition(obj, this.definition, path, errors, stack)
+		else errors.push({
+			expected: this,
+			received: obj,
+			path
+		})
+
 		checkAssertions(obj, this, path, errors)
 	}
 })
 
 function getProxy(model, obj, def, path) {
-	if(!isPlainObject(def)) {
+	if (!isPlainObject(def))
 		return cast(obj, def)
-	}
 
 	return new Proxy(obj || {}, {
 		getPrototypeOf(){
@@ -78,12 +75,13 @@ function getProxy(model, obj, def, path) {
 		},
 
 		get(o, key) {
-			if(!isString(key)) return Reflect.get(o, key)
+			if (!isString(key))
+				return Reflect.get(o, key)
 
 			const newPath = (path ? path + '.' + key : key),
 			      defPart = def[key];
 
-			if(key in def && model.conventionForPrivate(key)){
+			if (key in def && model.conventionForPrivate(key)) {
 				model.errors.push({
 					message: `cannot access to private property ${newPath}`
 				})
@@ -91,7 +89,7 @@ function getProxy(model, obj, def, path) {
 				return
 			}
 
-			if(o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)){
+			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)) {
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
@@ -126,9 +124,9 @@ function getProxy(model, obj, def, path) {
 
 		getOwnPropertyDescriptor(o, key){
 			let descriptor;
-			if(!model.conventionForPrivate(key)){
+			if (!model.conventionForPrivate(key)) {
 				descriptor = Object.getOwnPropertyDescriptor(def, key);
-				if(descriptor !== undefined) descriptor.value = o[key];
+				if (descriptor !== undefined) descriptor.value = o[key];
 			}
 
 			return descriptor
@@ -136,20 +134,21 @@ function getProxy(model, obj, def, path) {
 	})
 }
 
-function controlMutation(model, def, path, o, key, applyMutation){
-	const newPath = (path ? path + '.' + key : key),
-	      isPrivate = model.conventionForPrivate(key),
-	      isConstant = model.conventionForConstant(key),
-	      isOwnProperty = o.hasOwnProperty(key),
-	      initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
+function controlMutation(model, def, path, o, key, applyMutation) {
+	const newPath       = (path ? path + '.' + key : key),
+	      isPrivate     = model.conventionForPrivate(key),
+	      isConstant    = model.conventionForConstant(key),
+	      isOwnProperty = o.hasOwnProperty(key)
 
-	if(key in def && (isPrivate || (isConstant && o[key] !== undefined))){
+	const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
+
+	if (key in def && (isPrivate || (isConstant && o[key] !== undefined))) {
 		model.errors.push({
 			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
 		})
 	}
 
-	if(def.hasOwnProperty(key)){
+	if (def.hasOwnProperty(key)) {
 		applyMutation(newPath)
 		checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
@@ -159,8 +158,8 @@ function controlMutation(model, def, path, o, key, applyMutation){
 		})
 	}
 
-	if(model.errors.length){
-		if(isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
+	if (model.errors.length) {
+		if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
 		else delete o[key] // back to the initial property defined in prototype chain
 
 		model.unstackErrors()

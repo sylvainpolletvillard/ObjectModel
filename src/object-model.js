@@ -150,9 +150,10 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 		})
 	}
 
-	if (!model.sealed || def.hasOwnProperty(key)) {
+	const isInDefinition = def.hasOwnProperty(key);
+	if (isInDefinition || !model.sealed) {
 		applyMutation(newPath)
-		checkDefinition(o[key], def[key], newPath, model.errors, [])
+		isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
 	} else {
 		model.errors.push({

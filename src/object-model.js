@@ -22,6 +22,8 @@ export default function ObjectModel() {
 }
 
 extend(ObjectModel, Model, {
+	sealed: true,
+
 	defaults(p){
 		Object.assign(this.prototype, p)
 		return this
@@ -148,7 +150,7 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 		})
 	}
 
-	if (def.hasOwnProperty(key)) {
+	if (!model.sealed || def.hasOwnProperty(key)) {
 		applyMutation(newPath)
 		checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)

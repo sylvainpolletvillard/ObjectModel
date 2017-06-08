@@ -1,4 +1,4 @@
-import {is, isArray, isFunction, isPlainObject, toString} from "./helpers"
+import {is, isArray, isFunction, isModelInstance, isPlainObject, toString} from "./helpers"
 import Model from "./model"
 
 export function parseDefinition(def) {
@@ -94,7 +94,7 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 }
 
 export function cast(obj, defNode = []) {
-	if (!obj || isPlainObject(defNode) || is(Model, obj.constructor))
+	if (!obj || isPlainObject(defNode) || isModelInstance(obj))
 		return obj // no value or not leaf or already a model instance
 
 	const def = parseDefinition(defNode);

@@ -1,6 +1,17 @@
 import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
-import {extend, is, isFunction, isObject, isPlainObject, isString, merge, setConstructor, toString} from "./helpers"
+import {
+	extend,
+	is,
+	isFunction,
+	isModelInstance,
+	isObject,
+	isPlainObject,
+	isString,
+	merge,
+	setConstructor,
+	toString
+} from "./helpers"
 
 
 export default function ObjectModel() {
@@ -91,7 +102,7 @@ function getProxy(model, obj, def, path) {
 				return
 			}
 
-			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)) {
+			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 

@@ -8,7 +8,7 @@ export default function MapModel(key, value) {
 
 	const model = function (iterable) {
 		const map = new Map(iterable)
-		model.validate(map)
+		if (!model.validate(map)) return
 		return new Proxy(map, {
 			getPrototypeOf: () => model.prototype,
 

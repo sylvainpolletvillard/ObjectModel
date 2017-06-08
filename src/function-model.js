@@ -6,6 +6,7 @@ import {extend, isFunction, setConstructor, toString} from "./helpers"
 export default function FunctionModel() {
 
 	const model = function (fn = model.default) {
+		if (!model.validate(fn)) return
 		return new Proxy(fn, {
 			getPrototypeOf: () => model.prototype,
 

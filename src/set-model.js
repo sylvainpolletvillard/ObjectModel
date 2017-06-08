@@ -8,7 +8,7 @@ export default function SetModel() {
 
 	const model = function (iterable) {
 		const _set = new Set(iterable)
-		model.validate(_set)
+		if (!model.validate(_set)) return
 
 		for (let method of SET_MUTATOR_METHODS) {
 			_set[method] = function () {

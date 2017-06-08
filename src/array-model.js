@@ -8,7 +8,7 @@ export default function ArrayModel() {
 
 	const model = function (array = model.default) {
 		if (!is(model, this)) return new model(array)
-		model.validate(array)
+		if (!model.validate(array)) return
 		return new Proxy(array, {
 			getPrototypeOf: () => model.prototype,
 

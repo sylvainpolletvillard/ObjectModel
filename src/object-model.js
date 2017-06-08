@@ -11,7 +11,7 @@ export default function ObjectModel() {
 		if (model.hasOwnProperty("constructor")) {
 			model.constructor.call(this, obj)
 		}
-		model.validate(this)
+		if (!model.validate(this)) return
 		return getProxy(model, this, model.definition)
 	}
 

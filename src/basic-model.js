@@ -5,7 +5,7 @@ import {extendModel, initModel, Model} from "./model"
 
 export default function BasicModel() {
 	const model = function (val = model.default) {
-		model.validate(val)
+		if (!model.validate(val)) return
 		return val
 	}
 

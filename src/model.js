@@ -36,7 +36,7 @@ Object.assign(Model.prototype, {
 
 	validate(obj, errorCollector){
 		this._validate(obj, null, this.errors, [])
-		unstackErrors(this, errorCollector)
+		return !unstackErrors(this, errorCollector)
 	},
 
 	test(obj){
@@ -82,18 +82,20 @@ export function extendModel(child, parent, newProps) {
 }
 
 export function unstackErrors(model, errorCollector = model.errorCollector) {
-	if (!model.errors.length) return
-
-	const errors = model.errors.map(err => {
-		if (!err.message) {
-			const def = isArray(err.expected) ? err.expected : [err.expected]
-			err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
-			+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
-		}
-		return err
-	})
-	model.errors = []
-	errorCollector.call(model, errors) // throw all errors collected
+	const nbErrors = model.errors.length
+	if (nbErrors > 0) {
+		const errors = model.errors.map(err => {
+			if (!err.message) {
+				const def   = isArray(err.expected) ? err.expected : [err.expected]
+				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
+				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
+			}
+			return err
+		})
+		model.errors = []
+		errorCollector.call(model, errors) // throw all errors collected
+	}
+	return nbErrors
 }
 
 export default Model

@@ -83,7 +83,14 @@
 
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
-			<p>A recurring criticism of JavaScript is that it is a <mark>weakly</mark> typed language. Solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> (Microsoft) or <a href="https://flowtype.org" target="_blank">Flow</a> (Facebook) try to address this problem by extending the language with static type annotation, which means it only validate your code at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no guarantee that the variables you are working with have the intended types.</p>
+			<p>A recurring criticism of JavaScript is that it is a
+				<mark>weakly</mark>
+				typed language. Solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>
+				(Microsoft) or <a href="https://flowtype.org" target="_blank">Flow</a> (Facebook) try to address this
+				problem by extending the language with static type annotations, which means it only validate your code
+				at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no guarantee
+				that the variables you are working with have the intended types.
+			</p>
 
 			<p>Static typing is <mark>insufficient</mark> to prevent most of the real and practical bugs caused by type errors. Indeed, JavaScript applications often involve <strong>unreliable data sources</strong>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static analysis can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
 
@@ -118,8 +125,8 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">9.63 KB</strong> minified,
-					<strong class="size-gzip">3.45 KB</strong> gzipped,
+					<strong class="size-min">10.09 KB</strong> minified,
+					<strong class="size-gzip">3.64 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -132,7 +139,8 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.63 KB</strong>, <strong class="size-gzip">3.45 KB</strong> gzipped) :
+				<li>Minified file (<strong class="size-min">10.09 KB</strong>, <strong class="size-gzip">3.64
+					KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files : <a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
@@ -140,7 +148,10 @@
 			<h3>Changelog and previous releases</h3>
 
 			<aside role="alert">
-				<strong>Note: ObjectModel v3 only targets ES2015-compliant environments. If you need to support other browsers (IE, mobile...), please use the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases/tag/v2.6.0" target="_blank">2.x version</a>.</strong>
+				<p><strong>Note: ObjectModel v3 only targets ES2015-compliant environments.</strong></p>
+				<p>If you need to support older browsers (IE, mobile...), please use the <a
+						href="https://github.com/sylvainpolletvillard/ObjectModel/releases/tag/v2.6.0" target="_blank">2.x
+					version</a>.</p>
 			</aside>
 
 			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a> for more info</p>
@@ -157,7 +168,8 @@
     <section id="doc-basic-model" class="grid doc-code-code">
 	    <div class="doc">
 		    <h2>Basic models</h2>
-		    <p>All the other models inherit from <code>BasicModel</code>. It is the constructor function for <i>basic models</i> and takes a <i>model definition</i> as the only argument. Basic models validate the argument passed against the model definition, and return the validated value.</p>
+		    <p>Basic models simply validate the argument passed against the model definition, and return the validated
+			    value. <code>BasicModel</code> constructor takes a <i>model definition</i> as the only argument. </p>
 	    </div>
 
         <div class="panel panel1">
@@ -178,7 +190,8 @@
 	<section id="doc-object-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Object models</h2>
-			<p>Object models validate nested object properties against a definition tree. You may consider them as definitions of classes with advanced validation options. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
+			<p>Object models validate nested object properties against a definition tree. They provide automatic
+				validation at initial and future assignments of the properties of the instance objects.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -207,6 +220,22 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 
 	<hr>
 
+	<section id="doc-model" class="grid doc-code">
+		<div class="doc">
+			<h2>Model constructor</h2>
+			<p><code>Model</code> is the <strong>base class of all models</strong> and can be used as an alias for
+				<code>BasicModel</code> and <code>ObjectModel</code> constructors.</p>
+		</div>
+
+		<div class="panel">
+			<span class="legend">Example</span>
+			<pre><code class="language-javascript">Model(Number) // return a Basic model
+Model({ name: String }) // return an Object model</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="doc-es6-classes" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Usage with ES6 classes</h2>
@@ -215,7 +244,7 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">class Character extends ObjectModel({ lastName: String, firstName: String }){
+			<pre><code class="language-javascript">class Character extends Model({ lastName: String, firstName: String }){
    get fullName(){ return `${this.firstName} ${this.lastName}`; }
 }</code></pre>
 		</div>

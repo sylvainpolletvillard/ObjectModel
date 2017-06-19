@@ -1,4 +1,4 @@
-/* global MapModel, ObjectModel */
+/* global QUnit, MapModel, ObjectModel */
 
 QUnit.module("Map Models");
 
@@ -18,6 +18,11 @@ QUnit.test("Map model constructor && proto", function (assert) {
 	assert.ok(Dict.definition.value === Number, "test Map model prop definition 2/2");
 	assert.ok(typeof Dict.assertions === "object", "test Map model prop assertions");
 
+	assert.ok(MapModel(undefined, undefined) instanceof MapModel, "MapModel can receive undefined as argument");
+	assert.throws(function () {
+		MapModel()
+	}, /Error.*Model definition is required/, "MapModel without definition throws")
+
 });
 
 QUnit.test("Map model instanciation && mutation methods watchers", function (assert) {
@@ -28,6 +33,8 @@ QUnit.test("Map model instanciation && mutation methods watchers", function (ass
 	assert.ok(m instanceof Dict && m instanceof Map, "Map models can be instanciated");
 
 	m.set("three", 3);
+
+	assert.equal(m.set.name, "set", "proxyfied methods keep original properties");
 
 	assert.throws(function () {
 		m.set("four", "4");
@@ -90,7 +97,7 @@ QUnit.test("Map model with union types & fixed values", function (assert) {
 		DictA([["3", 4], ["2", "5"]]);
 	}, /TypeError[\s\S]*Map\["2"]/, "MapModel fixed values");
 
-	const dictA = DictA([ [true, 4], [2, "5"] ]);
+	DictA([[true, 4], [2, "5"]]);
 	const DictB = DictA.extend().assert(m => m.size === 2);
 	const dictB = new DictB([ [2, 4], ["3", "5"] ]);
 
@@ -111,114 +118,89 @@ QUnit.test("Map model with union types & fixed values", function (assert) {
 	}, /TypeError/, "map model type extension 2/2");
 
 })
-/*
-QUnit.test("Child array models in object models", function (assert) {
 
-	const Child  = ObjectModel({arr: ArrayModel(String)});
+QUnit.test("Child map models in object models", function (assert) {
+
+	const Child  = ObjectModel({map: MapModel(Number, String)});
 	const Parent = ObjectModel({child: Child});
 
-	const childO = Child({arr: ["a", "b", "c"]});
-	assert.ok(childO.arr instanceof Array, "child array model is array");
+	const childO = Child({map: new Map([[1, "one"], [2, "two"]])});
+	assert.ok(childO.map instanceof Map, "child map model is instanceof Map");
 	const parentO = Parent({child: childO});
-	assert.ok(parentO.child.arr instanceof Array, "child array model from parent is array");
+	assert.ok(parentO.child.map instanceof Map, "child map model from parent is Map");
 
-	childO.arr.push("a");
+	childO.map.set(3, "three");
 	assert.throws(function () {
-		childO.arr.push(false);
-	}, /TypeError/, "child array model catches push calls");
+		childO.map.set(4, false);
+	}, /TypeError/, "child array model catches invalid set value");
 	assert.throws(function () {
-		childO.arr[0] = 1;
-	}, /TypeError/, "child array model catches set index");
-
-	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
-	assert.throws(function () {
-		ArrayModel()
-	}, /Error.*Model definition is required/, "ArrayModel without definition throws")
+		childO.map.set("four", "four");
+	}, /TypeError/, "child array model catches invalid set key");
 
 });
 
-QUnit.test("Array model defaults values", function (assert) {
+QUnit.test("Map model defaults values", function (assert) {
 
-	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
-	const a        = ArrModel();
+	const M = MapModel(Number, String).defaultTo(new Map([[1, "one"], [2, "two"]]));
+	const a = M();
 
-	assert.ok(a instanceof Array && a.length === 0, "Array model default value");
+	assert.ok(a instanceof Map && a.size === 2, "Map model default value");
 
-	ArrModel.default.push(1, 2, 3);
+	M.default.set(3, "three");
 
-	const b = ArrModel();
+	const b = M();
 
-	assert.ok(b.length === 3 && b.join(";") == "1;2;3", "array model default value is mutable array");
+	assert.ok(b.size === 3 && Array.from(b.keys()).join(";") === "1;2;3", "array model default value is mutable array");
 
-	ArrModel.default = "nope";
+	M.default = "nope";
 
 	assert.throws(function () {
-		ArrModel()
-	}, /TypeError.*got String "nope"/, "invalid default property still throws TypeError for array models");
+		M()
+	}, /TypeError/, "invalid default property still throws TypeError for map models");
 
 })
 
-QUnit.test("Array model assertions", function (assert) {
+QUnit.test("Map model assertions", function (assert) {
 
-	const ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr){ return arr.length <= 3; });
-	let arr = ArrayMax3([1,2]);
-
-	arr.push(3);
-	assert.throws(function(){ arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
-
-	const ArraySumMax10 = ArrayModel(Number).assert(function(arr){
-		return arr.reduce(function(a,b){ return a+b; },0) <= 10;
+	const MapMax3 = MapModel(Number, String).assert(function maxEntries(map) {
+		return map.size <= 3;
 	});
+	let map       = MapMax3([[1, "one"], [2, "two"]]);
 
-	arr = ArraySumMax10([2,3,4]);
-	assert.throws(function(){ arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
+	map.set(3, "three");
+	assert.throws(function () {
+		map.set(4, "four");
+	}, /TypeError[\s\S]*maxEntries/, "test assertion after map method");
 
-	const AssertArray = ArrayModel(Number).assert(v => v.length >= 0, "may throw exception");
+	const AssertMap = MapModel(Number, Number).assert(m => m.size > 0, "may throw exception");
 
-	new AssertArray([]);
+	new AssertMap([[1, 2]]);
 
-	assert.throws(function(){ new AssertArray(); },
-		/assertion \"may throw exception\" returned TypeError.*for value undefined/,
-		"assertions catch exceptions on Array models");
+	assert.throws(function () {
+			new AssertMap([]);
+		},
+		/assertion \"may throw exception\" returned false.*for value \[\]/,
+		"assertions catch exceptions on Map models");
 
 })
 
-QUnit.test("Automatic model casting in array models", function (assert) {
+QUnit.test("Automatic model casting in map models", function (assert) {
 
-	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
-	const Arr = ArrayModel(N);
-	const a = Arr([ { x:9 } ]);
+	const X = ObjectModel({x: Number}).defaults({x: 5})
+	const Y = ObjectModel({y: [Number]}).defaults({y: 7});
+	const M = MapModel(X, Y);
+	const m = M([[{x: 9}, {}]]);
 
-	assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
-	assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
+	assert.ok(Array.from(m.keys())[0] instanceof X, "test automatic model casting with map init 1/3")
+	assert.ok(Array.from(m.values())[0] instanceof Y, "test automatic model casting with map init 2/3")
+	let [k, v] = Array.from(m.entries())[0];
+	assert.equal(k.x * v.y, 63, "test automatic model casting with array init 3/3")
 
-	a.push({ x: 3 });
+	m.set({x: 3}, {y: 4})
 
-	assert.ok(a[1] instanceof N, "test automatic model casting with array mutator method 1/2")
-	assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array mutator method 2/2")
+	assert.ok(Array.from(m.keys())[1] instanceof X, "test automatic model casting with map mutator method 1/3")
+	assert.ok(Array.from(m.values())[1] instanceof Y, "test automatic model casting with map mutator method 2/3");
 
-	a[0] = { x: 10 };
-
-	assert.ok(a[0] instanceof N, "test automatic model casting with array set index 1/2")
-	assert.equal(a[0].x * a[0].y, 70, "test automatic model casting with array set index 2/2");
-
+	[k, v] = Array.from(m.entries())[1];
+	assert.equal(k.x * v.y, 12, "test automatic model casting with map mutator method 3/3")
 });
-
-QUnit.test("Other traps", function(assert){
-
-	const Arr = ArrayModel(Number);
-	const a = Arr([ 1, 2, 3 ])
-
-	delete a.unknownProperty;
-	delete a[3];
-
-	assert.throws(function(){
-		delete a[2]
-	}, /TypeError/, "deleteProperty trap block array holes if def != undefined")
-
-	const ArrB = ArrayModel([Number]);
-	const b = ArrB([ 1, 2, 3 ])
-
-	delete b[2]
-	assert.equal(b[2], undefined, "deleteProperty trap does not block when def is optional")
-})*/

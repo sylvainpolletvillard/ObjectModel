@@ -1,8 +1,8 @@
 import {extendModel, initModel, Model, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, is, isArray, setConstructor, toString} from "./helpers"
+import {extend, is, isArray, isFunction, setConstructor, toString} from "./helpers"
 
-const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
 export default function ArrayModel() {
 
@@ -13,8 +13,22 @@ export default function ArrayModel() {
 			getPrototypeOf: () => model.prototype,
 
 			get(arr, key) {
-				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, [][key], model)
-				return arr[key]
+				let val = arr[key];
+				if (!isFunction(val)) return val
+
+				return new Proxy(val, {
+					apply: (fn, ctx, args) => {
+						if (ARRAY_MUTATORS.includes(key)) {
+							const testArray = arr.slice()
+							fn.apply(testArray, args)
+							model.validate(testArray)
+						}
+
+						const returnValue = fn.apply(arr, args)
+						array.forEach((a, i) => arr[i] = cast(a, model.definition))
+						return returnValue
+					}
+				})
 			},
 
 			set(arr, key, val) {
@@ -56,17 +70,6 @@ extend(ArrayModel, Model, {
 		return extendModel(new ArrayModel(extendDefinition(this.definition, newParts)), this)
 	}
 })
-
-function proxifyMethod(array, method, model) {
-	return function () {
-		const testArray = array.slice()
-		method.apply(testArray, arguments)
-		model.validate(testArray)
-		const returnValue = method.apply(array, arguments)
-		array.forEach((a, i) => array[i] = cast(a, model.definition))
-		return returnValue
-	}
-}
 
 function setArrayKey(array, key, value, model) {
 	let path = `Array[${key}]`;

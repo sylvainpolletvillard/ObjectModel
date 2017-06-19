@@ -17,6 +17,11 @@ QUnit.test("Array model constructor && proto", function (assert) {
 	assert.ok(Arr.definition === Number, "test Array model prop definition");
 	assert.ok(typeof Arr.assertions === "object", "test Array model prop assertions");
 
+
+	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
+	assert.throws(function () {
+		ArrayModel()
+	}, /Error.*Model definition is required/, "ArrayModel without definition throws")
 });
 
 QUnit.test("Array model instanciation && mutation methods watchers", function (assert) {
@@ -25,6 +30,8 @@ QUnit.test("Array model instanciation && mutation methods watchers", function (a
 	const a   = Arr([]);
 
 	assert.ok(a instanceof Arr && a instanceof Array, "Array models can be instanciated");
+
+	assert.equal(a.push.name, "push", "proxyfied methods keep original properties");
 
 	a.push(1);
 	a[0] = 42;
@@ -123,11 +130,6 @@ QUnit.test("Child array models in object models", function (assert) {
 		childO.arr[0] = 1;
 	}, /TypeError/, "child array model catches set index");
 
-	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
-	assert.throws(function () {
-		ArrayModel()
-	}, /Error.*Model definition is required/, "ArrayModel without definition throws")
-
 });
 
 QUnit.test("Array model defaults values", function (assert) {
@@ -141,7 +143,7 @@ QUnit.test("Array model defaults values", function (assert) {
 
 	const b = ArrModel();
 
-	assert.ok(b.length === 3 && b.join(";") == "1;2;3", "array model default value is mutable array");
+	assert.ok(b.length === 3 && b.join(";") === "1;2;3", "array model default value is mutable array");
 
 	ArrModel.default = "nope";
 

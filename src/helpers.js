@@ -46,6 +46,7 @@ export function toString(obj, stack = []) {
 	stack.unshift(obj)
 
 	if (isFunction(obj)) return obj.name || obj.toString(stack)
+	if (is(Map, obj) || is(Set, obj)) return toString([...obj])
 	if (isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
 	if (obj.toString !== Object.prototype.toString) return obj.toString()
 	if (obj && isObject(obj)) {

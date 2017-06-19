@@ -1,30 +1,42 @@
-import {initModel, Model} from "./model"
-import {checkAssertions, checkDefinition} from "./definition"
-import {extend, setConstructor, toString} from "./helpers"
+import {extendModel, initModel, Model} from "./model"
+import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
+import {extend, isFunction, setConstructor, toString} from "./helpers"
 
-const SET_MUTATOR_METHODS = ["add", "delete", "clear"]
+const SET_MUTATORS = ["add", "delete", "clear"]
 
 export default function SetModel() {
 
 	const model = function (iterable) {
-		const _set = new Set(iterable)
-		if (!model.validate(_set)) return
+		const set = new Set(iterable)
+		if (!model.validate(set)) return
+		return new Proxy(set, {
+			getPrototypeOf: () => model.prototype,
 
-		for (let method of SET_MUTATOR_METHODS) {
-			_set[method] = function () {
-				const testSet = new Set(_set)
-				Set.prototype[method].apply(testSet, arguments)
-				model.validate(testSet)
-				return Set.prototype[method].apply(_set, arguments)
+			get(set, key) {
+				let val = set[key]
+				if (!isFunction(val)) return val;
+
+				return new Proxy(val, {
+					apply: (fn, ctx, args) => {
+						if (key === "add") {
+							args[0] = cast(args[0], model.definition)
+						}
+
+						if (SET_MUTATORS.includes(key)) {
+							const testSet = new Set(set)
+							fn.apply(testSet, args)
+							model.validate(testSet)
+						}
+
+						return fn.apply(set, args)
+					}
+				})
 			}
-		}
-
-		setConstructor(_set, model)
-		return _set
+		})
 	}
 
 	extend(model, Set)
-	setConstructor(model, SetModel);
+	setConstructor(model, SetModel)
 	initModel(model, arguments)
 	return model
 }
@@ -47,5 +59,9 @@ extend(SetModel, Model, {
 			})
 		}
 		checkAssertions(_set, this, errors)
+	},
+
+	extend(...newParts){
+		return extendModel(new SetModel(extendDefinition(this.definition, newParts)), this)
 	}
 })

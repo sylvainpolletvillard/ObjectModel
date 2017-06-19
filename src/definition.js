@@ -6,10 +6,9 @@ export function parseDefinition(def) {
 		for (let key of Object.keys(def)) {
 			def[key] = parseDefinition(def[key])
 		}
-	} else {
-		if (!isArray(def)) return [def]
-		if (def.length === 1) return [...def, undefined, null]
 	}
+	else if (!isArray(def)) return [def]
+	else if (def.length === 1) return [...def, undefined, null]
 
 	return def
 }

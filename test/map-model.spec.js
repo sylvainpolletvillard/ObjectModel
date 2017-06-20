@@ -132,10 +132,10 @@ QUnit.test("Child map models in object models", function (assert) {
 	childO.map.set(3, "three");
 	assert.throws(function () {
 		childO.map.set(4, false);
-	}, /TypeError/, "child array model catches invalid set value");
+	}, /TypeError/, "child map model catches invalid set value");
 	assert.throws(function () {
 		childO.map.set("four", "four");
-	}, /TypeError/, "child array model catches invalid set key");
+	}, /TypeError/, "child map model catches invalid set key");
 
 });
 
@@ -150,7 +150,7 @@ QUnit.test("Map model defaults values", function (assert) {
 
 	const b = M();
 
-	assert.ok(b.size === 3 && Array.from(b.keys()).join(";") === "1;2;3", "array model default value is mutable array");
+	assert.ok(b.size === 3 && Array.from(b.keys()).sort().join(";") === "1;2;3", "map model default value is mutable");
 
 	M.default = "nope";
 
@@ -194,7 +194,7 @@ QUnit.test("Automatic model casting in map models", function (assert) {
 	assert.ok(Array.from(m.keys())[0] instanceof X, "test automatic model casting with map init 1/3")
 	assert.ok(Array.from(m.values())[0] instanceof Y, "test automatic model casting with map init 2/3")
 	let [k, v] = Array.from(m.entries())[0];
-	assert.equal(k.x * v.y, 63, "test automatic model casting with array init 3/3")
+	assert.equal(k.x * v.y, 63, "test automatic model casting with map init 3/3")
 
 	m.set({x: 3}, {y: 4})
 

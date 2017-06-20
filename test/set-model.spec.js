@@ -50,156 +50,146 @@ QUnit.test("Set model instanciation && mutation methods watchers", function (ass
 		s.clear();
 	}, /TypeError.*minsize assert/, "clear calls are catched");
 
-	assert.equal(s.size, 2, "map size change is ok 2/2");
+	assert.equal(s.size, 2, "set size change is ok 2/2");
 
 });
-/*
- QUnit.test("Map model validation in constructor", function (assert) {
 
- const Dict = MapModel(String, Number)
- const m = Dict([ ["one", 1], ["two", 2] ]);
- assert.equal(m.size, 2, "map size is ok");
+QUnit.test("Set model validation in constructor", function (assert) {
 
- assert.throws(function () {
- Dict(["one", 1], [1, 2]);
- }, /TypeError/, "validation in map model constructor 1/2");
+	const S = SetModel(String)
+	const s = S(["one", "two"]);
+	assert.equal(s.size, 2, "set size is ok");
 
- assert.throws(function () {
- Dict(["one", 1], ["two", "2"]);
- }, /TypeError/, "validation in map model constructor 2/2");
+	assert.throws(function () {
+		S(["one", 2])
+	}, /TypeError/, "validation in set model constructor 1/2");
 
- });
+	assert.throws(function () {
+		S([1, "two"])
+	}, /TypeError/, "validation in set model constructor 2/2");
 
- QUnit.test("Map model with union types & submodels", function (assert) {
+});
 
- const Question = ObjectModel({ question: String })
- const Answer = ObjectModel({ answer: Number })
+QUnit.test("Set model with union types & submodels", function (assert) {
 
- const Dict = MapModel([Question, String], [Answer, String, Boolean]);
- const m   = Dict([ ["test", "test"] ]);
- m.set("is it real life ?", true);
- m.set(Question({ question: "life universe and everything" }), Answer({ answer: 42 }));
- m.set("another one with autocast", {answer: 43});
- assert.throws(function () {
- m.set(42, false);
- }, /TypeError.*42/, "map set multiple types for keys");
- assert.throws(function () {
- m.set("test", 42)
- }, /TypeError.*test/, "map set multiple types for values");
+	const Question = ObjectModel({
+		answer: Number
+	});
 
- })
+	const Quiz = SetModel([Question, String, Boolean]);
+	const s    = Quiz(["test", true, {answer: 42}]);
+	s.add("is it real life ?");
+	s.add(true);
+	s.add({answer: 43});
+	assert.throws(function () {
+		s.add(42);
+	}, /TypeError[\s\S]*got Number 42/m, "set invalid type on union type");
 
- QUnit.test("Map model with union types & fixed values", function (assert) {
+});
 
- const DictA = MapModel([true, 2, "3"], [4, "5"]);
- assert.throws(function () {
- DictA([["3", 4], ["2", "5"]]);
- }, /TypeError[\s\S]*Map\["2"]/, "MapModel fixed values");
+QUnit.test("Set model with union types & fixed values", function (assert) {
 
- DictA([[true, 4], [2, "5"]]);
- const DictB = DictA.extend().assert(m => m.size === 2);
- const dictB = new DictB([ [2, 4], ["3", "5"] ]);
+	const S = SetModel([true, 2, "3"]);
+	assert.throws(function () {
+		S(["3", 4]);
+	}, /TypeError[\s\S]*Set.*Number 4/, "SetModel fixed values");
 
- assert.ok(Object.getPrototypeOf(DictB.prototype) === DictA.prototype, "extension respect prototypal chain");
- assert.ok(dictB instanceof DictB && dictB instanceof DictA, "map model inheritance");
- DictA([ [true, 4], [2, "5"] ]).set("3", 4);
- assert.throws(function () {
- DictB([ [true, 4], [2, "5"] ]).set("3", 4);
- }, /TypeError/, "min/max of inherit map model");
+	S([2, true]);
+	const S2 = S.extend().assert(s => s.size === 2);
+	const s2 = new S2([2, '3']);
 
- const DictC = DictB.extend("new", "val");
- DictC([ ["new", "5"], [true, "val"] ]);
- assert.throws(function () {
- DictB([ ["new", "5"], ["3", 4] ]);
- }, /TypeError/, "map model type extension 1/2");
- assert.throws(function () {
- DictB([ ["3", 4], [true, "val"] ]);
- }, /TypeError/, "map model type extension 2/2");
+	assert.ok(Object.getPrototypeOf(S2.prototype) === S.prototype, "extension respect prototypal chain");
+	assert.ok(s2 instanceof S2 && s2 instanceof S, "set model inheritance");
+	S([2, true]).add("3");
+	assert.throws(function () {
+		S2([2, true]).add("3")
+	}, /TypeError/, "min/max of inherit set model");
 
- })
+	const S3 = S2.extend("new", "val");
+	S3(["val", true]);
+	S3([true, "new"]);
+	assert.throws(function () {
+		S2(["val", true]);
+	}, /TypeError/, "set  model type extension");
 
- QUnit.test("Child map models in object models", function (assert) {
+})
 
- const Child  = ObjectModel({map: MapModel(Number, String)});
- const Parent = ObjectModel({child: Child});
+QUnit.test("Child set models in object models", function (assert) {
 
- const childO = Child({map: new Map([[1, "one"], [2, "two"]])});
- assert.ok(childO.map instanceof Map, "child map model is instanceof Map");
- const parentO = Parent({child: childO});
- assert.ok(parentO.child.map instanceof Map, "child map model from parent is Map");
+	const Child  = ObjectModel({set: SetModel(Number)});
+	const Parent = ObjectModel({child: Child});
 
- childO.map.set(3, "three");
- assert.throws(function () {
- childO.map.set(4, false);
- }, /TypeError/, "child array model catches invalid set value");
- assert.throws(function () {
- childO.map.set("four", "four");
- }, /TypeError/, "child array model catches invalid set key");
+	const childO = Child({set: new Set([1, 2, 3, 5, 8])});
+	assert.ok(childO.set instanceof Set, "child set model is instanceof Set");
+	const parentO = Parent({child: childO});
+	assert.ok(parentO.child.set instanceof Set, "child set model from parent is Set");
 
- });
+	childO.set.add(13);
+	assert.throws(function () {
+		childO.set.add("21");
+	}, /TypeError/, "child array model catches invalid set value");
 
- QUnit.test("Map model defaults values", function (assert) {
+});
 
- const M = MapModel(Number, String).defaultTo(new Map([[1, "one"], [2, "two"]]));
- const a = M();
+QUnit.test("Set model defaults values", function (assert) {
 
- assert.ok(a instanceof Map && a.size === 2, "Map model default value");
+	const S = SetModel(Number).defaultTo(new Set([1, 2]));
+	const a = S();
 
- M.default.set(3, "three");
+	assert.ok(a instanceof Set && a.size === 2, "Set model default value");
 
- const b = M();
+	S.default.add(3);
 
- assert.ok(b.size === 3 && Array.from(b.keys()).join(";") === "1;2;3", "array model default value is mutable array");
+	const b = S();
 
- M.default = "nope";
+	assert.ok(b.size === 3 && Array.from(b.values()).sort().join(";") === "1;2;3", "set model default value is mutable");
 
- assert.throws(function () {
- M()
- }, /TypeError/, "invalid default property still throws TypeError for map models");
+	S.default = "nope";
 
- })
+	assert.throws(function () {
+		S()
+	}, /TypeError/, "invalid default property still throws TypeError for set models");
 
- QUnit.test("Map model assertions", function (assert) {
+})
 
- const MapMax3 = MapModel(Number, String).assert(function maxEntries(map) {
- return map.size <= 3;
- });
- let map       = MapMax3([[1, "one"], [2, "two"]]);
+QUnit.test("Set model assertions", function (assert) {
 
- map.set(3, "three");
- assert.throws(function () {
- map.set(4, "four");
- }, /TypeError[\s\S]*maxEntries/, "test assertion after map method");
+	const SetMax3 = SetModel(String).assert(function maxEntries(set) {
+		return set.size <= 3;
+	});
 
- const AssertMap = MapModel(Number, Number).assert(m => m.size > 0, "may throw exception");
+	let set = SetMax3(["one", "two"]);
 
- new AssertMap([[1, 2]]);
+	set.add("three");
+	assert.throws(function () {
+		set.add("four");
+	}, /TypeError[\s\S]*maxEntries/, "test assertion after set method");
 
- assert.throws(function () {
- new AssertMap([]);
- },
- /assertion \"may throw exception\" returned false.*for value \[\]/,
- "assertions catch exceptions on Map models");
+	const AssertSet = SetModel(Number).assert(s => s.size > 0, "may throw exception");
 
- })
+	new AssertSet([1, 2]);
 
- QUnit.test("Automatic model casting in map models", function (assert) {
+	assert.throws(function () {
+			new AssertSet([]);
+		},
+		/assertion \"may throw exception\" returned false.*for value \[\]/,
+		"assertions catch exceptions on Set models");
 
- const X = ObjectModel({x: Number}).defaults({x: 5})
- const Y = ObjectModel({y: [Number]}).defaults({y: 7});
- const M = MapModel(X, Y);
- const m = M([[{x: 9}, {}]]);
+})
 
- assert.ok(Array.from(m.keys())[0] instanceof X, "test automatic model casting with map init 1/3")
- assert.ok(Array.from(m.values())[0] instanceof Y, "test automatic model casting with map init 2/3")
- let [k, v] = Array.from(m.entries())[0];
- assert.equal(k.x * v.y, 63, "test automatic model casting with array init 3/3")
+QUnit.test("Automatic model casting in set models", function (assert) {
 
- m.set({x: 3}, {y: 4})
+	const N = ObjectModel({x: Number, y: [Number]}).defaults({x: 5, y: 7});
+	const S = SetModel(N);
+	const s = S([{x: 9}]);
 
- assert.ok(Array.from(m.keys())[1] instanceof X, "test automatic model casting with map mutator method 1/3")
- assert.ok(Array.from(m.values())[1] instanceof Y, "test automatic model casting with map mutator method 2/3");
+	let n = Array.from(s.values())[0];
+	assert.ok(n instanceof N, "test automatic model casting with set init 1/2")
+	assert.equal(n.x * n.y, 63, "test automatic model casting with set init 2/2")
 
- [k, v] = Array.from(m.entries())[1];
- assert.equal(k.x * v.y, 12, "test automatic model casting with map mutator method 3/3")
- });*/
+	s.add({x: 3});
+	n = Array.from(s.values())[1];
+
+	assert.ok(n instanceof N, "test automatic model casting with array mutator method 1/2")
+	assert.equal(n.x * n.y, 21, "test automatic model casting with array mutator method 2/2")
+});

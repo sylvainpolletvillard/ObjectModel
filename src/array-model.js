@@ -1,13 +1,12 @@
-import {extendModel, initModel, Model, unstackErrors} from "./model"
+import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, is, isArray, isFunction, setConstructor, toString} from "./helpers"
+import {extend, isArray, isFunction, setConstructor, toString} from "./helpers"
 
 const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
 export default function ArrayModel() {
 
 	const model = function (array = model.default) {
-		if (!is(model, this)) return new model(array)
 		if (!model.validate(array)) return
 		return new Proxy(array, {
 			getPrototypeOf: () => model.prototype,
@@ -57,11 +56,7 @@ extend(ArrayModel, Model, {
 			arr.forEach((a, i) => {
 				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true)
 			})
-		else errors.push({
-			expected: this,
-			received: arr,
-			path
-		})
+		else stackError(errors, this, arr, path)
 
 		checkAssertions(arr, this, path, errors)
 	},

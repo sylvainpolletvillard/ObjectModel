@@ -1,4 +1,4 @@
-import {extendModel, initModel, Model} from "./model"
+import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
@@ -49,19 +49,13 @@ extend(SetModel, Model, {
 		return "Set of " + toString(this.definition, stack)
 	},
 
-	_validate(_set, path, errors, stack){
-		if (_set instanceof Set) {
-			for (let item of _set.values()) {
+	_validate(set, path, errors, stack){
+		if (set instanceof Set) {
+			for (let item of set.values()) {
 				checkDefinition(item, this.definition, (path || "Set"), errors, stack)
 			}
-		} else {
-			errors.push({
-				expected: this,
-				received: _set,
-				path
-			})
-		}
-		checkAssertions(_set, this, errors)
+		} else stackError(errors, this, set, path)
+		checkAssertions(set, this, errors)
 	},
 
 	extend(...newParts){

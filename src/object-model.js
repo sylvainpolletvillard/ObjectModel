@@ -1,4 +1,4 @@
-import {extendModel, initModel, Model, unstackErrors} from "./model"
+import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
 import {
 	extend,
@@ -13,6 +13,9 @@ import {
 	toString
 } from "./helpers"
 
+const cannot = (model, msg) => {
+	model.errors.push({message: "cannot " + msg})
+}
 
 export default function ObjectModel() {
 	const model = function (obj = model.default) {
@@ -68,11 +71,7 @@ extend(ObjectModel, Model, {
 
 	_validate(obj, path, errors, stack){
 		if (isObject(obj)) checkDefinition(obj, this.definition, path, errors, stack)
-		else errors.push({
-			expected: this,
-			received: obj,
-			path
-		})
+		else stackError(errors, this, obj, path)
 
 		checkAssertions(obj, this, path, errors)
 	}
@@ -95,9 +94,7 @@ function getProxy(model, obj, def, path) {
 			      defPart = def[key];
 
 			if (key in def && model.conventionForPrivate(key)) {
-				model.errors.push({
-					message: `cannot access to private property ${newPath}`
-				})
+				cannot(model, `access to private property ${newPath}`)
 				unstackErrors(model)
 				return
 			}
@@ -155,22 +152,16 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 
 	const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-	if (key in def && (isPrivate || (isConstant && o[key] !== undefined))) {
-		model.errors.push({
-			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
-		})
-	}
+	if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
+		cannot(model, `modify ${isPrivate ? "private" : "constant"} ${key}`)
 
 	const isInDefinition = def.hasOwnProperty(key);
 	if (isInDefinition || !model.sealed) {
 		applyMutation(newPath)
 		isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
-	} else {
-		model.errors.push({
-			message: `cannot find property ${newPath} in the model definition`
-		})
 	}
+	else cannot(model, `find property ${newPath} in the model definition`)
 
 	if (model.errors.length) {
 		if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)

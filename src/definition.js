@@ -1,5 +1,5 @@
 import {is, isArray, isFunction, isModelInstance, isPlainObject, toString} from "./helpers"
-import Model from "./model"
+import Model, {stackError} from "./model"
 
 export function parseDefinition(def) {
 	if (isPlainObject(def)) {
@@ -46,11 +46,7 @@ export function checkDefinition(obj, def, path, errors, stack, shouldCast = fals
 		if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
 			return obj
 
-		errors.push({
-			expected: def,
-			received: obj,
-			path
-		})
+		stackError(errors, def, obj, path)
 	}
 
 	return obj
@@ -82,12 +78,7 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 		if (result !== true) {
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`
-			errors.push({
-				message: onFail.call(model, result, obj),
-				expected: assertion,
-				received: obj,
-				path
-			})
+			stackError(errors, assertion, obj, path, onFail.call(model, result, obj))
 		}
 	}
 }

@@ -81,6 +81,10 @@ export function extendModel(child, parent, newProps) {
 	return child
 }
 
+export function stackError(errors, expected, received, path, message) {
+	errors.push({expected, received, path, message})
+}
+
 export function unstackErrors(model, errorCollector = model.errorCollector) {
 	const nbErrors = model.errors.length
 	if (nbErrors > 0) {

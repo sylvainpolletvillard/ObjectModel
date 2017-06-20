@@ -26,18 +26,22 @@ function getModel(instance) {
 	return proto.constructor
 }
 
+function span(value, style) {
+	return ["span", {style}, value]
+}
+
 function format(x, config) {
 	if (x === null || x === undefined)
-		return ["span", {style: styles.null}, String(x)];
+		return span(String(x), styles.null);
 
 	if (typeof x === "boolean")
-		return ["span", {style: styles.boolean}, x];
+		return span(x, styles.boolean);
 
 	if (typeof x === "number")
-		return ["span", {style: styles.number}, x];
+		return span(x, styles.number);
 
 	if (typeof x === "string")
-		return ["span", {style: styles.string}, `"${x}"`];
+		return span(`"${x}"`, styles.string);
 
 	if (isArray(x)) {
 		let def = [];
@@ -46,14 +50,14 @@ function format(x, config) {
 			def.push(format(x[i]))
 			if (i < x.length - 1) def.push(' or ')
 		}
-		return ["span", {}, ...def]
+		return span(...def)
 	}
 
 	if (isPlainObject(x))
 		return formatObject(x, getModel(x), config)
 
 	if (isFunction(x) && !is(Model, x))
-		return ["span", {style: styles.function}, x.name || x.toString()];
+		return span(x.name || x.toString(), styles.function);
 
 	return x ? ['object', {object: x, config}] : null
 }
@@ -65,7 +69,7 @@ function formatObject(o, model, config) {
 		...Object.keys(o).map(prop => {
 			let isPrivate = model && model.conventionForPrivate(prop);
 			return ['li', {style: styles.listItem},
-				['span', {style: isPrivate ? styles.private : styles.property}, prop], ': ',
+				span(prop, isPrivate ? styles.private : styles.property), ': ',
 				format(o[prop], config)
 			]
 		}),
@@ -75,7 +79,7 @@ function formatObject(o, model, config) {
 
 function formatHeader(x, config) {
 	if (is(Model, x))
-		return ["span", {style: styles.model}, x.name];
+		return span(x.name, styles.model)
 
 	if (config.fromModel || isPlainObject(x) || isArray(x))
 		return format(x)
@@ -106,7 +110,7 @@ const ModelInstanceFormatter = {
 
 		const model = getModel(x);
 		if (is(Model, model)) {
-			return ["span", {style: styles.model}, x.constructor.name];
+			return span(x.constructor.name, styles.model)
 		}
 
 		return null;

@@ -1,4 +1,4 @@
-import {extendModel, initModel, Model, unstackErrors} from "./model"
+import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
@@ -61,11 +61,7 @@ extend(FunctionModel, Model, {
 
 	_validate(f, path, errors){
 		if (!isFunction(f)) {
-			errors.push({
-				expected: "Function",
-				received: f,
-				path
-			})
+			stackError(errors, "Function", f, path)
 		}
 	}
 })

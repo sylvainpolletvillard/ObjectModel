@@ -1,4 +1,4 @@
-import {extendModel, initModel, Model} from "./model"
+import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
@@ -56,11 +56,7 @@ extend(MapModel, Model, {
 				checkDefinition(key, this.definition.key, subPath, errors, stack),
 				checkDefinition(value, this.definition.value, subPath, errors, stack)
 			}
-		} else errors.push({
-			expected: this,
-			received: map,
-			path
-		})
+		} else stackError(errors, this, map, path)
 
 		checkAssertions(map, this, errors)
 	},

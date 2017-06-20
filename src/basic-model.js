@@ -3,14 +3,14 @@ import {extendDefinition} from "./definition"
 import {extendModel, initModel, Model} from "./model"
 
 
-export default function BasicModel() {
+export default function BasicModel(def) {
 	const model = function (val = model.default) {
 		if (!model.validate(val)) return
 		return val
 	}
 
 	setConstructor(model, BasicModel)
-	initModel(model, arguments)
+	initModel(model, def)
 	return model
 }
 

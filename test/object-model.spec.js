@@ -1,4 +1,4 @@
-/* global Model, BasicModel, ObjectModel, ArrayModel */
+/* global QUnit, Model, BasicModel, ObjectModel, ArrayModel */
 
 QUnit.module("Object Models");
 
@@ -150,11 +150,8 @@ QUnit.test("Object model behaviour for properties", function (assert) {
 
 QUnit.test("ObjectModel edge cases of constructors", function (assert) {
 	assert.ok(ObjectModel({}) instanceof ObjectModel, "ObjectModel can receive empty object as argument");
-	assert.throws(function () {
-		ObjectModel()
-	}, /Error.*Model definition is required/, "ObjectModel without definition throws")
 
-	/* //TODO
+	/* //TODO: use FunctionModel for ObjectModel API ?
 	 assert.throws(function () {
 	 ObjectModel(undefined)
 	 }, /expecting arguments\[0] to be Object, got undefined/,

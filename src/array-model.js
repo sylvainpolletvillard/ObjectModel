@@ -4,7 +4,7 @@ import {extend, isArray, isFunction, setConstructor, toString} from "./helpers"
 
 const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
-export default function ArrayModel() {
+export default function ArrayModel(def) {
 
 	const model = function (array = model.default) {
 		if (!model.validate(array)) return
@@ -42,7 +42,7 @@ export default function ArrayModel() {
 
 	extend(model, Array)
 	setConstructor(model, ArrayModel)
-	initModel(model, arguments)
+	initModel(model, def)
 	return model
 }
 

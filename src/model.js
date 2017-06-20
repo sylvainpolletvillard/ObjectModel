@@ -66,9 +66,8 @@ Object.assign(Model.prototype, {
 	}
 })
 
-export function initModel(model, args) {
-	if (args.length === 0) throw new Error("Model definition is required");
-	model.definition = args[0]
+export function initModel(model, def) {
+	model.definition = def
 	model.assertions = [...model.assertions]
 	define(model, "errors", [])
 	delete model.name;

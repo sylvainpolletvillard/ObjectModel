@@ -24,14 +24,9 @@ QUnit.test("Basic models constructor && proto are correctly defined", function (
 	assert.ok(typeof NumberModelThroughConstructor.assertions === "object", "test new model prop assertions");
 });
 
-QUnit.test("Basic Model with undefined or no definition", function (assert) {
-
+QUnit.test("Basic Model with undefined definition", function (assert) {
 	const UndefinedModel = BasicModel(undefined);
 	assert.ok(UndefinedModel instanceof BasicModel, "Model can receive undefined as argument");
-	assert.throws(function () {
-		BasicModel()
-	}, /Error.*Model definition is required/, "Model without definition throws")
-
 });
 
 QUnit.test("Basic model behaviour", function (assert) {

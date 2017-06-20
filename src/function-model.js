@@ -3,7 +3,7 @@ import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
 
-export default function FunctionModel() {
+export default function FunctionModel(...argsDef) {
 
 	const model = function (fn = model.default) {
 		if (!model.validate(fn)) return
@@ -33,7 +33,7 @@ export default function FunctionModel() {
 
 	extend(model, Function)
 	setConstructor(model, FunctionModel)
-	initModel(model, [{arguments: [...arguments]}])
+	initModel(model, {arguments: argsDef})
 
 	return model
 }

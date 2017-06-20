@@ -40,20 +40,21 @@ export default function MapModel(key, value) {
 
 	extend(model, Map)
 	setConstructor(model, MapModel)
-	initModel(model, arguments.length > 0 ? [{key, value}] : [])
+	initModel(model, {key, value})
 	return model
 }
 
 extend(MapModel, Model, {
-	toString(stack){
-		return "Map of " + toString(this.definition, stack)
+	toString(stack) {
+		const {key, value} = this.definition
+		return `Map of ${toString(key, stack)} : ${toString(value, stack)}`
 	},
 
-	_validate(map, path, errors, stack){
+	_validate(map, path, errors, stack) {
 		if (map instanceof Map) {
 			for (let [key, value] of map) {
 				let subPath = `${path || "Map"}[${toString(key)}]`
-				checkDefinition(key, this.definition.key, subPath, errors, stack),
+				checkDefinition(key, this.definition.key, subPath, errors, stack)
 				checkDefinition(value, this.definition.value, subPath, errors, stack)
 			}
 		} else stackError(errors, this, map, path)

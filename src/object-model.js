@@ -17,7 +17,7 @@ const cannot = (model, msg) => {
 	model.errors.push({message: "cannot " + msg})
 }
 
-export default function ObjectModel() {
+export default function ObjectModel(def) {
 	const model = function (obj = model.default) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
@@ -31,7 +31,7 @@ export default function ObjectModel() {
 
 	extend(model, Object)
 	setConstructor(model, ObjectModel)
-	initModel(model, arguments)
+	initModel(model, def)
 	return model
 }
 

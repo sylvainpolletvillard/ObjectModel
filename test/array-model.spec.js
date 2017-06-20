@@ -19,9 +19,6 @@ QUnit.test("Array model constructor && proto", function (assert) {
 
 
 	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
-	assert.throws(function () {
-		ArrayModel()
-	}, /Error.*Model definition is required/, "ArrayModel without definition throws")
 });
 
 QUnit.test("Array model instanciation && mutation methods watchers", function (assert) {

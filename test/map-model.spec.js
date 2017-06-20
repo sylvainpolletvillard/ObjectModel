@@ -19,10 +19,6 @@ QUnit.test("Map model constructor && proto", function (assert) {
 	assert.ok(typeof Dict.assertions === "object", "test Map model prop assertions");
 
 	assert.ok(MapModel(undefined, undefined) instanceof MapModel, "MapModel can receive undefined as argument");
-	assert.throws(function () {
-		MapModel()
-	}, /Error.*Model definition is required/, "MapModel without definition throws")
-
 });
 
 QUnit.test("Map model instanciation && mutation methods watchers", function (assert) {

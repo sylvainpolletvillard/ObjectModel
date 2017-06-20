@@ -4,7 +4,7 @@ import {extend, isFunction, setConstructor, toString} from "./helpers"
 
 const SET_MUTATORS = ["add", "delete", "clear"]
 
-export default function SetModel() {
+export default function SetModel(def) {
 
 	const model = function (iterable = model.default) {
 		const castValue = val => cast(val, model.definition)
@@ -40,7 +40,7 @@ export default function SetModel() {
 
 	extend(model, Set)
 	setConstructor(model, SetModel)
-	initModel(model, arguments)
+	initModel(model, def)
 	return model
 }
 

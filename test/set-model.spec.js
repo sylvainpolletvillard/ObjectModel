@@ -18,9 +18,6 @@ QUnit.test("Set model constructor && proto", function (assert) {
 	assert.ok(typeof MySet.assertions === "object", "test Set model prop assertions");
 
 	assert.ok(SetModel(undefined) instanceof SetModel, "SetModel can receive undefined as argument");
-	assert.throws(function () {
-		SetModel()
-	}, /Error.*Model definition is required/, "SetModel without definition throws")
 
 });
 

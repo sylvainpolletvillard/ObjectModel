@@ -6,9 +6,12 @@ const SET_MUTATORS = ["add", "delete", "clear"]
 
 export default function SetModel() {
 
-	const model = function (iterable) {
-		const set = new Set(iterable)
+	const model = function (iterable = model.default) {
+		const castValue = val => cast(val, model.definition)
+		const set       = new Set([...iterable].map(castValue))
+
 		if (!model.validate(set)) return
+
 		return new Proxy(set, {
 			getPrototypeOf: () => model.prototype,
 
@@ -19,7 +22,7 @@ export default function SetModel() {
 				return new Proxy(val, {
 					apply: (fn, ctx, args) => {
 						if (key === "add") {
-							args[0] = cast(args[0], model.definition)
+							args[0] = castValue(args[0])
 						}
 
 						if (SET_MUTATORS.includes(key)) {

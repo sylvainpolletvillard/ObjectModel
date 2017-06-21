@@ -43,7 +43,7 @@ export function extend(child, parent, props) {
 	child.prototype = Object.assign(Object.create(parent.prototype), {constructor: child}, props)
 }
 
-export function toString(obj, stack = []) {
+export function format(obj, stack = []) {
 	if (stack.length > 15 || stack.includes(obj)) return '...'
 	if (obj === null || obj === undefined) return String(obj)
 	if (isString(obj)) return `"${obj}"`
@@ -52,14 +52,14 @@ export function toString(obj, stack = []) {
 	stack.unshift(obj)
 
 	if (isFunction(obj)) return obj.name || obj.toString(stack)
-	if (is(Map, obj) || is(Set, obj)) return toString([...obj])
-	if (isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
+	if (is(Map, obj) || is(Set, obj)) return format([...obj])
+	if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 	if (obj.toString !== Object.prototype.toString) return obj.toString()
 	if (obj && isObject(obj)) {
 		const props  = Object.keys(obj),
 		      indent = '\t'.repeat(stack.length)
 		return `{${props.map(
-			key => `\n${indent + key}: ${toString(obj[key], stack)}`
+			key => `\n${indent + key}: ${format(obj[key], stack)}`
 		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 	}
 

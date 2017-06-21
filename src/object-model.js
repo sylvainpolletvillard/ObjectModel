@@ -2,6 +2,7 @@ import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
 import {
 	extend,
+	format,
 	is,
 	isFunction,
 	isModelInstance,
@@ -10,8 +11,7 @@ import {
 	isString,
 	merge,
 	proxify,
-	setConstructor,
-	toString
+	setConstructor
 } from "./helpers"
 
 const cannot = (model, msg) => {
@@ -45,7 +45,7 @@ extend(ObjectModel, Model, {
 	},
 
 	toString(stack){
-		return toString(this.definition, stack)
+		return format(this.definition, stack)
 	},
 
 	extend(...newParts){

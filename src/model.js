@@ -1,4 +1,4 @@
-import {bettertypeof, define, extend, isArray, isPlainObject, toString} from "./helpers"
+import {bettertypeof, define, extend, format, isArray, isPlainObject} from "./helpers"
 import {checkAssertions, checkDefinition, formatDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
@@ -59,7 +59,7 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	assert(assertion, description = toString(assertion)){
+	assert(assertion, description = format(assertion)){
 		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion)
 		return this
@@ -90,8 +90,8 @@ export function unstackErrors(model, errorCollector = model.errorCollector) {
 		const errors = model.errors.map(err => {
 			if (!err.message) {
 				const def   = isArray(err.expected) ? err.expected : [err.expected]
-				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
-				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received))
+				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
+					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 			}
 			return err
 		})

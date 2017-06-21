@@ -1,4 +1,4 @@
-import {is, isArray, isFunction, isModelInstance, isPlainObject, toString} from "./helpers"
+import {format, is, isArray, isFunction, isModelInstance, isPlainObject} from "./helpers"
 import Model, {stackError} from "./model"
 
 export function parseDefinition(def) {
@@ -13,7 +13,7 @@ export function parseDefinition(def) {
 	return def
 }
 
-export const formatDefinition = (def, stack) => parseDefinition(def).map(d => toString(d, stack)).join(" or ")
+export const formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or ")
 
 export function extendDefinition(def, newParts = []) {
 	if (!isArray(newParts)) newParts = [newParts]
@@ -79,7 +79,7 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 		}
 		if (result !== true) {
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`
+				`assertion "${assertion.description}" returned ${format(assertionResult)} for value ${format(value)}`
 			stackError(errors, assertion, obj, path, onFail.call(model, result, obj))
 		}
 	}
@@ -104,7 +104,7 @@ export function cast(obj, defNode = []) {
 	}
 
 	if (suitableModels.length > 1)
-		console.warn(`Ambiguous model for value ${toString(obj)}, could be ${suitableModels.join(" or ")}`)
+		console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`)
 
 	return obj
 }

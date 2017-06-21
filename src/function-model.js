@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, proxifyModel, setConstructor, toString} from "./helpers"
+import {extend, format, isFunction, proxifyModel, setConstructor} from "./helpers"
 
 
 export default function FunctionModel(...argsDef) {
@@ -71,5 +71,5 @@ FunctionModel.prototype.assert(function (args) {
 	if (args.length > this.definition.arguments.length) return args
 	return true
 }, function (args) {
-	return `expecting ${this.definition.arguments.length} arguments for ${toString(this)}, got ${args.length}`
+	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`
 })

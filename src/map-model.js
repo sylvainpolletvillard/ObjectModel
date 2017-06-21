@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {extend, format, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
 const MAP_MUTATORS = ["set", "delete", "clear"]
 
@@ -49,7 +49,7 @@ extend(MapModel, Model, {
 	_validate(map, path, errors, stack) {
 		if (map instanceof Map) {
 			for (let [key, value] of map) {
-				let subPath = `${path || "Map"}[${toString(key)}]`
+				let subPath = `${path || "Map"}[${format(key)}]`
 				checkDefinition(key, this.definition.key, subPath, errors, stack)
 				checkDefinition(value, this.definition.value, subPath, errors, stack)
 			}

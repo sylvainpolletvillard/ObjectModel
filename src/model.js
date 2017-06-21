@@ -90,7 +90,7 @@ export function unstackErrors(model, errorCollector = model.errorCollector) {
 		const errors = model.errors.map(err => {
 			if (!err.message) {
 				const def   = isArray(err.expected) ? err.expected : [err.expected]
-				err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(def)
+				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
 					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 			}
 			return err

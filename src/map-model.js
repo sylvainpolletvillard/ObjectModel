@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
-import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, isFunction, setConstructor, toString} from "./helpers"
+import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
+import {extend, isFunction, setConstructor} from "./helpers"
 
 const MAP_MUTATORS = ["set", "delete", "clear"]
 
@@ -47,7 +47,7 @@ export default function MapModel(key, value) {
 extend(MapModel, Model, {
 	toString(stack) {
 		const {key, value} = this.definition
-		return `Map of ${toString(key, stack)} : ${toString(value, stack)}`
+		return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
 	},
 
 	_validate(map, path, errors, stack) {

@@ -1,5 +1,5 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
-import {checkAssertions, checkDefinition, extendDefinition} from "./definition"
+import {checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
 import {extend, isFunction, setConstructor, toString} from "./helpers"
 
 
@@ -40,9 +40,12 @@ export default function FunctionModel(...argsDef) {
 
 extend(FunctionModel, Model, {
 	toString(stack){
-		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") + ')'
+		let out = `Function(${this.definition.arguments.map(
+			argDef => formatDefinition(argDef, stack.slice())
+		).join(",")})`
+
 		if ("return" in this.definition) {
-			out += " => " + toString(this.definition.return)
+			out += " => " + formatDefinition(this.definition.return, stack)
 		}
 		return out
 	},

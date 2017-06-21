@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
-import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, isFunction, setConstructor, toString} from "./helpers"
+import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
+import {extend, isFunction, setConstructor} from "./helpers"
 
 const SET_MUTATORS = ["add", "delete", "clear"]
 
@@ -46,7 +46,7 @@ export default function SetModel(def) {
 
 extend(SetModel, Model, {
 	toString(stack){
-		return "Set of " + toString(this.definition, stack)
+		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
 	_validate(set, path, errors, stack){

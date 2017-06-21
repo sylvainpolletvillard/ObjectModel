@@ -214,3 +214,9 @@ QUnit.test("Other traps", function(assert){
 	delete b[2]
 	assert.equal(b[2], undefined, "deleteProperty trap does not block when def is optional")
 })
+
+
+QUnit.test("Array models toString", function (assert) {
+	assert.equal(ArrayModel(Number,).toString(), "Array of Number")
+	assert.equal(ArrayModel([String, 42]).toString(), "Array of String or 42")
+})

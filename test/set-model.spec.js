@@ -190,3 +190,8 @@ QUnit.test("Automatic model casting in set models", function (assert) {
 	assert.ok(n instanceof N, "test automatic model casting with array mutator method 1/2")
 	assert.equal(n.x * n.y, 21, "test automatic model casting with array mutator method 2/2")
 });
+
+QUnit.test("Set models toString", function (assert) {
+	assert.equal(SetModel(Number,).toString(), "Set of Number")
+	assert.equal(SetModel([String, 42]).toString(), "Set of String or 42")
+})

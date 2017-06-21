@@ -13,6 +13,8 @@ export function parseDefinition(def) {
 	return def
 }
 
+export const formatDefinition = (def, stack) => parseDefinition(def).map(d => toString(d, stack)).join(" or ")
+
 export function extendDefinition(def, newParts = []) {
 	if (!isArray(newParts)) newParts = [newParts]
 	if (newParts.length > 0) {

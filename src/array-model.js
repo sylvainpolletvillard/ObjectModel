@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
-import {cast, checkAssertions, checkDefinition, extendDefinition} from "./definition"
-import {extend, isArray, isFunction, setConstructor, toString} from "./helpers"
+import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
+import {extend, isArray, isFunction, setConstructor} from "./helpers"
 
 const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 
@@ -48,7 +48,7 @@ export default function ArrayModel(def) {
 
 extend(ArrayModel, Model, {
 	toString(stack){
-		return 'Array of ' + toString(this.definition, stack)
+		return 'Array of ' + formatDefinition(this.definition, stack)
 	},
 
 	_validate(arr, path, errors, stack){

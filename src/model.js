@@ -1,5 +1,5 @@
 import {bettertypeof, define, extend, isArray, isPlainObject, toString} from "./helpers"
-import {checkAssertions, checkDefinition, parseDefinition} from "./definition"
+import {checkAssertions, checkDefinition, formatDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
 
@@ -16,7 +16,7 @@ Object.assign(Model.prototype, {
 	conventionForPrivate: key => key[0] === "_",
 
 	toString(stack){
-		return parseDefinition(this.definition).map(d => toString(d, stack)).join(" or ")
+		return formatDefinition(this.definition, stack)
 	},
 
 	as(name){

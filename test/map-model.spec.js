@@ -200,3 +200,8 @@ QUnit.test("Automatic model casting in map models", function (assert) {
 	[k, v] = Array.from(m.entries())[1];
 	assert.equal(k.x * v.y, 12, "test automatic model casting with map mutator method 3/3")
 });
+
+QUnit.test("Map models toString", function (assert) {
+	assert.equal(MapModel(Number, String).toString(), "Map of Number : String")
+	assert.equal(MapModel(Date, [String, 42]).toString(), "Map of Date : String or 42")
+})

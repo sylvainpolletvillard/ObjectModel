@@ -9,6 +9,12 @@ export const isPlainObject   = o => o && isObject(o) && Object.getPrototypeOf(o)
 export const isModelInstance = i => i && is(Model, Object.getPrototypeOf(i).constructor)
 export const bettertypeof    = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 
+export const proxify      = (val, traps) => new Proxy(val, traps)
+export const proxifyFn    = (fn, apply) => proxify(fn, {apply})
+export const proxifyModel = (val, model, traps) => proxify(val, Object.assign({
+	getPrototypeOf: () => model.prototype
+}, traps))
+
 export function merge(target, src = {}, deep, includingProto) {
 	for (let key in src) {
 		if (includingProto || src.hasOwnProperty(key)) {

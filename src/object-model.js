@@ -9,6 +9,7 @@ import {
 	isPlainObject,
 	isString,
 	merge,
+	proxify,
 	setConstructor,
 	toString
 } from "./helpers"
@@ -81,10 +82,8 @@ function getProxy(model, obj, def, path) {
 	if (!isPlainObject(def))
 		return cast(obj, def)
 
-	return new Proxy(obj || {}, {
-		getPrototypeOf(){
-			return path ? Object.prototype : model.prototype
-		},
+	return proxify(obj || {}, {
+		getPrototypeOf: () => path ? Object.prototype : model.prototype,
 
 		get(o, key) {
 			if (!isString(key))

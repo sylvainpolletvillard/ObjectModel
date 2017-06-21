@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, setConstructor} from "./helpers"
+import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
 const MAP_MUTATORS = ["set", "delete", "clear"]
 
@@ -12,27 +12,23 @@ export default function MapModel(key, value) {
 
 		if (!model.validate(map)) return
 
-		return new Proxy(map, {
-			getPrototypeOf: () => model.prototype,
-
+		return proxifyModel(map, model, {
 			get(map, key) {
 				let val = map[key];
 				if (!isFunction(val)) return val
 
-				return new Proxy(val, {
-					apply: (fn, ctx, args) => {
-						if (key === "set") {
-							args = castKeyValue(args)
-						}
-
-						if (MAP_MUTATORS.includes(key)) {
-							const testMap = new Map(map)
-							fn.apply(testMap, args)
-							model.validate(testMap)
-						}
-
-						return fn.apply(map, args)
+				return proxifyFn(val, (fn, ctx, args) => {
+					if (key === "set") {
+						args = castKeyValue(args)
 					}
+
+					if (MAP_MUTATORS.includes(key)) {
+						const testMap = new Map(map)
+						fn.apply(testMap, args)
+						model.validate(testMap)
+					}
+
+					return fn.apply(map, args)
 				})
 			}
 		})

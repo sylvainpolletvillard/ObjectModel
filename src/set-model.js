@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, setConstructor} from "./helpers"
+import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
 const SET_MUTATORS = ["add", "delete", "clear"]
 
@@ -12,27 +12,23 @@ export default function SetModel(def) {
 
 		if (!model.validate(set)) return
 
-		return new Proxy(set, {
-			getPrototypeOf: () => model.prototype,
-
+		return proxifyModel(set, model, {
 			get(set, key) {
 				let val = set[key]
 				if (!isFunction(val)) return val;
 
-				return new Proxy(val, {
-					apply: (fn, ctx, args) => {
-						if (key === "add") {
-							args[0] = castValue(args[0])
-						}
-
-						if (SET_MUTATORS.includes(key)) {
-							const testSet = new Set(set)
-							fn.apply(testSet, args)
-							model.validate(testSet)
-						}
-
-						return fn.apply(set, args)
+				return proxifyFn(val, (fn, ctx, args) => {
+					if (key === "add") {
+						args[0] = castValue(args[0])
 					}
+
+					if (SET_MUTATORS.includes(key)) {
+						const testSet = new Set(set)
+						fn.apply(testSet, args)
+						model.validate(testSet)
+					}
+
+					return fn.apply(set, args)
 				})
 			}
 		})

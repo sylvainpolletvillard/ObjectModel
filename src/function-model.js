@@ -1,15 +1,13 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, setConstructor, toString} from "./helpers"
+import {extend, isFunction, proxifyModel, setConstructor, toString} from "./helpers"
 
 
 export default function FunctionModel(...argsDef) {
 
 	const model = function (fn = model.default) {
 		if (!model.validate(fn)) return
-		return new Proxy(fn, {
-			getPrototypeOf: () => model.prototype,
-
+		return proxifyModel(fn, model, {
 			apply (fn, ctx, args) {
 				const def = model.definition
 

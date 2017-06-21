@@ -68,7 +68,6 @@ export function checkDefinitionPart(obj, def, path, stack) {
 		|| obj.constructor === def
 }
 
-
 export function checkAssertions(obj, model, path, errors = model.errors) {
 	for (let assertion of model.assertions) {
 		let result

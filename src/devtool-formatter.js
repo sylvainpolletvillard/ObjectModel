@@ -17,18 +17,16 @@ const styles = {
 
 function getModel(instance) {
 	if (instance === undefined || instance === null)
-		return null;
+		return null
 
 	const proto = Object.getPrototypeOf(instance);
 	if (!proto || !proto.constructor || !is(Model, proto.constructor))
-		return null;
+		return null
 
 	return proto.constructor
 }
 
-function span(value, style) {
-	return ["span", {style}, value]
-}
+const span = (value, style) => ["span", {style}, value]
 
 function format(x, config) {
 	if (x === null || x === undefined)
@@ -88,22 +86,22 @@ function formatHeader(x, config) {
 }
 
 const ModelFormatter = {
-	header: function (x, config = {}) {
+	header(x, config = {}) {
 		if (config.fromModel || is(Model, x))
 			return formatHeader(x, config);
 
 		return null;
 	},
-	hasBody: function (x) {
+	hasBody(x) {
 		return is(Model, x)
 	},
-	body: function (x) {
+	body(x) {
 		return format(x.definition, {fromModel: true})
 	}
 }
 
 const ModelInstanceFormatter = {
-	header: function (x, config = {}) {
+	header(x, config = {}) {
 		if (config.fromInstance && isPlainObject(x)) {
 			return formatHeader(x, config)
 		}
@@ -115,10 +113,10 @@ const ModelInstanceFormatter = {
 
 		return null;
 	},
-	hasBody: function (x) {
+	hasBody(x) {
 		return x && is(ObjectModel, getModel(x))
 	},
-	body: function (x) {
+	body(x) {
 		return formatObject(x, getModel(x), {fromInstance: true})
 	}
 }

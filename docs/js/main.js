@@ -37,20 +37,14 @@
 		selectLink('#' + nearest.section.id);
 	});
 
-	for (let trigger of [...document.querySelectorAll("[data-source-trigger]")]) {
-		trigger.addEventListener("click", () => {
-			let code = trigger.parentElement.querySelector("code[data-source]");
-			if(code){
-				fetch(code.getAttribute("data-source"))
-					.then(res => res.text())
-					.then(source => {
-						code.textContent = source;
-						code.removeAttribute("data-source");
-						Prism.highlightElement(code);
-					})
-			}
-		})
-
+	for (let code of [...document.querySelectorAll("code[data-source]")]) {
+		fetch(code.getAttribute("data-source"))
+			.then(res => res.text())
+			.then(source => {
+				code.textContent = source;
+				code.removeAttribute("data-source");
+				Prism.highlightElement(code);
+			})
 	}
 
 }

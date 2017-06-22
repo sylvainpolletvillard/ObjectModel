@@ -860,9 +860,9 @@ section {
 }
 .grid {
   display: grid;
-  grid-gap: 2em;
+  grid-gap: 1em 2em;
 }
-@media (min-width: 1024px) and (max-width: 1600px) {
+@media (min-width: 1024px) and (max-width: 1599px) {
   .doc-code {
     grid-template-columns: 1fr;
   }
@@ -870,7 +870,7 @@ section {
     grid-template-columns: 1fr;
   }
 }
-@media (min-width: 1601px) {
+@media (min-width: 1600px) {
   #features {
     grid-area: features;
   }
@@ -884,7 +884,7 @@ section {
     grid-template-areas: "features download" "features github";
   }
 }
-@media (min-width: 1601px) and (max-width: 2200px) {
+@media (min-width: 1600px) and (max-width: 2200px) {
   .doc-code {
     grid-template-columns: 1fr 1fr;
   }
@@ -912,7 +912,7 @@ section {
     grid-column-end: 3;
   }
 }
-@media (min-width: 1921px) {
+@media (min-width: 1920px) {
   #introduction {
     grid-template-areas: "description video";
   }
@@ -920,7 +920,7 @@ section {
     grid-template-areas: "features download github";
   }
 }
-@media (min-width: 2201px) {
+@media (min-width: 2200px) {
   .doc-code {
     grid-template-columns: auto 640px 640px;
   }

@@ -83,22 +83,23 @@
 
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
-			<p>A recurring criticism of JavaScript is that it is a
-				<mark>weakly</mark>
-				typed language. Solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>
-				(Microsoft) or <a href="https://flowtype.org" target="_blank">Flow</a> (Facebook) try to address this
-				problem by extending the language with static type annotations, which means it only validate your code
-				at build time, not runtime. Once compiled in JavaScript and run in the browser, there is no guarantee
-				that the variables you are working with have the intended types.
-			</p>
 
-			<p>Static typing is <mark>insufficient</mark> to prevent most of the real and practical bugs caused by type errors. Indeed, JavaScript applications often involve <strong>unreliable data sources</strong>: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static analysis can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.</p>
+			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications.
+				Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org"
+				                                                   target="_blank">TypeScript</a> or <a
+						href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at
+				runtime: JSON from the server, form inputs, content from <code>localStorage</code>, external
+				libraries...</p>
 
-			<p>This is why ObjectModel is about <strong>strong dynamic type checking</strong>: it aims to add validation constraints on any of your variables at runtime. Thanks to the generated exceptions, it will save you time and help you spot potential bugs. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
+			<p>By leveraging ES6 Proxies, this library ensures that your variables always match the model definition and
+				validation constraints you added to them. Thanks to the generated exceptions, it will help you spot
+				potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new
+				language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old
+				JS micro-library.</p>
 
-			<p>Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.</p>
-
-			<p>Actually it goes much further than just type safety. Go on and see for yourself.</p>
+			<p>Validating at runtime also brings many other benefits: you can define your own types, use them in complex
+				model definitions with custom assertions that can even change depending on your application state.
+				Actually it goes much further than just type safety. Go on and see for yourself.</p>
 		</div>
 
 		<div id="video-demo">
@@ -110,10 +111,10 @@
 
 	<section id="features-and-download" class="grid">
 		<div id="features">
-			<h2 >What's inside the box ?</h2>
+			<h2>What's inside the box ?</h2>
 			<p>Many features, hopefully neither too much nor too few:</p>
 			<ul>
-				<li>Typed object structures, arrays, maps, sets, and functions</li>
+				<li>Typed structures: objects, arrays, maps, sets, functions...</li>
 				<li>Union types</li>
 				<li>Enumerations</li>
 				<li>Custom assertions</li>
@@ -125,7 +126,7 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">10.09 KB</strong> minified,
+					<strong class="size-min">9.84 KB</strong> minified,
 					<strong class="size-gzip">3.64 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
@@ -139,8 +140,8 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">10.09 KB</strong>, <strong class="size-gzip">3.64
-					KB</strong> gzipped) :
+				<li>Minified file (<strong class="size-min">9.84 KB</strong>, <strong class="size-gzip">3.64 KB</strong>
+					gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files : <a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
@@ -149,12 +150,10 @@
 
 			<aside role="alert">
 				<p><strong>Note: ObjectModel v3 only targets ES2015-compliant environments.</strong></p>
-				<p>If you need to support older browsers (IE, mobile...), please use the <a
-						href="https://github.com/sylvainpolletvillard/ObjectModel/releases/tag/v2.6.0" target="_blank">2.x
-					version</a>.</p>
 			</aside>
 
-			<p>Checkout the <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a> for more info</p>
+			<p>Take a look at <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github
+				Releases</a> and <a href="#common-questions">Browsers support</a> section for more information.</p>
 		</div>
 
 		<div>
@@ -174,15 +173,20 @@
 
         <div class="panel panel1">
             <span class="legend">Model</span>
-<pre><code class="language-javascript">var NumberModel = BasicModel(Number);
+	        <pre><code class="language-javascript">const NumberModel = BasicModel(Number);
 // 'new' keyword is optional for models and model instances</code></pre>
         </div>
 
         <div class="panel panel2">
             <span class="legend">Instance</span>
-<pre><code class="language-javascript">var x = NumberModel("42");</code>
+	        <pre><code class="language-javascript">let x = NumberModel("42");</code>
 <code class="language-none exception">TypeError: expecting Number, got String "42"</code></pre>
         </div>
+
+	    <div class="doc">
+		    They are generally used to declare all the basic generic types that you will use in your application. You
+		    can find a list of <a href="#common-models">common basic models here</a>.
+	    </div>
     </section>
 
 	<hr>
@@ -196,7 +200,7 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Order = new ObjectModel({
+			<pre><code class="language-javascript">const Order = new ObjectModel({
 	product: {
 		name: String,
 		quantity: Number,
@@ -207,7 +211,7 @@
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var myOrder = new Order({
+			<pre><code class="language-javascript">const myOrder = new Order({
 	product: { name: "Apple Pie", quantity: 1 },
 	orderDate: new Date()
 });
@@ -229,7 +233,9 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 
 		<div class="panel">
 			<span class="legend">Example</span>
-			<pre><code class="language-javascript">Model(Number) // return a Basic model
+			<pre><code class="language-javascript">NumberModel instanceof Model && Order instanceof Model // true
+
+Model(String) // return a Basic model
 Model({ name: String }) // return an Object model</code></pre>
 		</div>
 	</section>
@@ -239,7 +245,7 @@ Model({ name: String }) // return an Object model</code></pre>
 	<section id="doc-es6-classes" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Usage with ES6 classes</h2>
-			<p>If you are using ES6 classes on your project, it is very easy to define a model for your classes:</p>
+			<p>If you are using ES6 classes in your project, it is very easy to define a model for your classes:</p>
 		</div>
 
 		<div class="panel panel1">
@@ -251,7 +257,7 @@ Model({ name: String }) // return an Object model</code></pre>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-			<pre><code class="language-javascript">var rick = new Character({ lastName: "Sanchez", firstName: "Rick" });
+			<pre><code class="language-javascript">const rick = new Character({ lastName: "Sanchez", firstName: "Rick" });
 rick.lastName = 132;</code>
 <code class="language-none exception">TypeError: expecting lastName to be String, got Number 132</code>
 <code class="language-javascript">console.log(rick.fullName); // "Rick Sanchez"</code></pre>
@@ -268,7 +274,7 @@ rick.lastName = 132;</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var User = ObjectModel({
+			<pre><code class="language-javascript">const User = ObjectModel({
 	email: String, // mandatory
 	name: [String] // optional
 });</code></pre>
@@ -276,8 +282,8 @@ rick.lastName = 132;</code>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var stan = User({ email: "stan@smith.com" }); // no exceptions
-var roger = User({ name: "Roger" }); // email is mandatory</code>
+			<pre><code class="language-javascript">const stan = User({ email: "stan@smith.com" }); // no exceptions
+const roger = User({ name: "Roger" }); // email is mandatory</code>
 <code class="language-none exception">TypeError: expecting email to be String, got undefined</code></pre>
 		</div>
 	</section>
@@ -292,7 +298,7 @@ var roger = User({ name: "Roger" }); // email is mandatory</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Animation = new ObjectModel({
+			<pre><code class="language-javascript">const Animation = new ObjectModel({
 	// can be a Number or a String
 	delay: [Number, String],
 
@@ -303,7 +309,7 @@ var roger = User({ name: "Roger" }); // email is mandatory</code>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var opening = new Animation({ delay: 300 }); // easing is optional
+			<pre><code class="language-javascript">const opening = new Animation({ delay: 300 }); // easing is optional
 opening.delay = "fast"; // String is a valid type
 opening.delay = null;</code>
 <code class="language-none exception">TypeError: expecting delay to be Number or String, got null</code>
@@ -323,7 +329,7 @@ opening.easing = 1;</code>
 
 		<div class="panel">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Shirt = new ObjectModel({
+			<pre><code class="language-javascript">const Shirt = new ObjectModel({
 	// the only acceptable value is "clothes"
 	category: "clothes",
 
@@ -346,7 +352,7 @@ opening.easing = 1;</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model and instanciation</span>
-<pre><code class="language-javascript">var Config = new ObjectModel({
+			<pre><code class="language-javascript">const Config = new ObjectModel({
 	local: {
 		time: {
 			format: ["12h","24h", undefined]
@@ -354,8 +360,8 @@ opening.easing = 1;</code>
 	}
 });
 
-var config = { local: undefined }; // object duck typed
-var model_config = Config(config); // object model</code></pre>
+const config = { local: undefined }; // object duck typed
+const model_config = Config(config); // object model</code></pre>
 		</div>
 
 		<div class="panel panel2">
@@ -387,7 +393,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">var N = BasicModel(Number).defaultTo(1)</code></pre>
+			<pre><code class="language-javascript">let N = BasicModel(Number).defaultTo(1)</code></pre>
 		</div>
 
 		<div class="panel panel2">
@@ -401,7 +407,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var FileInfo = ObjectModel({
+			<pre><code class="language-javascript">const FileInfo = ObjectModel({
 	name: String,
 	size: [Number],
 	creationDate: [Date],
@@ -415,10 +421,10 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var file = new FileInfo({ writable: false });</code>
+			<pre><code class="language-javascript">let file = new FileInfo({ writable: false });</code>
 <code class="language-javascript">file.name; // name is mandatory but a default value was passed</code>
 <code class="language-none log">"Untitled file"</code>
-<code class="language-javascript">file.size; // size is optional, but the default value still apply</code>
+<code class="language-javascript">file.size; // size is optional, but the default value still applies</code>
 <code class="language-none log">0</code>
 <code class="language-javascript">file.creationDate; // no default value was passed for this property</code>
 <code class="language-none log">undefined</code>
@@ -440,12 +446,12 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = ObjectModel({
+			<pre><code class="language-javascript">const Person = ObjectModel({
 	name: String,
 	age: [Number]
 });
 
-var Lovers = ObjectModel({
+const Lovers = ObjectModel({
 	husband: Person,
 	wife: Person
 });</code></pre>
@@ -453,13 +459,13 @@ var Lovers = ObjectModel({
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var joe = { name: "Joe", age: 42 };
-var ann = new Person({
+			<pre><code class="language-javascript">const joe = { name: "Joe", age: 42 };
+const ann = new Person({
 	name: joe.name + "'s wife",
 	age: joe.age - 5
 });
 
-var couple = Lovers({
+const couple = Lovers({
    husband: joe,  // object duck typed
    wife: ann // object model
 });
@@ -478,12 +484,12 @@ couple.husband instanceof Person === true // object has been casted to Person</c
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = ObjectModel({
+			<pre><code class="language-javascript">const Person = ObjectModel({
 	name: String,
 	female: Boolean
 });
 
-var Mother = Person.extend({
+const Mother = Person.extend({
 	female: true,
 	child: Person
 });</code></pre>
@@ -491,13 +497,13 @@ var Mother = Person.extend({
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var joe = new Person({ name: "Joe", female: false });
-var ann = new Person({ name: "Joe's wife", female: true });
-var joanna = new Person({ name: "Joe's daughter", female: true });
+			<pre><code class="language-javascript">let joe = new Person({ name: "Joe", female: false });
+let ann = new Person({ name: "Joe's wife", female: true });
+let joanna = new Person({ name: "Joe's daughter", female: true });
 
 ann = Mother(Object.assign({ child: joanna }, ann)) // cast ann to Mother model
-Mother.test(ann) && Person.test(ann)</code>
-<code class="language-none log">true</code>
+ann instanceof Mother && ann instanceof Person // true</code>
+
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
 <code class="language-none exception">TypeError: expecting female to be true, got Boolean false
 expecting child to be {
@@ -517,7 +523,7 @@ expecting child to be {
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Client = Person.extend(User, Order, { store: String });
+			<pre><code class="language-javascript">const Client = Person.extend(User, Order, { store: String });
 
 Client.prototype.sendConfirmationMail = function(){
 	return this.email + ": Dear " + this.name
@@ -532,7 +538,7 @@ Object.keys(Client.definition);</code>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var joe = new Client({
+			<pre><code class="language-javascript">const joe = new Client({
 	name: "Joe",
 	female: false,
 	email: "joe@email.net",
@@ -557,18 +563,18 @@ joe.sendConfirmationMail();</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var PositiveInteger = BasicModel(Number)
+			<pre><code class="language-javascript">const PositiveInteger = BasicModel(Number)
 	.assert(Number.isInteger)
 	.assert(n => n >= 0, "should be greater or equal to zero")
 
 function isPrime(n) {
-	for (var i=2, m=Math.sqrt(n); i <= m ; i++){
+	for (let i=2, m=Math.sqrt(n); i <= m ; i++){
 		if(n%i === 0) return false;
 	}
 	return n > 1;
 }
 
-var PrimeNumber = PositiveInteger.extend().assert(isPrime);
+const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 // extend to not add isPrime assertion to the Integer model
 </code></pre>
 		</div>
@@ -589,7 +595,9 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 		</div>
 
 		<div class="doc">
-			<p>Assertions are inherited from <code>BasicModel.prototype</code> so you can add global assertions on all models by setting them in the prototype. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+			<p>Assertions are inherited from the model prototype, so you can add global assertions on all models by
+				setting them in <code>Model.prototype</code>. The second argument of the <code>assert</code> method is
+				an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 	</section>
 
@@ -606,7 +614,7 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Circle = ObjectModel({
+			<pre><code class="language-javascript">const Circle = ObjectModel({
 	radius: Number, // public
 	_diameter: [Number], // private
 	UNIT: ["px","cm","mm"], // constant
@@ -616,7 +624,7 @@ var PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
+			<pre><code class="language-javascript">let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
 c.radius = 100;
 c.UNIT = "cm";</code>
 <code class="language-none exception">TypeError: cannot redefine constant UNIT</code>
@@ -634,7 +642,7 @@ c.UNIT = "cm";</code>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Family = ObjectModel({
+			<pre><code class="language-javascript">const Family = ObjectModel({
 	father: Father,
 	mother: Mother,
 	children: ArrayModel(Person), // array of Persons
@@ -645,7 +653,7 @@ c.UNIT = "cm";</code>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var joefamily = new Family({
+			<pre><code class="language-javascript">const joefamily = new Family({
 	father: joe,
 	mother: ann,
 	children: [joanna, "dog"]
@@ -660,15 +668,13 @@ c.UNIT = "cm";</code>
 		</div>
 
 		<div class="panel panel1">
-<pre><code class="language-javascript">var Cards = ArrayModel([Number, "J","Q","K"]);
-var Hand = Cards.extend("Joker").assert(function(cards){
-	return cards.length === 2;
-}, "should have two cards");
+<pre><code class="language-javascript">const Cards = ArrayModel([Number, "J","Q","K"]);
+const Hand = Cards.extend("Joker").assert(cards => cards.length === 2, "should have two cards");
 // Hand is an array of 2 Numbers, J, Q, K or Joker</code></pre>
 		</div>
 
 		<div class="panel panel2">
-<pre><code class="language-javascript">var myHand = Hand( [7, "Joker"] );
+<pre><code class="language-javascript">const myHand = Hand( [7, "Joker"] );
 myHand[2] = "K"; // may not trigger validation this way
 myHand.push("K"); // use this instead</code>
 <code class="language-none exception">TypeError: assertion "should have two cards" returned false for value [7, "Joker", "K"]</code></pre>
@@ -684,60 +690,60 @@ myHand.push("K"); // use this instead</code>
 		</div>
 
 		<div class="panel panel1">
-			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Calculator = FunctionModel(Number, ["+","-","*","/"], Number) .return(Number);</code></pre>
+<pre><code class="language-javascript">const Operand = BasicModel(Number).assert(Number.isFinite);
+const Operator = BasicModel(["+","-","*","/"])
+
+const Calculator = FunctionModel(Operand, Operator, Operand).return(Operand);
+
+const calc = new Calculator((a, operator, b) => eval(a + operator + b));
+</code></pre>
 		</div>
 
 		<div class="panel panel2">
-			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var calc = new Calculator(function(a, operator, b){
-	return eval(a + operator + b);
-});
-
-calc(3, "+"); // use default value for 3rd argument</code>
+<pre><code class="language-javascript">calc(3, "+", 1);</code>
 <code class="language-none log">4</code>
 <code class="language-javascript">calc(6, "*", null);</code>
-<code class="language-none exception">TypeError: expecting arguments[2] to be Number, got null</code></pre>
+<code class="language-none exception">TypeError: expecting arguments[2] to be Number, got null</code>
+<code class="language-javascript">calc(1, "/", 0);</code>
+<code class="language-none exception">TypeError: assertion "isFinite" returned false for value Infinity</code></pre>
 		</div>
 
 		<div class="doc">
-			<p>Under classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to declare function models in the model definition, then use the <code>defaults</code> method to set the implementation in the prototype as well. <a href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
+			<p>In classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>.
+				You can do the same with instances of function models. Another option is to provide a default
+				implementation in the model definition by using the <code>defaults</code> method. <a
+						href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the
+				properties in the model definition are required for an object to be considered suitable for the model.
+				In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person,
+				while the function <code>greet</code> is not mandatory.</p>
 		</div>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-<pre><code class="language-javascript">var Person = ObjectModel({
+			<pre><code class="language-javascript">const Person = ObjectModel({
 	name: String,
-	age: Number,
 	// function without arguments returning a String
 	sayMyName: FunctionModel().return(String)
 }).defaults({
-	sayMyName: function(){
-		return "my name is " + this.name;
-	}
-});
+	sayMyName: function(){ return "my name is " + this.name }
+})
 
-// takes one argument of type Person, returns a String
-Person.prototype.greet = FunctionModel(Person).return(String)(function(otherguy){
-	return "Hello "+ otherguy.name + ", " + this.sayMyName();
-});</code></pre>
+// takes one Person as argument, returns a String
+Person.prototype.greet = FunctionModel(Person).return(String)(
+	function(otherguy){ return "Hello "+ otherguy.name + ", " + this.sayMyName() }
+)</code></pre>
 		</div>
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">var joe = new Person({ name: "Joe", age: 28 });
-var ann = new Person({ name: "Ann", age: 23 });
+			<pre><code class="language-javascript">const joe = new Person({ name: "Joe" });
 
 joe.sayMyName();</code>
 <code class="language-none log">my name is Joe</code>
-<code class="language-javascript">joe.greet(ann);</code>
+<code class="language-javascript">joe.greet({ name: "Ann", greet: "hi ?" });</code>
 <code class="language-none log">Hello Ann, my name is Joe</code>
-<code class="language-javascript">joe.greet("dog");</code>
-<code class="language-none exception">TypeError: expecting arguments[0] to be {
-	name: String,
-	age: Number,
-	sayMyName: Function() => String
-}, got String "dog"</code></pre>
+<code class="language-javascript">joe.greet({ name: "dog", sayMyName: "woof !" });</code>
+<code class="language-none exception">TypeError: expecting arguments[0].sayMyName to be "Function", got String "woof !"</code></pre>
 		</div>
 
 	</section>
@@ -765,16 +771,17 @@ joe.sayMyName();</code>
 		</div>
 
 		<div class="panel panel1">
-			<pre><code class="language-javascript">BasicModel.prototype.errorCollector = function(errors){
+			<pre><code class="language-javascript">Model.prototype.errorCollector = function(errors){
 	console.log("Global error collector caught these errors:");
-	errors.forEach(function(error){ console.dir(error); });
+	errors.forEach(error => { console.dir(error) });
 };
 
-var Student = ObjectModel({
+const Student = ObjectModel({
 	name: String,
 	course: [ "math","english","history" ],
 	grade: Number
-}).assert(function(stu){ return stu.grade >= 60 }, "should at least get 60 to validate semester")
+}).assert(student => student.grade >= 60,
+          "should at least get 60 to validate semester")
 
 new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
 		</div>
@@ -790,7 +797,7 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
 {
 	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "sleep", grade: 0 }",
 	path: null,
-	expected: function(stu){ return stu.grade >= 60 },
+	expected: student => student.grade >= 60,
 	received: { name: "Joanna", course: "sleep", grade: 0 }
 }</code></pre>
 		</div>
@@ -803,7 +810,7 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
 		<div class="panel panel1">
 			<pre><code class="language-javascript">Student.errorCollector = function(errors){
 	console.log("Student model error collector caught these errors:");
-	errors.forEach(function(error){ console.dir(error); });
+	errors.forEach(error => { console.dir(error) });
 };
 
 new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
@@ -814,7 +821,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 {
 	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "math", grade: 50 }",
 	path: null,
-	expected: function(stu){ return stu.grade >= 60 },
+	expected: student => student.grade >= 60,
 	received: { name: "Joanna", course: "math", grade: 50 }
 }</code></pre>
 		</div>
@@ -831,7 +838,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 	grade: 90
 }, function(errors){
 	console.log("This specific error collector caught these errors:");
-	errors.forEach(function(error){ console.dir(error); });
+	errors.forEach(error => { console.dir(error) });
 });</code></pre>
 		</div>
 
@@ -933,10 +940,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<h2>Commonly used models</h2>
 		<p>Here are some models that you may find useful. <strong>These are not included in the library</strong>, so pick what you need or <a href="examples/common.js">get them all from here</a></p>
 
-		<details>
-			<summary data-source-trigger>Click here to show the source code of common models examples</summary>
-			<pre><code class="language-javascript" data-source="examples/common.js"></code></pre>
-		</details>
+		<pre><code class="language-javascript" data-source="examples/common.js"></code></pre>
 	</section>
 	<hr>
 
@@ -968,7 +972,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 					<p>The recommended way is to use a factory function to instanciate your models. You can declare as many different factories as needed, which makes this pattern both simple and flexible.</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var User = ObjectModel({
+					<pre><code class="language-javascript">const User = ObjectModel({
     firstName: String,
     lastName: String,
     fullName: String
@@ -979,7 +983,7 @@ User.create = function(properties){
     return new User(properties);
 };
 
-var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
+const joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 				</div>
 			</div>
 		</details>
@@ -991,10 +995,10 @@ var joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 					<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var User = ObjectModel({ name: String }),
+					<pre><code class="language-javascript">const User = ObjectModel({ name: String }),
 	joe = User({ name: "Joe" });
 
-var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
+const modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 // modelOfJoe === User
 // modelOfJoe.definition.name === String</code></pre>
 				</div>
@@ -1008,18 +1012,18 @@ var modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
 					<p>You can't refer to a model or instance that is not yet defined, so you have to update the definition afterwards:</p>
 				</div>
 				<div class="panel">
-					<pre><code class="language-javascript">var Honey = ObjectModel({
+					<pre><code class="language-javascript">const Honey = ObjectModel({
    sweetie: undefined // Sweetie is not yet defined
 });
 
-var Sweetie = ObjectModel({
+const Sweetie = ObjectModel({
    honey: Honey
 });
 
 Honey.definition.sweetie = [Sweetie];
 
-var joe = Honey({ sweetie: undefined }); // ann is not yet defined
-var ann = Sweetie({ honey: joe });
+const joe = Honey({ sweetie: undefined }); // ann is not yet defined
+const ann = Sweetie({ honey: joe });
 joe.sweetie = ann;</code></pre>
 				</div>
 			</div>
@@ -1035,12 +1039,10 @@ joe.sweetie = ann;</code></pre>
 
 				<div class="panel panel1">
 					<span class="legend">Implementation</span>
-<pre><code class="language-javascript">BasicModel.prototype.serialize = function(instance){
-	var availableModels = Object.keys(serializableModels);
+					<pre><code class="language-javascript">Model.prototype.serialize = function(instance, models){
+	const names = Object.keys(models);
 	return JSON.stringify(instance, function(key, value){
-		var modelName = availableModels.find(function(name){
-			return value instanceof serializableModels[name];
-		});
+		const modelName = names.find(name => value instanceof models[name]);
 		if(modelName && key !== "_value"){
 			return { _type: modelName, _value: value }
 		}
@@ -1048,10 +1050,10 @@ joe.sweetie = ann;</code></pre>
 	}, '\t');
 }
 
-BasicModel.prototype.parse = function(json){
+Model.prototype.parse = function(json, models){
 	return JSON.parse(json, function(key, o){
-		if(o && o._type in serializableModels){
-			return new serializableModels[o._type](o._value);
+		if(o && o._type in models){
+			return new models[o._type](o._value);
 		}
 		return o;
 	})
@@ -1059,19 +1061,19 @@ BasicModel.prototype.parse = function(json){
 				</div>
 				<div class="panel panel2">
 					<span class="legend">Example</span>
-		<pre><code class="language-javascript">var Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
-    Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
-	Container = ObjectModel({ items: ArrayModel(Type1, Type2) });
+					<pre><code class="language-javascript">const Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
+      Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
+	  Container = ObjectModel({ items: ArrayModel([Type1, Type2]) });
 
 // List all your serializable models here
 const serializableModels = { Container, Type1, Type2 };
 
-var a = new Container({ items: [new Type1, new Type2] });
+let a = new Container({ items: [new Type1, new Type2] });
 
-var json = Container.serialize(a);
+let json = Container.serialize(a, serializableModels);
 console.log(json);
 
-var b = Container.parse(json);
+let b = Container.parse(json, serializableModels);
 console.log(
 	b instanceof Container,
 	b.items[0] instanceof Type1,

@@ -1,5 +1,5 @@
 // Examples of commonly used models
-import { BasicModel } from "../src/basic-model"
+import {BasicModel} from "objectmodel"
 
 export const Primitive = BasicModel([Boolean, Number, String, Symbol]).as("Primitive");
 
@@ -17,31 +17,31 @@ export const PositiveInteger = PositiveNumber.extend().assert(Number.isInteger).
 export const NegativeInteger = NegativeNumber.extend().assert(Number.isInteger).as("NegativeInteger");
 
 // Strings
-export const StringNotBlank = BasicModel(String).assert(function isNotBlank(str){
+export const StringNotBlank   = BasicModel(String).assert(function isNotBlank(str) {
 	return str.trim().length > 0
 }).as("StringNotBlank");
-export const NormalizedString = BasicModel(String).assert(function isNormalized(str){
+export const NormalizedString = BasicModel(String).assert(function isNormalized(str) {
 	return str.normalize() === str
 }).as("NormalizedString");
-export const TrimmedString = BasicModel(String).assert(function isTrimmed(str){
+export const TrimmedString    = BasicModel(String).assert(function isTrimmed(str) {
 	return str.trim() === str
 }).as("TrimmedString");
 
 // Dates
-export const PastDate = BasicModel(Date).assert(function isInThePast(date){
+export const PastDate   = BasicModel(Date).assert(function isInThePast(date) {
 	return date.getTime() < Date.now()
 }).as("PastDate");
-export const FutureDate = BasicModel(Date).assert(function isInTheFuture(date){
+export const FutureDate = BasicModel(Date).assert(function isInTheFuture(date) {
 	return date.getTime() > Date.now()
 }).as("FutureDate");
 
 // Arrays
-export const ArrayNotEmpty = BasicModel(Array).assert(function isNotEmpty(arr){
+export const ArrayNotEmpty = BasicModel(Array).assert(function isNotEmpty(arr) {
 	return arr.length > 0
 }).as("ArrayNotEmpty");
-export const ArrayUnique = BasicModel(Array).assert(function hasNoDuplicates(arr){
-	return arr.every((val, idx) => arr.indexOf(val) === idx)
+export const ArrayUnique   = BasicModel(Array).assert(function hasNoDuplicates(arr) {
+	return arr.every((x, i) => arr.indexOf(x) === i)
 }).as("ArrayUnique");
-export const ArrayDense = BasicModel(Array).assert(function hasNoHoles(arr){
+export const ArrayDense    = BasicModel(Array).assert(function hasNoHoles(arr) {
 	return arr.filter(() => true).length === arr.length
 }).as("ArrayDense");

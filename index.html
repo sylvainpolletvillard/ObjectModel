@@ -9,8 +9,8 @@
 
 	<title>ObjectModel</title>
 
-	<link rel="icon" type="image/png" href="docs/favicon-32x32.png" sizes="32x32" />
-	<link rel="icon" type="image/png" href="docs/favicon-16x16.png" sizes="16x16" />
+	<link rel="icon" type="image/png" href="docs/favicon-32x32.png" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="docs/favicon-16x16.png" sizes="16x16"/>
 	<link rel="shortcut icon" href="docs/favicon.ico" type="image/x-icon">
 
 	<link rel="stylesheet" href="docs/style/main.css"/>
@@ -84,26 +84,17 @@
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
 
-			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications.
-				Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org"
-				                                                   target="_blank">TypeScript</a> or <a
-						href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at
-				runtime: JSON from the server, form inputs, content from <code>localStorage</code>, external
-				libraries...</p>
+			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> or <a href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from <code>localStorage</code>, external libraries...</p>
 
-			<p>By leveraging ES6 Proxies, this library ensures that your variables always match the model definition and
-				validation constraints you added to them. Thanks to the generated exceptions, it will help you spot
-				potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new
-				language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old
-				JS micro-library.</p>
+			<p>By leveraging ES6 Proxies, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
-			<p>Validating at runtime also brings many other benefits: you can define your own types, use them in complex
-				model definitions with custom assertions that can even change depending on your application state.
-				Actually it goes much further than just type safety. Go on and see for yourself.</p>
+			<p>Validating at runtime also brings many other benefits: you can define your own types, use them in complex model definitions with custom assertions that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.</p>
 		</div>
 
 		<div id="video-demo">
-			<iframe width="640" height="360" src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>
+			<iframe src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0"
+			        width="640" height="360" frameborder="0" allowfullscreen>
+			</iframe>
 		</div>
 	</section>
 
@@ -140,62 +131,63 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.84 KB</strong>, <strong class="size-gzip">3.64 KB</strong>
-					gzipped) :
+				<li>Minified file (<strong class="size-min">9.84 KB</strong>,
+					<strong class="size-gzip">3.64 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
-				<li>Source files : <a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a> </li>
+				<li>Source files :
+					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.0.0.zip">object-model-3.0.0.zip</a>
+				</li>
 			</ul>
+
 			<h3>Changelog and previous releases</h3>
 
-			<aside role="alert">
-				<p><strong>Note: ObjectModel v3 only targets ES2015-compliant environments.</strong></p>
-			</aside>
+			<p><strong>Note: ObjectModel v3 only targets ES2015-compliant environments.</strong></p>
 
-			<p>Take a look at <a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github
-				Releases</a> and <a href="#common-questions">Browsers support</a> section for more information.</p>
+			<p>Take a look at
+				<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a>
+				and <a href="#common-questions">Browsers support</a> section for more information.
+			</p>
 		</div>
 
 		<div>
 			<h2>Support</h2>
-			<p>Please report bugs and contribute to the project on the <a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.</p>
+			<p>Please report bugs on the
+				<a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.
+			</p>
+			<p>You can also ask for support on the
+				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel" target="_blank">Gitter channel</a>.
+			</p>
 		</div>
 	</section>
 
 	<hr>
 
-    <section id="doc-basic-model" class="grid doc-code-code">
-	    <div class="doc">
-		    <h2>Basic models</h2>
-		    <p>Basic models simply validate the argument passed against the model definition, and return the validated
-			    value. <code>BasicModel</code> constructor takes a <i>model definition</i> as the only argument. </p>
-	    </div>
+	<section id="doc-basic-model" class="grid doc-code-code">
+		<div class="doc">
+			<h2>Basic models</h2>
+			<p>Basic models simply validate a variable against the model definition passed as argument, and return the validated value. <code>BasicModel</code> constructor takes a <i>model definition</i> as the only argument. They are generally used to declare all the basic generic types that you will use in your application. You can find a list of <a href="#common-models">common basic models here</a>.</p>
+		</div>
 
-        <div class="panel panel1">
-            <span class="legend">Model</span>
-	        <pre><code class="language-javascript">const NumberModel = BasicModel(Number);
+		<div class="panel panel1">
+			<span class="legend">Model</span>
+			<pre><code class="language-javascript">const NumberModel = BasicModel(Number);
 // 'new' keyword is optional for models and model instances</code></pre>
-        </div>
+		</div>
 
-        <div class="panel panel2">
-            <span class="legend">Instance</span>
-	        <pre><code class="language-javascript">let x = NumberModel("42");</code>
+		<div class="panel panel2">
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">let x = NumberModel("42");</code>
 <code class="language-none exception">TypeError: expecting Number, got String "42"</code></pre>
-        </div>
-
-	    <div class="doc">
-		    They are generally used to declare all the basic generic types that you will use in your application. You
-		    can find a list of <a href="#common-models">common basic models here</a>.
-	    </div>
-    </section>
+		</div>
+	</section>
 
 	<hr>
 
 	<section id="doc-object-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Object models</h2>
-			<p>Object models validate nested object properties against a definition tree. They provide automatic
-				validation at initial and future assignments of the properties of the instance objects.</p>
+			<p>Object models validate nested object properties against a definition tree. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -227,8 +219,7 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 	<section id="doc-model" class="grid doc-code">
 		<div class="doc">
 			<h2>Model constructor</h2>
-			<p><code>Model</code> is the <strong>base class of all models</strong> and can be used as an alias for
-				<code>BasicModel</code> and <code>ObjectModel</code> constructors.</p>
+			<p><code>Model</code> is the <strong>base class of all models</strong> and can be used as an alias for <code>BasicModel</code> and <code>ObjectModel</code> constructors.</p>
 		</div>
 
 		<div class="panel">
@@ -269,7 +260,7 @@ rick.lastName = 132;</code>
 	<section id="doc-optional-properties" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Optional properties</h2>
-			<p>By default, model properties are mandatory. That means all properties defined are required on instance declaration, otherwise an exception will be raised. But you can specify a property to be optional by using the bracket notation, borrowed from the JSDoc specification:</p>
+			<p>By default, model properties are mandatory. That means all properties defined are required on instance declaration, otherwise an exception will be raised. But you can specify a property to be optional by using the bracket notation, borrowed from the JSDoc specification</p>
 		</div>
 
 		<div class="panel panel1">
@@ -342,7 +333,7 @@ opening.easing = 1;</code>
 		</div>
 	</section>
 
-    <hr>
+	<hr>
 
 	<section id="doc-null-safe" class="grid doc-code-code">
 		<div class="doc">
@@ -366,7 +357,7 @@ const model_config = Config(config); // object model</code></pre>
 
 		<div class="panel panel2">
 			<span class="legend">Traversal</span>
-<pre><code class="language-javascript">if(config.local.time.format === "12h"){ hour %= 12; }</code>
+			<pre><code class="language-javascript">if(config.local.time.format === "12h"){ hour %= 12; }</code>
 <code class="language-none exception">TypeError: Cannot read property 'time' of undefined</code>
 
 <code class="language-javascript">// so to prevent this exception, we have to check this way:
@@ -581,7 +572,7 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
-<pre><code class="language-javascript">PositiveInteger(-1);</code>
+			<pre><code class="language-javascript">PositiveInteger(-1);</code>
 <code class="language-none exception">TypeError: assertion should be greater or equal to zero returned false for value -1</code>
 
 <code class="language-javascript">PositiveInteger(Math.sqrt(2));</code>
@@ -595,9 +586,7 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 		</div>
 
 		<div class="doc">
-			<p>Assertions are inherited from the model prototype, so you can add global assertions on all models by
-				setting them in <code>Model.prototype</code>. The second argument of the <code>assert</code> method is
-				an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
+			<p>Assertions are inherited from the model prototype, so you can add global assertions on all models by setting them in <code>Model.prototype</code>. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 	</section>
 
@@ -606,9 +595,7 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 	<section id="doc-private-and-constants" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Private and constant properties</h2>
-			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which
-				should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making
-				<i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
+			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making <i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
 			<p>You can modify or remove these conventions by overriding the <code>conventionForPrivate</code> and <code>conventionForConstant</code> methods in your model or globally in <code>Model.prototype</code>.</p>
 		</div>
 
@@ -709,13 +696,7 @@ const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 		</div>
 
 		<div class="doc">
-			<p>In classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>.
-				You can do the same with instances of function models. Another option is to provide a default
-				implementation in the model definition by using the <code>defaults</code> method. <a
-						href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the
-				properties in the model definition are required for an object to be considered suitable for the model.
-				In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person,
-				while the function <code>greet</code> is not mandatory.</p>
+			<p>In classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You can do the same with instances of function models. Another option is to provide a default implementation in the model definition by using the <code>defaults</code> method. <a	href="#doc-default-values">See the 'Default values' section</a>. The difference is that all the properties in the model definition are required for an object to be considered suitable for the model.	In the following example, an object must have a function <code>sayMyName</code> to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -753,7 +734,7 @@ joe.sayMyName();</code>
 	<section id="doc-custom-collectors" class="grid doc-code-code">
 		<h2>Custom error collectors</h2>
 		<div class="doc">
-			<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a  message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
+			<p>By default, validation errors are collected every time a model instance is created or modified, and thrown as <code>TypeError</code> exceptions with a message describing all the errors found. It it possible to change this behaviour and add your own error collectors. For example, you may want to notify the user that an error occurred, or send the information to your server for error tracking on production.</p>
 		</div>
 		<div class="doc">
 			<p>Error collectors are callback functions called with an array of all the errors collected during the last model inspection. Every error is an object with these properties:</p>
@@ -869,7 +850,8 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dt><a href="#doc-array-model">ArrayModel</a> <code>ArrayModel(itemDefinition)</code></dt>
 			<dd>Constructor for array models</dd>
 
-			<dt><a href="#doc-function-model">FunctionModel</a> <code>FunctionModel(definitionArgument1, definitionArgument2, ...)</code></dt>
+			<dt><a href="#doc-function-model">FunctionModel</a> <code>FunctionModel(definitionArgument1,
+				definitionArgument2, ...)</code></dt>
 			<dd>Constructor for function models</dd>
 
 			<dt><a href="#doc-function-model">MapModel</a> <code>MapModel(keyDefinition, valueDefinition)</code></dt>
@@ -894,8 +876,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dd>Function called when validation errors are detected</dd>
 
 			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
-			<dd>Returns a new model based on the initial model definition merged with other definitions passed.
-				Assertions are preserved too.</dd>
+			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
 
 			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
 			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
@@ -904,15 +885,12 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dd>Shorthand to set the default value of the model</dd>
 
 			<dt><a href="#doc-composition">test</a> <code>model.test(value)</code></dt>
-			<dd>Returns <code>true</code> if the value passed validates the model definition.
-				Works with <a href="#doc-composition">duck typing</a>.</dd>
+			<dd>Returns <code>true</code> if the value passed validates the model definition. Works with <a href="#doc-composition">duck typing</a>.</dd>
 
 			<dt>validate <code>model.validate(instance, [errorCollector])</code></dt>
-			<dd>Manually triggers the validation of a model instance over its definition.
-				It is automatically done whenever an instance property changes.
+			<dd>Manually triggers the validation of a model instance over its definition. It is automatically done whenever an instance property changes.
 				<br>
-				Note that contrary to the <code>test</code> method, the object is not cast to its suitable
-				model (a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
+				Note that contrary to the <code>test</code> method, the object is not cast to its suitable model (a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
 			</dd>
 
 			<dt><a href="#doc-private-and-constants">conventionForConstant</a> <code>function(variableName)</code></dt>
@@ -962,7 +940,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 		<details>
 			<summary>What is the impact on performance ?</summary>
-			<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
+			<p>To get dynamic type validation, Object models have to override properties setters so that each assignment passes through a function that acts as a proxy. This has a cost, especially on old browsers. Therefore, it is not advisable to use object models in performance-critical parts of your applications. In particular, Array models and circular references in models have the most impact on performance. But in	general, the loss of time does not exceed a few milliseconds and is quite negligible.</p>
 		</details>
 
 		<details>
@@ -992,7 +970,7 @@ const joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 			<summary>How can I get the model from an instance ?</summary>
 			<div class="grid doc-code">
 				<div class="doc">
-					<p>With the <code>constructor</code> property. If this property is used in your model, you can also retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
+					<p>With the <code>constructor</code> property. If this property is used in your model, you can also	retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
 				</div>
 				<div class="panel">
 					<pre><code class="language-javascript">const User = ObjectModel({ name: String }),
@@ -1087,17 +1065,46 @@ console.log(
 
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>
-		<p>Please check the documentation twice, then open an issue on the <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank">Github repository</a></p>
+		<p>Please check the documentation twice, then open an issue on the
+			<a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank">Github repository</a>
+		</p>
 	</section>
 
 	<section>
 		<h2>Like what you see ? Share it with the world !</h2>
 
 		<ul class="share-buttons">
-			<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript" title="Share on Facebook" target="_blank" onclick="window.open(this.href); return false;"><img src="docs/res/facebook.svg" width="48" height="48"></a></li>
-			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org" target="_blank" title="Tweet" onclick="window.open(this.href); return false;"><img src="docs/res/twitter.svg" width="48" height="48"></a></li>
-			<li><a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank" title="Share on Google+" onclick="window.open(this.href); return false;"><img src="docs/res/googleplus.svg" width="48" height="48"></a></li>
-			<li><a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank" title="Chat on Gitter"><img src="docs/res/gitter.svg" width="48" height="48"></a></li>
+			<li>
+				<a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript"
+				   title="Share on Facebook"
+				   target="_blank"
+				   onclick="window.open(this.href); return false;">
+					<img src="docs/res/facebook.svg" width="48" height="48">
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org"
+				   target="_blank"
+				   title="Tweet"
+				   onclick="window.open(this.href); return false;">
+					<img src="docs/res/twitter.svg" width="48" height="48">
+				</a>
+			</li>
+			<li>
+				<a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org"
+				   target="_blank"
+			       title="Share on Google+"
+			       onclick="window.open(this.href); return false;">
+					<img src="docs/res/googleplus.svg" width="48" height="48">
+				</a>
+			</li>
+			<li>
+				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website"
+				   target="_blank"
+			       title="Chat on Gitter">
+					<img src="docs/res/gitter.svg" width="48" height="48">
+				</a>
+			</li>
 		</ul>
 
 	</section>

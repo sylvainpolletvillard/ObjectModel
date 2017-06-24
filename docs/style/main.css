@@ -440,6 +440,9 @@ h3 {
   color: #4b4b4b;
   font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+h2 {
+  margin-top: 0;
+}
 .subtitle {
   margin-top: 0;
   font-style: italic;

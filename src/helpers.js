@@ -40,7 +40,14 @@ export function setConstructor(model, constructor) {
 }
 
 export function extend(child, parent, props) {
-	child.prototype = Object.assign(Object.create(parent.prototype), {constructor: child}, props)
+	child.prototype = Object.assign(Object.create(parent.prototype, {
+		constructor: {
+			value: child,
+			writable: true,
+			configurable: true
+		}
+	}), props)
+	Object.setPrototypeOf(child, parent)
 }
 
 export function format(obj, stack = []) {
@@ -59,7 +66,7 @@ export function format(obj, stack = []) {
 		const props  = Object.keys(obj),
 		      indent = '\t'.repeat(stack.length)
 		return `{${props.map(
-			key => `\n${indent + key}: ${format(obj[key], stack)}`
+			key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
 		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 	}
 

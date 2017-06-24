@@ -23,9 +23,6 @@ export default function ObjectModel(def) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
 		merge(this, obj, true)
-		if (model.hasOwnProperty("constructor")) {
-			model.constructor.call(this, obj)
-		}
 		if (!model.validate(this)) return
 		return getProxy(model, this, model.definition)
 	}
@@ -50,11 +47,15 @@ extend(ObjectModel, Model, {
 
 	extend(...newParts){
 		const def = {}
-		const proto = {}
 		const newAssertions = []
 
 		Object.assign(def, this.definition)
-		merge(proto, this.prototype, false, true)
+
+		const proto = {}
+		if(newParts.some(isFunction)){
+			merge(proto, this.prototype, false, true) // composition instead of inheritance
+		}
+
 		for (let part of newParts) {
 			if (is(Model, part)) {
 				merge(def, part.definition, true)
@@ -63,7 +64,6 @@ extend(ObjectModel, Model, {
 			if (isFunction(part)) merge(proto, part.prototype, true, true)
 			if (isObject(part)) merge(def, part, true, true)
 		}
-		delete proto.constructor
 
 		const submodel = extendModel(new ObjectModel(def), this, proto)
 		submodel.assertions.push(...newAssertions)

@@ -1062,8 +1062,10 @@ QUnit.test("ObjectModel class constructors", function (assert) {
 	const UserModel = Person.extend({ role: String });
 	class User extends UserModel {
 		constructor({ firstName, lastName, role }){
-			const fullName = `${firstName} ${lastName}${role === "admin" ? " [ADMIN]" : ""}`
-			super({ firstName, lastName, fullName, role })
+			super({ firstName, lastName, role })
+			if(role === "admin"){
+				this.fullName += " [ADMIN]"
+			}
 		}
 	}
 

@@ -46,13 +46,12 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts){
+		const parent = this
 		const def = Object.assign({}, this.definition)
 		const newAssertions = []
 
 		const proto = {}
-		if(newParts.some(isFunction)){
-			merge(proto, this.prototype, false, true) // composition instead of inheritance
-		}
+		merge(proto, parent.prototype, false, true)
 
 		for (let part of newParts) {
 			if (is(Model, part)) {
@@ -63,8 +62,16 @@ extend(ObjectModel, Model, {
 			if (isObject(part)) merge(def, part, true, true)
 		}
 
-		const submodel = extendModel(new ObjectModel(def), this, proto)
-		submodel.assertions.push(...newAssertions)
+		let submodel
+		if(parent.hasOwnProperty("definition")) {
+			submodel = extendModel(new ObjectModel(def), parent, proto)
+		} else { // extended class
+			submodel = class extends parent {}
+			submodel.definition = def;
+			Object.assign(submodel.prototype, proto)
+		}
+
+		submodel.assertions = parent.assertions.concat(newAssertions)
 		return submodel
 	},
 

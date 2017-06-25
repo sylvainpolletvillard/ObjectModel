@@ -102,15 +102,14 @@ QUnit.test("Object model behaviour for properties", function (assert) {
 		joe.address.work = {city: 42};
 	}, /TypeError.*got Number 42/, "invalid Object set");
 	assert.throws(function () {
-			joe = Person({
-				name: "Joe",
-				age: 42,
-				birth: new Date(1990, 3, 25),
-				female: "false"
-			});
-		}, /TypeError.*expecting female to be Boolean.*got String "false"/,
-		"invalid prop at object model instanciation"
-	);
+		Person({
+			name: "Joe",
+			age: 42,
+			birth: new Date(1990, 3, 25),
+			female: "false"
+		});
+	}, /TypeError.*expecting female to be Boolean.*got String "false"/,
+	"invalid prop at object model instanciation");
 
 	joe = Person({
 		name: "Joe",
@@ -783,10 +782,10 @@ QUnit.test("Object model Assertions", function (assert) {
 	new AssertObject({name: "joe"});
 
 	assert.throws(function () {
-			new AssertObject({name: undefined});
-		},
-		/assertion \"may throw exception\" returned TypeError.*for value {\s+name: undefined\s+}/,
-		"assertions catch exceptions on Object models");
+		new AssertObject({name: undefined});
+	},
+	/assertion \"may throw exception\" returned TypeError.*for value {\s+name: undefined\s+}/,
+	"assertions catch exceptions on Object models");
 
 });
 
@@ -1047,22 +1046,28 @@ QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
 	assert.equal(ownKeys.sort().join(","), "a,b")
 })
 
-QUnit.test("ObjectModel constructors", function (assert) {
+QUnit.test("ObjectModel class constructors", function (assert) {
 
-	class User extends ObjectModel({ firstName: String, lastName: String, fullName: String }){
+	const PersonModel = ObjectModel({ firstName: String, lastName: String, fullName: String })
+	class Person extends PersonModel {
 		constructor({ firstName, lastName }){
 			const fullName = `${firstName} ${lastName}`
 			super({ firstName, lastName, fullName })
 		}
 	}
 
-	assert.equal((new User({ firstName: "John", lastName: "Smith" })).fullName, "John Smith",
+	assert.equal((new Person({ firstName: "John", lastName: "Smith" })).fullName, "John Smith",
 		"check es6 class constructor")
 
-	const Bill = ObjectModel({ unitPrice: Number, quantity: Number, total: Number });
-	Bill.constructor = function({ unitPrice, quantity }) { this.total = unitPrice * quantity }
+	const UserModel = Person.extend({ role: String });
+	class User extends UserModel {
+		constructor({ firstName, lastName, role }){
+			const fullName = `${firstName} ${lastName}${role === "admin" ? " [ADMIN]" : ""}`
+			super({ firstName, lastName, fullName, role })
+		}
+	}
 
-	assert.equal((new Bill({ unitPrice: 2.50, quantity: 4 })).total, 10,
-		"check constructor method")
-
+	assert.equal((new User({ firstName: "John", lastName: "Smith", role: "admin" })).fullName, "John Smith [ADMIN]",
+		"check es6 class constructor with extended class")
+	assert.equal(Object.keys(User.definition).join(","), "firstName,lastName,fullName,role")
 })

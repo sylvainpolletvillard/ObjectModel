@@ -46,10 +46,8 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts){
-		const def = {}
+		const def = Object.assign({}, this.definition)
 		const newAssertions = []
-
-		Object.assign(def, this.definition)
 
 		const proto = {}
 		if(newParts.some(isFunction)){

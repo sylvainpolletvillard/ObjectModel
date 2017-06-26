@@ -27,9 +27,9 @@
 		"gzip-size": "^3.0.0",
 		"npm-run-all": "^4.0.2",
 		"qunit": "^1.0.0",
-		"rollup": "^0.41.4",
+		"rollup": "^0.43.0",
 		"rollup-plugin-uglify-es": "0.0.1",
-		"rollup-watch": "^3.2.2"
+		"rollup-watch": "^4.0.0"
 	},
 	"main": "dist/object-model.js",
 	"module": "src/index.js",

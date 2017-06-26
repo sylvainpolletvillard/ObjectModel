@@ -69,7 +69,7 @@ extend(ObjectModel, Model, {
 		let submodel = extendModel(new ObjectModel(def), parent, proto)
 		submodel.assertions = parent.assertions.concat(newAssertions)
 
-		if(!parent.hasOwnProperty("definition")) { // extended class
+		if(getProto(parent) !== ObjectModel.prototype) { // extended class
 			submodel[_constructor] = function(obj){
 				let parentInstance = new parent(obj)
 				merge(obj, parentInstance, true) // get modified props from parent class constructor

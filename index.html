@@ -117,8 +117,8 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">9.84 KB</strong> minified,
-					<strong class="size-gzip">3.64 KB</strong> gzipped,
+					<strong class="size-min">9.85 KB</strong> minified,
+					<strong class="size-gzip">3.68 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -131,8 +131,8 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.84 KB</strong>,
-					<strong class="size-gzip">3.64 KB</strong> gzipped) :
+				<li>Minified file (<strong class="size-min">9.85 KB</strong>,
+					<strong class="size-gzip">3.68 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
@@ -489,10 +489,10 @@ const Mother = Person.extend({
 		<div class="panel panel2">
 			<span class="legend">Instance</span>
 			<pre><code class="language-javascript">let joe = new Person({ name: "Joe", female: false });
-let ann = new Person({ name: "Joe's wife", female: true });
-let joanna = new Person({ name: "Joe's daughter", female: true });
+let ann = new Person({ name: "Ann", female: true });
+let joanna = new Person({ name: "Joanna", female: true });
 
-ann = Mother(Object.assign({ child: joanna }, ann)) // cast ann to Mother model
+ann = new Mother({ name: "Ann", female: true, child: joanna })
 ann instanceof Mother && ann instanceof Person // true</code>
 
 <code class="language-javascript">joe = Mother(joe); // try to cast joe to Mother model</code>
@@ -502,6 +502,40 @@ expecting child to be {
 	female: Boolean
 }, got undefined</code></pre>
 		</div>
+
+		<div class="doc">
+			<h3>With ES6 classes</h3>
+			<p>Extended models inherit the parent's prototype chain, so you can easily combine it with class inheritance. Just make sure to respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank">Liskov substitution principle</a> when you extend a type definition.</p>
+		</div>
+
+		<div class="panel panel1">
+			<span class="legend">Model</span>
+			<pre><code class="language-javascript">class Person extends ObjectModel({ name: String, female: Boolean }){
+	constructor({ name, female }){
+		if(!female) name = `Mr ${name}`
+		super({ name, female })
+	}
+}
+
+class Mother extends Person.extend({ female: true, child: Person }){
+	constructor({ name, female, child }){
+		super({ name: `Mrs ${name}`, female, child })
+	}
+}</code></pre>
+		</div>
+
+		<div class="panel panel2">
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">let joe = new Person({ name: "Joe", female: false })
+let joanna = new Person({ name: "Joanna", female: true })
+let ann = new Mother({ name: "Ann", female: true, child: joanna })</code>
+
+<code class="language-javascript">joe.name</code>
+<code class="language-none log">Mr Joe</code>
+<code class="language-javascript">ann.name</code>
+<code class="language-none log">Mrs Ann</code></pre>
+		</div>
+
 	</section>
 
 	<hr>
@@ -550,6 +584,7 @@ joe.sendConfirmationMail();</code>
 			<h2>Assertions for custom validation tests</h2>
 			<p>You can add to your models any number of assertions that are custom test functions applied on model instances. All assertions are called every time the model is changed, and must all return <code>true</code> to validate. Exceptions thrown in assertions are catched and considered as assertion failures.</p>
 			<p>For example, we can get an Integer model by adding <code>Number.isInteger</code> as an assertion to a basic <code>Number</code> model.</p>
+			<p>Assertions are inherited from the model prototype, so you can add global assertions on all models by setting them in <code>Model.prototype</code>. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -583,10 +618,6 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 <code class="language-javascript">PrimeNumber(87);</code>
 <code class="language-none exception">TypeError: assertion isPrime returned false for value 87</code></pre>
-		</div>
-
-		<div class="doc">
-			<p>Assertions are inherited from the model prototype, so you can add global assertions on all models by setting them in <code>Model.prototype</code>. The second argument of the <code>assert</code> method is an optional message shown when assertion fails. It can be a String or a function returning a String.</p>
 		</div>
 	</section>
 

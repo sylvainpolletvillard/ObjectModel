@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {_validate, extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
 const SET_MUTATORS = ["add", "delete", "clear"]
 
@@ -45,7 +45,7 @@ extend(SetModel, Model, {
 		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	_validate(set, path, errors, stack){
+	[_validate](set, path, errors, stack){
 		if (set instanceof Set) {
 			for (let item of set.values()) {
 				checkDefinition(item, this.definition, (path || "Set"), errors, stack)

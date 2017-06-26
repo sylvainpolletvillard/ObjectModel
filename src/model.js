@@ -1,8 +1,7 @@
-import {bettertypeof, define, extend, format, isArray, isPlainObject} from "./helpers"
+import {_constructor, _validate, bettertypeof, define, extend, format, isArray, isPlainObject} from "./helpers"
 import {checkAssertions, checkDefinition, formatDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
-
 
 export function Model(def) {
 	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
@@ -29,15 +28,15 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	_constructor: o => o,
+	[_constructor]: o => o,
 
-	_validate(obj, path, errors, stack){
+	[_validate](obj, path, errors, stack){
 		checkDefinition(obj, this.definition, path, errors, stack)
 		checkAssertions(obj, this, path, errors)
 	},
 
 	validate(obj, errorCollector){
-		this._validate(obj, null, this.errors, [])
+		this[_validate](obj, null, this.errors, [])
 		return !unstackErrors(this, errorCollector)
 	},
 

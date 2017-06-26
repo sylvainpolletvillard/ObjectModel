@@ -73,3 +73,6 @@ export function format(obj, stack = []) {
 
 	return String(obj)
 }
+
+export const _constructor = "_constructor"
+export const _validate = "_validate"

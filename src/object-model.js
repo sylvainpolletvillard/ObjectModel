@@ -1,6 +1,8 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
 import {
+	_constructor,
+	_validate,
 	extend,
 	format,
 	getProto,
@@ -24,7 +26,7 @@ export default function ObjectModel(def) {
 		let instance = this
 		if (!is(model, instance)) return new model(obj)
 		if (is(model, obj)) return obj
-		merge(instance, model._constructor(obj), true)
+		merge(instance, model[_constructor](obj), true)
 		if (!model.validate(instance)) return
 		return getProxy(model, instance, model.definition)
 	}
@@ -68,7 +70,7 @@ extend(ObjectModel, Model, {
 		submodel.assertions = parent.assertions.concat(newAssertions)
 
 		if(!parent.hasOwnProperty("definition")) { // extended class
-			submodel._constructor = function(obj){
+			submodel[_constructor] = function(obj){
 				let parentInstance = new parent(obj)
 				merge(obj, parentInstance, true) // get modified props from parent class constructor
 				return obj
@@ -78,7 +80,7 @@ extend(ObjectModel, Model, {
 		return submodel
 	},
 
-	_validate(obj, path, errors, stack){
+	[_validate](obj, path, errors, stack){
 		if (isObject(obj)) checkDefinition(obj, this.definition, path, errors, stack)
 		else stackError(errors, this, obj, path)
 

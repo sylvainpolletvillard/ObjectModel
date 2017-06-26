@@ -1,6 +1,6 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {extend, format, isFunction, proxifyModel, setConstructor} from "./helpers"
+import {_validate, extend, format, isFunction, proxifyModel, setConstructor} from "./helpers"
 
 
 export default function FunctionModel(...argsDef) {
@@ -60,7 +60,7 @@ extend(FunctionModel, Model, {
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
-	_validate(f, path, errors){
+	[_validate](f, path, errors){
 		if (!isFunction(f)) {
 			stackError(errors, "Function", f, path)
 		}

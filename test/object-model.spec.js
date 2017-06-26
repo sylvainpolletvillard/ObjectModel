@@ -2,24 +2,33 @@
 
 QUnit.module("Object Models");
 
-const consoleMock = {
-	methods: ["debug","log","warn","error"],
-	apply: function(){
-		consoleMock.methods.forEach(function(method){
-			consoleMock["_default"+method] = console[method];
-			consoleMock[method+"LastArgs"] = [];
-			console[method] = function(){
-				consoleMock[method+"LastArgs"] = arguments;
-			}
-		})
-	},
-	revert: function(){
-		consoleMock.methods.forEach(function(method){
-			console[method] = consoleMock["_default"+method];
-			consoleMock[method+"LastArgs"] = [];
-		});
+const consoleMock = (function(console) {
+	const methods = ["debug", "log", "warn", "error"];
+	const originals = {};
+	const mocks = {}
+	const lastArgs = {};
+
+	methods.forEach(method => {
+		originals[method] = console[method]
+		mocks[method] = function(){ lastArgs[method] = arguments }
+	})
+
+	return {
+		apply: function () {
+			methods.forEach(method => {
+				lastArgs[method] = [];
+				console[method] = mocks[method]
+			})
+		},
+		revert: function () {
+			methods.forEach(method => {
+				lastArgs[method] = [];
+				console[method] = originals[method]
+			})
+		},
+		lastArgs
 	}
-};
+})(console);
 
 QUnit.test("Object model constructor && proto", function (assert) {
 
@@ -972,7 +981,7 @@ QUnit.test("Automatic model casting", function (assert) {
 	consoleMock.apply();
 	c.foo.bar; //get ambiguous key
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number]/
-			.test(consoleMock["warnLastArgs"][0]),
+			.test(consoleMock.lastArgs.warn[0]),
 		"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
@@ -981,7 +990,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	consoleMock.apply();
 	c = new Container({ foo: { bar: Type2({ name: "dunno" }) }});
-	assert.ok(consoleMock["warnLastArgs"].length === 0, "should not warn when explicit model cast in ambiguous context");
+	assert.ok(consoleMock.lastArgs.warn.length === 0, "should not warn when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
 	consoleMock.revert();
@@ -1081,4 +1090,5 @@ QUnit.test("ObjectModel class constructors", function (assert) {
 	assert.equal(Object.keys(User.definition).join(","), "firstName,lastName,fullName,role")
 	assert.equal(Object.keys(user).join(","), "firstName,lastName,fullName,role")
 	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
+
 })

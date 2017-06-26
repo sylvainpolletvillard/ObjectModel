@@ -3,6 +3,7 @@ import {cast, checkAssertions, checkDefinition} from "./definition"
 import {
 	extend,
 	format,
+	getProto,
 	is,
 	isFunction,
 	isModelInstance,
@@ -20,11 +21,12 @@ const cannot = (model, msg) => {
 
 export default function ObjectModel(def) {
 	const model = function (obj = model.default) {
-		if (!is(model, this)) return new model(obj)
+		let instance = this
+		if (!is(model, instance)) return new model(obj)
 		if (is(model, obj)) return obj
-		merge(this, obj, true)
-		if (!model.validate(this)) return
-		return getProxy(model, this, model.definition)
+		merge(instance, model._constructor(obj), true)
+		if (!model.validate(instance)) return
+		return getProxy(model, instance, model.definition)
 	}
 
 	extend(model, Object)
@@ -62,16 +64,17 @@ extend(ObjectModel, Model, {
 			if (isObject(part)) merge(def, part, true, true)
 		}
 
-		let submodel
-		if(parent.hasOwnProperty("definition")) {
-			submodel = extendModel(new ObjectModel(def), parent, proto)
-		} else { // extended class
-			submodel = class extends parent {}
-			submodel.definition = def;
-			Object.assign(submodel.prototype, proto)
+		let submodel = extendModel(new ObjectModel(def), parent, proto)
+		submodel.assertions = parent.assertions.concat(newAssertions)
+
+		if(!parent.hasOwnProperty("definition")) { // extended class
+			submodel._constructor = function(obj){
+				let parentInstance = new parent(obj)
+				merge(obj, parentInstance, true) // get modified props from parent class constructor
+				return obj
+			}
 		}
 
-		submodel.assertions = parent.assertions.concat(newAssertions)
 		return submodel
 	},
 
@@ -88,7 +91,7 @@ function getProxy(model, obj, def, path) {
 		return cast(obj, def)
 
 	return proxify(obj || {}, {
-		getPrototypeOf: () => path ? Object.prototype : model.prototype,
+		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 		get(o, key) {
 			if (!isString(key))

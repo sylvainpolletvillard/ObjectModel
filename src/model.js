@@ -29,6 +29,8 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
+	_constructor: o => o,
+
 	_validate(obj, path, errors, stack){
 		checkDefinition(obj, this.definition, path, errors, stack)
 		checkAssertions(obj, this, path, errors)
@@ -76,7 +78,6 @@ export function initModel(model, def) {
 export function extendModel(child, parent, newProps) {
 	extend(child, parent, newProps)
 	child.assertions.push(...parent.assertions)
-	child.errorCollector = parent.errorCollector
 	return child
 }
 

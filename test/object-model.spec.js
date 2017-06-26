@@ -1056,8 +1056,10 @@ QUnit.test("ObjectModel class constructors", function (assert) {
 		}
 	}
 
-	assert.equal((new Person({ firstName: "John", lastName: "Smith" })).fullName, "John Smith",
-		"check es6 class constructor")
+	const person = new Person({ firstName: "John", lastName: "Smith" })
+	assert.ok(person instanceof Person,  "person instanceof Person")
+	assert.ok(person instanceof PersonModel,  "person instanceof PersonModel")
+	assert.equal(person.fullName, "John Smith",	"check es6 class constructor")
 
 	const UserModel = Person.extend({ role: String });
 	class User extends UserModel {
@@ -1069,7 +1071,14 @@ QUnit.test("ObjectModel class constructors", function (assert) {
 		}
 	}
 
-	assert.equal((new User({ firstName: "John", lastName: "Smith", role: "admin" })).fullName, "John Smith [ADMIN]",
-		"check es6 class constructor with extended class")
+	const user = new User({ firstName: "John", lastName: "Smith", role: "admin" })
+
+	assert.ok(user instanceof User,  "user instanceof User")
+	assert.ok(user instanceof UserModel,  "user instanceof UserModel")
+	assert.ok(user instanceof Person,  "user instanceof Person")
+	assert.ok(user instanceof PersonModel,  "user instanceof PersonModel")
+	assert.equal(user.fullName, "John Smith [ADMIN]", "check es6 class constructor with extended class")
 	assert.equal(Object.keys(User.definition).join(","), "firstName,lastName,fullName,role")
+	assert.equal(Object.keys(user).join(","), "firstName,lastName,fullName,role")
+	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
 })

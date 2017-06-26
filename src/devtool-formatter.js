@@ -1,6 +1,6 @@
 import ObjectModel from "./object-model"
 import Model from "./model"
-import {is, isArray, isFunction, isPlainObject} from "./helpers"
+import {getProto, is, isArray, isFunction, isPlainObject} from "./helpers"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -19,7 +19,7 @@ function getModel(instance) {
 	if (instance === undefined || instance === null)
 		return null
 
-	const proto = Object.getPrototypeOf(instance);
+	const proto = getProto(instance);
 	if (!proto || !proto.constructor || !is(Model, proto.constructor))
 		return null
 

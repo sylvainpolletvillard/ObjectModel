@@ -1,12 +1,13 @@
 import Model from "./model"
 
+export const getProto        = Object.getPrototypeOf
 export const is              = (Constructor, obj) => obj instanceof Constructor
 export const isString        = s => typeof s === "string"
 export const isFunction      = f => typeof f === "function"
 export const isObject        = o => typeof o === "object"
 export const isArray         = a => Array.isArray(a)
-export const isPlainObject   = o => o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype
-export const isModelInstance = i => i && is(Model, Object.getPrototypeOf(i).constructor)
+export const isPlainObject   = o => o && isObject(o) && getProto(o) === Object.prototype
+export const isModelInstance = i => i && is(Model, getProto(i).constructor)
 export const bettertypeof    = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 
 export const proxify      = (val, traps) => new Proxy(val, traps)

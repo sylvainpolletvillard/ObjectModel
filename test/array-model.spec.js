@@ -217,6 +217,6 @@ QUnit.test("Other traps", function(assert){
 
 
 QUnit.test("Array models toString", function (assert) {
-	assert.equal(ArrayModel(Number,).toString(), "Array of Number")
+	assert.equal(ArrayModel(Number).toString(), "Array of Number")
 	assert.equal(ArrayModel([String, 42]).toString(), "Array of String or 42")
 })

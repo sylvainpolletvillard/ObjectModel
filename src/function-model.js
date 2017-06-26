@@ -37,7 +37,7 @@ export default function FunctionModel(...argsDef) {
 }
 
 extend(FunctionModel, Model, {
-	toString(stack){
+	toString(stack = []){
 		let out = `Function(${this.definition.arguments.map(
 			argDef => formatDefinition(argDef, stack.slice())
 		).join(",")})`

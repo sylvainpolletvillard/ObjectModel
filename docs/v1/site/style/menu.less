@@ -1,0 +1,241 @@
+@import "helpers";
+@import "colors";
+@import "fonts";
+
+
+@menuWidth: 300px;
+@menu-button-size : 36px;
+@menu-transition: 0.4s;
+
+body {
+	position: relative;
+	.transition(left @menu-transition ease);
+	left: 0;
+}
+
+.lines-button {
+	display: inline-block;
+	padding: @menu-button-size*0.4 @menu-button-size/4 @menu-button-size/2 @menu-button-size/4;
+	transition: @menu-transition;
+	cursor: pointer;
+	user-select: none;
+
+	&:active {
+		transition: none;
+		background: rgba(0,0,0,.1);
+	}
+
+	&:hover {
+		opacity: 1;
+		.lines {
+			&:before,
+			&:after {
+				top: 0;
+				width: @menu-button-size/1.8;
+			}
+			&:before { transform: translate3d(75%,10%,0) rotate(40deg); transform-origin: right bottom; }
+			&:after { transform: translate3d(75%,-10%,0) rotate(-40deg); transform-origin: right top; }
+		}
+	}
+
+}
+
+.lines {
+	.line(); //create middle line
+	position: relative;
+	top: -@menu-button-size/14;
+
+	/*create the upper and lower lines as pseudo-elements of the middle line*/
+	&:before, &:after {
+		.line();
+		position: absolute;
+		left:0;
+		content: '';
+		transform-origin: @menu-button-size/14 center;
+	}
+	&:before { top: -@menu-button-size/4; }
+	&:after { top: @menu-button-size/4; }
+
+
+}
+
+.line() {
+    display: inline-block;
+    width: @menu-button-size;
+    height: @menu-button-size/7;
+    background: #666;
+    border-radius: @menu-button-size/14;
+    transition: all @menu-transition;
+ }
+
+.lines-button.arrow.active {
+	transform: scale3d(.8,.8,.8);
+}
+
+body.menu-opened .lines-button.arrow .lines{
+	&:before,
+	&:after {
+		top: 0;
+		width: @menu-button-size/1.8;
+		transform-origin: @menu-button-size/14 center;
+	}
+
+	&:before { transform: rotate3d(0,0,1,-40deg); }
+	&:after { transform: rotate3d(0,0,1,40deg); }
+}
+
+#menu-button {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 200;
+	cursor: pointer;
+	background: #eee;
+	border: none;
+	box-shadow: @menu-button-size*0.05 @menu-button-size*0.05 @menu-button-size*0.25 #999;
+	.transition(left @menu-transition ease, opacity 0.2s ease;);
+	&:hover {
+		box-shadow: @menu-button-size*0.02 @menu-button-size*0.02 @menu-button-size*0.15 #999;
+	}
+	&:focus {
+		background-color: #e8e8e8;
+		box-shadow: inset -@menu-button-size*0.02 -@menu-button-size*0.02 @menu-button-size*0.2 #aaa;
+		outline: none;
+	}
+}
+
+#lang-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	text-indent: 999em;
+	z-index: 200;
+	cursor: pointer;
+	opacity: 0.5;
+	&:hover {
+		opacity: 1;
+	}
+}
+
+#menu {
+	position: fixed;
+	margin: 0;
+	padding: @menu-button-size*1.6 0 0 0;
+	height: 100%;
+	background: @bg-secondary;
+	box-shadow: 0 0 15px #ccc;
+	.box-sizing(border-box);
+	overflow-y: auto;
+	top: 0;
+	left: -@menuWidth;
+	z-index: 100;
+	width: @menuWidth;
+	.transition(left @menu-transition ease);
+	text-align: left;
+	.hardware-accelerated();
+
+	a {
+		padding: .25em 0 .25em 1em;
+		text-decoration: none;
+		color: @fg-default;
+
+		&:hover {
+			background: @bg-secondary-alt;
+		}
+
+		&.active {
+			font-weight: bold;
+		}
+	}
+
+	a.title {
+		display: block;
+		font-size: 1.4em;
+		.font-title();
+	}
+
+	a.download-link, a.github-link {
+		display: block;
+		padding: .25em 0 .25em 1em;
+
+		h2 {
+			display: inline;
+			vertical-align: middle;
+			line-height: 1.5em;
+			margin: 0;
+			font-size: 100%;
+			color: @fg-default;
+		}
+
+		&::after {
+			content: "";
+			display: inline-block;
+			background-repeat: no-repeat;
+			background-size: 1.5em 1.5em;
+			height: 1.5em;
+			width: 2em;
+			vertical-align: top;
+			float: right;
+		}
+
+		&.download-link::after {
+			background-image: url("../res/download.svg");
+		}
+		&.github-link::after {
+			background-image: url("../res/github.svg");
+		}
+	}
+
+	ul {
+		padding-left: 0;
+		margin: 0;
+
+		li {
+			list-style: none;
+
+			a {
+				display: block;
+				padding-left: 2em;
+				line-height: 1.1em;
+
+				&.active::before {
+					content: "→";
+					width: 1.5em;
+					display: inline-block;
+					margin-left: -1.5em;
+				}
+			}
+		}
+
+	}
+
+}
+
+body.menu-opened {
+	left: @menuWidth;
+
+	#menu {
+		left: 0;
+	}
+
+	#menu-button {
+		left: @menuWidth - @menu-button-size*1.5;
+		border-width: 0 0 1px 1px;
+	}
+}
+
+@media (min-width: 1281px) {
+	body {
+		position: absolute;
+		left: @menuWidth;
+		right: 0;
+	}
+
+	#menu {
+		left: 0;
+	}
+
+	#menu-button {
+		display: none;
+	}
+}

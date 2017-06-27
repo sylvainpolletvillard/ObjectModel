@@ -1,0 +1,127 @@
+@import "reset";
+@import "prism.css";
+@import "helpers";
+@import "fonts";
+@import "colors";
+
+body {
+	.font-paragraph();
+	.transition(margin-right .3s ease);
+	margin: 0 2em 0.5em 2em;
+}
+
+h1, h2, h3 {
+	color: @fg-highlight;
+	.font-title();
+}
+
+.subtitle {
+	margin-top: 0;
+	font-style: italic;
+}
+
+pre {
+	-moz-tab-size:    3;
+	-o-tab-size:      3;
+	-webkit-tab-size: 3;
+	-ms-tab-size:     3;
+	tab-size:         3;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+code {
+	.font-code();
+}
+
+code.return {
+	font-style: italic;
+	&::before {
+		content: "> ";
+	}
+}
+
+code.exception {
+	color: #dc002c;
+	white-space: pre-wrap;
+	&::before {
+		content: "";
+		display: inline-block;
+		background: url('../res/error.svg') no-repeat;
+		background-size: 1em 1em;
+		width: 1.2em;
+		height: 1em;
+		line-height: 1em;
+		vertical-align: -0.15em;
+	}
+}
+
+code.log {
+	color: #999;
+	white-space: pre-wrap;
+	&::before {
+		content: "> ";
+	}
+}
+
+dl {
+	padding-left: 1em;
+}
+
+hr {
+	width: 100%;
+	height: 1px;
+	border: none;
+	background-color: transparent;
+	background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
+	background-image: -moz-linear-gradient(left, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
+	background-image: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, .03)), color-stop(50%, rgba(0, 0, 0, .1)), to(rgba(0, 0, 0, .03)));
+	background-image: linear-gradient(to right, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
+}
+
+mark {
+	font-weight: bold;
+	background-color: white;
+	box-shadow: 0 0 2px #CCC;
+}
+
+summary {
+	cursor: pointer;
+	display: inline-block;
+	&:active, &:focus {
+		outline: none;
+	}
+}
+
+.warning {
+	color: @fg-highlight;
+	font-weight: bold;
+}
+
+dt {
+	font-weight: bold;
+	margin-top: 0.5em;
+	&:before {
+		content: "\21E8 \ ";
+	}
+
+	code {
+		margin-left: 1em;
+		font-weight: normal;
+		font-family: Consolas, Monaco, 'Andale Mono', monospace;
+		color: #666;
+		text-shadow: 1px 1px white;
+	}
+}
+
+#api a {
+	text-decoration: none;
+	color: inherit;
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+@import "index.less";
+@import "menu.less";
+@import "mediaqueries.less";

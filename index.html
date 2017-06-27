@@ -86,7 +86,7 @@
 
 			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> or <a href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from <code>localStorage</code>, external libraries...</p>
 
-			<p>By leveraging ES6 Proxies, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
+			<p>By leveraging <strong>ES6 Proxies</strong>, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
 			<p>Validating at runtime also brings many other benefits: you can define your own types, use them in complex model definitions with custom assertions that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.</p>
 		</div>
@@ -143,6 +143,7 @@
 			<h3>Changelog and previous releases</h3>
 
 			<p><strong>Note: ObjectModel v3 only targets ES2015-compliant environments.</strong></p>
+			<p>If you need to support older browsers, please use the <a href="docs/v2">2.x version</a> instead.</p>
 
 			<p>Take a look at
 				<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a>
@@ -962,10 +963,10 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 			<dl>
 				<dt>v1.x</dt>
 				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
-				<dt>v2.x</dt>
+				<dt><a href="docs/v2">v2.x</a></dt>
 				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
 				<dt>v3.x</dt>
-				<dd>Next version of ObjectModel relies on ES6 and Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
+				<dd>ObjectModel v3 is built around ES6 Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
 			</dl>
 		</details>
 

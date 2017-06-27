@@ -1007,6 +1007,7 @@ QUnit.test("ObjectModel delete trap", function (assert) {
 	delete m.u; // can delete undefined properties
 	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
 	delete m.x // can delete optional properties
+	M.sealed = true;
 	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete property out of model definition");
 
 })
@@ -1021,7 +1022,9 @@ QUnit.test("ObjectModel defineProperty trap", function (assert) {
 	assert.throws(function(){ Object.defineProperty(m, "u", { value: "test" })}, /TypeError.*expecting u to be undefined/, "check type after defineProperty");
 	assert.throws(function(){ Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
 	Object.defineProperty(m, "x", { value: undefined }) // can define optional properties
+	ObjectModel.prototype.sealed = true;
 	assert.throws(function(){ Object.defineProperty(m, "undefined", { value: "test" }) }, /TypeError.*cannot find property/, "cannot define property out of model definition");
+	ObjectModel.prototype.sealed = false;
 
 })
 

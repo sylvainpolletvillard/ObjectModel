@@ -38,7 +38,7 @@ export default function ObjectModel(def) {
 }
 
 extend(ObjectModel, Model, {
-	sealed: true,
+	sealed: false,
 
 	defaults(p){
 		Object.assign(this.prototype, p)

@@ -10,15 +10,11 @@
 
 ## What is this library ?
    
-   A recurring criticism of JavaScript is that it is a weakly typed language. New languages that compile to JavaScript have been invented, such as [TypeScript](TypeScript) by Microsoft. We also have static analysis tools like [Flow](Flow) by Facebook. These solutions bring static typing, which means it only validate your code at build time, not runtime. *Once compiled in JavaScript and run in the browser, there is no longer any guarantee that the variables you are working with have the intended types*.
-   
-   *Static typing is insufficient to prevent most of the real and practical bugs caused by type errors*. Indeed, JavaScript applications often involve *unreliable data sources*: user inputs, web services, server-side rendering, browser built-ins, external dependencies, CDN... Static typing can not check the validity of this content since it is retrieved at runtime. For the same reason, developers usually face more type errors with this kind of data compared to their own code that is under their control and can benefit from type inference with their IDE.
-   
-   This is why ObjectModel is about **strong dynamic type checking**: it aims to get strong validation constraints for your variables at runtime. Whenever a property is modified, the whole object is validated against its definition. This allows you to identify a problem much more quickly thanks to the generated exceptions. ObjectModel is also very easy to master: *no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library*.
-   
-   Validating at runtime also brings other benefits : you can define your own types, and use them in complex model definitions with custom assertions and more specific tests that can even change depending on your application state.
-   
-   Actually it goes much further than just type safety. Go on and see for yourself. 
+  ObjectModel intends to bring **strong dynamic type checking** to your web applications. Contrary to static type-checking solutions like [TypeScript] or [Flow], ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from localStorage, external libraries...
+  
+  By leveraging **ES6 Proxies**, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: *no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library*.
+  
+  Validating at runtime also brings many other benefits: you can define your own types, use them in complex model definitions with custom assertions that can even change depending on your application state. Actually it goes much further than just type safety. Go on and see for yourself.
 
 ## Installation
 Add the library to your project dependencies with NPM:
@@ -48,17 +44,13 @@ myOrder.product.quantity = false; //try to assign a Boolean
 // ❌ TypeError: expecting product.quantity to be Number, got Boolean false
 ```
 
+## Documentation
+
 For more examples, documentation and questions, please refer to the project website: [objectmodel.js.org] [website]
 
-## Release History
+## Changelog and Release History
 
 Please refer to [Github Releases][github-releases]
-
-## Build, Tests, Contributing
-
-Automatic minifying/concatenating/testing process is done with [Grunt]
-
-After cloning or forking this project, use `npm install` to install development dependencies. To build the library, use `npm run build` and to run the QUnit tests, use `npm test`.
 
 *Bug reports and pull requests are welcome.*
 

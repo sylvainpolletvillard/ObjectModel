@@ -319,7 +319,8 @@ opening.easing = 1;</code>
 	<section id="doc-value-checking" class="grid doc-code">
 		<div class="doc">
 			<h2>Value checking and enumerations</h2>
-			<p>Instead of types, values can be specified for model properties. The property value must match the model one. If a regular expression is passed, the value must match it. Use brackets notation for value enumerations. Note that values and types can be mixed for one property.</p>
+			<p>In model definitions, you can also specify values instead of types for model properties. The property value will have to match the model one. Just like union types, use brackets notation for value enumerations.</p>
+			<p>If a regular expression is passed, the value must match it.  </p>
 		</div>
 
 		<div class="panel">
@@ -342,7 +343,7 @@ opening.easing = 1;</code>
 	<section id="doc-null-safe" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Null-safe object traversal</h2>
-			<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an ObjectModel, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
+			<p>When you want to traverse nested objects, you always have to worry about the null pointer exception. Some languages such as Groovy have a safe navigation operator represented by <code>?.</code> to safely navigate through potential null references. In JavaScript, there is no such solution so you have to manually check for <code>undefined/null</code> values at each level of the object. But within an object model, declared properties are null-safe for traversal: every instance complete its structure with undefined properties according to the model definition.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -630,18 +631,22 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 	<section id="doc-private-and-constants" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Private and constant properties</h2>
-			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making <i>_underscored</i> properties not enumerable and <i>CAPITALIZED</i> properties not writable.</p>
+			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making <i>_underscored</i> properties not enumerable and not usable outside of the instance's own methods, and <i>CAPITALIZED</i> properties not writable.</p>
 			<p>You can modify or remove these conventions by overriding the <code>conventionForPrivate</code> and <code>conventionForConstant</code> methods in your model or globally in <code>Model.prototype</code>.</p>
 		</div>
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">const Circle = ObjectModel({
-	radius: Number, // public
-	_diameter: [Number], // private
-	UNIT: ["px","cm","mm"], // constant
-	_ID: [Number], // private and constant
-});</code></pre>
+			<pre><code class="language-javascript">class Circle extends ObjectModel({
+	radius: Number,    // public
+	_diameter: Number, // private
+	UNIT: ["px","cm"], // constant
+	_ID: [Number],     // private and constant
+}){
+	get _diameter(){ return this.radius * 2 }
+	getDiameter(){ return this._diameter }
+}
+</code></pre>
 		</div>
 
 		<div class="panel panel2">
@@ -650,6 +655,10 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 c.radius = 100;
 c.UNIT = "cm";</code>
 <code class="language-none exception">TypeError: cannot redefine constant UNIT</code>
+<code class="language-javascript">console.log( c._diameter )</code>
+<code class="language-none exception">TypeError: cannot access to private property _diameter</code>
+<code class="language-javascript">console.log( c.getDiameter() )</code>
+<code class="language-none log">200</code>
 <code class="language-javascript">Object.keys(c); // private variables are not enumerated</code>
 <code class="language-none log">["radius", "UNIT"]</code></pre>
 		</div>
@@ -1003,6 +1012,8 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<dl>
 			<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
 			<dd>Merge the object passed within the model prototype to set defaults values for some model properties.</dd>
+			<dt>sealed <code>objectModel.sealed = true</code></dt>
+			<dd>If set to <code>true</code>, undeclared properties will be forbidden for this model. Can also be set on <code>Model.prototype</code>.<br>By default, additional properties are tolerated in order to allow model extensions.</dd>
 		</dl>
 		<h3>Function models</h3>
 		<dl>

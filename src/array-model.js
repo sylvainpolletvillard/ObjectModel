@@ -1,29 +1,30 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {_validate, extend, isArray, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {_validate, extend, isArray, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
-const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
 export default function ArrayModel(def) {
 
 	const model = function (array = model.default) {
 		if (!model.validate(array)) return
+
+		const mutators = {}
+		for(let method of ARRAY_MUTATORS) {
+			mutators[method] = proxifyFn([][method], (fn, ctx, args) => {
+				const testArray = array.slice()
+				fn.apply(testArray, args)
+				model.validate(testArray)
+
+				const returnValue = fn.apply(array, args)
+				array.forEach((a, i) => array[i] = cast(a, model.definition))
+				return returnValue
+			})
+		}
+
 		return proxifyModel(array, model, {
 			get(arr, key) {
-				let val = arr[key];
-				if (!isFunction(val)) return val
-
-				return proxifyFn(val, (fn, ctx, args) => {
-					if (ARRAY_MUTATORS.includes(key)) {
-						const testArray = arr.slice()
-						fn.apply(testArray, args)
-						model.validate(testArray)
-					}
-
-					const returnValue = fn.apply(arr, args)
-					array.forEach((a, i) => arr[i] = cast(a, model.definition))
-					return returnValue
-				})
+				return key in mutators ? mutators[key] : arr[key]
 			},
 
 			set(arr, key, val) {

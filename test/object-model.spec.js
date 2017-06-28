@@ -836,7 +836,7 @@ QUnit.test("Object models validate method", function (assert) {
 	assert.equal(errors[0].expected, "expected assertFunction toString", "check assertion error expected parameter");
 	assert.equal(errors[0].received, "FR", "check assertion error received parameter");
 	assert.equal(errors[0].path, "address.country", "check assertion error path parameter");
-	assert.equal(errors[0].message, 'assertion "Country must be GB" returned false for value "FR"', "check assertion error message parameter");
+	assert.equal(errors[0].message, 'assertion "Country must be GB" returned false for address.country = "FR"', "check assertion error message parameter");
 
 });
 

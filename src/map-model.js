@@ -55,7 +55,7 @@ extend(MapModel, Model, {
 			}
 		} else stackError(errors, this, map, path)
 
-		checkAssertions(map, this, errors)
+		checkAssertions(map, this, path, errors)
 	},
 
 	extend(newKeys, newValues){

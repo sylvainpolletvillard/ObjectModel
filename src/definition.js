@@ -78,8 +78,9 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 		}
 		if (result !== true) {
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${format(assertionResult)} for value ${format(value)}`
-			stackError(errors, assertion, obj, path, onFail.call(model, result, obj))
+				`assertion "${assertion.description}" returned ${format(assertionResult)} `
+				+`for ${path ? path+" =" : "value"} ${format(value)}`
+			stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path))
 		}
 	}
 }

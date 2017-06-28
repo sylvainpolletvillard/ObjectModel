@@ -51,7 +51,7 @@ extend(SetModel, Model, {
 				checkDefinition(item, this.definition, (path || "Set"), errors, stack)
 			}
 		} else stackError(errors, this, set, path)
-		checkAssertions(set, this, errors)
+		checkAssertions(set, this, path, errors)
 	},
 
 	extend(...newParts){

@@ -166,6 +166,23 @@
 
 	<hr>
 
+	<section id="doc-model" class="grid doc-code">
+		<div class="doc">
+			<h2>Model constructor</h2>
+			<p><code>Model</code> is the <strong>base class of all models</strong> and can be used as an alias for <code>BasicModel</code> and <code>ObjectModel</code> constructors.</p>
+		</div>
+
+		<div class="panel">
+			<span class="legend">Example</span>
+			<pre><code class="language-javascript">import { Model, BasicModel, ObjectModel } from "objectmodel"
+
+Model(String)           // returns a Basic model
+Model({ name: String }) // returns an Object model</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="doc-basic-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Basic models</h2>
@@ -174,9 +191,7 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">import { BasicModel } from "objectmodel";
-
-const NumberModel = BasicModel(Number);
+			<pre><code class="language-javascript">const NumberModel = BasicModel(Number);
 // 'new' keyword is optional for models and model instances</code></pre>
 		</div>
 
@@ -198,9 +213,7 @@ const NumberModel = BasicModel(Number);
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">import { ObjectModel } from "objectmodel";
-
-const Order = new ObjectModel({
+			<pre><code class="language-javascript">const Order = new ObjectModel({
 	product: {
 		name: String,
 		quantity: Number,
@@ -219,23 +232,6 @@ const Order = new ObjectModel({
 myOrder.product.quantity = 2; // no exceptions thrown
 myOrder.product.quantity = false; //try to assign a Boolean</code>
 <code class="language-none exception">TypeError: expecting product.quantity to be Number, got Boolean false</code></pre>
-		</div>
-	</section>
-
-	<hr>
-
-	<section id="doc-model" class="grid doc-code">
-		<div class="doc">
-			<h2>Model constructor</h2>
-			<p><code>Model</code> is the <strong>base class of all models</strong> and can be used as an alias for <code>BasicModel</code> and <code>ObjectModel</code> constructors.</p>
-		</div>
-
-		<div class="panel">
-			<span class="legend">Example</span>
-			<pre><code class="language-javascript">import { Model, BasicModel, ObjectModel } from "objectmodel"
-
-Model(String)           // returns a Basic model
-Model({ name: String }) // returns an Object model</code></pre>
 		</div>
 	</section>
 

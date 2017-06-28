@@ -79,7 +79,7 @@ QUnit.test("Map model with union types & submodels", function (assert) {
 	m.set("another one with autocast", {answer: 43});
 	assert.throws(function () {
 		m.set(42, false);
-	}, /TypeError.*42/, "map set multiple types for keys");
+	}, /TypeError.*expecting Map key to be.*[\s\S]*42/, "map set multiple types for keys");
 	assert.throws(function () {
 		m.set("test", 42)
 	}, /TypeError.*test/, "map set multiple types for values");
@@ -91,7 +91,7 @@ QUnit.test("Map model with union types & fixed values", function (assert) {
 	const DictA = MapModel([true, 2, "3"], [4, "5"]);
 	assert.throws(function () {
 		DictA([["3", 4], ["2", "5"]]);
-	}, /TypeError[\s\S]*Map\["2"]/, "MapModel fixed values");
+	}, /TypeError.*expecting Map key to be true or 2 or "3", got String "2"/, "MapModel fixed values");
 
 	DictA([[true, 4], [2, "5"]]);
 	const DictB = DictA.extend().assert(m => m.size === 2);
@@ -175,7 +175,7 @@ QUnit.test("Map model assertions", function (assert) {
 	assert.throws(function () {
 			new AssertMap([]);
 		},
-		/assertion \"may throw exception\" returned false.*for value \[\]/,
+		/assertion \"may throw exception\" returned false.*for Map = \[\]/,
 		"assertions catch exceptions on Map models");
 
 })

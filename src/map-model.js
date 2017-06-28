@@ -48,10 +48,10 @@ extend(MapModel, Model, {
 
 	[_validate](map, path, errors, stack) {
 		if (map instanceof Map) {
+			path = path || 'Map'
 			for (let [key, value] of map) {
-				let subPath = `${path || "Map"}[${format(key)}]`
-				checkDefinition(key, this.definition.key, subPath, errors, stack)
-				checkDefinition(value, this.definition.value, subPath, errors, stack)
+				checkDefinition(key, this.definition.key, `${path} key`, errors, stack)
+				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack)
 			}
 		} else stackError(errors, this, map, path)
 

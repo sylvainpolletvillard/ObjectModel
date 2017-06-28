@@ -48,7 +48,7 @@ extend(SetModel, Model, {
 	[_validate](set, path, errors, stack){
 		if (set instanceof Set) {
 			for (let item of set.values()) {
-				checkDefinition(item, this.definition, (path || "Set"), errors, stack)
+				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack)
 			}
 		} else stackError(errors, this, set, path)
 		checkAssertions(set, this, path, errors)

@@ -62,6 +62,8 @@
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
 			<li><a href="#doc-function-model">Function models</a></li>
+			<li><a href="#doc-map-models">Map models</a></li>
+			<li><a href="#doc-set-models">Set models</a></li>
 			<li><a href="#doc-custom-collectors">Custom error collectors</a></li>
 			<li><a href="#api">Full API</a></li>
 			<li><a href="#common-models">Commonly used models</a></li>
@@ -117,8 +119,8 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">9.85 KB</strong> minified,
-					<strong class="size-gzip">3.68 KB</strong> gzipped,
+					<strong class="size-min">9.89 KB</strong> minified,
+					<strong class="size-gzip">3.7 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -131,8 +133,8 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.85 KB</strong>,
-					<strong class="size-gzip">3.68 KB</strong> gzipped) :
+				<li>Minified file (<strong class="size-min">9.89 KB</strong>,
+					<strong class="size-gzip">3.7 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
@@ -172,7 +174,9 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">const NumberModel = BasicModel(Number);
+			<pre><code class="language-javascript">import { BasicModel } from "objectmodel";
+
+const NumberModel = BasicModel(Number);
 // 'new' keyword is optional for models and model instances</code></pre>
 		</div>
 
@@ -194,7 +198,9 @@
 
 		<div class="panel panel1">
 			<span class="legend">Model</span>
-			<pre><code class="language-javascript">const Order = new ObjectModel({
+			<pre><code class="language-javascript">import { ObjectModel } from "objectmodel";
+
+const Order = new ObjectModel({
 	product: {
 		name: String,
 		quantity: Number,
@@ -226,10 +232,10 @@ myOrder.product.quantity = false; //try to assign a Boolean</code>
 
 		<div class="panel">
 			<span class="legend">Example</span>
-			<pre><code class="language-javascript">NumberModel instanceof Model && Order instanceof Model // true
+			<pre><code class="language-javascript">import { Model, BasicModel, ObjectModel } from "objectmodel"
 
-Model(String) // return a Basic model
-Model({ name: String }) // return an Object model</code></pre>
+Model(String)           // returns a Basic model
+Model({ name: String }) // returns an Object model</code></pre>
 		</div>
 	</section>
 
@@ -657,7 +663,31 @@ c.UNIT = "cm";</code>
 	<section id="doc-array-model" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Array models</h2>
-			<p>Array models validate the array elements types. All the validation options for object models are also available for array model elements: type/value checking, optional properties, union types, enumerations, assertions...</p>
+			<p>Array models validate the type of all elements in an array.</p>
+			<p>The validation is done on initial array elements passed to the model, then on new elements added or modified afterwards.</p>
+		</div>
+
+		<div class="panel panel1">
+			<span class="legend">Model</span>
+<pre><code class="language-javascript">import { ArrayModel } from "objectmodel";
+
+const Cards = new ArrayModel([Number, "J","Q","K"]);
+
+// Hand is an array of 2 Numbers, J, Q, or K
+const Hand = Cards.assert(a => a.length === 2, "should have two cards");</code></pre>
+		</div>
+
+		<div class="panel panel2">
+			<span class="legend">Instance</span>
+<pre><code class="language-javascript">const myHand = Hand( [7, "K"] );
+myHand[0] = "Joker"</code>
+<code class="language-none exception">TypeError: expecting Array[0] to be Number or "J" or "Q" or "K", got String "Joker"</code>
+<code class="language-javascript">myHand.push("K");</code>
+<code class="language-none exception">TypeError: assertion "should have two cards" returned false for value [7, "Joker", "K"]</code></pre>
+		</div>
+
+		<div class="doc">
+			<p>All the validation options for previous models are also available for array model elements: type/value checking, optional properties, union types, enumerations, assertions...</p>
 		</div>
 
 		<div class="panel panel1">
@@ -681,24 +711,6 @@ c.UNIT = "cm";</code>
 <code class="language-none exception">TypeError: expecting Array[1] to be { name: String, female: Boolean }, got String "dog"</code>
 </pre>
 		</div>
-
-		<div class="doc">
-			<p>The validation is done on initial array elements passed to the model, then on new elements added or modified afterwards.</p>
-			<p class="note">Note that for <a href="http://kangax.github.io/compat-table/es6/#test-Proxy" target="_blank">browsers which do not support ES6 proxies</a>, if you expand the array by storing an element at an index greater than the current array length (which is commonly considered as a bad practice), the new element and model assertions may not be validated. Use a mutator method like <code>push</code> or <code>splice</code> instead.</p>
-		</div>
-
-		<div class="panel panel1">
-<pre><code class="language-javascript">const Cards = ArrayModel([Number, "J","Q","K"]);
-const Hand = Cards.extend("Joker").assert(cards => cards.length === 2, "should have two cards");
-// Hand is an array of 2 Numbers, J, Q, K or Joker</code></pre>
-		</div>
-
-		<div class="panel panel2">
-<pre><code class="language-javascript">const myHand = Hand( [7, "Joker"] );
-myHand[2] = "K"; // may not trigger validation this way
-myHand.push("K"); // use this instead</code>
-<code class="language-none exception">TypeError: assertion "should have two cards" returned false for value [7, "Joker", "K"]</code></pre>
-		</div>
 	</section>
 
 	<hr>
@@ -710,7 +722,9 @@ myHand.push("K"); // use this instead</code>
 		</div>
 
 		<div class="panel panel1">
-<pre><code class="language-javascript">const Operand = BasicModel(Number).assert(Number.isFinite);
+<pre><code class="language-javascript">import { FunctionModel, BasicModel } from "objectmodel";
+
+const Operand = BasicModel(Number).assert(Number.isFinite);
 const Operator = BasicModel(["+","-","*","/"])
 
 const Calculator = FunctionModel(Operand, Operator, Operand).return(Operand);
@@ -764,6 +778,59 @@ joe.sayMyName();</code>
 
 	<hr>
 
+	<section id="doc-map-models" class="grid doc-code-code">
+		<div class="doc">
+			<h2>Map models</h2>
+			<p>Map models validate ES6 <code>Map</code> objects by checking both keys and values. The arguments passed to <code>MapModel</code> are respectively the definition for the keys and the definition for the values.</p>
+		</div>
+
+		<div class="panel panel1">
+			<pre><code class="language-javascript">import { MapModel, Model } from "objectmodel";
+
+const Course = Model([ "math", "english", "history" ])
+const Grade = Model([ "A", "B", "C" ])
+const Gradebook = MapModel(Course, Grade)
+</code></pre>
+		</div>
+
+		<div class="panel panel2">
+<pre><code class="language-javascript">const joannaGrades = new Gradebook([
+	["math", "B"],
+	["english", "C"]
+])
+
+joannaGrades.set("videogames", "A")</code>
+<code class="language-none exception">TypeError: expecting Map key to be "math" or "english" or "history", got String "videogames"</code>
+<code class="language-javascript">joannaGrades.set("history", "nope")</code>
+<code class="language-none exception">TypeError: expecting Map["history"] to be "A" or "B" or "C" , got String "nope"</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
+	<section id="doc-set-models" class="grid doc-code-code">
+		<div class="doc">
+			<h2>Set models</h2>
+			<p>Set models validate ES6 <code>Set</code> objects by checking the type of all the elements in the set. The API is the same as array models.</p>
+		</div>
+
+		<div class="panel panel1">
+<pre><code class="language-javascript">import { SetModel } from "objectmodel";
+
+const FavoriteCourses = SetModel(Course)
+</code></pre>
+		</div>
+
+		<div class="panel panel2">
+<pre><code class="language-javascript">const joannaFavorites = FavoriteCourses([ "math", "english" ])
+
+joannaGrades.add("sleeping")</code>
+<code class="language-none exception">TypeError: expecting Set value to be "math" or "english" or "history", got String "sleeping"</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="doc-custom-collectors" class="grid doc-code-code">
 		<h2>Custom error collectors</h2>
 		<div class="doc">
@@ -801,6 +868,7 @@ new Student({ name: "Joanna", course: "sleep", grade: 0 });</code></pre>
 		</div>
 
 		<div class="panel panel2">
+			<span class="legend">Result</span>
 			<pre><code class="language-none log">Global error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "sleep"'
@@ -831,6 +899,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</div>
 
 		<div class="panel panel2">
+			<span class="legend">Result</span>
 			<pre><code class="language-none log">Student model collector caught these errors:
 {
 	message: "assertion should at least get 60 to validate semester returned false for value { name: "Joanna", course: "math", grade: 50 }",
@@ -857,6 +926,7 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</div>
 
 		<div class="panel panel2">
+			<span class="legend">Result</span>
 			<pre><code class="language-none log">This specific error collector caught these errors:
 {
 	message: 'expecting course to be "math" or "english" or "history", got String "cheating"'

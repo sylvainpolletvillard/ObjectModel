@@ -12,18 +12,26 @@
 	(factory((global.window = global.window || {})));
 }(this, (function (exports) { 'use strict';
 
-const is = (Constructor, obj) => obj instanceof Constructor;
-const isString = s => typeof s === "string";
-const isFunction = f => typeof f === "function";
-const isObject = o => typeof o === "object";
-const isArray = a => Array.isArray(a);
-const isPlainObject = o => o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
-const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
+const getProto        = Object.getPrototypeOf;
+const is              = (Constructor, obj) => obj instanceof Constructor;
+const isString        = s => typeof s === "string";
+const isFunction      = f => typeof f === "function";
+const isObject        = o => typeof o === "object";
+const isArray         = a => Array.isArray(a);
+const isPlainObject   = o => o && isObject(o) && getProto(o) === Object.prototype;
+const isModelInstance = i => i && is(Model, getProto(i).constructor);
+const bettertypeof    = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
 
-	function merge(target, src = {}, deep, includingProto) {
-		for (let key in src) {
-			if (includingProto || src.hasOwnProperty(key)) {
-				if (deep && isPlainObject(src[key])) {
+const proxify      = (val, traps) => new Proxy(val, traps);
+const proxifyFn    = (fn, apply) => proxify(fn, {apply});
+const proxifyModel = (val, model, traps) => proxify(val, Object.assign({
+	getPrototypeOf: () => model.prototype
+}, traps));
+
+function merge(target, src = {}, deep, includingProto) {
+	for (let key in src) {
+		if (includingProto || src.hasOwnProperty(key)) {
+			if (deep && isPlainObject(src[key])) {
 				const o = {};
 				merge(o, target[key], deep);
 				merge(o, src[key], deep);
@@ -35,57 +43,69 @@ const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
 	}
 }
 
-	function define(obj, key, value, enumerable = false) {
-		Object.defineProperty(obj, key, {value, enumerable, writable: true, configurable: true});
+function define(obj, key, value, enumerable = false) {
+	Object.defineProperty(obj, key, {value, enumerable, writable: true, configurable: true});
 }
 
-	function setConstructor(model, constructor) {
+function setConstructor(model, constructor) {
 	Object.setPrototypeOf(model, constructor.prototype);
 	define(model, "constructor", constructor);
 }
 
-	function extend(child, parent, props) {
-		child.prototype = Object.assign(Object.create(parent.prototype), {constructor: child}, props);
+function extend(child, parent, props) {
+	child.prototype = Object.assign(Object.create(parent.prototype, {
+		constructor: {
+			value: child,
+			writable: true,
+			configurable: true
+		}
+	}), props);
+	Object.setPrototypeOf(child, parent);
 }
 
-	function toString(obj, stack = []) {
-		if (stack.length > 15 || stack.includes(obj)) return '...'
-		if (obj === null || obj === undefined) return String(obj)
-		if (isString(obj)) return `"${obj}"`
-		if (is(Model, obj)) return obj.toString(stack)
+function format$1(obj, stack = []) {
+	if (stack.length > 15 || stack.includes(obj)) return '...'
+	if (obj === null || obj === undefined) return String(obj)
+	if (isString(obj)) return `"${obj}"`
+	if (is(Model, obj)) return obj.toString(stack)
 
-		stack.unshift(obj);
+	stack.unshift(obj);
 
-		if (isFunction(obj)) return obj.name || obj.toString(stack)
-		if (isArray(obj)) return `[${obj.map(item => toString(item, stack)).join(', ')}]`
-		if (obj.toString !== Object.prototype.toString) return obj.toString()
-		if (obj && isObject(obj)) {
-			const props  = Object.keys(obj),
-			      indent = '\t'.repeat(stack.length);
+	if (isFunction(obj)) return obj.name || obj.toString(stack)
+	if (is(Map, obj) || is(Set, obj)) return format$1([...obj])
+	if (isArray(obj)) return `[${obj.map(item => format$1(item, stack)).join(', ')}]`
+	if (obj.toString !== Object.prototype.toString) return obj.toString()
+	if (obj && isObject(obj)) {
+		const props  = Object.keys(obj),
+		      indent = '\t'.repeat(stack.length);
 		return `{${props.map(
-			key => `\n${indent + key}: ${toString(obj[key], stack)}`
+			key => `\n${indent + key}: ${format$1(obj[key], stack.slice())}`
 		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 	}
 
 	return String(obj)
 }
 
-	function parseDefinition(def) {
-		if (isPlainObject(def)) {
-			for (let key of Object.keys(def)) {
-				def[key] = parseDefinition(def[key]);
-			}
-		} else {
-			if (!isArray(def)) return [def]
-			if (def.length === 1) return [...def, undefined, null]
+const _constructor = "_constructor";
+const _validate = "_validate";
+
+function parseDefinition(def) {
+	if (isPlainObject(def)) {
+		for (let key of Object.keys(def)) {
+			def[key] = parseDefinition(def[key]);
+		}
 	}
+	else if (!isArray(def)) return [def]
+	else if (def.length === 1) return [...def, undefined, null]
 
 	return def
 }
 
-	function extendDefinition(def, newParts = []) {
-		if (!isArray(newParts)) newParts = [newParts];
-		if (newParts.length > 0) {
+const formatDefinition = (def, stack) => parseDefinition(def).map(d => format$1(d, stack)).join(" or ");
+
+function extendDefinition(def, newParts = []) {
+	if (!isArray(newParts)) newParts = [newParts];
+	if (newParts.length > 0) {
 		def = newParts
 			.reduce((def, ext) => def.concat(ext), isArray(def) ? def.slice() : [def]) // clone to lose ref
 			.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
@@ -94,18 +114,18 @@ const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
 	return def
 }
 
-	function checkDefinition(obj, def, path, errors, stack, shouldCast = false) {
+function checkDefinition(obj, def, path, errors, stack, shouldCast = false) {
 	const indexFound = stack.indexOf(def);
-		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
+	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
-		if (shouldCast)
+	if (shouldCast)
 		obj = cast(obj, def);
 
-		if (is(Model, def)) {
-		def._validate(obj, path, errors, stack.concat(def));
+	if (is(Model, def)) {
+		def[_validate](obj, path, errors, stack.concat(def));
 	}
-		else if (isPlainObject(def)) {
+	else if (isPlainObject(def)) {
 		Object.keys(def).forEach(key => {
 			const val = obj != null ? obj[key] : undefined;
 			checkDefinition(val, def[key], path ? path + '.' + key : key, errors, stack);
@@ -113,61 +133,52 @@ const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
 	}
 	else {
 		const pdef = parseDefinition(def);
-			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
+		if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
 			return obj
 
-		errors.push({
-			expected: def,
-			received: obj,
-			path
-		});
+		stackError(errors, def, obj, path);
 	}
 
 	return obj
 }
 
-	function checkDefinitionPart(obj, def, path, stack) {
-		if (obj == null) return obj === def
-		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
+function checkDefinitionPart(obj, def, path, stack) {
+	if (obj == null) return obj === def
+	if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
 		const errors = [];
 		checkDefinition(obj, def, path, errors, stack);
 		return !errors.length
 	}
-		if (is(RegExp, def)) return def.test(obj)
-		if (def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
+	if (is(RegExp, def)) return def.test(obj)
+	if (def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
 	return obj === def
 		|| (isFunction(def) && is(def, obj))
 		|| obj.constructor === def
 }
 
-
-	function checkAssertions(obj, model, path, errors = model.errors) {
-		for (let assertion of model.assertions) {
+function checkAssertions(obj, model, path, errors = model.errors) {
+	for (let assertion of model.assertions) {
 		let result;
 		try {
 			result = assertion.call(model, obj);
 		} catch (err) {
 			result = err;
 		}
-			if (result !== true) {
+		if (result !== true) {
 			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${toString(assertionResult)} for value ${toString(value)}`;
-			errors.push({
-				message: onFail.call(model, result, obj),
-				expected: assertion,
-				received: obj,
-				path
-			});
+				`assertion "${assertion.description}" returned ${format$1(assertionResult)} `
+				+`for ${path ? path+" =" : "value"} ${format$1(value)}`;
+			stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
 		}
 	}
 }
 
-	function cast(obj, defNode = []) {
-		if (!obj || isPlainObject(defNode) || is(Model, obj.constructor))
+function cast(obj, defNode = []) {
+	if (!obj || isPlainObject(defNode) || isModelInstance(obj))
 		return obj // no value or not leaf or already a model instance
 
-		const def            = parseDefinition(defNode);
-		const suitableModels = [];
+	const def = parseDefinition(defNode);
+	const suitableModels = [];
 
 	for (let part of def) {
 		if (is(Model, part) && part.test(obj))
@@ -181,19 +192,19 @@ const bettertypeof = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1];
 	}
 
 	if (suitableModels.length > 1)
-		console.warn(`Ambiguous model for value ${toString(obj)}, could be ${suitableModels.join(" or ")}`);
+		console.warn(`Ambiguous model for value ${format$1(obj)}, could be ${suitableModels.join(" or ")}`);
 
 	return obj
 }
 
-function BasicModel() {
+function BasicModel(def) {
 	const model = function (val = model.default) {
-		model.validate(val);
+		if (!model.validate(val)) return
 		return val
 	};
 
 	setConstructor(model, BasicModel);
-	initModel(model, arguments);
+	initModel(model, def);
 	return model
 }
 
@@ -208,7 +219,7 @@ extend(BasicModel, Model, {
 	}
 });
 
-	function Model(def) {
+function Model(def) {
 	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
 }
 
@@ -220,7 +231,7 @@ Object.assign(Model.prototype, {
 	conventionForPrivate: key => key[0] === "_",
 
 	toString(stack){
-		return parseDefinition(this.definition).map(d => toString(d, stack)).join(" or ")
+		return formatDefinition(this.definition, stack)
 	},
 
 	as(name){
@@ -233,14 +244,16 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	_validate(obj, path, errors, stack){
+	[_constructor]: o => o,
+
+	[_validate](obj, path, errors, stack){
 		checkDefinition(obj, this.definition, path, errors, stack);
 		checkAssertions(obj, this, path, errors);
 	},
 
 	validate(obj, errorCollector){
-		this._validate(obj, null, this.errors, []);
-		unstackErrors(this, errorCollector);
+		this[_validate](obj, null, this.errors, []);
+		return !unstackErrors(this, errorCollector)
 	},
 
 	test(obj){
@@ -263,63 +276,69 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	assert(assertion, description = toString(assertion)){
+	assert(assertion, description = format$1(assertion)){
 		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion);
 		return this
 	}
 });
 
-	function initModel(model, args) {
-		if (args.length === 0) throw new Error("Model definition is required");
-		model.definition = args[0];
-		model.assertions = [...model.assertions];
-		define(model, "errors", []);
-		delete model.name;
-	}
+function initModel(model, def) {
+	model.definition = def;
+	model.assertions = [...model.assertions];
+	define(model, "errors", []);
+	delete model.name;
+}
 
-	function extendModel(child, parent, newProps) {
+function extendModel(child, parent, newProps) {
 	extend(child, parent, newProps);
 	child.assertions.push(...parent.assertions);
-	child.errorCollector = parent.errorCollector;
 	return child
 }
 
-	function unstackErrors(model, errorCollector = model.errorCollector) {
-		if (!model.errors.length) return
+function stackError(errors, expected, received, path, message) {
+	errors.push({expected, received, path, message});
+}
 
+function unstackErrors(model, errorCollector = model.errorCollector) {
+	const nbErrors = model.errors.length;
+	if (nbErrors > 0) {
 		const errors = model.errors.map(err => {
 			if (!err.message) {
 				const def   = isArray(err.expected) ? err.expected : [err.expected];
-				err.message = ("expecting " + (err.path ? err.path + " to be " : "") + def.map(d => toString(d)).join(" or ")
-				+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + toString(err.received));
+				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format$1(d)).join(" or ")
+					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format$1(err.received);
 			}
 			return err
 		});
 		model.errors = [];
 		errorCollector.call(model, errors); // throw all errors collected
 	}
+	return nbErrors
+}
 
-	function ObjectModel() {
-		const model = function (obj = model.default) {
-			if (!is(model, this)) return new model(obj)
-			if (is(model, obj)) return obj
-		merge(this, obj, true);
-			if (model.hasOwnProperty("constructor")) {
-			model.constructor.call(this, obj);
-		}
-		model.validate(this);
-		return getProxy(model, this, model.definition)
+const cannot = (model, msg) => {
+	model.errors.push({message: "cannot " + msg});
+};
+
+function ObjectModel(def) {
+	const model = function (obj = model.default) {
+		let instance = this;
+		if (!is(model, instance)) return new model(obj)
+		if (is(model, obj)) return obj
+		merge(instance, model[_constructor](obj), true);
+		if (!model.validate(instance)) return
+		return getProxy(model, instance, model.definition)
 	};
 
 	extend(model, Object);
 	setConstructor(model, ObjectModel);
-		initModel(model, arguments);
+	initModel(model, def);
 	return model
 }
 
 extend(ObjectModel, Model, {
-	sealed: true,
+	sealed: false,
 
 	defaults(p){
 		Object.assign(this.prototype, p);
@@ -327,16 +346,17 @@ extend(ObjectModel, Model, {
 	},
 
 	toString(stack){
-		return toString(this.definition, stack)
+		return format$1(this.definition, stack)
 	},
 
 	extend(...newParts){
-		const def = {};
-		const proto = {};
+		const parent = this;
+		const def = Object.assign({}, this.definition);
 		const newAssertions = [];
 
-		Object.assign(def, this.definition);
-		merge(proto, this.prototype, false, true);
+		const proto = {};
+		merge(proto, parent.prototype, false, true);
+
 		for (let part of newParts) {
 			if (is(Model, part)) {
 				merge(def, part.definition, true);
@@ -345,20 +365,24 @@ extend(ObjectModel, Model, {
 			if (isFunction(part)) merge(proto, part.prototype, true, true);
 			if (isObject(part)) merge(def, part, true, true);
 		}
-		delete proto.constructor;
 
-		const submodel = extendModel(new ObjectModel(def), this, proto);
-		submodel.assertions.push(...newAssertions);
+		let submodel = extendModel(new ObjectModel(def), parent, proto);
+		submodel.assertions = parent.assertions.concat(newAssertions);
+
+		if(getProto(parent) !== ObjectModel.prototype) { // extended class
+			submodel[_constructor] = function(obj){
+				let parentInstance = new parent(obj);
+				merge(obj, parentInstance, true); // get modified props from parent class constructor
+				return obj
+			};
+		}
+
 		return submodel
 	},
 
-	_validate(obj, path, errors, stack){
+	[_validate](obj, path, errors, stack){
 		if (isObject(obj)) checkDefinition(obj, this.definition, path, errors, stack);
-		else errors.push({
-			expected: this,
-			received: obj,
-			path
-		});
+		else stackError(errors, this, obj, path);
 
 		checkAssertions(obj, this, path, errors);
 	}
@@ -368,10 +392,8 @@ function getProxy(model, obj, def, path) {
 	if (!isPlainObject(def))
 		return cast(obj, def)
 
-	return new Proxy(obj || {}, {
-		getPrototypeOf(){
-			return path ? Object.prototype : model.prototype
-		},
+	return proxify(obj || {}, {
+		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 		get(o, key) {
 			if (!isString(key))
@@ -381,14 +403,12 @@ function getProxy(model, obj, def, path) {
 			      defPart = def[key];
 
 			if (key in def && model.conventionForPrivate(key)) {
-				model.errors.push({
-					message: `cannot access to private property ${newPath}`
-				});
+				cannot(model, `access to private property ${newPath}`);
 				unstackErrors(model);
 				return
 			}
 
-			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !is(Model, o[key].constructor)) {
+			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
 				o[key] = cast(o[key], defPart); // cast nested models
 			}
 
@@ -433,35 +453,30 @@ function getProxy(model, obj, def, path) {
 	})
 }
 
-	function controlMutation(model, def, path, o, key, applyMutation) {
-		const newPath       = (path ? path + '.' + key : key),
-		      isPrivate     = model.conventionForPrivate(key),
-		      isConstant    = model.conventionForConstant(key),
-		      isOwnProperty = o.hasOwnProperty(key);
+function controlMutation(model, def, path, o, key, applyMutation) {
+	const newPath       = (path ? path + '.' + key : key),
+	      isPrivate     = model.conventionForPrivate(key),
+	      isConstant    = model.conventionForConstant(key),
+	      isOwnProperty = o.hasOwnProperty(key);
 
-		const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
+	const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
-		if (key in def && (isPrivate || (isConstant && o[key] !== undefined))) {
-		model.errors.push({
-			message: `cannot modify ${isPrivate ? "private" : "constant"} ${key}`
-		});
-	}
+	if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
+		cannot(model, `modify ${isPrivate ? "private" : "constant"} ${key}`);
 
-		if (!model.sealed || def.hasOwnProperty(key)) {
+	const isInDefinition = def.hasOwnProperty(key);
+	if (isInDefinition || !model.sealed) {
 		applyMutation(newPath);
-		checkDefinition(o[key], def[key], newPath, model.errors, []);
+		isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, []);
 		checkAssertions(o, model, newPath);
-	} else {
-		model.errors.push({
-			message: `cannot find property ${newPath} in the model definition`
-		});
 	}
+	else cannot(model, `find property ${newPath} in the model definition`);
 
-		if (model.errors.length) {
-			if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor);
+	if (model.errors.length) {
+		if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor);
 		else delete o[key]; // back to the initial property defined in prototype chain
 
-			unstackErrors(model);
+		unstackErrors(model);
 		return false
 	}
 
@@ -481,57 +496,59 @@ const styles = {
 	null: `color: #808080`
 };
 
-	function getModel(instance) {
-		if (instance === undefined || instance === null)
-		return null;
+function getModel(instance) {
+	if (instance === undefined || instance === null)
+		return null
 
-	const proto = Object.getPrototypeOf(instance);
-		if (!proto || !proto.constructor || !is(Model, proto.constructor))
-		return null;
+	const proto = getProto(instance);
+	if (!proto || !proto.constructor || !is(Model, proto.constructor))
+		return null
 
 	return proto.constructor
 }
 
-	function format(x, config) {
-		if (x === null || x === undefined)
-			return ["span", {style: styles.null}, String(x)];
+const span = (value, style) => ["span", {style}, value];
 
-		if (typeof x === "boolean")
-			return ["span", {style: styles.boolean}, x];
+function format(x, config) {
+	if (x === null || x === undefined)
+		return span(String(x), styles.null);
 
-		if (typeof x === "number")
-			return ["span", {style: styles.number}, x];
+	if (typeof x === "boolean")
+		return span(x, styles.boolean);
 
-		if (typeof x === "string")
-			return ["span", {style: styles.string}, `"${x}"`];
+	if (typeof x === "number")
+		return span(x, styles.number);
 
-		if (isArray(x)) {
+	if (typeof x === "string")
+		return span(`"${x}"`, styles.string);
+
+	if (isArray(x)) {
 		let def = [];
-			if (x.length === 1) x.push(undefined, null);
-			for (let i = 0; i < x.length; i++) {
-				def.push(format(x[i]));
-				if (i < x.length - 1) def.push(' or ');
+		if (x.length === 1) x.push(undefined, null);
+		for (let i = 0; i < x.length; i++) {
+			def.push(format(x[i]));
+			if (i < x.length - 1) def.push(' or ');
 		}
-		return ["span", {}, ...def]
+		return span(...def)
 	}
 
-		if (isPlainObject(x))
+	if (isPlainObject(x))
 		return formatObject(x, getModel(x), config)
 
-		if (isFunction(x) && !is(Model, x))
-			return ["span", {style: styles.function}, x.name || x.toString()];
+	if (isFunction(x) && !is(Model, x))
+		return span(x.name || x.toString(), styles.function);
 
-		return x ? ['object', {object: x, config}] : null
+	return x ? ['object', {object: x, config}] : null
 }
 
-	function formatObject(o, model, config) {
+function formatObject(o, model, config) {
 	return [
 		'ol', {style: styles.list},
 		'{',
 		...Object.keys(o).map(prop => {
 			let isPrivate = model && model.conventionForPrivate(prop);
 			return ['li', {style: styles.listItem},
-				['span', {style: isPrivate ? styles.private : styles.property}, prop], ': ',
+				span(prop, isPrivate ? styles.private : styles.property), ': ',
 				format(o[prop], config)
 			]
 		}),
@@ -539,48 +556,48 @@ const styles = {
 	];
 }
 
-	function formatHeader(x, config) {
-		if (is(Model, x))
-			return ["span", {style: styles.model}, x.name];
+function formatHeader(x, config) {
+	if (is(Model, x))
+		return span(x.name, styles.model)
 
-		if (config.fromModel || isPlainObject(x) || isArray(x))
+	if (config.fromModel || isPlainObject(x) || isArray(x))
 		return format(x)
 
 	return null;
 }
 
 const ModelFormatter = {
-	header: function (x, config = {}) {
+	header(x, config = {}) {
 		if (config.fromModel || is(Model, x))
 			return formatHeader(x, config);
 
 		return null;
 	},
-	hasBody: function (x) {
+	hasBody(x) {
 		return is(Model, x)
 	},
-	body: function (x) {
+	body(x) {
 		return format(x.definition, {fromModel: true})
 	}
 };
 
 const ModelInstanceFormatter = {
-	header: function (x, config = {}) {
+	header(x, config = {}) {
 		if (config.fromInstance && isPlainObject(x)) {
 			return formatHeader(x, config)
 		}
 
 		const model = getModel(x);
 		if (is(Model, model)) {
-			return ["span", {style: styles.model}, x.constructor.name];
+			return span(x.constructor.name, styles.model)
 		}
 
 		return null;
 	},
-	hasBody: function (x) {
+	hasBody(x) {
 		return x && is(ObjectModel, getModel(x))
 	},
-	body: function (x) {
+	body(x) {
 		return formatObject(x, getModel(x), {fromInstance: true})
 	}
 };
@@ -590,19 +607,28 @@ if (typeof window !== "undefined") {
 		.concat(ModelFormatter, ModelInstanceFormatter);
 }
 
-const MUTATOR_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
+const ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
-function ArrayModel() {
+function ArrayModel(def) {
 
 	const model = function (array = model.default) {
-		if (!is(model, this)) return new model(array)
-		model.validate(array);
-		return new Proxy(array, {
-			getPrototypeOf: () => model.prototype,
-
+		if (!model.validate(array)) return
+		return proxifyModel(array, model, {
 			get(arr, key) {
-				if (MUTATOR_METHODS.includes(key)) return proxifyMethod(arr, [][key], model)
-				return arr[key]
+				let val = arr[key];
+				if (!isFunction(val)) return val
+
+				return proxifyFn(val, (fn, ctx, args) => {
+					if (ARRAY_MUTATORS.includes(key)) {
+						const testArray = arr.slice();
+						fn.apply(testArray, args);
+						model.validate(testArray);
+					}
+
+					const returnValue = fn.apply(arr, args);
+					array.forEach((a, i) => arr[i] = cast(a, model.definition));
+					return returnValue
+				})
 			},
 
 			set(arr, key, val) {
@@ -617,25 +643,21 @@ function ArrayModel() {
 
 	extend(model, Array);
 	setConstructor(model, ArrayModel);
-	initModel(model, arguments);
+	initModel(model, def);
 	return model
 }
 
 extend(ArrayModel, Model, {
 	toString(stack){
-		return 'Array of ' + toString(this.definition, stack)
+		return 'Array of ' + formatDefinition(this.definition, stack)
 	},
 
-	_validate(arr, path, errors, stack){
+	[_validate](arr, path, errors, stack){
 		if (isArray(arr))
 			arr.forEach((a, i) => {
 				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true);
 			});
-		else errors.push({
-			expected: this,
-			received: arr,
-			path
-		});
+		else stackError(errors, this, arr, path);
 
 		checkAssertions(arr, this, path, errors);
 	},
@@ -645,36 +667,24 @@ extend(ArrayModel, Model, {
 	}
 });
 
-	function proxifyMethod(array, method, model) {
-		return function () {
-		const testArray = array.slice();
-			method.apply(testArray, arguments);
-		model.validate(testArray);
-			const returnValue = method.apply(array, arguments);
-			array.forEach((a, i) => array[i] = cast(a, model.definition));
-		return returnValue
-	}
-}
-
-	function setArrayKey(array, key, value, model) {
+function setArrayKey(array, key, value, model) {
 	let path = `Array[${key}]`;
-		if (parseInt(key) === +key && key >= 0)
+	if (parseInt(key) === +key && key >= 0)
 		value = checkDefinition(value, model.definition, path, model.errors, [], true);
 
 	const testArray = array.slice();
 	testArray[key] = value;
 	checkAssertions(testArray, model, path);
-		const isSuccess = !unstackErrors(model);
-		if (isSuccess) array[key] = value;
+	const isSuccess = !unstackErrors(model);
+	if (isSuccess) array[key] = value;
 	return isSuccess
 }
 
-function FunctionModel() {
+function FunctionModel(...argsDef) {
 
 	const model = function (fn = model.default) {
-		return new Proxy(fn, {
-			getPrototypeOf: () => model.prototype,
-
+		if (!model.validate(fn)) return
+		return proxifyModel(fn, model, {
 			apply (fn, ctx, args) {
 				const def = model.definition;
 
@@ -698,16 +708,19 @@ function FunctionModel() {
 
 	extend(model, Function);
 	setConstructor(model, FunctionModel);
-	initModel(model, [{arguments: [...arguments]}]);
+	initModel(model, {arguments: argsDef});
 
 	return model
 }
 
 extend(FunctionModel, Model, {
-	toString(stack){
-		let out = 'Function(' + this.definition.arguments.map(argDef => toString(argDef, stack)).join(",") + ')';
+	toString(stack = []){
+		let out = `Function(${this.definition.arguments.map(
+			argDef => formatDefinition(argDef, stack.slice())
+		).join(",")})`;
+
 		if ("return" in this.definition) {
-			out += " => " + toString(this.definition.return);
+			out += " => " + formatDefinition(this.definition.return, stack);
 		}
 		return out
 	},
@@ -724,66 +737,74 @@ extend(FunctionModel, Model, {
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
-	_validate(f, path, errors){
+	[_validate](f, path, errors){
 		if (!isFunction(f)) {
-			errors.push({
-				expected: "Function",
-				received: f,
-				path
-			});
+			stackError(errors, "Function", f, path);
 		}
 	}
 });
 
-	FunctionModel.prototype.assert(function (args) {
+FunctionModel.prototype.assert(function (args) {
 	if (args.length > this.definition.arguments.length) return args
 	return true
-	}, function (args) {
-	return `expecting ${this.definition.arguments.length} arguments for ${toString(this)}, got ${args.length}`
+}, function (args) {
+	return `expecting ${this.definition.arguments.length} arguments for ${format$1(this)}, got ${args.length}`
 });
 
-const MAP_MUTATOR_METHODS = ["set", "delete", "clear"];
+const MAP_MUTATORS = ["set", "delete", "clear"];
 
 function MapModel(key, value) {
 
-	const model = function (iterable) {
-		const map = new Map(iterable);
-		model.validate(map);
-		return new Proxy(map, {
-			getPrototypeOf: () => model.prototype,
+	const model = function (iterable = model.default) {
+		const castKeyValue = pair => ["key", "value"].map((prop, i) => cast(pair[i], model.definition[prop]));
+		const map          = new Map([...iterable].map(castKeyValue));
 
+		if (!model.validate(map)) return
+
+		return proxifyModel(map, model, {
 			get(map, key) {
-				if (MAP_MUTATOR_METHODS.includes(key)) return proxifyMethod$1(map, key, model)
-				return map[key]
+				let val = map[key];
+				if (!isFunction(val)) return val
+
+				return proxifyFn(val, (fn, ctx, args) => {
+					if (key === "set") {
+						args = castKeyValue(args);
+					}
+
+					if (MAP_MUTATORS.includes(key)) {
+						const testMap = new Map(map);
+						fn.apply(testMap, args);
+						model.validate(testMap);
+					}
+
+					return fn.apply(map, args)
+				})
 			}
 		})
 	};
 
 	extend(model, Map);
 	setConstructor(model, MapModel);
-	initModel(model, [{key, value}]);
+	initModel(model, {key, value});
 	return model
 }
 
 extend(MapModel, Model, {
-	toString(stack){
-		return "Map of " + toString(this.definition, stack)
+	toString(stack) {
+		const {key, value} = this.definition;
+		return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
 	},
 
-	_validate(map, path, errors, stack){
+	[_validate](map, path, errors, stack) {
 		if (map instanceof Map) {
+			path = path || 'Map';
 			for (let [key, value] of map) {
-				let subPath = `${path || "Map"}[${toString(key)}]`;
-				checkDefinition(key, this.definition.key, subPath, errors, stack);
-				checkDefinition(value, this.definition.value, subPath, errors, stack);
+				checkDefinition(key, this.definition.key, `${path} key`, errors, stack);
+				checkDefinition(value, this.definition.value, `${path}[${format$1(key)}]`, errors, stack);
 			}
-		} else errors.push({
-			expected: this,
-			received: map,
-			path
-		});
+		} else stackError(errors, this, map, path);
 
-		checkAssertions(map, this, errors);
+		checkAssertions(map, this, path, errors);
 	},
 
 	extend(newKeys, newValues){
@@ -792,60 +813,60 @@ extend(MapModel, Model, {
 	}
 });
 
-	function proxifyMethod$1(map, method, model) {
-		return function () {
-		const testMap = new Map(map);
-		Map.prototype[method].apply(testMap, arguments);
-		model.validate(testMap);
-		return Map.prototype[method].apply(map, arguments)
-	}
-}
+const SET_MUTATORS = ["add", "delete", "clear"];
 
-const SET_MUTATOR_METHODS = ["add", "delete", "clear"];
+function SetModel(def) {
 
-	function SetModel() {
+	const model = function (iterable = model.default) {
+		const castValue = val => cast(val, model.definition);
+		const set       = new Set([...iterable].map(castValue));
 
-		const model = function (iterable) {
-		const _set = new Set(iterable);
-		model.validate(_set);
+		if (!model.validate(set)) return
 
-			for (let method of SET_MUTATOR_METHODS) {
-				_set[method] = function () {
-				const testSet = new Set(_set);
-				Set.prototype[method].apply(testSet, arguments);
-				model.validate(testSet);
-				return Set.prototype[method].apply(_set, arguments)
-			};
-		}
+		return proxifyModel(set, model, {
+			get(set, key) {
+				let val = set[key];
+				if (!isFunction(val)) return val;
 
-		setConstructor(_set, model);
-		return _set
+				return proxifyFn(val, (fn, ctx, args) => {
+					if (key === "add") {
+						args[0] = castValue(args[0]);
+					}
+
+					if (SET_MUTATORS.includes(key)) {
+						const testSet = new Set(set);
+						fn.apply(testSet, args);
+						model.validate(testSet);
+					}
+
+					return fn.apply(set, args)
+				})
+			}
+		})
 	};
 
 	extend(model, Set);
 	setConstructor(model, SetModel);
-		initModel(model, arguments);
+	initModel(model, def);
 	return model
 }
 
 extend(SetModel, Model, {
 	toString(stack){
-		return "Set of " + toString(this.definition, stack)
+		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	_validate(_set, path, errors, stack){
-		if (_set instanceof Set) {
-			for (let item of _set.values()) {
-				checkDefinition(item, this.definition, (path || "Set"), errors, stack);
+	[_validate](set, path, errors, stack){
+		if (set instanceof Set) {
+			for (let item of set.values()) {
+				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack);
 			}
-		} else {
-			errors.push({
-				expected: this,
-				received: _set,
-				path
-			});
-		}
-		checkAssertions(_set, this, errors);
+		} else stackError(errors, this, set, path);
+		checkAssertions(set, this, path, errors);
+	},
+
+	extend(...newParts){
+		return extendModel(new SetModel(extendDefinition(this.definition, newParts)), this)
 	}
 });
 

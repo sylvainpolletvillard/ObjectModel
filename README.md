@@ -48,7 +48,7 @@ myOrder.product.quantity = false; //try to assign a Boolean
 
 ## Documentation
 
-For more examples, documentation and questions, please refer to the project website: [objectmodel.js.org] [website]
+For more examples, documentation and questions, please refer to the project website: [objectmodel.js.org][website]
 
 ## Changelog and Release History
 

@@ -1,52 +1,52 @@
 {
-	"name": "objectmodel",
-	"version": "3.0.0-beta",
-	"description": "Strong Dynamically Typed Object Modeling for JavaScript",
-	"author": "Sylvain Pollet-Villard",
-	"license": "MIT",
-	"homepage": "http://objectmodel.js.org",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
-	},
-	"scripts": {
-		"build": "npm-run-all build:* && npm run info",
-		"build:js": "rollup -c",
-		"build:min": "rollup -c --environment BUILD:production",
-		"watch": "npm-run-all --parallel watch:*",
-		"watch:js": "npm run build:js -- --watch",
-		"watch:min": "npm run build:min -- --watch",
-		"info": "npm-run-all --parallel info:*",
-		"info:banner": "banner-cli dist/*.js",
-		"info:docs": "node build/update-docs",
-		"test": "qunit -c ./dist/object-model.js -t ./test/index.js"
-	},
-	"devDependencies": {
-		"banner-cli": "^0.11.0",
-		"filesize": "^3.5.10",
-		"gzip-size": "^3.0.0",
-		"npm-run-all": "^4.0.2",
-		"qunit": "^1.0.0",
-		"rollup": "^0.43.0",
-		"rollup-plugin-uglify-es": "0.0.1",
-		"rollup-watch": "^4.0.0"
-	},
-	"main": "dist/object-model.js",
-	"module": "src/index.js",
-	"keywords": [
-		"typed",
-		"types",
-		"typing",
-		"type-checking",
-		"dynamic",
-		"strong",
-		"model",
-		"definition",
-		"object",
-		"assertion",
-		"inheritance",
-		"composition",
-		"structures",
-		"proxy"
-	]
+  "name": "objectmodel",
+  "version": "3.0.0",
+  "description": "Strong Dynamically Typed Object Modeling for JavaScript",
+  "author": "Sylvain Pollet-Villard",
+  "license": "MIT",
+  "homepage": "http://objectmodel.js.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sylvainpolletvillard/ObjectModel.git"
+  },
+  "scripts": {
+    "build": "npm-run-all build:* && npm run info",
+    "build:js": "rollup -c",
+    "build:min": "rollup -c --environment BUILD:production",
+    "watch": "npm-run-all --parallel watch:*",
+    "watch:js": "npm run build:js -- --watch",
+    "watch:min": "npm run build:min -- --watch",
+    "info": "npm-run-all --parallel info:*",
+    "info:banner": "banner-cli dist/*.js",
+    "info:docs": "node build/update-docs",
+    "test": "qunit -c ./dist/object-model.js -t ./test/index.js"
+  },
+  "devDependencies": {
+    "banner-cli": "^0.11.0",
+    "filesize": "^3.5.10",
+    "gzip-size": "^3.0.0",
+    "npm-run-all": "^4.0.2",
+    "qunit": "^1.0.0",
+    "rollup": "^0.43.0",
+    "rollup-plugin-uglify-es": "0.0.1",
+    "rollup-watch": "^4.0.0"
+  },
+  "main": "dist/object-model.js",
+  "module": "src/index.js",
+  "keywords": [
+    "typed",
+    "types",
+    "typing",
+    "type-checking",
+    "dynamic",
+    "strong",
+    "model",
+    "definition",
+    "object",
+    "assertion",
+    "inheritance",
+    "composition",
+    "structures",
+    "proxy"
+  ]
 }

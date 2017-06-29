@@ -4,6 +4,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/dt/objectmodel.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/v/objectmodel.svg" alt="Version"></a>
+  <a href="https://travis-ci.org/sylvainpolletvillard/ObjectModel"><img src="https://travis-ci.org/sylvainpolletvillard/ObjectModel.svg?branch=master" alt="Status"></a>
   <a href="https://www.npmjs.com/package/objectmodel"><img src="https://img.shields.io/npm/l/objectmodel.svg" alt="License"></a>
 </p>
 

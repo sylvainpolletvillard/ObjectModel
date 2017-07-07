@@ -977,9 +977,9 @@ QUnit.test("Automatic model casting", function (assert) {
 	const Type2 = ObjectModel({ name: String, other2: [Number] });
 	const Container = ObjectModel({ foo: { bar: [Type1, Type2] }});
 
-	let c = new Container({ foo: { bar: { name: "dunno" }}});
 	consoleMock.apply();
-	c.foo.bar; //get ambiguous key
+	let c = new Container({ foo: { bar: { name: "dunno" }}});
+
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number]/
 			.test(consoleMock.lastArgs.warn[0]),
 		"should warn about ambiguous model for object sub prop"

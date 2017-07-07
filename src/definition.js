@@ -26,13 +26,12 @@ export function extendDefinition(def, newParts = []) {
 	return def
 }
 
-export function checkDefinition(obj, def, path, errors, stack, shouldCast = false) {
+export function checkDefinition(obj, def, path, errors, stack) {
 	const indexFound = stack.indexOf(def)
 	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
-	if (shouldCast)
-		obj = cast(obj, def)
+	obj = cast(obj, def)
 
 	if (is(Model, def)) {
 		def[_validate](obj, path, errors, stack.concat(def))

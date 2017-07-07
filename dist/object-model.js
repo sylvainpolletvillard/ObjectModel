@@ -114,13 +114,12 @@ function extendDefinition(def, newParts = []) {
 	return def
 }
 
-function checkDefinition(obj, def, path, errors, stack, shouldCast = false) {
+function checkDefinition(obj, def, path, errors, stack) {
 	const indexFound = stack.indexOf(def);
 	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
-	if (shouldCast)
-		obj = cast(obj, def);
+	obj = cast(obj, def);
 
 	if (is(Model, def)) {
 		def[_validate](obj, path, errors, stack.concat(def));
@@ -655,7 +654,7 @@ extend(ArrayModel, Model, {
 	[_validate](arr, path, errors, stack){
 		if (isArray(arr))
 			arr.forEach((a, i) => {
-				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, true);
+				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack);
 			});
 		else stackError(errors, this, arr, path);
 
@@ -670,7 +669,7 @@ extend(ArrayModel, Model, {
 function setArrayKey(array, key, value, model) {
 	let path = `Array[${key}]`;
 	if (parseInt(key) === +key && key >= 0)
-		value = checkDefinition(value, model.definition, path, model.errors, [], true);
+		value = checkDefinition(value, model.definition, path, model.errors, []);
 
 	const testArray = array.slice();
 	testArray[key] = value;
@@ -689,7 +688,7 @@ function FunctionModel(...argsDef) {
 				const def = model.definition;
 
 				def.arguments.forEach((argDef, i) => {
-					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true);
+					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, []);
 				});
 
 				checkAssertions(args, model, "arguments");
@@ -698,7 +697,7 @@ function FunctionModel(...argsDef) {
 				if (!model.errors.length) {
 					result = Reflect.apply(fn, ctx, args);
 					if ("return" in def)
-						result = checkDefinition(result, def.return, "return value", model.errors, [], true);
+						result = checkDefinition(result, def.return, "return value", model.errors, []);
 				}
 				unstackErrors(model);
 				return result

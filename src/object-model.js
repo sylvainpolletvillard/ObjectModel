@@ -3,6 +3,7 @@ import {cast, checkAssertions, checkDefinition} from "./definition"
 import {
 	_constructor,
 	_validate,
+	cannot,
 	extend,
 	format,
 	getProto,
@@ -17,15 +18,12 @@ import {
 	setConstructor
 } from "./helpers"
 
-const cannot = (model, msg) => {
-	model.errors.push({message: "cannot " + msg})
-}
-
 export default function ObjectModel(def) {
 	const model = function (obj = model.default) {
 		let instance = this
 		if (!is(model, instance)) return new model(obj)
 		if (is(model, obj)) return obj
+
 		merge(instance, model[_constructor](obj), true)
 		if (!model.validate(instance)) return
 		return getProxy(model, instance, model.definition)
@@ -103,7 +101,7 @@ function getProxy(model, obj, def, path) {
 			      defPart = def[key];
 
 			if (key in def && model.conventionForPrivate(key)) {
-				cannot(model, `access to private property ${newPath}`)
+				cannot(`access to private property ${newPath}`, model)
 				unstackErrors(model)
 				return
 			}
@@ -162,7 +160,7 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 	const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 	if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
-		cannot(model, `modify ${isPrivate ? "private" : "constant"} ${key}`)
+		cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model)
 
 	const isInDefinition = def.hasOwnProperty(key);
 	if (isInDefinition || !model.sealed) {
@@ -170,7 +168,7 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 		isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
 	}
-	else cannot(model, `find property ${newPath} in the model definition`)
+	else cannot(`find property ${newPath} in the model definition`, model)
 
 	if (model.errors.length) {
 		if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)

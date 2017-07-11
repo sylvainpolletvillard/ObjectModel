@@ -74,5 +74,9 @@ export function format(obj, stack = []) {
 	return String(obj)
 }
 
+export const cannot = (msg, model) => {
+	model.errors.push({message: "cannot " + msg})
+}
+
 export const _constructor = "_constructor"
 export const _validate = "_validate"

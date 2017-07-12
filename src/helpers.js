@@ -16,17 +16,15 @@ export const proxifyModel = (val, model, traps) => proxify(val, Object.assign({
 	getPrototypeOf: () => model.prototype
 }, traps))
 
-export function merge(target, src = {}, deep, includingProto) {
+export function merge(target, src = {}, deep) {
 	for (let key in src) {
-		if (includingProto || src.hasOwnProperty(key)) {
-			if (deep && isPlainObject(src[key])) {
-				const o = {}
-				merge(o, target[key], deep)
-				merge(o, src[key], deep)
-				target[key] = o
-			} else {
-				target[key] = src[key]
-			}
+		if (deep && isPlainObject(src[key])) {
+			const o = {}
+			merge(o, target[key], deep)
+			merge(o, src[key], deep)
+			target[key] = o
+		} else {
+			target[key] = src[key]
 		}
 	}
 }

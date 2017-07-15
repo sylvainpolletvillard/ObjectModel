@@ -1,11 +1,20 @@
-import {_validate, format, is, isArray, isFunction, isModelInstance, isPlainObject} from "./helpers"
+import {
+	_validate,
+	format,
+	is,
+	isArray,
+	isFunction,
+	isModelInstance,
+	isPlainObject,
+	getPath,
+	mapProps
+} from "./helpers"
+
 import {Model, stackError} from "./model"
 
 export function parseDefinition(def) {
 	if (isPlainObject(def)) {
-		for (let key of Object.keys(def)) {
-			def[key] = parseDefinition(def[key])
-		}
+		mapProps(def, key => { def[key] = parseDefinition(def[key]) })
 	}
 	else if (!isArray(def)) return [def]
 	else if (def.length === 1) return [...def, undefined, null]
@@ -37,9 +46,9 @@ export function checkDefinition(obj, def, path, errors, stack) {
 		def[_validate](obj, path, errors, stack.concat(def))
 	}
 	else if (isPlainObject(def)) {
-		Object.keys(def).forEach(key => {
-			const val = obj != null ? obj[key] : undefined
-			checkDefinition(val, def[key], path ? path + '.' + key : key, errors, stack)
+		mapProps(def, key => {
+			const val = obj ? obj[key] : undefined
+			checkDefinition(val, def[key], getPath(path, key), errors, stack)
 		})
 	}
 	else {

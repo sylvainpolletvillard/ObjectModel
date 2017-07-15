@@ -1,6 +1,6 @@
 import ObjectModel from "./object-model"
 import Model from "./model"
-import {getProto, is, isArray, isFunction, isPlainObject} from "./helpers"
+import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -64,7 +64,7 @@ function formatObject(o, model, config) {
 	return [
 		'ol', {style: styles.list},
 		'{',
-		...Object.keys(o).map(prop => {
+		...mapProps(o, prop => {
 			let isPrivate = model && model.conventionForPrivate(prop);
 			return ['li', {style: styles.listItem},
 				span(prop, isPrivate ? styles.private : styles.property), ': ',

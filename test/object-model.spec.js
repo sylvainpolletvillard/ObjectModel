@@ -1008,7 +1008,7 @@ QUnit.test("ObjectModel delete trap", function (assert) {
 	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
 	delete m.x // can delete optional properties
 	M.sealed = true;
-	assert.throws(function(){ delete m.undefined }, /TypeError.*cannot find property/, "cannot delete property out of model definition");
+	assert.throws(function(){ delete m.unknown }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot delete property out of model definition");
 
 })
 
@@ -1023,7 +1023,7 @@ QUnit.test("ObjectModel defineProperty trap", function (assert) {
 	assert.throws(function(){ Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
 	Object.defineProperty(m, "x", { value: undefined }) // can define optional properties
 	ObjectModel.prototype.sealed = true;
-	assert.throws(function(){ Object.defineProperty(m, "undefined", { value: "test" }) }, /TypeError.*cannot find property/, "cannot define property out of model definition");
+	assert.throws(function(){ Object.defineProperty(m, "unknown", { value: "test" }) }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot define property out of model definition");
 	ObjectModel.prototype.sealed = false;
 
 })
@@ -1094,4 +1094,87 @@ QUnit.test("ObjectModel class constructors", function (assert) {
 	assert.equal(Object.keys(user).join(","), "firstName,lastName,fullName,role")
 	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
 
+})
+
+QUnit.test("Sealed models", function (assert) {
+	const Dependency = ObjectModel({
+		name: String,
+		subobj: { subname: String }
+	});
+	Dependency.sealed = true;
+
+	const Package = ObjectModel({
+		name: String,
+		data: {
+			description: String,
+			hard_dependencies: {
+				one: Dependency,
+				two: Dependency,
+			}
+		}
+	});
+
+	assert.throws(function() {
+		new Package({
+			name: "Test item",
+			data: {
+				description: "A test item",
+				hard_dependencies: {
+					one: {
+						name: "module 1",
+						subobj: {subname: "submodule 1"},
+						bad_attr: false
+					},
+					two: {
+						name: "module 2",
+						subobj: {subname: "submodule 2"},
+					}
+				}
+			}
+		});
+	}, /TypeError.*bad_attr/, "prevent undeclared props on initial assignment of sealed object model")
+
+	assert.throws(function() {
+		new Package({
+			name: "Test item",
+			data: {
+				description: "A test item",
+				hard_dependencies: {
+					one: {
+						name: "module 1",
+						subobj: {subname: "submodule 1"}
+					},
+					two: {
+						name: "module 2",
+						subobj: {subname: "submodule 2", bad_attr: false},
+					}
+				}
+			}
+		});
+	}, /TypeError.*bad_attr/, "prevent nested undeclared props on initial assignment of sealed object model")
+
+	const test_item = new Package({
+		name: "Test item",
+		data: {
+			description: "A test item",
+			hard_dependencies: {
+				one: {
+					name: "module 1",
+					subobj: {subname: "submodule 1"}
+				},
+				two: {
+					name: "module 2",
+					subobj: {subname: "submodule 2"},
+				}
+			}
+		}
+	});
+
+	assert.throws(function() {
+		test_item.data.hard_dependencies.one.bad_attr = true
+	}, /TypeError.*bad_attr/, "prevent undeclared props on post mutation of sealed object model")
+
+	assert.throws(function() {
+		test_item.data.hard_dependencies.two.subobj.bad_attr = true
+	}, /TypeError.*bad_attr/, "prevent nested undeclared props on post mutation of sealed object model")
 })

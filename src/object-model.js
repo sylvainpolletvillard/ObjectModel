@@ -6,6 +6,7 @@ import {
 	cannot,
 	extend,
 	format,
+	getPath,
 	getProto,
 	is,
 	isFunction,
@@ -13,7 +14,9 @@ import {
 	isObject,
 	isPlainObject,
 	isString,
+	mapProps,
 	merge,
+	ObjectProto,
 	proxify,
 	setConstructor
 } from "./helpers"
@@ -80,14 +83,9 @@ extend(ObjectModel, Model, {
 
 	[_validate](obj, path, errors, stack){
 		if (isObject(obj)){
-			checkDefinition(obj, this.definition, path, errors, stack)
-			if(this.sealed){
-				//TODO: méthode générique de deep traverse des nested props
-				Object.keys(obj).filter(key => !this.definition.hasOwnProperty(key)).forEach(key => {
-					const newPath = (path ? path + '.' + key : key);
-					rejectUndeclaredProp(newPath, obj[key], errors)
-				})
-			}
+			let def = this.definition
+			checkDefinition(obj, def, path, errors, stack)
+			if(this.sealed) checkUndeclaredProps(obj, def, errors)
 		}
 		else stackError(errors, this, obj, path)
 
@@ -100,13 +98,13 @@ function getProxy(model, obj, def, path) {
 		return cast(obj, def)
 
 	return proxify(obj || {}, {
-		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
+		getPrototypeOf: () => path ? ObjectProto : getProto(obj),
 
 		get(o, key) {
 			if (!isString(key))
 				return Reflect.get(o, key)
 
-			const newPath = (path ? path + '.' + key : key),
+			const newPath = getPath(path, key),
 			      defPart = def[key];
 
 			if (key in def && model.conventionForPrivate(key)) {
@@ -160,8 +158,17 @@ function getProxy(model, obj, def, path) {
 	})
 }
 
+function checkUndeclaredProps(obj, def, errors, path){
+	mapProps(obj, key => {
+		let val = obj[key],
+		    subpath = getPath(path, key)
+		if(!def.hasOwnProperty(key)) rejectUndeclaredProp(subpath, val, errors)
+		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
+	})
+}
+
 function controlMutation(model, def, path, o, key, applyMutation) {
-	const newPath       = (path ? path + '.' + key : key),
+	const newPath       = getPath(path, key),
 	      isPrivate     = model.conventionForPrivate(key),
 	      isConstant    = model.conventionForConstant(key),
 	      isOwnProperty = o.hasOwnProperty(key)

@@ -1,14 +1,15 @@
 import Model from "./model"
 
+export const ObjectProto     = Object.prototype
+export const bettertypeof    = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 export const getProto        = Object.getPrototypeOf
 export const is              = (Constructor, obj) => obj instanceof Constructor
 export const isString        = s => typeof s === "string"
 export const isFunction      = f => typeof f === "function"
 export const isObject        = o => typeof o === "object"
 export const isArray         = a => Array.isArray(a)
-export const isPlainObject   = o => o && isObject(o) && getProto(o) === Object.prototype
+export const isPlainObject   = o => o && isObject(o) && getProto(o) === ObjectProto
 export const isModelInstance = i => i && is(Model, getProto(i).constructor)
-export const bettertypeof    = x => ({}).toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 
 export const proxify      = (val, traps) => new Proxy(val, traps)
 export const proxifyFn    = (fn, apply) => proxify(fn, {apply})
@@ -72,9 +73,11 @@ export function format(obj, stack = []) {
 	return String(obj)
 }
 
-export const cannot = (msg, model) => {
-	model.errors.push({message: "cannot " + msg})
-}
+export const cannot = (msg, model) => { model.errors.push({message: "cannot " + msg}) }
+
+export const getPath = (path, key) => path ? path + '.' + key : key
+
+export const mapProps = (o, fn) => Object.keys(o).map(fn)
 
 export const _constructor = "_constructor"
 export const _validate = "_validate"

@@ -3,8 +3,8 @@ import {checkAssertions, checkDefinition, formatDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
 
-export function Model(def) {
-	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
+export function Model(def, params) {
+	return isPlainObject(def) ? new ObjectModel(def, params) : new BasicModel(def)
 }
 
 Object.assign(Model.prototype, {

@@ -8,6 +8,7 @@ import {
 	format,
 	getPath,
 	getProto,
+	has,
 	is,
 	isFunction,
 	isModelInstance,
@@ -21,7 +22,7 @@ import {
 	setConstructor
 } from "./helpers"
 
-export default function ObjectModel(def) {
+export default function ObjectModel(def, params) {
 	const model = function (obj = model.default) {
 		let instance = this
 		if (!is(model, instance)) return new model(obj)
@@ -32,6 +33,7 @@ export default function ObjectModel(def) {
 		return getProxy(model, instance, model.definition)
 	}
 
+	Object.assign(model, params)
 	extend(model, Object)
 	setConstructor(model, ObjectModel)
 	initModel(model, def)
@@ -97,7 +99,7 @@ function getProxy(model, obj, def, path) {
 	if (!isPlainObject(def))
 		return cast(obj, def)
 
-	return proxify(obj || {}, {
+	return proxify(obj, {
 		getPrototypeOf: () => path ? ObjectProto : getProto(obj),
 
 		get(o, key) {
@@ -113,12 +115,15 @@ function getProxy(model, obj, def, path) {
 				return
 			}
 
-			if (o[key] && o.hasOwnProperty(key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
+			if (o[key] && has(o, key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
-			if (isFunction(o[key]) && o[key].bind) {
+			if (isFunction(o[key]) && o[key].bind)
 				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+
+			if(isPlainObject(defPart) && !o[key]){
+				o[key] = {} // null-safe traversal
 			}
 
 			return getProxy(model, o[key], defPart, newPath)
@@ -162,7 +167,7 @@ function checkUndeclaredProps(obj, def, errors, path){
 	mapProps(obj, key => {
 		let val = obj[key],
 		    subpath = getPath(path, key)
-		if(!def.hasOwnProperty(key)) rejectUndeclaredProp(subpath, val, errors)
+		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
 		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
 	})
 }
@@ -171,14 +176,14 @@ function controlMutation(model, def, path, o, key, applyMutation) {
 	const newPath       = getPath(path, key),
 	      isPrivate     = model.conventionForPrivate(key),
 	      isConstant    = model.conventionForConstant(key),
-	      isOwnProperty = o.hasOwnProperty(key)
+	      isOwnProperty = has(o, key)
 
 	const initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 	if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
 		cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model)
 
-	const isInDefinition = def.hasOwnProperty(key);
+	const isInDefinition = has(def, key);
 	if (isInDefinition || !model.sealed) {
 		applyMutation(newPath)
 		isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, [])

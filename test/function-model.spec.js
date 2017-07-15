@@ -2,7 +2,7 @@
 
 QUnit.module("Function Models");
 
-QUnit.test("Function models constructor && proto", function (assert) {
+QUnit.test("constructor && proto", function (assert) {
 
 	assert.equal(typeof FunctionModel, "function", "FunctionModel is defined");
 
@@ -22,7 +22,7 @@ QUnit.test("Function models constructor && proto", function (assert) {
 
 });
 
-QUnit.test("Function models instanciation and controls", function (assert) {
+QUnit.test("instanciation and controls", function (assert) {
 
 	const op = FunctionModel(Number, Number).return(Number);
 
@@ -49,7 +49,7 @@ QUnit.test("Function models instanciation and controls", function (assert) {
 
 });
 
-QUnit.test("Function models as object models methods", function (assert) {
+QUnit.test("object models methods", function (assert) {
 
 	const Person = ObjectModel({
 		name: String,
@@ -80,7 +80,7 @@ QUnit.test("Function models as object models methods", function (assert) {
 
 });
 
-QUnit.test("Function model defaults arguments & arguments control", function (assert) {
+QUnit.test("defaults arguments & arguments control", function (assert) {
 
 	const Calculator = FunctionModel(Number, ["+", "-", "*", "/", undefined], [Number])
 		.return(Number);
@@ -103,7 +103,7 @@ QUnit.test("Function model defaults arguments & arguments control", function (as
 
 });
 
-QUnit.test("Function model with other models & objects as arguments", function (assert) {
+QUnit.test("other models & objects as arguments", function (assert) {
 
 	const api = FunctionModel({
 		list: ArrayModel(Number),
@@ -137,7 +137,7 @@ QUnit.test("Function model with other models & objects as arguments", function (
 
 });
 
-QUnit.test("Function model defaultTo", function (assert) {
+QUnit.test("defaultTo", function (assert) {
 
 	const yell = FunctionModel(String).return(String).defaultTo(s => s.toUpperCase());
 
@@ -156,7 +156,7 @@ QUnit.test("Function model defaultTo", function (assert) {
 
 });
 
-QUnit.test("Automatic model casting with Function models", function (assert) {
+QUnit.test("Automatic model casting", function (assert) {
 
 	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 	const F = FunctionModel(N, N).return(N);

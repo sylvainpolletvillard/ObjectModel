@@ -30,7 +30,7 @@ const consoleMock = (function(console) {
 	}
 })(console);
 
-QUnit.test("Object model constructor && proto", function (assert) {
+QUnit.test("constructor && proto", function (assert) {
 
 	assert.ok(ObjectModel instanceof Function, "ObjectModel instanceof Function");
 
@@ -53,7 +53,7 @@ QUnit.test("Object model constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assertions === "object", "test new model prop assertions");
 })
 
-QUnit.test("Object model behaviour for properties", function (assert) {
+QUnit.test("behaviour for properties", function (assert) {
 	var Person = ObjectModel({
 		name: String,
 		age: Number,
@@ -156,7 +156,7 @@ QUnit.test("Object model behaviour for properties", function (assert) {
 	}, "check that errors are correctly stacked");
 });
 
-QUnit.test("ObjectModel edge cases of constructors", function (assert) {
+QUnit.test("edge cases of constructors", function (assert) {
 	assert.ok(ObjectModel({}) instanceof ObjectModel, "ObjectModel can receive empty object as argument");
 
 	/* //TODO: use FunctionModel for ObjectModel API ?
@@ -172,7 +172,7 @@ QUnit.test("ObjectModel edge cases of constructors", function (assert) {
 	 */
 });
 
-QUnit.test("ObjectModel with optional and multiple parameters", function (assert) {
+QUnit.test("optional and multiple parameters", function (assert) {
 	var Person = ObjectModel({
 		name: [String],
 		age: [Number, Date, String, Boolean, undefined],
@@ -223,7 +223,7 @@ QUnit.test("ObjectModel with optional and multiple parameters", function (assert
 
 });
 
-QUnit.test("ObjectModel with fixed values", function (assert) {
+QUnit.test("fixed values", function (assert) {
 	var myModel = ObjectModel({
 		a: [1, 2, 3],
 		b: 42,
@@ -266,7 +266,7 @@ QUnit.test("ObjectModel with fixed values", function (assert) {
 
 });
 
-QUnit.test("Object model default values", function (assert) {
+QUnit.test("default values", function (assert) {
 
 	const myModel = new ObjectModel({
 		name: String,
@@ -295,7 +295,7 @@ QUnit.test("Object model default values", function (assert) {
 
 });
 
-QUnit.test("Object model defaultTo with defaults", function (assert) {
+QUnit.test("defaultTo with defaults", function (assert) {
 
 	const myModel = new ObjectModel({x: Number, y: String})
 		.defaultTo({x: 42})
@@ -744,7 +744,7 @@ QUnit.test("Composition", function (assert) {
 
 });
 
-QUnit.test("Object model Assertions", function (assert) {
+QUnit.test("Assertions", function (assert) {
 
 	const NestedModel = ObjectModel({foo: {bar: {baz: Boolean}}})
 		.assert(o => o.foo.bar.baz === true);
@@ -798,7 +798,7 @@ QUnit.test("Object model Assertions", function (assert) {
 
 });
 
-QUnit.test("Object models validate method", function (assert) {
+QUnit.test("validate method", function (assert) {
 
 	const assertFunction = (c => c === "GB");
 
@@ -889,7 +889,7 @@ QUnit.test("Cyclic detection", function(assert){
 
 });
 
-QUnit.test("Custom error collectors for object models", function (assert) {
+QUnit.test("Custom error collectors", function (assert) {
 
 	assert.expect(11);
 
@@ -997,7 +997,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 })
 
-QUnit.test("ObjectModel delete trap", function (assert) {
+QUnit.test("delete trap", function (assert) {
 
 	const M = ObjectModel({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
 	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
@@ -1012,7 +1012,7 @@ QUnit.test("ObjectModel delete trap", function (assert) {
 
 })
 
-QUnit.test("ObjectModel defineProperty trap", function (assert) {
+QUnit.test("defineProperty trap", function (assert) {
 
 	const M = ObjectModel({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
 	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
@@ -1028,7 +1028,7 @@ QUnit.test("ObjectModel defineProperty trap", function (assert) {
 
 })
 
-QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
+QUnit.test("ownKeys/has trap", function (assert) {
 
 	const A = ObjectModel({ _pa: Boolean, a: Boolean })
 	const B = A.extend({ _pb: Boolean, b: Boolean })
@@ -1058,7 +1058,7 @@ QUnit.test("ObjectModel ownKeys/has trap", function (assert) {
 	assert.equal(ownKeys.sort().join(","), "a,b")
 })
 
-QUnit.test("ObjectModel class constructors", function (assert) {
+QUnit.test("class constructors", function (assert) {
 
 	const PersonModel = ObjectModel({ firstName: String, lastName: String, fullName: String })
 	class Person extends PersonModel {
@@ -1100,8 +1100,7 @@ QUnit.test("Sealed models", function (assert) {
 	const Dependency = ObjectModel({
 		name: String,
 		subobj: { subname: String }
-	});
-	Dependency.sealed = true;
+	}, { sealed: true });
 
 	const Package = ObjectModel({
 		name: String,
@@ -1173,8 +1172,32 @@ QUnit.test("Sealed models", function (assert) {
 	assert.throws(function() {
 		test_item.data.hard_dependencies.one.bad_attr = true
 	}, /TypeError.*bad_attr/, "prevent undeclared props on post mutation of sealed object model")
+	assert.equal(test_item.data.hard_dependencies.one.bad_attr, undefined)
 
 	assert.throws(function() {
 		test_item.data.hard_dependencies.two.subobj.bad_attr = true
 	}, /TypeError.*bad_attr/, "prevent nested undeclared props on post mutation of sealed object model")
+	assert.equal(test_item.data.hard_dependencies.two.subobj.bad_attr, undefined)
+
+	Dependency.sealed = false;
+	test_item.data.hard_dependencies.one.bad_attr = true
+	assert.equal(test_item.data.hard_dependencies.one.bad_attr, true, "undeclared prop in unsealed model")
+	test_item.data.hard_dependencies.two.subobj.bad_attr = true
+	assert.equal(test_item.data.hard_dependencies.two.subobj.bad_attr, true, "undeclared nested prop in unsealed model")
+})
+
+QUnit.test("Null-safe object traversal", function (assert) {
+	const Config = new ObjectModel({
+		local: {
+			time: {
+				format: ["12h","24h", undefined]
+			}
+		}
+	});
+
+	const config = Config({ local: undefined }); // object duck typed
+
+	assert.equal(config.local.time.format, undefined, "null-safe object traversal getter")
+	config.local.time.format = "12h";
+	assert.equal(config.local.time.format, "12h", "null-safe object traversal setter")
 })

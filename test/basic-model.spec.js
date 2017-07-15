@@ -2,7 +2,7 @@
 
 QUnit.module("Basic Models");
 
-QUnit.test("Basic models constructor && proto are correctly defined", function (assert) {
+QUnit.test("constructor && proto are correctly defined", function (assert) {
 	assert.ok(BasicModel instanceof Function, "BasicModel is defined");
 
 	const NumberModel = BasicModel(Number);
@@ -24,12 +24,12 @@ QUnit.test("Basic models constructor && proto are correctly defined", function (
 	assert.ok(typeof NumberModelThroughConstructor.assertions === "object", "test new model prop assertions");
 });
 
-QUnit.test("Basic Model with undefined definition", function (assert) {
+QUnit.test("undefined definition", function (assert) {
 	const UndefinedModel = BasicModel(undefined);
 	assert.ok(UndefinedModel instanceof BasicModel, "Model can receive undefined as argument");
 });
 
-QUnit.test("Basic model behaviour", function (assert) {
+QUnit.test("basic type behaviour", function (assert) {
 
 	const NumberModel = BasicModel(Number);
 	NumberModel(0); // should not throw
@@ -44,7 +44,7 @@ QUnit.test("Basic model behaviour", function (assert) {
 
 })
 
-QUnit.test("Optional basic model behaviour", function (assert) {
+QUnit.test("Optional type", function (assert) {
 
 	const NumberModel = BasicModel(Number);
 	const OptionalNumberModel = BasicModel([Number]);
@@ -65,7 +65,7 @@ QUnit.test("Optional basic model behaviour", function (assert) {
 
 });
 
-QUnit.test("Union basic model", function (assert) {
+QUnit.test("Union type", function (assert) {
 
 	const myModel = BasicModel([String, Boolean, Date]);
 	myModel("test"); // should not throw
@@ -91,7 +91,7 @@ QUnit.test("Union basic model", function (assert) {
 
 });
 
-QUnit.test("Basic model default values", function (assert) {
+QUnit.test("default values", function (assert) {
 
 	const myModel = BasicModel([String, Boolean, Date]);
 	myModel.defaultTo("blob");
@@ -104,7 +104,7 @@ QUnit.test("Basic model default values", function (assert) {
 
 });
 
-QUnit.test("Basic model Assertions", function (assert) {
+QUnit.test("Assertions", function (assert) {
 
 	function isOdd(n) {
 		return n % 2 === 1;
@@ -157,7 +157,7 @@ QUnit.test("Basic model Assertions", function (assert) {
 
 });
 
-QUnit.test("Custom error collectors for basic models", function(assert) {
+QUnit.test("Custom error collectors", function(assert) {
 
 	assert.expect(13);
 

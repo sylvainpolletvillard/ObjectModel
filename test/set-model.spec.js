@@ -2,7 +2,7 @@
 
 QUnit.module("Set Models");
 
-QUnit.test("Set model constructor && proto", function (assert) {
+QUnit.test("constructor && proto", function (assert) {
 
 	assert.ok(SetModel instanceof Function, "SetModel instanceof Function");
 
@@ -21,7 +21,7 @@ QUnit.test("Set model constructor && proto", function (assert) {
 
 });
 
-QUnit.test("Set model instanciation && mutation methods watchers", function (assert) {
+QUnit.test("instanciation && mutation methods watchers", function (assert) {
 
 	const S = SetModel(Number).assert(s => s.size >= 2, "minsize assert");
 	const s = S([1, 2]);
@@ -51,7 +51,7 @@ QUnit.test("Set model instanciation && mutation methods watchers", function (ass
 
 });
 
-QUnit.test("Set model validation in constructor", function (assert) {
+QUnit.test("validation in constructor", function (assert) {
 
 	const S = SetModel(String)
 	const s = S(["one", "two"]);
@@ -67,7 +67,7 @@ QUnit.test("Set model validation in constructor", function (assert) {
 
 });
 
-QUnit.test("Set model with union types & submodels", function (assert) {
+QUnit.test("union types & submodels", function (assert) {
 
 	const Question = ObjectModel({
 		answer: Number
@@ -84,7 +84,7 @@ QUnit.test("Set model with union types & submodels", function (assert) {
 
 });
 
-QUnit.test("Set model with union types & fixed values", function (assert) {
+QUnit.test("union types & fixed values", function (assert) {
 
 	const S = SetModel([true, 2, "3"]);
 	assert.throws(function () {
@@ -128,7 +128,7 @@ QUnit.test("Child set models in object models", function (assert) {
 
 });
 
-QUnit.test("Set model defaults values", function (assert) {
+QUnit.test("defaults values", function (assert) {
 
 	const S = SetModel(Number).defaultTo(new Set([1, 2]));
 	const a = S();
@@ -149,7 +149,7 @@ QUnit.test("Set model defaults values", function (assert) {
 
 })
 
-QUnit.test("Set model assertions", function (assert) {
+QUnit.test("assertions", function (assert) {
 
 	const SetMax3 = SetModel(String).assert(function maxEntries(set) {
 		return set.size <= 3;
@@ -174,7 +174,7 @@ QUnit.test("Set model assertions", function (assert) {
 
 })
 
-QUnit.test("Automatic model casting in set models", function (assert) {
+QUnit.test("Automatic model casting", function (assert) {
 
 	const N = ObjectModel({x: Number, y: [Number]}).defaults({x: 5, y: 7});
 	const S = SetModel(N);
@@ -191,7 +191,7 @@ QUnit.test("Automatic model casting in set models", function (assert) {
 	assert.equal(n.x * n.y, 21, "test automatic model casting with array mutator method 2/2")
 });
 
-QUnit.test("Set models toString", function (assert) {
+QUnit.test("toString", function (assert) {
 	assert.equal(SetModel(Number).toString(), "Set of Number")
 	assert.equal(SetModel([String, 42]).toString(), "Set of String or 42")
 })

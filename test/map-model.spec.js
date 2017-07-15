@@ -2,7 +2,7 @@
 
 QUnit.module("Map Models");
 
-QUnit.test("Map model constructor && proto", function (assert) {
+QUnit.test("constructor && proto", function (assert) {
 
 	assert.ok(MapModel instanceof Function, "MapModel instanceof Function");
 
@@ -21,7 +21,7 @@ QUnit.test("Map model constructor && proto", function (assert) {
 	assert.ok(MapModel(undefined, undefined) instanceof MapModel, "MapModel can receive undefined as argument");
 });
 
-QUnit.test("Map model instanciation && mutation methods watchers", function (assert) {
+QUnit.test("instanciation && mutation methods watchers", function (assert) {
 
 	const Dict = MapModel(String, Number).assert(m => m.size >= 2, "minsize assert");
 	const m = Dict([["one", 1], ["two", 2]]);
@@ -51,7 +51,7 @@ QUnit.test("Map model instanciation && mutation methods watchers", function (ass
 
 });
 
-QUnit.test("Map model validation in constructor", function (assert) {
+QUnit.test("validation in constructor", function (assert) {
 
 	const Dict = MapModel(String, Number)
 	const m = Dict([ ["one", 1], ["two", 2] ]);
@@ -67,7 +67,7 @@ QUnit.test("Map model validation in constructor", function (assert) {
 
 });
 
-QUnit.test("Map model with union types & submodels", function (assert) {
+QUnit.test("union types & submodels", function (assert) {
 
 	const Question = ObjectModel({ question: String })
 	const Answer = ObjectModel({ answer: Number })
@@ -86,7 +86,7 @@ QUnit.test("Map model with union types & submodels", function (assert) {
 
 })
 
-QUnit.test("Map model with union types & fixed values", function (assert) {
+QUnit.test("union types & fixed values", function (assert) {
 
 	const DictA = MapModel([true, 2, "3"], [4, "5"]);
 	assert.throws(function () {
@@ -135,7 +135,7 @@ QUnit.test("Child map models in object models", function (assert) {
 
 });
 
-QUnit.test("Map model defaults values", function (assert) {
+QUnit.test("defaults values", function (assert) {
 
 	const M = MapModel(Number, String).defaultTo(new Map([[1, "one"], [2, "two"]]));
 	const a = M();
@@ -156,7 +156,7 @@ QUnit.test("Map model defaults values", function (assert) {
 
 })
 
-QUnit.test("Map model assertions", function (assert) {
+QUnit.test("assertions", function (assert) {
 
 	const MapMax3 = MapModel(Number, String).assert(function maxEntries(map) {
 		return map.size <= 3;
@@ -180,7 +180,7 @@ QUnit.test("Map model assertions", function (assert) {
 
 })
 
-QUnit.test("Automatic model casting in map models", function (assert) {
+QUnit.test("Automatic model casting", function (assert) {
 
 	const X = ObjectModel({x: Number}).defaults({x: 5})
 	const Y = ObjectModel({y: [Number]}).defaults({y: 7});
@@ -201,7 +201,7 @@ QUnit.test("Automatic model casting in map models", function (assert) {
 	assert.equal(k.x * v.y, 12, "test automatic model casting with map mutator method 3/3")
 });
 
-QUnit.test("Map models toString", function (assert) {
+QUnit.test("toString", function (assert) {
 	assert.equal(MapModel(Number, String).toString(), "Map of Number : String")
 	assert.equal(MapModel(Date, [String, 42]).toString(), "Map of Date : String or 42")
 })

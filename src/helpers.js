@@ -3,6 +3,7 @@ import Model from "./model"
 export const ObjectProto     = Object.prototype
 export const bettertypeof    = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1]
 export const getProto        = Object.getPrototypeOf
+export const has             = (o, prop) => o.hasOwnProperty(prop)
 export const is              = (Constructor, obj) => obj instanceof Constructor
 export const isString        = s => typeof s === "string"
 export const isFunction      = f => typeof f === "function"

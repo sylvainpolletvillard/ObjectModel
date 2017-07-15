@@ -2,7 +2,7 @@
 
 QUnit.module("Array Models");
 
-QUnit.test("Array model constructor && proto", function (assert) {
+QUnit.test("constructor && proto", function (assert) {
 
 	assert.ok(ArrayModel instanceof Function, "ArrayModel instanceof Function");
 
@@ -21,7 +21,7 @@ QUnit.test("Array model constructor && proto", function (assert) {
 	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
 });
 
-QUnit.test("Array model instanciation && mutation methods watchers", function (assert) {
+QUnit.test("instanciation && mutation methods watchers", function (assert) {
 
 	const Arr = ArrayModel(Number);
 	const a   = Arr([]);
@@ -46,7 +46,7 @@ QUnit.test("Array model instanciation && mutation methods watchers", function (a
 
 });
 
-QUnit.test("Array model validation in constructor", function (assert) {
+QUnit.test("validation in constructor", function (assert) {
 
 	const Arr = ArrayModel(Number);
 	const b   = Arr([1, 2, 3]);
@@ -63,7 +63,7 @@ QUnit.test("Array model validation in constructor", function (assert) {
 
 });
 
-QUnit.test("Array model with union types & submodels", function (assert) {
+QUnit.test("union types & submodels", function (assert) {
 
 	const Question = ObjectModel({
 		answer: Number
@@ -83,7 +83,7 @@ QUnit.test("Array model with union types & submodels", function (assert) {
 
 })
 
-QUnit.test("Array model with union types & fixed values", function (assert) {
+QUnit.test("union types & fixed values", function (assert) {
 
 	const Arr = ArrayModel([true, 2, "3"]);
 	assert.throws(function () {
@@ -129,7 +129,7 @@ QUnit.test("Child array models in object models", function (assert) {
 
 });
 
-QUnit.test("Array model defaults values", function (assert) {
+QUnit.test("defaults values", function (assert) {
 
 	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
 	const a        = ArrModel();
@@ -150,7 +150,7 @@ QUnit.test("Array model defaults values", function (assert) {
 
 })
 
-QUnit.test("Array model assertions", function (assert) {
+QUnit.test("Assertions", function (assert) {
 
 	const ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr){ return arr.length <= 3; });
 	let arr = ArrayMax3([1,2]);
@@ -175,7 +175,7 @@ QUnit.test("Array model assertions", function (assert) {
 
 })
 
-QUnit.test("Automatic model casting in array models", function (assert) {
+QUnit.test("Automatic model casting", function (assert) {
 
 	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 	const Arr = ArrayModel(N);
@@ -215,8 +215,7 @@ QUnit.test("Other traps", function(assert){
 	assert.equal(b[2], undefined, "deleteProperty trap does not block when def is optional")
 })
 
-
-QUnit.test("Array models toString", function (assert) {
+QUnit.test("toString", function (assert) {
 	assert.equal(ArrayModel(Number).toString(), "Array of Number")
 	assert.equal(ArrayModel([String, 42]).toString(), "Array of String or 42")
 })

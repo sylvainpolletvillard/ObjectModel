@@ -58,6 +58,7 @@
 			<li><a href="#doc-composition">Composition</a></li>
 			<li><a href="#doc-extensions">Inheritance by extensions</a></li>
 			<li><a href="#doc-multiple-inheritance">Multiple inheritance</a></li>
+			<li><a href="#doc-sealed">Sealed models</a></li>
 			<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 			<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 			<li><a href="#doc-array-model">Array models</a></li>
@@ -120,7 +121,7 @@
 				<li>Customizable error handlers</li>
 				<li>all in
 					<strong class="size-min">9.87 KB</strong> minified,
-					<strong class="size-gzip">3.69 KB</strong> gzipped,
+					<strong class="size-gzip">3.79 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -134,7 +135,7 @@
 					<code>npm install objectmodel</code>
 				</li>
 				<li>Minified file (<strong class="size-min">9.87 KB</strong>,
-					<strong class="size-gzip">3.69 KB</strong> gzipped) :
+					<strong class="size-gzip">3.79 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
@@ -208,7 +209,6 @@ Model({ name: String }) // same as ObjectModel({ name: String })</code></pre>
 		<div class="doc">
 			<h2>Object models</h2>
 			<p>Object models validate nested object properties against a definition tree. They provide automatic validation at initial and future assignments of the properties of the instance objects.</p>
-			<aside>Note: an object with properties not declared in the definition is still valid, as long as the rest of the definition is respected. If you want to prevent all undeclared properties, you can set the <code>model.sealed</code> property to <code>true</code>. This is the equivalent of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal" target="_blank"><code>Object.seal()</code></a> for object models.</aside>
 		</div>
 
 		<div class="panel panel1">
@@ -584,6 +584,37 @@ joe.sendConfirmationMail();</code>
 
 	<hr>
 
+	<section id="doc-sealed" class="grid doc-code-code">
+		<div class="doc">
+			<h2>Sealed object models</h2>
+			<p>By default, an object with properties not declared in the definition is still valid, as long as the rest of the definition is respected. This is an intended behaviour to enable model extensions and respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank">Liskov substitution principle</a>. Also, some frameworks and libraries add their own private properties to your data, and blocking them would prevent these tools from working properly.</p>
+			<p>However, if you really want to prevent all undeclared properties, you can set the <code>model.sealed</code> property to <code>true</code>. This is the equivalent of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal" target="_blank"><code>Object.seal()</code></a> but for object models instances. The undeclared props will be catched on initial and future assignments</p>
+		</div>
+
+		<div class="panel panel1">
+			<span class="legend">Model</span>
+			<pre><code class="language-javascript">const Package = ObjectModel({
+	name: String,
+	config: { verbose: [Boolean] }
+}, { sealed: true });
+// or Package.sealed = true
+</code></pre>
+		</div>
+
+		<div class="panel panel2">
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">const Foo = new Package({ name: "foo", _id: 1 });</code>
+<code class="language-none exception">TypeError: property _id is not declared in the sealed model definition</code>
+<code class="language-javascript">const Bar = new Package({ name: "bar" });
+Bar.config.hack = true;</code>
+<code class="language-none exception">TypeError: property config.hack is not declared in the sealed model definition</code>
+<code class="language-javascript">Package.sealed = false;
+Bar.config.hack = true; // no more exceptions thrown</code></pre>
+		</div>
+	</section>
+
+	<hr>
+
 	<section id="doc-assertions" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Assertions for custom validation tests</h2>
@@ -950,10 +981,13 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<h2>Full API</h2>
 		<h3>Imported from objectmodel root scope</h3>
 		<dl>
+			<dt><a href="#doc-model">Model</a> <code>Model(definition, params)</code></dt>
+			<dd>Constructor alias for basic and object models</dd>
+
 			<dt><a href="#doc-basic-model">BasicModel</a> <code>BasicModel(definition)</code></dt>
 			<dd>Constructor for basic models</dd>
 
-			<dt><a href="#doc-object-model">ObjectModel</a> <code>ObjectModel(definition)</code></dt>
+			<dt><a href="#doc-object-model">ObjectModel</a> <code>ObjectModel(definition, params)</code></dt>
 			<dd>Constructor for object models</dd>
 
 			<dt><a href="#doc-array-model">ArrayModel</a> <code>ArrayModel(itemDefinition)</code></dt>

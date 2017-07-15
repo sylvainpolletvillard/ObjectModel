@@ -2,7 +2,7 @@ import ObjectModel from "./object-model"
 import Model from "./model"
 import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers"
 
-const styles = {
+let styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
 	listItem: `padding: 0 0 0 1em;`,
 	model: `color: #43a047; font-style: italic`,
@@ -15,20 +15,20 @@ const styles = {
 	null: `color: #808080`
 };
 
-function getModel(instance) {
+let getModel = (instance) => {
 	if (instance === undefined || instance === null)
 		return null
 
-	const proto = getProto(instance);
+	let proto = getProto(instance);
 	if (!proto || !proto.constructor || !is(Model, proto.constructor))
 		return null
 
 	return proto.constructor
 }
 
-const span = (value, style) => ["span", {style}, value]
+let span = (value, style) => ["span", {style}, value]
 
-function format(x, config) {
+let format = (x, config) => {
 	if (x === null || x === undefined)
 		return span(String(x), styles.null);
 
@@ -60,7 +60,7 @@ function format(x, config) {
 	return x ? ['object', {object: x, config}] : null
 }
 
-function formatObject(o, model, config) {
+let formatObject = (o, model, config) => {
 	return [
 		'ol', {style: styles.list},
 		'{',
@@ -75,7 +75,7 @@ function formatObject(o, model, config) {
 	];
 }
 
-function formatHeader(x, config) {
+let formatHeader = (x, config) => {
 	if (is(Model, x))
 		return span(x.name, styles.model)
 
@@ -85,7 +85,7 @@ function formatHeader(x, config) {
 	return null;
 }
 
-const ModelFormatter = {
+let ModelFormatter = {
 	header(x, config = {}) {
 		if (config.fromModel || is(Model, x))
 			return formatHeader(x, config);
@@ -100,13 +100,13 @@ const ModelFormatter = {
 	}
 }
 
-const ModelInstanceFormatter = {
+let ModelInstanceFormatter = {
 	header(x, config = {}) {
 		if (config.fromInstance && isPlainObject(x)) {
 			return formatHeader(x, config)
 		}
 
-		const model = getModel(x);
+		let model = getModel(x);
 		if (is(Model, model)) {
 			return span(x.constructor.name, styles.model)
 		}

@@ -4,9 +4,8 @@ import {extendModel, initModel, Model} from "./model"
 
 
 export default function BasicModel(def) {
-	const model = function (val = model.default) {
-		if (!model.validate(val)) return
-		return val
+	let model = function (val = model.default) {
+		return model.validate(val) ? val : undefined
 	}
 
 	setConstructor(model, BasicModel)
@@ -16,7 +15,7 @@ export default function BasicModel(def) {
 
 extend(BasicModel, Model, {
 	extend(...newParts) {
-		const child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
+		let child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
 		for (let part of newParts) {
 			if (is(BasicModel, part)) child.assertions.push(...part.assertions)
 		}

@@ -12,7 +12,7 @@ import {
 
 import {Model, stackError} from "./model"
 
-export function parseDefinition(def) {
+export let parseDefinition = (def) => {
 	if (isPlainObject(def)) {
 		mapProps(def, key => { def[key] = parseDefinition(def[key]) })
 	}
@@ -22,9 +22,9 @@ export function parseDefinition(def) {
 	return def
 }
 
-export const formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or ")
+export let formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or ")
 
-export function extendDefinition(def, newParts = []) {
+export let extendDefinition = (def, newParts = []) => {
 	if (!isArray(newParts)) newParts = [newParts]
 	if (newParts.length > 0) {
 		def = newParts
@@ -35,8 +35,8 @@ export function extendDefinition(def, newParts = []) {
 	return def
 }
 
-export function checkDefinition(obj, def, path, errors, stack) {
-	const indexFound = stack.indexOf(def)
+export let checkDefinition = (obj, def, path, errors, stack) => {
+	let indexFound = stack.indexOf(def)
 	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 		return obj //if found twice in call stack, cycle detected, skip validation
 
@@ -47,12 +47,11 @@ export function checkDefinition(obj, def, path, errors, stack) {
 	}
 	else if (isPlainObject(def)) {
 		mapProps(def, key => {
-			const val = obj ? obj[key] : undefined
-			checkDefinition(val, def[key], getPath(path, key), errors, stack)
+			checkDefinition(obj ? obj[key] : undefined, def[key], getPath(path, key), errors, stack)
 		})
 	}
 	else {
-		const pdef = parseDefinition(def)
+		let pdef = parseDefinition(def)
 		if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
 			return obj
 
@@ -62,10 +61,10 @@ export function checkDefinition(obj, def, path, errors, stack) {
 	return obj
 }
 
-export function checkDefinitionPart(obj, def, path, stack) {
+export let checkDefinitionPart = (obj, def, path, stack) => {
 	if (obj == null) return obj === def
 	if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
-		const errors = []
+		let errors = []
 		checkDefinition(obj, def, path, errors, stack)
 		return !errors.length
 	}
@@ -76,7 +75,7 @@ export function checkDefinitionPart(obj, def, path, stack) {
 		|| obj.constructor === def
 }
 
-export function checkAssertions(obj, model, path, errors = model.errors) {
+export let checkAssertions = (obj, model, path, errors = model.errors) => {
 	for (let assertion of model.assertions) {
 		let result
 		try {
@@ -85,7 +84,7 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 			result = err
 		}
 		if (result !== true) {
-			const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
+			let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 				`assertion "${assertion.description}" returned ${format(assertionResult)} `
 				+`for ${path ? path+" =" : "value"} ${format(value)}`
 			stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path))
@@ -93,12 +92,12 @@ export function checkAssertions(obj, model, path, errors = model.errors) {
 	}
 }
 
-export function cast(obj, defNode = []) {
+export let cast = (obj, defNode = []) => {
 	if (!obj || isPlainObject(defNode) || isModelInstance(obj))
 		return obj // no value or not leaf or already a model instance
 
-	const def = parseDefinition(defNode);
-	const suitableModels = []
+	let def = parseDefinition(defNode),
+	    suitableModels = []
 
 	for (let part of def) {
 		if (is(Model, part) && part.test(obj))

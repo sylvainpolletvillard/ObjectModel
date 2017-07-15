@@ -67,29 +67,29 @@ Object.assign(Model.prototype, {
 	}
 })
 
-export function initModel(model, def) {
+export let initModel = (model, def) => {
 	model.definition = def
 	model.assertions = [...model.assertions]
 	define(model, "errors", [])
 	delete model.name;
 }
 
-export function extendModel(child, parent, newProps) {
+export let extendModel = (child, parent, newProps) => {
 	extend(child, parent, newProps)
 	child.assertions.push(...parent.assertions)
 	return child
 }
 
-export function stackError(errors, expected, received, path, message) {
+export let stackError = (errors, expected, received, path, message) => {
 	errors.push({expected, received, path, message})
 }
 
-export function unstackErrors(model, errorCollector = model.errorCollector) {
-	const nbErrors = model.errors.length
+export let unstackErrors = (model, errorCollector = model.errorCollector) => {
+	let nbErrors = model.errors.length
 	if (nbErrors > 0) {
-		const errors = model.errors.map(err => {
+		let errors = model.errors.map(err => {
 			if (!err.message) {
-				const def   = isArray(err.expected) ? err.expected : [err.expected]
+				let def = isArray(err.expected) ? err.expected : [err.expected]
 				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
 					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 			}

@@ -5,11 +5,11 @@ import {_validate, extend, format, isFunction, proxifyModel, setConstructor} fro
 
 export default function FunctionModel(...argsDef) {
 
-	const model = function (fn = model.default) {
+	let model = function (fn = model.default) {
 		if (!model.validate(fn)) return
 		return proxifyModel(fn, model, {
 			apply (fn, ctx, args) {
-				const def = model.definition
+				let def = model.definition
 
 				def.arguments.forEach((argDef, i) => {
 					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [])
@@ -54,9 +54,9 @@ extend(FunctionModel, Model, {
 	},
 
 	extend(newArgs, newReturns) {
-		const args = this.definition.arguments
-		const mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i]))
-		const mixedReturns = extendDefinition(this.definition.return, newReturns)
+		let args = this.definition.arguments,
+		    mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
+		    mixedReturns = extendDefinition(this.definition.return, newReturns)
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
@@ -68,8 +68,7 @@ extend(FunctionModel, Model, {
 })
 
 FunctionModel.prototype.assert(function (args) {
-	if (args.length > this.definition.arguments.length) return args
-	return true
+	return (args.length > this.definition.arguments.length) ? args : true
 }, function (args) {
 	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`
 })

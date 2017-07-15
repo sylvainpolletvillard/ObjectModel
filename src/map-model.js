@@ -2,34 +2,32 @@ import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
 import {_validate, extend, format, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
 
-const MAP_MUTATORS = ["set", "delete", "clear"]
+let MAP_MUTATORS = ["set", "delete", "clear"]
 
 export default function MapModel(key, value) {
 
-	const model = function (iterable = model.default) {
-		const castKeyValue = pair => ["key", "value"].map((prop, i) => cast(pair[i], model.definition[prop]))
-		const map          = new Map([...iterable].map(castKeyValue))
+	let model = function (iterable = model.default) {
+		let castKeyValue = pair => ["key", "value"].map((prop, i) => cast(pair[i], model.definition[prop])),
+		    map = new Map([...iterable].map(castKeyValue))
 
 		if (!model.validate(map)) return
 
 		return proxifyModel(map, model, {
 			get(map, key) {
 				let val = map[key];
-				if (!isFunction(val)) return val
-
-				return proxifyFn(val, (fn, ctx, args) => {
+				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 					if (key === "set") {
 						args = castKeyValue(args)
 					}
 
 					if (MAP_MUTATORS.includes(key)) {
-						const testMap = new Map(map)
+						let testMap = new Map(map)
 						fn.apply(testMap, args)
 						model.validate(testMap)
 					}
 
 					return fn.apply(map, args)
-				})
+				}) : val
 			}
 		})
 	}
@@ -42,7 +40,7 @@ export default function MapModel(key, value) {
 
 extend(MapModel, Model, {
 	toString(stack) {
-		const {key, value} = this.definition
+		let {key, value} = this.definition
 		return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
 	},
 
@@ -59,7 +57,7 @@ extend(MapModel, Model, {
 	},
 
 	extend(newKeys, newValues){
-		const {key, value} = this.definition
+		let {key, value} = this.definition
 		return extendModel(new MapModel(extendDefinition(key, newKeys), extendDefinition(value, newValues)), this)
 	}
 })

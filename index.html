@@ -66,6 +66,7 @@
 			<li><a href="#doc-map-models">Map models</a></li>
 			<li><a href="#doc-set-models">Set models</a></li>
 			<li><a href="#doc-custom-collectors">Custom error collectors</a></li>
+			<li><a href="#doc-custom-devtool-formatters">Custom devtool formatters</a></li>
 			<li><a href="#api">Full API</a></li>
 			<li><a href="#common-models">Commonly used models</a></li>
 			<li><a href="#common-questions">Common questions</a></li>
@@ -120,7 +121,7 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">9.86 KB</strong> minified,
+					<strong class="size-min">9.87 KB</strong> minified,
 					<strong class="size-gzip">3.79 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
@@ -129,17 +130,17 @@
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v<span class="version">3.1.1</span></h3>
+			<h3>Current version: v<span class="version">3.1.2</span></h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified file (<strong class="size-min">9.86 KB</strong>,
+				<li>Minified bundle (<strong class="size-min">9.87 KB</strong>,
 					<strong class="size-gzip">3.79 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
-					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.1.1.zip">object-model-3.1.1.zip</a>
+					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.1.2.zip">object-model-3.1.2.zip</a>
 				</li>
 			</ul>
 
@@ -975,6 +976,32 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 }</code></pre>
 		</div>
 
+	</section>
+
+	<hr>
+
+	<section id="doc-custom-devtool-formatters">
+		<h2>Custom devtool formatters</h2>
+
+		<p>ObjectModel provides custom formatters for Models and Model instances in Chrome Developer Tools, available in Chrome and Opera. These formatters improve the way models and instances are displayed when logged in the console.</p>
+
+		<h3>Enabling custom formatters</h3>
+
+		<p>Chrome currently doesn’t have custom formatters enabled by default. You need to enter the DevTools settings via the menu at the top right of the DevTools panel, then select <i>Preferences</i> and check <i>Enable custom formatters</i> in the <i>Console</i> section.</p>
+
+		<div>
+		<figure style="display: inline-block; vertical-align: top">
+			<img src="docs/res/custom-formatters-chrome-settings.jpg">
+		</figure>
+
+		<figure style="display: inline-block; vertical-align: top">
+			<img src="docs/res/custom-formatters-before.jpg">
+			<img src="docs/res/custom-formatters-after.jpg">
+		</figure>
+		</div>
+
+		<p>The formatters for ObjectModel are <strong>included by default in the library bundle</strong>. If you are using modules, import them manually with :</p>
+		<pre><code class="language-javascript">import * from "objectmodel/src/devtool-formatter"</code></pre>
 	</section>
 
 	<hr>

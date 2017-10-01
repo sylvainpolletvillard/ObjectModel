@@ -1,5 +1,5 @@
 /*!
- * Objectmodel v3.1.1
+ * Objectmodel v3.1.2
  * http://objectmodel.js.org
  *
  * Copyright (c) 2017 Sylvain Pollet-Villard
@@ -9,7 +9,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.window = {})));
+	(factory((global.window = global.window || {})));
 }(this, (function (exports) { 'use strict';
 
 const _constructor = "_constructor";

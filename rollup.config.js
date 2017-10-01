@@ -9,6 +9,7 @@ export default {
 		format: 'umd'
 	},
 	name: 'window',
+	extend: true,
 	sourcemap: true,
 	plugins: isProduction ? [uglify({
 		compress: {

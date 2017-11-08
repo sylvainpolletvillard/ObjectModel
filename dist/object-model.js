@@ -1,5 +1,5 @@
 /*!
- * Objectmodel v3.1.2
+ * Objectmodel v3.2.0
  * http://objectmodel.js.org
  *
  * Copyright (c) 2017 Sylvain Pollet-Villard
@@ -431,8 +431,8 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 		return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 	},
 
-	ownKeys(){
-		return Reflect.ownKeys(def).filter(key => !model.conventionForPrivate(key))
+	ownKeys(o){
+		return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
 	},
 
 	getOwnPropertyDescriptor(o, key){

@@ -1,3 +1,5 @@
+Object.assign(global, require("../dist/object-model.js"));
+
 require("./model.spec")
 require("./basic-model.spec")
 require("./object-model.spec")

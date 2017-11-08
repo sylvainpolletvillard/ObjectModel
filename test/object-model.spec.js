@@ -1030,32 +1030,35 @@ QUnit.test("defineProperty trap", function (assert) {
 
 QUnit.test("ownKeys/has trap", function (assert) {
 
-	const A = ObjectModel({ _pa: Boolean, a: Boolean })
-	const B = A.extend({ _pb: Boolean, b: Boolean })
-	const m = B({ _pa: true, _pb: true, a: true, b: true })
+	const A = ObjectModel({ _pa: Boolean, a: Boolean, oa: [Boolean] })
+	const B = A.extend({ _pb: Boolean, b: Boolean, ob: [Boolean] })
+	const m = B({ _pa: true, _pb: true, a: true, b: true, oa: undefined, undefined: true })
 	B.prototype.B = true;
 	B.prototype._PB = true;
 	A.prototype.A = true;
 	A.prototype._PA = true;
 
-	assert.equal("a" in m, true)
-	assert.equal("b" in m, true)
-	assert.equal("toString" in m, true)
+	assert.equal("a" in m, true, "inherited prop in")
+	assert.equal("b" in m, true, "own prop in")
+	assert.equal("toString" in m, true, "Object.prototype prop in")
 
-	assert.equal("A" in m, false)
-	assert.equal("B" in m, false)
-	assert.equal("_pa" in m, false)
-	assert.equal("_pb" in m, false)
-	assert.equal("_PA" in m, false)
-	assert.equal("_PB" in m, false)
-	assert.equal("unknown" in m, false)
+	assert.equal("A" in m, false, "custom prop inherited prototype in")
+	assert.equal("B" in m, false, "custom prop own prototype in")
+	assert.equal("_pa" in m, false, "private inherited prop in")
+	assert.equal("_pb" in m, false, "private own prop in")
+	assert.equal("_PA" in m, false, "inherited prototype custom private prop in")
+	assert.equal("_PB" in m, false, "own prototype custom private prop in")
+	assert.equal("oa" in m, true, "optional assigned prop in")
+	assert.equal("ob" in m, false, "optional unassigned prop in")
+	assert.equal("unknown" in m, false, "unassigned undefined prop in")
+	assert.equal("undefined" in m, false, "assigned undefined prop in")
 
 	const oKeys = Object.keys(m);
 
 	const ownKeys = Object.getOwnPropertyNames(m);
 
-	assert.equal(oKeys.sort().join(","), "a,b")
-	assert.equal(ownKeys.sort().join(","), "a,b")
+	assert.equal(oKeys.sort().join(","), "a,b,oa", "Object.keys")
+	assert.equal(ownKeys.sort().join(","), "a,b,oa", "Object.getOwnPropertyNames")
 })
 
 QUnit.test("class constructors", function (assert) {
@@ -1090,8 +1093,8 @@ QUnit.test("class constructors", function (assert) {
 	assert.ok(user instanceof Person,  "user instanceof Person")
 	assert.ok(user instanceof PersonModel,  "user instanceof PersonModel")
 	assert.equal(user.fullName, "John Smith [ADMIN]", "check es6 class constructor with extended class")
-	assert.equal(Object.keys(User.definition).join(","), "firstName,lastName,fullName,role")
-	assert.equal(Object.keys(user).join(","), "firstName,lastName,fullName,role")
+	assert.equal(Object.keys(User.definition).sort().join(","), "firstName,fullName,lastName,role")
+	assert.equal(Object.keys(user).sort().join(","), "firstName,fullName,lastName,role")
 	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
 
 })

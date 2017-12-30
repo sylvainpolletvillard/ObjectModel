@@ -5,12 +5,12 @@ const isProduction = process.env.BUILD === 'production';
 export default {
 	input: 'build/bundle-entry' + (isProduction ? '.js' : '.dev.js'),
 	output: {
+		name: 'window',
 		file: 'dist/object-model' + (isProduction ? '.min.js' : '.js'),
-		format: 'umd'
+		format: 'umd',
+		sourcemap: true,
+		extend: true
 	},
-	name: 'window',
-	extend: true,
-	sourcemap: true,
 	plugins: isProduction ? [uglify({
 		compress: {
 			evaluate: false //prevent an unsafe compression

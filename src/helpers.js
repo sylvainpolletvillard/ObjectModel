@@ -67,7 +67,7 @@ export let format = (obj, stack = []) => {
 
 	stack.unshift(obj)
 
-	if (isFunction(obj)) return obj.name || obj.toString(stack)
+	if (isFunction(obj)) return obj.name || obj.toString()
 	if (is(Map, obj) || is(Set, obj)) return format([...obj])
 	if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 	if (obj.toString !== Object.prototype.toString) return obj.toString()

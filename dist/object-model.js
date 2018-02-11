@@ -2,7 +2,7 @@
  * Objectmodel v3.2.0
  * http://objectmodel.js.org
  *
- * Copyright (c) 2017 Sylvain Pollet-Villard
+ * Copyright (c) 2018 Sylvain Pollet-Villard
  * Licensed under the MIT license
  */
 
@@ -66,7 +66,7 @@ let extend = (child, parent, props) => {
 	Object.setPrototypeOf(child, parent);
 };
 
-let format$1 = (obj, stack = []) => {
+let format = (obj, stack = []) => {
 	if (stack.length > 15 || stack.includes(obj)) return '...'
 	if (obj === null || obj === undefined) return String(obj)
 	if (isString(obj)) return `"${obj}"`
@@ -74,15 +74,15 @@ let format$1 = (obj, stack = []) => {
 
 	stack.unshift(obj);
 
-	if (isFunction(obj)) return obj.name || obj.toString(stack)
-	if (is(Map, obj) || is(Set, obj)) return format$1([...obj])
-	if (isArray(obj)) return `[${obj.map(item => format$1(item, stack)).join(', ')}]`
+	if (isFunction(obj)) return obj.name || obj.toString()
+	if (is(Map, obj) || is(Set, obj)) return format([...obj])
+	if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 	if (obj.toString !== Object.prototype.toString) return obj.toString()
 	if (obj && isObject(obj)) {
 		let props  = Object.keys(obj),
 		    indent = '\t'.repeat(stack.length);
 		return `{${props.map(
-			key => `\n${indent + key}: ${format$1(obj[key], stack.slice())}`
+			key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
 		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 	}
 
@@ -99,7 +99,7 @@ let parseDefinition = (def) => {
 	return def
 };
 
-let formatDefinition = (def, stack) => parseDefinition(def).map(d => format$1(d, stack)).join(" or ");
+let formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or ");
 
 let extendDefinition = (def, newParts = []) => {
 	if (!isArray(newParts)) newParts = [newParts];
@@ -162,8 +162,8 @@ let checkAssertions = (obj, model, path, errors = model.errors) => {
 		}
 		if (result !== true) {
 			let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${format$1(assertionResult)} `
-				+`for ${path ? path+" =" : "value"} ${format$1(value)}`;
+				`assertion "${assertion.description}" returned ${format(assertionResult)} `
+				+`for ${path ? path+" =" : "value"} ${format(value)}`;
 			stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
 		}
 	}
@@ -185,7 +185,7 @@ let cast = (obj, defNode = []) => {
 		return suitableModels[0](obj) // automatically cast to suitable model when explicit
 
 	if (suitableModels.length > 1)
-		console.warn(`Ambiguous model for value ${format$1(obj)}, could be ${suitableModels.join(" or ")}`);
+		console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
 
 	return obj
 };
@@ -268,7 +268,7 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	assert(assertion, description = format$1(assertion)){
+	assert(assertion, description = format(assertion)){
 		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion);
 		return this
@@ -298,8 +298,8 @@ let unstackErrors = (model, errorCollector = model.errorCollector) => {
 		let errors = model.errors.map(err => {
 			if (!err.message) {
 				let def = isArray(err.expected) ? err.expected : [err.expected];
-				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format$1(d)).join(" or ")
-					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format$1(err.received);
+				err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
+					+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
 			}
 			return err
 		});
@@ -336,7 +336,7 @@ extend(ObjectModel, Model, {
 	},
 
 	toString(stack){
-		return format$1(this.definition, stack)
+		return format(this.definition, stack)
 	},
 
 	extend(...newParts){
@@ -518,7 +518,7 @@ let getModel = (instance) => {
 
 let span = (value, style) => ["span", {style}, value];
 
-let format = (x, config) => {
+let format$1 = (x, config) => {
 	if (x === null || x === undefined)
 		return span(String(x), styles.null);
 
@@ -535,7 +535,7 @@ let format = (x, config) => {
 		let def = [];
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {
-			def.push(format(x[i]));
+			def.push(format$1(x[i]));
 			if (i < x.length - 1) def.push(' or ');
 		}
 		return span(...def)
@@ -558,7 +558,7 @@ let formatObject = (o, model, config) => {
 			let isPrivate = model && model.conventionForPrivate(prop);
 			return ['li', {style: styles.listItem},
 				span(prop, isPrivate ? styles.private : styles.property), ': ',
-				format(o[prop], config)
+				format$1(o[prop], config)
 			]
 		}),
 		'}'
@@ -570,7 +570,7 @@ let formatHeader = (x, config) => {
 		return span(x.name, styles.model)
 
 	if (config.fromModel || isPlainObject(x) || isArray(x))
-		return format(x)
+		return format$1(x)
 
 	return null;
 };
@@ -586,7 +586,7 @@ let ModelFormatter = {
 		return is(Model, x)
 	},
 	body(x) {
-		return format(x.definition, {fromModel: true})
+		return format$1(x.definition, {fromModel: true})
 	}
 };
 
@@ -753,7 +753,7 @@ extend(FunctionModel, Model, {
 FunctionModel.prototype.assert(function (args) {
 	return (args.length > this.definition.arguments.length) ? args : true
 }, function (args) {
-	return `expecting ${this.definition.arguments.length} arguments for ${format$1(this)}, got ${args.length}`
+	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`
 });
 
 let MAP_MUTATORS = ["set", "delete", "clear"];
@@ -803,16 +803,16 @@ extend(MapModel, Model, {
 			path = path || 'Map';
 			for (let [key, value] of map) {
 				checkDefinition(key, this.definition.key, `${path} key`, errors, stack);
-				checkDefinition(value, this.definition.value, `${path}[${format$1(key)}]`, errors, stack);
+				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack);
 			}
 		} else stackError(errors, this, map, path);
 
 		checkAssertions(map, this, path, errors);
 	},
 
-	extend(newKeys, newValues){
+	extend(keyPart, valuePart){
 		let {key, value} = this.definition;
-		return extendModel(new MapModel(extendDefinition(key, newKeys), extendDefinition(value, newValues)), this)
+		return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
 	}
 });
 

@@ -1,4 +1,4 @@
-/* global ObjectModel, ArrayModel, FunctionModel */
+/* global QUnit ArrayModel ObjectModel FunctionModel */
 
 QUnit.module("Function Models");
 
@@ -113,10 +113,8 @@ QUnit.test("other models & objects as arguments", function (assert) {
 			switch (options.op) {
 				case "sum":
 					return a + b;
-					break;
 				case "product":
 					return a * b;
-					break;
 			}
 		}, options.op === "product" ? 1 : 0);
 	});

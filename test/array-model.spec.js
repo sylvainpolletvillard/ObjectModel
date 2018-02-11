@@ -1,4 +1,4 @@
-/* global ArrayModel */
+/* global QUnit ArrayModel ObjectModel */
 
 QUnit.module("Array Models");
 
@@ -170,7 +170,7 @@ QUnit.test("Assertions", function (assert) {
 	new AssertArray([]);
 
 	assert.throws(function(){ new AssertArray(); },
-		/assertion \"may throw exception\" returned TypeError.*for value undefined/,
+		/assertion "may throw exception" returned TypeError.*for value undefined/,
 		"assertions catch exceptions on Array models");
 
 })

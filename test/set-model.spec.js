@@ -1,4 +1,4 @@
-/* global QUnit, SetModel, ObjectModel */
+/* global QUnit SetModel ObjectModel */
 
 QUnit.module("Set Models");
 
@@ -166,11 +166,10 @@ QUnit.test("assertions", function (assert) {
 
 	new AssertSet([1, 2]);
 
-	assert.throws(function () {
-			new AssertSet([]);
-		},
-		/assertion \"may throw exception\" returned false.*for value \[\]/,
-		"assertions catch exceptions on Set models");
+	assert.throws(function () { new AssertSet([]); },
+		/assertion "may throw exception" returned false.*for value \[]/,
+		"assertions catch exceptions on Set models"
+	);
 
 })
 

@@ -1,4 +1,4 @@
-/* global QUnit, MapModel, ObjectModel */
+/* global QUnit MapModel ObjectModel */
 
 QUnit.module("Map Models");
 
@@ -172,11 +172,10 @@ QUnit.test("assertions", function (assert) {
 
 	new AssertMap([[1, 2]]);
 
-	assert.throws(function () {
-			new AssertMap([]);
-		},
-		/assertion \"may throw exception\" returned false.*for Map = \[\]/,
-		"assertions catch exceptions on Map models");
+	assert.throws(function () { new AssertMap([]); },
+		/assertion "may throw exception" returned false.*for Map = \[]/,
+		"assertions catch exceptions on Map models"
+	);
 
 })
 

@@ -1,4 +1,4 @@
-/* global BasicModel */
+/* global QUnit BasicModel */
 
 QUnit.module("Basic Models");
 
@@ -144,16 +144,17 @@ QUnit.test("Assertions", function (assert) {
 	}, /TypeError[\s\S]*isInteger/, "test multiple assertions 2");
 
 	const AssertBasic = BasicModel(Number).assert(function (v) {
-		return +v.toString() == v
+		return +v.toString() === v
 	}, "may throw exception")
 
 	new AssertBasic(0);
 
 	assert.throws(function () {
-			new AssertBasic();
-		},
-		/assertion \"may throw exception\" returned TypeError.*for value undefined/,
-		"assertions catch exceptions on Basic models");
+		new AssertBasic();
+	},
+	/assertion "may throw exception" returned TypeError.*for value undefined/,
+	"assertions catch exceptions on Basic models"
+	);
 
 });
 
@@ -177,7 +178,7 @@ QUnit.test("Custom error collectors", function(assert) {
 	BasicModel.prototype.errorCollector = function (errors) {
 		assert.ok(errors.length === 1, 'global custom collector assertion error catch 1/2');
 		assert.equal(errors[0].message,
-			'assertion \"shouldnt be nope\" returned false for value \"nope\"',
+			'assertion "shouldnt be nope" returned false for value "nope"',
 			'global custom collector assertion error catch 2/2');
 	}
 
@@ -197,7 +198,7 @@ QUnit.test("Custom error collectors", function(assert) {
 		.validate("nope", function(errors){
 			assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message,
-				'assertion \"shouldnt be nope\" returned false for value \"nope\"',
+				'assertion "shouldnt be nope" returned false for value "nope"',
 				'local custom collector assertion error catch 2/2');
 		});
 

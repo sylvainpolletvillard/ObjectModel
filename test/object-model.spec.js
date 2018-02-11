@@ -1,4 +1,4 @@
-/* global QUnit, Model, BasicModel, ObjectModel, ArrayModel */
+/* global QUnit Model BasicModel ArrayModel ObjectModel */
 
 QUnit.module("Object Models");
 
@@ -373,7 +373,7 @@ QUnit.test("Private and constant properties", function (assert) {
 	m = M({ _p: 42 })
 
 	assert.throws(function () {
-		m._p
+		Object.prototype.toString.call(m._p);
 	}, /TypeError[\s\S]*cannot access to private/, "try to access private from outside");
 
 	M.prototype.incrementPrivate = function(){ this._p++ }
@@ -702,7 +702,8 @@ QUnit.test("Composition", function (assert) {
 	let joefamily = new Family({
 		father: joe,
 		mother: ann,
-		children: []
+		children: [],
+		grandparents: []
 	});
 
 	assert.ok(joefamily instanceof Family, "joefamily instance of Family");
@@ -786,14 +787,14 @@ QUnit.test("Assertions", function (assert) {
 	delete ObjectModel.prototype.assertions;
 
 	const AssertObject = ObjectModel({name: [String]})
-		.assert((o => o.name.toLowerCase().length == o.name.length), "may throw exception");
+		.assert((o => o.name.toLowerCase().length === o.name.length), "may throw exception");
 
 	new AssertObject({name: "joe"});
 
 	assert.throws(function () {
 		new AssertObject({name: undefined});
 	},
-	/assertion \"may throw exception\" returned TypeError.*for value {\s+name: undefined\s+}/,
+	/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
 	"assertions catch exceptions on Object models");
 
 });
@@ -980,9 +981,9 @@ QUnit.test("Automatic model casting", function (assert) {
 	consoleMock.apply();
 	let c = new Container({ foo: { bar: { name: "dunno" }}});
 
-	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean\][\s\S]*?other2: \[Number]/
-			.test(consoleMock.lastArgs.warn[0]),
-		"should warn about ambiguous model for object sub prop"
+	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
+		.test(consoleMock.lastArgs.warn[0]),
+	"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
 	assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");

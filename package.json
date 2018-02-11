@@ -23,16 +23,17 @@
   },
   "devDependencies": {
     "banner-cli": "^0.11.0",
-    "filesize": "^3.5.11",
+    "filesize": "^3.6.0",
     "gzip-size": "^4.1.0",
     "npm-run-all": "^4.1.2",
-    "qunit": "^2.4.1",
-    "rollup": "^0.53.1",
+    "qunit": "^2.5.0",
+    "rollup": "^0.55.5",
     "rollup-plugin-uglify-es": "0.0.1",
     "rollup-watch": "^4.0.0"
   },
   "main": "dist/object-model.js",
   "module": "src/index.js",
+  "types": "types/index.d.ts",
   "keywords": [
     "typed",
     "types",

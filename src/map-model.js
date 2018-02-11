@@ -56,8 +56,8 @@ extend(MapModel, Model, {
 		checkAssertions(map, this, path, errors)
 	},
 
-	extend(newKeys, newValues){
+	extend(keyPart, valuePart){
 		let {key, value} = this.definition
-		return extendModel(new MapModel(extendDefinition(key, newKeys), extendDefinition(value, newValues)), this)
+		return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
 	}
 })

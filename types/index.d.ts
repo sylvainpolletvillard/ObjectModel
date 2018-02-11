@@ -6,6 +6,11 @@ export interface Model {
 	definition: any;
 	assertions: Assertion[];
 	default: any;
+	name: string;
+
+	as(name: string): this;
+
+	toString(stack?: any[]): string;
 
 	errorCollector(errors: ModelError[]);
 

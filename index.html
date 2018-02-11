@@ -130,7 +130,7 @@
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v<span class="version">3.2.0</span></h3>
+			<h3>Current version: v<span class="version">3.2.2</span></h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
@@ -140,7 +140,7 @@
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
-					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.2.0.zip">object-model-3.2.0.zip</a>
+					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.2.2.zip">object-model-3.2.2.zip</a>
 				</li>
 			</ul>
 
@@ -1035,34 +1035,43 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</dl>
 		<h3>Model methods and properties</h3>
 		<dl>
+		    <dt>name <code>model.name</code></dt>
+		    <dd>The name of the model, used for debugging purposes</dd>
+
+		    <dt>as <code>model.as(newName)</code></dt>
+		    <dd>Set the name of the model</dd>
+
 			<dt>definition <code>model.definition</code></dt>
 			<dd>Returns the model definition</dd>
+
+			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherModelsOrDefinitions)</code></dt>
+            <dd>Returns a new model based on the initial model merged with other definitions/assertions</dd>
 
 			<dt>assertions <code>model.assertions</code></dt>
 			<dd>Returns the list of model assertions</dd>
 
+			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
+			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
+
 			<dt>default <code>model.default</code></dt>
 			<dd>Returns the default value if defined</dd>
+
+			<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
+			<dd>Set the default value of the model</dd>
 
 			<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
 			<dd>Function called when validation errors are detected</dd>
 
-			<dt><a href="#doc-extensions">extend</a> <code>model.extend(...otherDefinitions)</code></dt>
-			<dd>Returns a new model based on the initial model definition merged with other definitions passed. Assertions are preserved too.</dd>
-
-			<dt><a href="#doc-assertions">assert</a> <code>model.assert(assertion, [description])</code></dt>
-			<dd>Add a test function to the model that must return <code>true</code> to validate the instance.</dd>
-
-			<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
-			<dd>Shorthand to set the default value of the model</dd>
-
 			<dt><a href="#doc-composition">test</a> <code>model.test(value)</code></dt>
-			<dd>Returns <code>true</code> if the value passed validates the model definition. Works with <a href="#doc-composition">duck typing</a>.</dd>
+			<dd>Returns <code>true</code> if the value passed validates the model definition.
+				Works with <a href="#doc-composition">duck typing</a>.</dd>
 
 			<dt>validate <code>model.validate(instance, [errorCollector])</code></dt>
-			<dd>Manually triggers the validation of a model instance over its definition. It is automatically done whenever an instance property changes.
+			<dd>Manually triggers the validation of a model instance over its definition.
+				It is automatically done whenever an instance property changes.
 				<br>
-				Note that contrary to the <code>test</code> method, the object is not cast to its suitable model (a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
+				Note that contrary to the <code>test</code> method, the object is not cast to its suitable model
+				(a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
 			</dd>
 
 			<dt><a href="#doc-private-and-constants">conventionForConstant</a> <code>function(variableName)</code></dt>

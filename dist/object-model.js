@@ -1,5 +1,5 @@
 /*!
- * Objectmodel v3.2.0
+ * Objectmodel v3.2.2
  * http://objectmodel.js.org
  *
  * Copyright (c) 2018 Sylvain Pollet-Villard

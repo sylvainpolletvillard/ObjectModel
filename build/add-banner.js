@@ -1,8 +1,8 @@
 const fs = require('fs');
 const pkg  = require('../package.json');
 
-const banner = `/* ObjectModel v${pkg.version} - ${pkg.homepage}
- * ${pkg.license} License - ${pkg.author} */`;
+const banner = `// ObjectModel v${pkg.version} - ${pkg.homepage}
+// ${pkg.license} License - ${pkg.author}`;
 
 const paths = [
 	"./dist/object-model.js",

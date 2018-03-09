@@ -1,4 +1,4 @@
-import uglify from "rollup-plugin-uglify-es"
+import uglify from "rollup-plugin-uglify"
 
 const isProduction = process.env.BUILD === 'production';
 
@@ -11,9 +11,5 @@ export default {
 		sourcemap: true,
 		extend: true
 	},
-	plugins: isProduction ? [uglify({
-		compress: {
-			evaluate: false //prevent an unsafe compression
-		}
-	})] : []
+	plugins: isProduction ? [uglify({ ecma: 6 })] : []
 };

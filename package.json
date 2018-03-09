@@ -16,7 +16,7 @@
     "watch": "npm-run-all --parallel watch:*",
     "watch:js": "npm run build:js -- --watch",
     "watch:min": "npm run build:min -- --watch",
-    "info": "npm-run-all --parallel info:*",
+    "info": "npm-run-all info:*",
     "info:banner": "node build/add-banner",
     "info:docs": "node build/update-docs",
     "test": "qunit test/index.js"
@@ -27,7 +27,7 @@
     "npm-run-all": "^4.1.2",
     "qunit": "^2.5.1",
     "rollup": "^0.56.5",
-    "rollup-plugin-uglify-es": "0.0.1",
+    "rollup-plugin-uglify": "^3.0.0",
     "rollup-watch": "^4.0.0"
   },
   "main": "dist/object-model.js",

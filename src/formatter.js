@@ -1,5 +1,5 @@
-import {is, isArray, isFunction, isObject, isString} from "./helpers"
-import Model from "./model"
+import {is, isArray, isFunction, isObject, isString} from "./helpers.js"
+import Model from "./model.js"
 
 export let format = (obj, stack = []) => {
 	if (stack.length > 15 || stack.includes(obj)) return '...'

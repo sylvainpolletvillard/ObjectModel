@@ -1,6 +1,6 @@
-import {extend, is, setConstructor} from "./helpers"
-import {extendDefinition} from "./definition"
-import {extendModel, initModel, Model} from "./model"
+import {extend, is, setConstructor} from "./helpers.js"
+import {extendDefinition} from "./definition.js"
+import {extendModel, initModel, Model} from "./model.js"
 
 
 export default function BasicModel(def) {

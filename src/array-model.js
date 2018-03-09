@@ -1,6 +1,6 @@
-import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
-import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {_validate, extend, isArray, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {extendModel, initModel, Model, stackError, unstackErrors} from "./model.js"
+import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition.js"
+import {_validate, extend, isArray, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
 

@@ -1,6 +1,6 @@
-import {extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model"
-import {cast, checkAssertions, checkDefinition} from "./definition"
-import {format} from "./formatter"
+import {extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model.js"
+import {cast, checkAssertions, checkDefinition} from "./definition.js"
+import {format} from "./formatter.js"
 import {
 	_constructor,
 	_validate,
@@ -19,7 +19,7 @@ import {
 	ObjectProto,
 	proxify,
 	setConstructor
-} from "./helpers"
+} from "./helpers.js"
 
 export default function ObjectModel(def, params) {
 	let model = function (obj = model.default) {

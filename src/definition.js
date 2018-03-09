@@ -1,7 +1,7 @@
-import {_validate, getPath, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers"
-import {format} from "./formatter"
+import {_validate, getPath, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
+import {format} from "./formatter.js"
 
-import {isModelInstance, Model, stackError} from "./model"
+import {isModelInstance, Model, stackError} from "./model.js"
 
 export let parseDefinition = (def) => {
 	if (isPlainObject(def)) {

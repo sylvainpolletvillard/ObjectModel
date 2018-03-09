@@ -1,6 +1,6 @@
-import ObjectModel from "./object-model"
-import Model from "./model"
-import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers"
+import ObjectModel from "./object-model.js"
+import Model from "./model.js"
+import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 
 let styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,

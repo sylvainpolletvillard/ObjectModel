@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>QUnit - ObjectModel unit tests</title>
+	<link rel="stylesheet" href="lib/qunit.css">
+	<script src="lib/qunit.js"></script>
+	<script type="module">
+		import { Model, BasicModel, ObjectModel, ArrayModel, FunctionModel, MapModel, SetModel } from "../src/index.js";
+		Object.assign(window, { Model, BasicModel, ObjectModel, ArrayModel, FunctionModel, MapModel, SetModel })
+	</script>
+
+	<script src="model.spec.js"></script>
+	<script src="basic-model.spec.js"></script>
+	<script src="object-model.spec.js"></script>
+	<script src="array-model.spec.js"></script>
+	<script src="function-model.spec.js"></script>
+	<script src="map-model.spec.js"></script>
+	<script src="set-model.spec.js"></script>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+</body>
+</html>

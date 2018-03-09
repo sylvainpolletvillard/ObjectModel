@@ -17,17 +17,16 @@
     "watch:js": "npm run build:js -- --watch",
     "watch:min": "npm run build:min -- --watch",
     "info": "npm-run-all --parallel info:*",
-    "info:banner": "banner-cli dist/*.js",
+    "info:banner": "node build/add-banner",
     "info:docs": "node build/update-docs",
     "test": "qunit test/index.js"
   },
   "devDependencies": {
-    "banner-cli": "^0.11.0",
     "filesize": "^3.6.0",
     "gzip-size": "^4.1.0",
     "npm-run-all": "^4.1.2",
-    "qunit": "^2.5.0",
-    "rollup": "^0.55.5",
+    "qunit": "^2.5.1",
+    "rollup": "^0.56.5",
     "rollup-plugin-uglify-es": "0.0.1",
     "rollup-watch": "^4.0.0"
   },

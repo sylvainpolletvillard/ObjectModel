@@ -1,36 +1,35 @@
-/*!
- * Objectmodel v3.2.2
- * http://objectmodel.js.org
- *
- * Copyright (c) 2018 Sylvain Pollet-Villard
- * Licensed under the MIT license
- */
-
+/* ObjectModel v3.2.2 - http://objectmodel.js.org
+ * MIT License - Sylvain Pollet-Villard */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.window = global.window || {})));
 }(this, (function (exports) { 'use strict';
 
-const _constructor = "_constructor";
-const _validate = "_validate";
-const ObjectProto     = Object.prototype;
-const bettertypeof    = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1];
-const getProto        = Object.getPrototypeOf;
-const has             = (o, prop) => o.hasOwnProperty(prop);
-const is              = (Constructor, obj) => obj instanceof Constructor;
-const isString        = s => typeof s === "string";
-const isFunction      = f => typeof f === "function";
-const isObject        = o => typeof o === "object";
-const isArray         = a => Array.isArray(a);
-const isPlainObject   = o => o && isObject(o) && getProto(o) === ObjectProto;
-const isModelInstance = i => i && is(Model, getProto(i).constructor);
-const proxify      = (val, traps) => new Proxy(val, traps);
-const proxifyFn    = (fn, apply) => proxify(fn, {apply});
-const proxifyModel = (val, model, traps) => proxify(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps));
-const cannot   = (msg, model) => { model.errors.push({message: "cannot " + msg}); };
-const getPath  = (path, key) => path ? path + '.' + key : key;
-const mapProps = (o, fn) => Object.keys(o).map(fn);
+const
+	_constructor = "_constructor",
+	_validate = "_validate",
+
+	ObjectProto     = Object.prototype,
+	bettertypeof    = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
+	getProto        = Object.getPrototypeOf,
+
+	has             = (o, prop) => o.hasOwnProperty(prop),
+	is              = (Constructor, obj) => obj instanceof Constructor,
+	isString        = s => typeof s === "string",
+	isFunction      = f => typeof f === "function",
+	isObject        = o => typeof o === "object",
+	isArray         = a => Array.isArray(a),
+	isPlainObject   = o => o && isObject(o) && getProto(o) === ObjectProto,
+	isModelInstance = i => i && is(Model, getProto(i).constructor),
+
+	proxify      = (val, traps) => new Proxy(val, traps),
+	proxifyFn    = (fn, apply) => proxify(fn, {apply}),
+	proxifyModel = (val, model, traps) => proxify(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
+
+	cannot   = (msg, model) => { model.errors.push({message: "cannot " + msg}); },
+	getPath  = (path, key) => path ? path + '.' + key : key,
+	mapProps = (o, fn) => Object.keys(o).map(fn);
 
 
 let merge = (target, src = {}, deep) => {

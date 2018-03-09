@@ -1,17 +1,16 @@
-import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
+import {extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model"
 import {cast, checkAssertions, checkDefinition} from "./definition"
+import {format} from "./formatter"
 import {
 	_constructor,
 	_validate,
 	cannot,
 	extend,
-	format,
 	getPath,
 	getProto,
 	has,
 	is,
 	isFunction,
-	isModelInstance,
 	isObject,
 	isPlainObject,
 	isString,
@@ -127,9 +126,7 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	},
 
 	set(o, key, val) {
-		return controlMutation(model, def, path, o, key, (newPath) => {
-			Reflect.set(o, key, getProxy(model, val, def[key], newPath))
-		})
+		return controlMutation(model, def, path, o, key, (newPath) => Reflect.set(o, key, getProxy(model, val, def[key], newPath)))
 	},
 
 	deleteProperty(o, key) {
@@ -159,15 +156,6 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	}
 })
 
-let checkUndeclaredProps = (obj, def, errors, path) => {
-	mapProps(obj, key => {
-		let val = obj[key],
-		    subpath = getPath(path, key)
-		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
-		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
-	})
-}
-
 let controlMutation = (model, def, path, o, key, applyMutation) => {
 	let newPath       = getPath(path, key),
 	    isPrivate     = model.conventionForPrivate(key),
@@ -195,6 +183,15 @@ let controlMutation = (model, def, path, o, key, applyMutation) => {
 	}
 
 	return !nbErrors
+}
+
+let checkUndeclaredProps = (obj, def, errors, path) => {
+	mapProps(obj, key => {
+		let val = obj[key],
+		    subpath = getPath(path, key)
+		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
+		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
+	})
 }
 
 let rejectUndeclaredProp = (path, received, errors) => {

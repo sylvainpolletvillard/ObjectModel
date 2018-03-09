@@ -1,4 +1,5 @@
-import {_constructor, _validate, bettertypeof, define, extend, format, isArray, isPlainObject} from "./helpers"
+import {_constructor, _validate, bettertypeof, define, extend, getProto, is, isArray, isPlainObject} from "./helpers"
+import {format} from "./formatter"
 import {checkAssertions, checkDefinition, formatDefinition} from "./definition"
 import BasicModel from "./basic-model"
 import ObjectModel from "./object-model"
@@ -100,5 +101,7 @@ export let unstackErrors = (model, errorCollector = model.errorCollector) => {
 	}
 	return nbErrors
 }
+
+export let isModelInstance = i => i && is(Model, getProto(i).constructor)
 
 export default Model

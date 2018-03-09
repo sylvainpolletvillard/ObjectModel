@@ -1,6 +1,7 @@
 import {extendModel, initModel, Model, stackError, unstackErrors} from "./model"
 import {checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {_validate, extend, format, isFunction, proxifyModel, setConstructor} from "./helpers"
+import {_validate, extend, isFunction, proxifyModel, setConstructor} from "./helpers"
+import {format} from "./formatter"
 
 
 export default function FunctionModel(...argsDef) {

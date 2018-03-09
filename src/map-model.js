@@ -1,6 +1,7 @@
 import {extendModel, initModel, Model, stackError} from "./model"
 import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition"
-import {_validate, extend, format, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {_validate, extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers"
+import {format} from "./formatter"
 
 let MAP_MUTATORS = ["set", "delete", "clear"]
 

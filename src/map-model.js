@@ -1,5 +1,5 @@
-import {_validate, extendModel, initModel, Model, stackError} from "./model.js"
-import {cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition.js"
+import {extendModel, initModel, Model, stackError} from "./model.js"
+import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition.js"
 import {format} from "./formatter.js"
 import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 

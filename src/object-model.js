@@ -1,7 +1,9 @@
-import {_constructor, _validate, extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model.js"
-import {cast, checkAssertions, checkDefinition} from "./definition.js"
+import {extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model.js"
+import {_validate, cast, checkAssertions, checkDefinition} from "./definition.js"
 import {format, formatPath} from "./formatter.js"
 import {extend, getProto, has, is, isFunction, isObject, isPlainObject, isString, mapProps, merge, proxify, setConstructor} from "./helpers.js"
+
+const _constructor = Symbol();
 
 export default function ObjectModel(def, params) {
 	let model = function (obj = model.default) {
@@ -63,6 +65,8 @@ extend(ObjectModel, Model, {
 
 		return submodel
 	},
+
+	[_constructor]: o => o,
 
 	[_validate](obj, path, errors, stack){
 		if (isObject(obj)){

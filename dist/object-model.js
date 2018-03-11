@@ -1,5 +1,5 @@
-/* ObjectModel v3.2.2 - http://objectmodel.js.org
- * MIT License - Sylvain Pollet-Villard */
+// ObjectModel v3.3.0 - http://objectmodel.js.org
+// MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,187 +7,185 @@
 }(this, (function (exports) { 'use strict';
 
 const
-	_constructor = "_constructor",
-	_validate = "_validate",
+	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
+	getProto     = x => Object.getPrototypeOf(x),
 
-	ObjectProto     = Object.prototype,
-	bettertypeof    = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
-	getProto        = Object.getPrototypeOf,
-
-	has             = (o, prop) => o.hasOwnProperty(prop),
-	is              = (Constructor, obj) => obj instanceof Constructor,
-	isString        = s => typeof s === "string",
-	isFunction      = f => typeof f === "function",
-	isObject        = o => typeof o === "object",
-	isArray         = a => Array.isArray(a),
-	isPlainObject   = o => o && isObject(o) && getProto(o) === ObjectProto,
-	isModelInstance = i => i && is(Model, getProto(i).constructor),
+	has           = (o, prop) => o.hasOwnProperty(prop),
+	is            = (Constructor, obj) => obj instanceof Constructor,
+	isString      = s => typeof s === "string",
+	isFunction    = f => typeof f === "function",
+	isObject      = o => typeof o === "object",
+	isArray       = a => Array.isArray(a),
+	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
 
 	proxify      = (val, traps) => new Proxy(val, traps),
 	proxifyFn    = (fn, apply) => proxify(fn, {apply}),
-	proxifyModel = (val, model, traps) => proxify(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
+	proxifyModel = (val, model, traps) => proxify(val, Object.assign({getPrototypeOf: () => model.prototype}, traps)),
 
-	cannot   = (msg, model) => { model.errors.push({message: "cannot " + msg}); },
-	getPath  = (path, key) => path ? path + '.' + key : key,
-	mapProps = (o, fn) => Object.keys(o).map(fn);
+	mapProps = (o, fn) => Object.keys(o).map(fn),
 
-
-let merge = (target, src = {}, deep) => {
-	for (let key in src) {
-		if (deep && isPlainObject(src[key])) {
-			let o = {};
-			merge(o, target[key], deep);
-			merge(o, src[key], deep);
-			target[key] = o;
-		} else {
-			target[key] = src[key];
+	merge = (target, src = {}, deep) => {
+		for (let key in src) {
+			if (deep && isPlainObject(src[key])) {
+				let o = {};
+				merge(o, target[key], deep);
+				merge(o, src[key], deep);
+				target[key] = o;
+			} else {
+				target[key] = src[key];
+			}
 		}
-	}
-};
+	},
 
-let define = (obj, key, value, enumerable = false) => {
-	Object.defineProperty(obj, key, {value, enumerable, writable: true, configurable: true});
-};
+	define = (obj, key, value, enumerable = false) => {
+		Object.defineProperty(obj, key, {value, enumerable, writable: true, configurable: true});
+	},
 
-let setConstructor = (model, constructor) => {
-	Object.setPrototypeOf(model, constructor.prototype);
-	define(model, "constructor", constructor);
-};
+	setConstructor = (model, constructor) => {
+		Object.setPrototypeOf(model, constructor.prototype);
+		define(model, "constructor", constructor);
+	},
 
-let extend = (child, parent, props) => {
-	child.prototype = Object.assign(Object.create(parent.prototype, {
-		constructor: {
-			value: child,
-			writable: true,
-			configurable: true
+	extend = (child, parent, props) => {
+		child.prototype = Object.assign(Object.create(parent.prototype, {
+			constructor: {
+				value: child,
+				writable: true,
+				configurable: true
+			}
+		}), props);
+		Object.setPrototypeOf(child, parent);
+	};
+
+const
+	format = (obj, stack = []) => {
+		if (stack.length > 15 || stack.includes(obj)) return '...'
+		if (obj === null || obj === undefined) return String(obj)
+		if (isString(obj)) return `"${obj}"`
+		if (is(Model, obj)) return obj.toString(stack)
+
+		stack.unshift(obj);
+
+		if (isFunction(obj)) return obj.name || obj.toString()
+		if (is(Map, obj) || is(Set, obj)) return format([...obj])
+		if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
+		if (obj.toString !== Object.prototype.toString) return obj.toString()
+		if (obj && isObject(obj)) {
+			let props  = Object.keys(obj),
+			    indent = '\t'.repeat(stack.length);
+			return `{${props.map(
+				key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
+			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 		}
-	}), props);
-	Object.setPrototypeOf(child, parent);
-};
 
-let format = (obj, stack = []) => {
-	if (stack.length > 15 || stack.includes(obj)) return '...'
-	if (obj === null || obj === undefined) return String(obj)
-	if (isString(obj)) return `"${obj}"`
-	if (is(Model, obj)) return obj.toString(stack)
+		return String(obj)
+	},
 
-	stack.unshift(obj);
+	formatPath = (path, key) => path ? path + '.' + key : key;
 
-	if (isFunction(obj)) return obj.name || obj.toString()
-	if (is(Map, obj) || is(Set, obj)) return format([...obj])
-	if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
-	if (obj.toString !== Object.prototype.toString) return obj.toString()
-	if (obj && isObject(obj)) {
-		let props  = Object.keys(obj),
-		    indent = '\t'.repeat(stack.length);
-		return `{${props.map(
-			key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
-		).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
-	}
+const
+	_validate = Symbol(),
 
-	return String(obj)
-};
-
-let parseDefinition = (def) => {
-	if (isPlainObject(def)) {
-		mapProps(def, key => { def[key] = parseDefinition(def[key]); });
-	}
-	else if (!isArray(def)) return [def]
-	else if (def.length === 1) return [...def, undefined, null]
-
-	return def
-};
-
-let formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or ");
-
-let extendDefinition = (def, newParts = []) => {
-	if (!isArray(newParts)) newParts = [newParts];
-	if (newParts.length > 0) {
-		def = newParts
-			.reduce((def, ext) => def.concat(ext), isArray(def) ? def.slice() : [def]) // clone to lose ref
-			.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
-	}
-
-	return def
-};
-
-let checkDefinition = (obj, def, path, errors, stack) => {
-	let indexFound = stack.indexOf(def);
-	if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
-		return obj //if found twice in call stack, cycle detected, skip validation
-
-	obj = cast(obj, def);
-
-	if (is(Model, def)) {
-		def[_validate](obj, path, errors, stack.concat(def));
-	}
-	else if (isPlainObject(def)) {
-		mapProps(def, key => {
-			checkDefinition(obj ? obj[key] : undefined, def[key], getPath(path, key), errors, stack);
-		});
-	}
-	else {
-		let pdef = parseDefinition(def);
-		if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
-			return obj
-
-		stackError(errors, def, obj, path);
-	}
-
-	return obj
-};
-
-let checkDefinitionPart = (obj, def, path, stack) => {
-	if (obj == null) return obj === def
-	if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
-		let errors = [];
-		checkDefinition(obj, def, path, errors, stack);
-		return !errors.length
-	}
-	if (is(RegExp, def)) return def.test(obj)
-	if (def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
-	return obj === def
-		|| (isFunction(def) && is(def, obj))
-		|| obj.constructor === def
-};
-
-let checkAssertions = (obj, model, path, errors = model.errors) => {
-	for (let assertion of model.assertions) {
-		let result;
-		try {
-			result = assertion.call(model, obj);
-		} catch (err) {
-			result = err;
+	parseDefinition = (def) => {
+		if (isPlainObject(def)) {
+			mapProps(def, key => { def[key] = parseDefinition(def[key]); });
 		}
-		if (result !== true) {
-			let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-				`assertion "${assertion.description}" returned ${format(assertionResult)} `
-				+`for ${path ? path+" =" : "value"} ${format(value)}`;
-			stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
+		else if (!isArray(def)) return [def]
+		else if (def.length === 1) return [...def, undefined, null]
+
+		return def
+	},
+
+	formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or "),
+
+	extendDefinition = (def, newParts = []) => {
+		if (!isArray(newParts)) newParts = [newParts];
+		if (newParts.length > 0) {
+			def = newParts
+				.reduce((def, ext) => def.concat(ext), isArray(def) ? def.slice() : [def]) // clone to lose ref
+				.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
 		}
-	}
-};
 
-let cast = (obj, defNode = []) => {
-	if (!obj || isPlainObject(defNode) || isModelInstance(obj))
-		return obj // no value or not leaf or already a model instance
+		return def
+	},
 
-	let def = parseDefinition(defNode),
-	    suitableModels = [];
+	checkDefinition = (obj, def, path, errors, stack) => {
+		let indexFound = stack.indexOf(def);
+		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
+			return obj //if found twice in call stack, cycle detected, skip validation
 
-	for (let part of def) {
-		if (is(Model, part) && part.test(obj))
-			suitableModels.push(part);
-	}
+		obj = cast(obj, def);
 
-	if (suitableModels.length === 1)
-		return suitableModels[0](obj) // automatically cast to suitable model when explicit
+		if (is(Model, def)) {
+			def[_validate](obj, path, errors, stack.concat(def));
+		}
+		else if (isPlainObject(def)) {
+			mapProps(def, key => {
+				checkDefinition(obj ? obj[key] : undefined, def[key], formatPath(path, key), errors, stack);
+			});
+		}
+		else {
+			let pdef = parseDefinition(def);
+			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
+				return obj
 
-	if (suitableModels.length > 1)
-		console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
+			stackError(errors, def, obj, path);
+		}
 
-	return obj
-};
+		return obj
+	},
+
+	checkDefinitionPart = (obj, def, path, stack) => {
+		if (obj == null) return obj === def
+		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
+			let errors = [];
+			checkDefinition(obj, def, path, errors, stack);
+			return !errors.length
+		}
+		if (is(RegExp, def)) return def.test(obj)
+		if (def === Number || def === Date) return obj.constructor === def && !isNaN(obj)
+		return obj === def
+			|| (isFunction(def) && is(def, obj))
+			|| obj.constructor === def
+	},
+
+	checkAssertions = (obj, model, path, errors = model.errors) => {
+		for (let assertion of model.assertions) {
+			let result;
+			try {
+				result = assertion.call(model, obj);
+			} catch (err) {
+				result = err;
+			}
+			if (result !== true) {
+				let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
+					`assertion "${assertion.description}" returned ${format(assertionResult)} `
+					+`for ${path ? path+" =" : "value"} ${format(value)}`;
+				stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
+			}
+		}
+	},
+
+	cast = (obj, defNode = []) => {
+		if (!obj || isPlainObject(defNode) || isModelInstance(obj))
+			return obj // no value or not leaf or already a model instance
+
+		let def = parseDefinition(defNode),
+		    suitableModels = [];
+
+		for (let part of def) {
+			if (is(Model, part) && part.test(obj))
+				suitableModels.push(part);
+		}
+
+		if (suitableModels.length === 1)
+			return suitableModels[0](obj) // automatically cast to suitable model when explicit
+
+		if (suitableModels.length > 1)
+			console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
+
+		return obj
+	};
 
 function BasicModel(def) {
 	let model = function (val = model.default) {
@@ -234,8 +232,6 @@ Object.assign(Model.prototype, {
 		this.default = val;
 		return this
 	},
-
-	[_constructor]: o => o,
 
 	[_validate](obj, path, errors, stack){
 		checkDefinition(obj, this.definition, path, errors, stack);
@@ -308,6 +304,10 @@ let unstackErrors = (model, errorCollector = model.errorCollector) => {
 	return nbErrors
 };
 
+let isModelInstance = i => i && is(Model, getProto(i).constructor);
+
+const _constructor = Symbol();
+
 function ObjectModel(def, params) {
 	let model = function (obj = model.default) {
 		let instance = this;
@@ -369,6 +369,8 @@ extend(ObjectModel, Model, {
 		return submodel
 	},
 
+	[_constructor]: o => o,
+
 	[_validate](obj, path, errors, stack){
 		if (isObject(obj)){
 			let def = this.definition;
@@ -381,15 +383,19 @@ extend(ObjectModel, Model, {
 	}
 });
 
+let cannot = (msg, model) => {
+	model.errors.push({ message: "cannot " + msg });
+};
+
 let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
 
-	getPrototypeOf: () => path ? ObjectProto : getProto(obj),
+	getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 	get(o, key) {
 		if (!isString(key))
 			return Reflect.get(o, key)
 
-		let newPath = getPath(path, key),
+		let newPath = formatPath(path, key),
 		    defPart = def[key];
 
 		if (key in def && model.conventionForPrivate(key)) {
@@ -413,9 +419,7 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	},
 
 	set(o, key, val) {
-		return controlMutation(model, def, path, o, key, (newPath) => {
-			Reflect.set(o, key, getProxy(model, val, def[key], newPath));
-		})
+		return controlMutation(model, def, path, o, key, (newPath) => Reflect.set(o, key, getProxy(model, val, def[key], newPath)))
 	},
 
 	deleteProperty(o, key) {
@@ -445,17 +449,8 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	}
 });
 
-let checkUndeclaredProps = (obj, def, errors, path) => {
-	mapProps(obj, key => {
-		let val = obj[key],
-		    subpath = getPath(path, key);
-		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
-		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath);
-	});
-};
-
 let controlMutation = (model, def, path, o, key, applyMutation) => {
-	let newPath       = getPath(path, key),
+	let newPath       = formatPath(path, key),
 	    isPrivate     = model.conventionForPrivate(key),
 	    isConstant    = model.conventionForConstant(key),
 	    isOwnProperty = has(o, key),
@@ -481,6 +476,15 @@ let controlMutation = (model, def, path, o, key, applyMutation) => {
 	}
 
 	return !nbErrors
+};
+
+let checkUndeclaredProps = (obj, def, errors, path) => {
+	mapProps(obj, key => {
+		let val = obj[key],
+		    subpath = formatPath(path, key);
+		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
+		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath);
+	});
 };
 
 let rejectUndeclaredProp = (path, received, errors) => {

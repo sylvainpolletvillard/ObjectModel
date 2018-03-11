@@ -1,10 +1,6 @@
 export const
-	_constructor = "_constructor",
-	_validate    = "_validate",
-
-	ObjectProto  = Object.prototype,
-	bettertypeof = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
-	getProto     = Object.getPrototypeOf,
+	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
+	getProto     = x => Object.getPrototypeOf(x),
 
 	has           = (o, prop) => o.hasOwnProperty(prop),
 	is            = (Constructor, obj) => obj instanceof Constructor,
@@ -12,17 +8,13 @@ export const
 	isFunction    = f => typeof f === "function",
 	isObject      = o => typeof o === "object",
 	isArray       = a => Array.isArray(a),
-	isPlainObject = o => o && isObject(o) && getProto(o) === ObjectProto,
+	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
 
 	proxify      = (val, traps) => new Proxy(val, traps),
 	proxifyFn    = (fn, apply) => proxify(fn, {apply}),
 	proxifyModel = (val, model, traps) => proxify(val, Object.assign({getPrototypeOf: () => model.prototype}, traps)),
 
-	getPath  = (path, key) => path ? path + '.' + key : key,
 	mapProps = (o, fn) => Object.keys(o).map(fn),
-	cannot   = (msg, model) => {
-		model.errors.push({ message: "cannot " + msg })
-	},
 
 	merge = (target, src = {}, deep) => {
 		for (let key in src) {

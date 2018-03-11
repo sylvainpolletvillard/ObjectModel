@@ -1,7 +1,6 @@
-import {_validate, getPath, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
-import {format} from "./formatter.js"
-
-import {isModelInstance, Model, stackError} from "./model.js"
+import {is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
+import {format, formatPath} from "./formatter.js"
+import {_validate, isModelInstance, Model, stackError} from "./model.js"
 
 export let parseDefinition = (def) => {
 	if (isPlainObject(def)) {
@@ -38,7 +37,7 @@ export let checkDefinition = (obj, def, path, errors, stack) => {
 	}
 	else if (isPlainObject(def)) {
 		mapProps(def, key => {
-			checkDefinition(obj ? obj[key] : undefined, def[key], getPath(path, key), errors, stack)
+			checkDefinition(obj ? obj[key] : undefined, def[key], formatPath(path, key), errors, stack)
 		})
 	}
 	else {

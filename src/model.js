@@ -1,8 +1,12 @@
-import {_constructor, _validate, bettertypeof, define, extend, getProto, is, isArray, isPlainObject} from "./helpers.js"
+import {bettertypeof, define, extend, getProto, is, isArray, isPlainObject} from "./helpers.js"
 import {format} from "./formatter.js"
 import {checkAssertions, checkDefinition, formatDefinition} from "./definition.js"
 import BasicModel from "./basic-model.js"
 import ObjectModel from "./object-model.js"
+
+export const
+	_constructor = Symbol(),
+	_validate    = Symbol()
 
 export function Model(def, params) {
 	return isPlainObject(def) ? new ObjectModel(def, params) : new BasicModel(def)

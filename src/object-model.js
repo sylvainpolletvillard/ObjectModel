@@ -1,25 +1,7 @@
-import {extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model.js"
+import {_constructor, _validate, extendModel, initModel, isModelInstance, Model, stackError, unstackErrors} from "./model.js"
 import {cast, checkAssertions, checkDefinition} from "./definition.js"
-import {format} from "./formatter.js"
-import {
-	_constructor,
-	_validate,
-	cannot,
-	extend,
-	getPath,
-	getProto,
-	has,
-	is,
-	isFunction,
-	isObject,
-	isPlainObject,
-	isString,
-	mapProps,
-	merge,
-	ObjectProto,
-	proxify,
-	setConstructor
-} from "./helpers.js"
+import {format, formatPath} from "./formatter.js"
+import {extend, getProto, has, is, isFunction, isObject, isPlainObject, isString, mapProps, merge, proxify, setConstructor} from "./helpers.js"
 
 export default function ObjectModel(def, params) {
 	let model = function (obj = model.default) {
@@ -94,15 +76,19 @@ extend(ObjectModel, Model, {
 	}
 })
 
+let cannot = (msg, model) => {
+	model.errors.push({ message: "cannot " + msg })
+}
+
 let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
 
-	getPrototypeOf: () => path ? ObjectProto : getProto(obj),
+	getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 	get(o, key) {
 		if (!isString(key))
 			return Reflect.get(o, key)
 
-		let newPath = getPath(path, key),
+		let newPath = formatPath(path, key),
 		    defPart = def[key];
 
 		if (key in def && model.conventionForPrivate(key)) {
@@ -157,7 +143,7 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 })
 
 let controlMutation = (model, def, path, o, key, applyMutation) => {
-	let newPath       = getPath(path, key),
+	let newPath       = formatPath(path, key),
 	    isPrivate     = model.conventionForPrivate(key),
 	    isConstant    = model.conventionForConstant(key),
 	    isOwnProperty = has(o, key),
@@ -188,7 +174,7 @@ let controlMutation = (model, def, path, o, key, applyMutation) => {
 let checkUndeclaredProps = (obj, def, errors, path) => {
 	mapProps(obj, key => {
 		let val = obj[key],
-		    subpath = getPath(path, key)
+		    subpath = formatPath(path, key)
 		if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
 		else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
 	})

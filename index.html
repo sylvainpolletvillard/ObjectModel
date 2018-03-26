@@ -88,7 +88,7 @@
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
 
-			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> or <a href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from <code>localStorage</code>, external libraries...</p>
+			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> or <a href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from local storages, external libraries...</p>
 
 			<p>By leveraging <strong>ES6 Proxies</strong>, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
@@ -1127,6 +1127,23 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</details>
 
 		<details>
+			<summary>How can I get the model from an instance ?</summary>
+			<div class="grid doc-code">
+				<div class="doc">
+					<p>With the <code>constructor</code> property. If this property is used in your model, you can also	retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
+				</div>
+				<div class="panel">
+					<pre><code class="language-javascript">const User = ObjectModel({ name: String }),
+	joe = User({ name: "Joe" });
+
+const modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
+// modelOfJoe === User
+// modelOfJoe.definition.name === String</code></pre>
+				</div>
+			</div>
+		</details>
+
+		<details>
 			<summary>How do I declare a constructor function to be called on instanciation before validating my model ?</summary>
 			<div class="grid doc-code">
 				<div class="doc">
@@ -1145,23 +1162,6 @@ User.create = function(properties){
 };
 
 const joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
-				</div>
-			</div>
-		</details>
-
-		<details>
-			<summary>How can I get the model from an instance ?</summary>
-			<div class="grid doc-code">
-				<div class="doc">
-					<p>With the <code>constructor</code> property. If this property is used in your model, you can also	retrieve it with <code>Object.getPrototypeOf(instance).constructor</code>. This is useful for retrieving the type of a property for example.</p>
-				</div>
-				<div class="panel">
-					<pre><code class="language-javascript">const User = ObjectModel({ name: String }),
-	joe = User({ name: "Joe" });
-
-const modelOfJoe = joe.constructor // or Object.getPrototypeOf(joe).constructor;
-// modelOfJoe === User
-// modelOfJoe.definition.name === String</code></pre>
 				</div>
 			</div>
 		</details>
@@ -1242,6 +1242,13 @@ console.log(
 );</code></pre>
 				</div>
 			</div>
+		</details>
+
+		<details>
+			<summary>Is it possible to convert TypeScript/Flow annotations to Models ?</summary>
+			<p>It may be possible with Babel, but ObjectModel is not the best option for this purpose.</p>
+			<p>Models have been designed to use all the advantages of runtime validation, such as complex assertions, mixed value/type checking or custom error collectors. Compared to static type systems, the feature set is really different. I suggest you to combine the strengths of static and dynamic type-checking: use static annotations in your business logic layer, and Models at your API boundaries to validate user input, network responses or serialized data. You can also use both at the same place as demonstrated in the introduction video.</p>
+			<p>If you are looking for a runtime type-checking solution that acts as a fully transparent layer over an existing static type system, you should try <a href="https://codemix.github.io/flow-runtime/" target="_blank">flow-runtime</a> instead.</p>
 		</details>
 
 	</section>

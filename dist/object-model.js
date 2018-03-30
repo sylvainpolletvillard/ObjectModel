@@ -1,4 +1,4 @@
-// ObjectModel v3.3.0 - http://objectmodel.js.org
+// ObjectModel v3.4.0 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -306,6 +306,8 @@ let unstackErrors = (model, errorCollector = model.errorCollector) => {
 
 let isModelInstance = i => i && is(Model, getProto(i).constructor);
 
+Model.Name = Symbol();
+
 const _constructor = Symbol();
 
 function ObjectModel(def, params) {
@@ -392,6 +394,9 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 	get(o, key) {
+		if(key === Model.Name)
+			return def[Model.Name]
+
 		if (!isString(key))
 			return Reflect.get(o, key)
 
@@ -601,7 +606,7 @@ let ModelInstanceFormatter = {
 
 		let model = getModel(x);
 		if (is(Model, model)) {
-			return span(x.constructor.name, styles.model)
+			return span(x[Model.Name] || x.constructor.name, styles.model)
 		}
 
 		return null;

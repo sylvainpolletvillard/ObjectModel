@@ -108,7 +108,7 @@ let ModelInstanceFormatter = {
 
 		let model = getModel(x);
 		if (is(Model, model)) {
-			return span(x.constructor.name, styles.model)
+			return span(x[Model.Name] || x.constructor.name, styles.model)
 		}
 
 		return null;

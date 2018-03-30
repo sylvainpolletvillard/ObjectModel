@@ -89,6 +89,9 @@ let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) :
 	getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 	get(o, key) {
+		if(key === Model.Name)
+			return def[Model.Name]
+
 		if (!isString(key))
 			return Reflect.get(o, key)
 

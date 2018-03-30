@@ -102,4 +102,6 @@ export let unstackErrors = (model, errorCollector = model.errorCollector) => {
 
 export let isModelInstance = i => i && is(Model, getProto(i).constructor)
 
+Model.Name = Symbol();
+
 export default Model

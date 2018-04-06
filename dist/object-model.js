@@ -1,4 +1,4 @@
-// ObjectModel v3.4.0 - http://objectmodel.js.org
+// ObjectModel v3.4.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :

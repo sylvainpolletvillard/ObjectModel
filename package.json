@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",

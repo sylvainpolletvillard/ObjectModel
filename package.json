@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
@@ -22,11 +22,11 @@
     "test": "qunit test/index.js"
   },
   "devDependencies": {
-    "filesize": "^3.6.0",
+    "filesize": "^3.6.1",
     "gzip-size": "^4.1.0",
     "npm-run-all": "^4.1.2",
-    "qunit": "^2.5.1",
-    "rollup": "^0.56.5",
+    "qunit": "^2.6.0",
+    "rollup": "^0.57.1",
     "rollup-plugin-uglify": "^3.0.0",
     "rollup-watch": "^4.0.0"
   },

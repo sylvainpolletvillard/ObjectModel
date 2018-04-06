@@ -11,9 +11,9 @@ QUnit.test("Generic models constructor && proto", function (assert) {
 	assert.ok(Model() instanceof BasicModel, "test model constructor 4/4");
 });
 
-QUnit.test("Model.Name", function(assert) {
-	assert.equal(typeof Model.Name, "symbol", "test Model.Name 1/2");
-	let NamedModel = Model({ [Model.Name]: "Test" });
+QUnit.test("Model names", function(assert) {
+	let NamedModel = Model({}).as("Test");
+	assert.equal(NamedModel.name, "Test", "test model name 1/2")
 	let namedInstance = NamedModel({});
-	assert.equal(namedInstance[Model.Name], "Test", "test Model.Name 2/2");
+	assert.equal(Object.getPrototypeOf(namedInstance).constructor.name, "Test", "test model name 2/2");
 })

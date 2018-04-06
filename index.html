@@ -121,8 +121,8 @@
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
 				<li>all in
-					<strong class="size-min">9.93 KB</strong> minified,
-					<strong class="size-gzip">3.89 KB</strong> gzipped,
+					<strong class="size-min">9.88 KB</strong> minified,
+					<strong class="size-gzip">3.87 KB</strong> gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -135,8 +135,8 @@
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>Minified bundle (<strong class="size-min">9.93 KB</strong>,
-					<strong class="size-gzip">3.89 KB</strong> gzipped) :
+				<li>Minified bundle (<strong class="size-min">9.88 KB</strong>,
+					<strong class="size-gzip">3.87 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
@@ -1004,16 +1004,9 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		<pre><code class="language-javascript">import * from "objectmodel/src/devtool-formatter"</code></pre>
 
 		<h3>Specifying the Model Name <small>(since v3.4)</small></h3>
-		<p>A variable name is irrelevant to name a Model, because several variables with different names can point to the same Model reference. To specify a unique model name for debugging purposes, you can use the <code>[Model.Name]</code> property in the model definition like this :</p>
-		<pre><code class="language-javascript">const AnotherReferenceToOrderModel = new ObjectModel({
-	[Model.Name]: "Order",
-	product: {
-		name: String,
-		quantity: Number,
-	},
-	orderDate: Date
-});
-</code></pre>
+		<p>A variable name is irrelevant to name a Model, because several variables with different names can point to the same Model reference. To specify a unique model name for debugging purposes, you can use the <code>as()</code> method like this :</p>
+		<pre><code class="language-javascript">const AnotherRefToOrder = Order.as("Order");
+console.log(AnotherRefToOrder.name) // "Order"</code></pre>
 	</section>
 
 	<hr>

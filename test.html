@@ -1,0 +1,88 @@
+<script>
+	// BANNIR
+	// - new
+	// - instanceof
+	// - class
+
+	// le prototype de base de tout objet est Object.prototype
+	//   le prototype Car est un objet, on le crée via Object.create
+	//  et on lui donne les propriétés qu'auront toutes les voitures
+
+	// problème: pas de nom pour le prototype en debug, pas de trace de Car dans l'objet
+	const styles = {
+		      list: `list-style-type: none; padding: 0; margin: 0;`,
+		      listItem: `padding: 0 0 0 1em;`,
+		      name: `color: #43a047; font-style: italic`,
+		      proto: `color: #4347a0; font-style: italic`,
+		      function: `color: #4271ae`,
+		      string: `color: #C41A16`,
+		      number: `color: #1C00CF`,
+		      boolean: `color: #AA0D91`,
+		      property: `color: #881391`,
+		      null: `color: #808080`
+	      },
+
+	      span  = (value, style) => ["span", {style}, value],
+
+	      format = (x, config) => {
+		      if (x === null || x === undefined) return span(String(x), styles.null);
+		      if (typeof x === "boolean") return span(x, styles.boolean);
+		      if (typeof x === "number") return span(x, styles.number);
+		      if (typeof x === "string") return span(`"${x}"`, styles.string);
+		      if (typeof x === "function") return span(x.name || x.toString(), styles.function);
+		      return x ? ['object', {object: x, config}] : null
+	      },
+
+	      formatBody = (o, config) => {
+		      return [ 'ol', {style: styles.list}, '{', ...Object.keys(o).map(prop => {
+			      return ['li', {style: styles.listItem}, span(prop, styles.property), ': ', format(o[prop], config)]
+		      }),
+			      ['li', {style: styles.listItem}, span("[Prototype]", styles.proto), ': ', format(Object.getPrototypeOf(o), config)],
+			      '}'];
+	      }
+
+	const Name = Symbol("Name");
+	if (typeof window !== "undefined") {
+		const NamedObjectFormatter = {
+			header(o) {
+				if (o && o[Name]) return span(o[Name], styles.name)
+			},
+			hasBody(o) { return o instanceof Object },
+			body(o) { return formatBody(o, {expanded: true}) }
+		};
+		window.devtoolsFormatters = (window.devtoolsFormatters || []).concat(NamedObjectFormatter);
+	}
+
+	const Car = {
+		[Name]: "Car",
+		wheels: 4,
+		speed: 0,
+		drive(){
+			this.speed = 120;
+		},
+		stop(){
+			this.speed = 0;
+		}
+	};
+
+	const New = proto => props => Object.assign(Object.create(proto), props)
+
+	// on crée un sous-prototype à partir du prototype Car
+	const Yaris = New(Car)({
+		[Name]: "Yaris",
+		constructor: "Toyota",
+		model: "Yaris"
+	});
+
+	const maVoiture = New(Yaris)({ owner: "SylvainPV" })
+
+	//Object.getPrototypeOf(maVoiture) === Yaris; // true, contrairement à new
+
+	// l'opérateur instanceof est à jeter avec new
+	//golf instanceof Car // TypeError: Expecting a function in instanceof check, but got #<Object> ;
+
+	// à la place :
+	Car.isPrototypeOf(maVoiture) // true
+
+
+</script>

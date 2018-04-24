@@ -1,6 +1,7 @@
 import {is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 import {format, formatPath} from "./formatter.js"
 import {isModelInstance, Model, stackError} from "./model.js"
+import ObjectModel from "./object-model.js"
 
 export const
 	_validate = Symbol(),
@@ -97,8 +98,11 @@ export const
 				suitableModels.push(part)
 		}
 
-		if (suitableModels.length === 1)
-			return suitableModels[0](obj) // automatically cast to suitable model when explicit
+		if (suitableModels.length === 1){
+			// automatically cast to suitable model when explicit (duck typing)
+			let duck = suitableModels[0];
+			return duck instanceof ObjectModel ? new duck(obj) : duck(obj)
+		}
 
 		if (suitableModels.length > 1)
 			console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`)

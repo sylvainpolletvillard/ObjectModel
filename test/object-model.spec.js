@@ -1094,10 +1094,24 @@ QUnit.test("class constructors", function (assert) {
 	assert.ok(user instanceof Person,  "user instanceof Person")
 	assert.ok(user instanceof PersonModel,  "user instanceof PersonModel")
 	assert.equal(user.fullName, "John Smith [ADMIN]", "check es6 class constructor with extended class")
-	assert.equal(Object.keys(User.definition).sort().join(","), "firstName,fullName,lastName,role")
-	assert.equal(Object.keys(user).sort().join(","), "firstName,fullName,lastName,role")
+	assert.equal(Object.keys(User.definition).sort().join(","), "firstName,fullName,lastName,role", "check definition keys")
+	assert.equal(Object.keys(user).sort().join(","), "firstName,fullName,lastName,role", "check instance keys")
 	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
 
+	const Lovers = class Lovers extends ObjectModel({
+		husband: Person,
+		wife: Person,
+	}) {};
+
+	const joe = { firstName: 'Joe', lastName: "Smith" };
+	const ann = new Person({ firstName: "Ann", lastName: "Smith" });
+
+	const couple = new Lovers({
+		husband: joe, // object duck typed
+		wife: ann, // object model
+	});
+
+	assert.ok(couple.husband instanceof Person, "duck tying works with class-based models");
 })
 
 QUnit.test("Sealed models", function (assert) {

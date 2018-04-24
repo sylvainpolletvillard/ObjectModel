@@ -1,4 +1,4 @@
-// ObjectModel v3.4.2 - http://objectmodel.js.org
+// ObjectModel v3.4.3 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -178,8 +178,11 @@
 					suitableModels.push(part);
 			}
 
-			if (suitableModels.length === 1)
-				return suitableModels[0](obj) // automatically cast to suitable model when explicit
+			if (suitableModels.length === 1){
+				// automatically cast to suitable model when explicit (duck typing)
+				let duck = suitableModels[0];
+				return duck instanceof ObjectModel ? new duck(obj) : duck(obj)
+			}
 
 			if (suitableModels.length > 1)
 				console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);

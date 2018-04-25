@@ -1,5 +1,4 @@
-import {extendModel, initModel, Model, stackError} from "./model.js"
-import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition.js"
+import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError} from "./object-model.js"
 import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let SET_MUTATORS = ["add", "delete", "clear"]

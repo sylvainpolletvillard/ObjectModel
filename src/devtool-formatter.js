@@ -1,5 +1,4 @@
-import ObjectModel from "./object-model.js"
-import Model from "./model.js"
+import {Model, ObjectModel} from "./object-model.js"
 import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 
 let styles = {

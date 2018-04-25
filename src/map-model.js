@@ -1,6 +1,4 @@
-import {extendModel, initModel, Model, stackError} from "./model.js"
-import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, formatDefinition} from "./definition.js"
-import {format} from "./formatter.js"
+import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError} from "./object-model.js";
 import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let MAP_MUTATORS = ["set", "delete", "clear"]

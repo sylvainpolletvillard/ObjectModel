@@ -33,15 +33,12 @@
 .opacity( @op:100 ) {
   filter: alpha(opacity=@op);
   -moz-opacity: @op/100;
-  -webkit-opacity: @op/100;
-  -khtml-opacity: @op/100;
   opacity: @op/100;
 }
 
 .transition (@transition: all 1s ease) {
   -webkit-transition: @transition;
   -moz-transition:    @transition;
-  -ms-transition:     @transition;
   -o-transition:      @transition;
   transition:      @transition;
 }

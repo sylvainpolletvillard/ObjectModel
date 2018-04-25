@@ -1,4 +1,4 @@
-// ObjectModel v3.4.3 - http://objectmodel.js.org
+// ObjectModel v3.4.4 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -58,33 +58,44 @@
 		};
 
 	const
-		format = (obj, stack = []) => {
-			if (stack.length > 15 || stack.includes(obj)) return '...'
-			if (obj === null || obj === undefined) return String(obj)
-			if (isString(obj)) return `"${obj}"`
-			if (is(Model, obj)) return obj.toString(stack)
+		_constructor = Symbol(),
+		_validate = Symbol(),
 
-			stack.unshift(obj);
-
-			if (isFunction(obj)) return obj.name || obj.toString()
-			if (is(Map, obj) || is(Set, obj)) return format([...obj])
-			if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
-			if (obj.toString !== Object.prototype.toString) return obj.toString()
-			if (obj && isObject(obj)) {
-				let props  = Object.keys(obj),
-				    indent = '\t'.repeat(stack.length);
-				return `{${props.map(
-				key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
-			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
-			}
-
-			return String(obj)
+		initModel = (model, def) => {
+			model.definition = def;
+			model.assertions = [...model.assertions];
+			define(model, "errors", []);
+			delete model.name;
 		},
 
-		formatPath = (path, key) => path ? path + '.' + key : key;
+		extendModel = (child, parent, newProps) => {
+			extend(child, parent, newProps);
+			child.assertions.push(...parent.assertions);
+			return child
+		},
 
-	const
-		_validate = Symbol(),
+		stackError = (errors, expected, received, path, message) => {
+			errors.push({expected, received, path, message});
+		},
+
+		unstackErrors = (model, errorCollector = model.errorCollector) => {
+			let nbErrors = model.errors.length;
+			if (nbErrors > 0) {
+				let errors = model.errors.map(err => {
+					if (!err.message) {
+						let def = isArray(err.expected) ? err.expected : [err.expected];
+						err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
+							+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
+					}
+					return err
+				});
+				model.errors = [];
+				errorCollector.call(model, errors); // throw all errors collected
+			}
+			return nbErrors
+		},
+
+		isModelInstance = i => i && is(Model, getProto(i).constructor),
 
 		parseDefinition = (def) => {
 			if (isPlainObject(def)) {
@@ -166,6 +177,72 @@
 			}
 		},
 
+		format = (obj, stack = []) => {
+			if (stack.length > 15 || stack.includes(obj)) return '...'
+			if (obj === null || obj === undefined) return String(obj)
+			if (isString(obj)) return `"${obj}"`
+			if (is(Model, obj)) return obj.toString(stack)
+
+			stack.unshift(obj);
+
+			if (isFunction(obj)) return obj.name || obj.toString()
+			if (is(Map, obj) || is(Set, obj)) return format([...obj])
+			if (isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
+			if (obj.toString !== Object.prototype.toString) return obj.toString()
+			if (obj && isObject(obj)) {
+				let props  = Object.keys(obj),
+				    indent = '\t'.repeat(stack.length);
+				return `{${props.map(
+				key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
+			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
+			}
+
+			return String(obj)
+		},
+
+		formatPath = (path, key) => path ? path + '.' + key : key,
+
+		controlMutation = (model, def, path, o, key, applyMutation) => {
+			let newPath       = formatPath(path, key),
+			    isPrivate     = model.conventionForPrivate(key),
+			    isConstant    = model.conventionForConstant(key),
+			    isOwnProperty = has(o, key),
+			    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
+
+			if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
+				cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model);
+
+			let isInDefinition = has(def, key);
+			if (isInDefinition || !model.sealed) {
+				applyMutation(newPath);
+				isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, []);
+				checkAssertions(o, model, newPath);
+			}
+			else rejectUndeclaredProp(newPath, o[key], model.errors);
+
+			let nbErrors = model.errors.length;
+			if (nbErrors) {
+				if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor);
+				else delete o[key]; // back to the initial property defined in prototype chain
+
+				unstackErrors(model);
+			}
+
+			return !nbErrors
+		},
+
+		cannot = (msg, model) => {
+			model.errors.push({ message: "cannot " + msg });
+		},
+
+		rejectUndeclaredProp = (path, received, errors) => {
+			errors.push({
+				path,
+				received,
+				message: `property ${path} is not declared in the sealed model definition`
+			});
+		},
+
 		cast = (obj, defNode = []) => {
 			if (!obj || isPlainObject(defNode) || isModelInstance(obj))
 				return obj // no value or not leaf or already a model instance
@@ -188,28 +265,81 @@
 				console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
 
 			return obj
-		};
+		},
 
-	function BasicModel(def) {
-		let model = function (val = model.default) {
-			return model.validate(val) ? val : undefined
-		};
+		checkUndeclaredProps = (obj, def, errors, path) => {
+			mapProps(obj, key => {
+				let val = obj[key],
+				    subpath = formatPath(path, key);
+				if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
+				else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath);
+			});
+		},
 
-		setConstructor(model, BasicModel);
-		initModel(model, def);
-		return model
-	}
+		getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
 
-	extend(BasicModel, Model, {
-		extend(...newParts) {
-			let child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this);
-			for (let part of newParts) {
-				if (is(BasicModel, part)) child.assertions.push(...part.assertions);
+			getPrototypeOf: () => path ? Object.prototype : getProto(obj),
+
+			get(o, key) {
+				if (!isString(key))
+					return Reflect.get(o, key)
+
+				let newPath = formatPath(path, key),
+				    defPart = def[key];
+
+				if (key in def && model.conventionForPrivate(key)) {
+					cannot(`access to private property ${newPath}`, model);
+					unstackErrors(model);
+					return
+				}
+
+				if (o[key] && has(o, key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
+					o[key] = cast(o[key], defPart); // cast nested models
+				}
+
+				if (isFunction(o[key]) && o[key].bind)
+					return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+
+				if(isPlainObject(defPart) && !o[key]){
+					o[key] = {}; // null-safe traversal
+				}
+
+				return getProxy(model, o[key], defPart, newPath)
+			},
+
+			set(o, key, val) {
+				return controlMutation(model, def, path, o, key,
+					newPath => Reflect.set(o, key, getProxy(model, val, def[key], newPath))
+				)
+			},
+
+			deleteProperty(o, key) {
+				return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
+			},
+
+			defineProperty(o, key, args){
+				return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
+			},
+
+			has(o, key){
+				return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
+			},
+
+			ownKeys(o){
+				return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
+			},
+
+			getOwnPropertyDescriptor(o, key){
+				let descriptor;
+				if (!model.conventionForPrivate(key)) {
+					descriptor = Object.getOwnPropertyDescriptor(def, key);
+					if (descriptor !== undefined) descriptor.value = o[key];
+				}
+
+				return descriptor
 			}
+		});
 
-			return child
-		}
-	});
 
 	function Model(def, params) {
 		return isPlainObject(def) ? new ObjectModel(def, params) : new BasicModel(def)
@@ -273,43 +403,28 @@
 		}
 	});
 
-	let initModel = (model, def) => {
-		model.definition = def;
-		model.assertions = [...model.assertions];
-		define(model, "errors", []);
-		delete model.name;
-	};
 
-	let extendModel = (child, parent, newProps) => {
-		extend(child, parent, newProps);
-		child.assertions.push(...parent.assertions);
-		return child
-	};
+	function BasicModel(def) {
+		let model = function (val = model.default) {
+			return model.validate(val) ? val : undefined
+		};
 
-	let stackError = (errors, expected, received, path, message) => {
-		errors.push({expected, received, path, message});
-	};
+		setConstructor(model, BasicModel);
+		initModel(model, def);
+		return model
+	}
 
-	let unstackErrors = (model, errorCollector = model.errorCollector) => {
-		let nbErrors = model.errors.length;
-		if (nbErrors > 0) {
-			let errors = model.errors.map(err => {
-				if (!err.message) {
-					let def = isArray(err.expected) ? err.expected : [err.expected];
-					err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
-						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
-				}
-				return err
-			});
-			model.errors = [];
-			errorCollector.call(model, errors); // throw all errors collected
+	extend(BasicModel, Model, {
+		extend(...newParts) {
+			let child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this);
+			for (let part of newParts) {
+				if (is(BasicModel, part)) child.assertions.push(...part.assertions);
+			}
+
+			return child
 		}
-		return nbErrors
-	};
+	});
 
-	let isModelInstance = i => i && is(Model, getProto(i).constructor);
-
-	const _constructor = Symbol();
 
 	function ObjectModel(def, params) {
 		let model = function (obj = model.default) {
@@ -385,118 +500,6 @@
 			checkAssertions(obj, this, path, errors);
 		}
 	});
-
-	let cannot = (msg, model) => {
-		model.errors.push({ message: "cannot " + msg });
-	};
-
-	let getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
-
-		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
-
-		get(o, key) {
-			if (!isString(key))
-				return Reflect.get(o, key)
-
-			let newPath = formatPath(path, key),
-			    defPart = def[key];
-
-			if (key in def && model.conventionForPrivate(key)) {
-				cannot(`access to private property ${newPath}`, model);
-				unstackErrors(model);
-				return
-			}
-
-			if (o[key] && has(o, key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
-				o[key] = cast(o[key], defPart); // cast nested models
-			}
-
-			if (isFunction(o[key]) && o[key].bind)
-				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
-
-			if(isPlainObject(defPart) && !o[key]){
-				o[key] = {}; // null-safe traversal
-			}
-
-			return getProxy(model, o[key], defPart, newPath)
-		},
-
-		set(o, key, val) {
-			return controlMutation(model, def, path, o, key, (newPath) => Reflect.set(o, key, getProxy(model, val, def[key], newPath)))
-		},
-
-		deleteProperty(o, key) {
-			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
-		},
-
-		defineProperty(o, key, args){
-			return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
-		},
-
-		has(o, key){
-			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
-		},
-
-		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
-		},
-
-		getOwnPropertyDescriptor(o, key){
-			let descriptor;
-			if (!model.conventionForPrivate(key)) {
-				descriptor = Object.getOwnPropertyDescriptor(def, key);
-				if (descriptor !== undefined) descriptor.value = o[key];
-			}
-
-			return descriptor
-		}
-	});
-
-	let controlMutation = (model, def, path, o, key, applyMutation) => {
-		let newPath       = formatPath(path, key),
-		    isPrivate     = model.conventionForPrivate(key),
-		    isConstant    = model.conventionForConstant(key),
-		    isOwnProperty = has(o, key),
-		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
-
-		if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
-			cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model);
-
-		let isInDefinition = has(def, key);
-		if (isInDefinition || !model.sealed) {
-			applyMutation(newPath);
-			isInDefinition && checkDefinition(o[key], def[key], newPath, model.errors, []);
-			checkAssertions(o, model, newPath);
-		}
-		else rejectUndeclaredProp(newPath, o[key], model.errors);
-
-		let nbErrors = model.errors.length;
-		if (nbErrors) {
-			if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor);
-			else delete o[key]; // back to the initial property defined in prototype chain
-
-			unstackErrors(model);
-		}
-
-		return !nbErrors
-	};
-
-	let checkUndeclaredProps = (obj, def, errors, path) => {
-		mapProps(obj, key => {
-			let val = obj[key],
-			    subpath = formatPath(path, key);
-			if(!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
-			else if(isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath);
-		});
-	};
-
-	let rejectUndeclaredProp = (path, received, errors) => {
-		errors.push({
-			path,
-			received,
-			message: `property ${path} is not declared in the sealed model definition`
-		});
-	};
 
 	let styles = {
 		list: `list-style-type: none; padding: 0; margin: 0;`,

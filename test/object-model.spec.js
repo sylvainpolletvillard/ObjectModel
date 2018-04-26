@@ -1112,6 +1112,8 @@ QUnit.test("class constructors", function (assert) {
 	});
 
 	assert.ok(couple.husband instanceof Person, "duck tying works with class-based models");
+
+	assert.equal(Person.test({ firstName: 0, lastName: "" }), false, `test method with class-based models`);
 })
 
 QUnit.test("Sealed models", function (assert) {

@@ -320,16 +320,21 @@ Object.assign(Model.prototype, {
 	},
 
 	test(obj){
-		let failed,
-		    initialErrorCollector = this.errorCollector
+		let model = this;
+		while(!has(model, "errorCollector")){
+			model = getProto(model)
+		}
 
-		this.errorCollector = () => {
+		let initialErrorCollector = model.errorCollector,
+		    failed;
+
+		model.errorCollector = () => {
 			failed = true
 		}
 
 		new this(obj) // may trigger this.errorCollector
 
-		this.errorCollector = initialErrorCollector
+		model.errorCollector = initialErrorCollector
 		return !failed
 	},
 

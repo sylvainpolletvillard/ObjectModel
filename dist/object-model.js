@@ -1,4 +1,4 @@
-// ObjectModel v3.4.4 - http://objectmodel.js.org
+// ObjectModel v3.4.5 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -377,16 +377,21 @@
 		},
 
 		test(obj){
-			let failed,
-			    initialErrorCollector = this.errorCollector;
+			let model = this;
+			while(!has(model, "errorCollector")){
+				model = getProto(model);
+			}
 
-			this.errorCollector = () => {
+			let initialErrorCollector = model.errorCollector,
+			    failed;
+
+			model.errorCollector = () => {
 				failed = true;
 			};
 
 			new this(obj); // may trigger this.errorCollector
 
-			this.errorCollector = initialErrorCollector;
+			model.errorCollector = initialErrorCollector;
 			return !failed
 		},
 

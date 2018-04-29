@@ -1000,13 +1000,13 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 		</figure>
 		</div>
 
-		<p>The formatters for ObjectModel are <strong>included by default in the library bundle</strong>. If you are using modules, import them manually with :</p>
+		<p>The formatters for ObjectModel are <strong>included by default in the unminified bundle (<code>dist/object-model.js</code>)</strong>. If you are using modules, import them manually with :</p>
 		<pre><code class="language-javascript">import * from "objectmodel/src/devtool-formatter"</code></pre>
 
 		<h3>Specifying the Model Name <small>(since v3.4)</small></h3>
 		<p>A variable name is irrelevant to name a Model, because several variables with different names can point to the same Model reference. To specify a unique model name for debugging purposes, you can use the <code>as()</code> method like this :</p>
-		<pre><code class="language-javascript">const AnotherRefToOrder = Order.as("Order");
-console.log(AnotherRefToOrder.name) // "Order"</code></pre>
+		<pre><code class="language-javascript">const Integer = Model(Number).assert(Number.isInteger).as("Integer");
+console.log(Integer.name) // "Integer"</code></pre>
 	</section>
 
 	<hr>

@@ -1,4 +1,4 @@
-/* global QUnit SetModel ObjectModel */
+/* global QUnit, SetModel, ObjectModel */
 
 QUnit.module("Set Models");
 

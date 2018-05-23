@@ -1,4 +1,4 @@
-/* global QUnit BasicModel */
+/* global QUnit, BasicModel */
 
 QUnit.module("Basic Models");
 

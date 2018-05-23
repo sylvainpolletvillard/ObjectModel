@@ -1,4 +1,4 @@
-/* global QUnit ArrayModel ObjectModel */
+/* global QUnit, ArrayModel, ObjectModel */
 
 QUnit.module("Array Models");
 

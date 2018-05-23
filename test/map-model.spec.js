@@ -1,4 +1,4 @@
-/* global QUnit MapModel ObjectModel */
+/* global QUnit, MapModel, ObjectModel */
 
 QUnit.module("Map Models");
 

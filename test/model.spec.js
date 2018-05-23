@@ -1,4 +1,4 @@
-/* global QUnit Model BasicModel ObjectModel */
+/* global QUnit, Model, BasicModel, ObjectModel */
 
 QUnit.module("Generic Model");
 

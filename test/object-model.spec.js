@@ -154,6 +154,16 @@ QUnit.test("behaviour for properties", function (assert) {
 			&& /birth/.test(err.toString())
 			&& /city/.test(err.toString())
 	}, "check that errors are correctly stacked");
+
+	const A = ObjectModel({
+		id: [Number]
+	}).defaults({
+		setId(id){ this.id = id; }
+	})
+
+	let a = new A({})
+	assert.throws(() => { a.setId("32") }, /TypeError/, "methods should trigger type-checking");
+
 });
 
 QUnit.test("edge cases of constructors", function (assert) {
@@ -381,6 +391,25 @@ QUnit.test("Private and constant properties", function (assert) {
 	m.incrementPrivate();
 	assert.equal(m.getPrivate(), 43, "can access and mutate private props through methods")
 
+	const A = ObjectModel({
+		_id: [Number]
+	}).defaults({
+		getId(){ return this._id },
+		setId(id){ this._id = id; }
+	})
+
+	let a = new A({})
+	a.setId(32);
+	assert.equal(a.getId(), 32, "methods should be able to access and modify private vars");
+
+	const B = ObjectModel({
+		ID: [Number]
+	}).defaults({
+		setId(id){ this.ID = id; }
+	})
+
+	let b = new B({ ID: 0 })
+	assert.throws(() => { b.setId(32) }, /TypeError: cannot modify constant ID/, "methods should not be able to modify constants");
 });
 
 QUnit.test("Non-enumerable and non-writable properties with overridden convention", function (assert) {
@@ -1114,6 +1143,15 @@ QUnit.test("class constructors", function (assert) {
 	assert.ok(couple.husband instanceof Person, "duck tying works with class-based models");
 
 	assert.equal(Person.test({ firstName: 0, lastName: "" }), false, `test method with class-based models`);
+
+	class Request extends ObjectModel({ id: [Number] }){
+		setId(id){
+			this.id = id;
+		}
+	}
+
+	let x = new Request({});
+	assert.throws(function(){ x.setId("32") }, /TypeError/, "class setters methods should provide type checking");
 })
 
 QUnit.test("Sealed models", function (assert) {

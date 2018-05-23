@@ -145,14 +145,14 @@ export const
 
 	formatPath = (path, key) => path ? path + '.' + key : key,
 
-	controlMutation = (model, def, path, o, key, applyMutation) => {
+	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		let newPath       = formatPath(path, key),
 		    isPrivate     = model.conventionForPrivate(key),
 		    isConstant    = model.conventionForConstant(key),
 		    isOwnProperty = has(o, key),
 		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-		if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
+		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model)
 
 		let isInDefinition = has(def, key);
@@ -219,7 +219,7 @@ export const
 		})
 	},
 
-	getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
+	getProxy = (model, obj, def, path, privateAccess) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
 
 		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
@@ -230,7 +230,7 @@ export const
 			let newPath = formatPath(path, key),
 			    defPart = def[key];
 
-			if (key in def && model.conventionForPrivate(key)) {
+			if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 				cannot(`access to private property ${newPath}`, model)
 				unstackErrors(model)
 				return
@@ -240,28 +240,29 @@ export const
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
-			if (isFunction(o[key]) && o[key].bind)
-				return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+			if (isFunction(o[key])){
+				privateAccess = true;
+			}
 
 			if(isPlainObject(defPart) && !o[key]){
 				o[key] = {} // null-safe traversal
 			}
 
-			return getProxy(model, o[key], defPart, newPath)
+			return getProxy(model, o[key], defPart, newPath, privateAccess)
 		},
 
 		set(o, key, val) {
-			return controlMutation(model, def, path, o, key,
+			return controlMutation(model, def, path, o, key, privateAccess,
 				newPath => Reflect.set(o, key, getProxy(model, val, def[key], newPath))
 			)
 		},
 
 		deleteProperty(o, key) {
-			return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
+			return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.deleteProperty(o, key))
 		},
 
 		defineProperty(o, key, args){
-			return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
+			return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.defineProperty(o, key, args))
 		},
 
 		has(o, key){

@@ -1,4 +1,4 @@
-import uglify from "rollup-plugin-uglify"
+import { terser } from "rollup-plugin-terser";
 
 const isProduction = process.env.BUILD === 'production';
 
@@ -11,5 +11,5 @@ export default {
 		sourcemap: true,
 		extend: true
 	},
-	plugins: isProduction ? [uglify({ ecma: 6 })] : []
+	plugins: isProduction ? [terser()] : []
 };

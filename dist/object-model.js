@@ -1,4 +1,4 @@
-// ObjectModel v3.4.5 - http://objectmodel.js.org
+// ObjectModel v3.4.6 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -202,14 +202,14 @@
 
 		formatPath = (path, key) => path ? path + '.' + key : key,
 
-		controlMutation = (model, def, path, o, key, applyMutation) => {
+		controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 			let newPath       = formatPath(path, key),
 			    isPrivate     = model.conventionForPrivate(key),
 			    isConstant    = model.conventionForConstant(key),
 			    isOwnProperty = has(o, key),
 			    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
-			if (key in def && (isPrivate || (isConstant && o[key] !== undefined)))
+			if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 				cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model);
 
 			let isInDefinition = has(def, key);
@@ -276,7 +276,7 @@
 			});
 		},
 
-		getProxy = (model, obj, def, path) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
+		getProxy = (model, obj, def, path, privateAccess) => !isPlainObject(def) ? cast(obj, def) : proxify(obj, {
 
 			getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
@@ -287,7 +287,7 @@
 				let newPath = formatPath(path, key),
 				    defPart = def[key];
 
-				if (key in def && model.conventionForPrivate(key)) {
+				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model);
 					unstackErrors(model);
 					return
@@ -297,28 +297,29 @@
 					o[key] = cast(o[key], defPart); // cast nested models
 				}
 
-				if (isFunction(o[key]) && o[key].bind)
-					return o[key].bind(o); // auto-bind methods to original object, so they can access private props
+				if (isFunction(o[key])){
+					privateAccess = true;
+				}
 
 				if(isPlainObject(defPart) && !o[key]){
 					o[key] = {}; // null-safe traversal
 				}
 
-				return getProxy(model, o[key], defPart, newPath)
+				return getProxy(model, o[key], defPart, newPath, privateAccess)
 			},
 
 			set(o, key, val) {
-				return controlMutation(model, def, path, o, key,
+				return controlMutation(model, def, path, o, key, privateAccess,
 					newPath => Reflect.set(o, key, getProxy(model, val, def[key], newPath))
 				)
 			},
 
 			deleteProperty(o, key) {
-				return controlMutation(model, def, path, o, key, () => Reflect.deleteProperty(o, key))
+				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.deleteProperty(o, key))
 			},
 
 			defineProperty(o, key, args){
-				return controlMutation(model, def, path, o, key, () => Reflect.defineProperty(o, key, args))
+				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.defineProperty(o, key, args))
 			},
 
 			has(o, key){
@@ -530,20 +531,20 @@
 		return proto.constructor
 	};
 
-	let span = (value, style) => ["span", {style}, value];
+	let span = (style, ...children) => ["span", {style}, ...children];
 
 	let format$1 = (x, config) => {
 		if (x === null || x === undefined)
-			return span(String(x), styles.null);
+			return span(styles.null, ""+x);
 
 		if (typeof x === "boolean")
-			return span(x, styles.boolean);
+			return span(styles.boolean, x);
 
 		if (typeof x === "number")
-			return span(x, styles.number);
+			return span(styles.number, x);
 
 		if (typeof x === "string")
-			return span(`"${x}"`, styles.string);
+			return span(styles.string, `"${x}"`);
 
 		if (isArray(x)) {
 			let def = [];
@@ -552,36 +553,35 @@
 				def.push(format$1(x[i]));
 				if (i < x.length - 1) def.push(' or ');
 			}
-			return span(...def)
+			return span('', ...def)
 		}
 
 		if (isPlainObject(x))
 			return formatObject(x, getModel(x), config)
 
 		if (isFunction(x) && !is(Model, x))
-			return span(x.name || x.toString(), styles.function);
+			return span(styles.function, x.name || x.toString());
 
 		return x ? ['object', {object: x, config}] : null
 	};
 
 	let formatObject = (o, model, config) => {
-		return [
-			'ol', {style: styles.list},
+		return span('',
 			'{',
-			...mapProps(o, prop => {
+			['ol', {style: styles.list}, ...mapProps(o, prop => {
 				let isPrivate = model && model.conventionForPrivate(prop);
 				return ['li', {style: styles.listItem},
-					span(prop, isPrivate ? styles.private : styles.property), ': ',
+					span(isPrivate ? styles.private : styles.property, prop), ': ',
 					format$1(o[prop], config)
 				]
-			}),
+			})],
 			'}'
-		];
+		)
 	};
 
 	let formatHeader = (x, config) => {
 		if (is(Model, x))
-			return span(getProto(x).name, styles.model)
+			return span(styles.model, getProto(x).name)
 
 		if (config.fromModel || isPlainObject(x) || isArray(x))
 			return format$1(x)
@@ -612,7 +612,7 @@
 
 			let model = getModel(x);
 			if (is(Model, model)) {
-				return span(model.name, styles.model)
+				return span(styles.model, model.name)
 			}
 
 			return null;

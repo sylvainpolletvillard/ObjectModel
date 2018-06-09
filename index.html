@@ -825,6 +825,7 @@ joe.sayMyName();</code>
 		</div>
 
 		<div class="panel panel1">
+			<span class="legend">Model</span>
 			<pre><code class="language-javascript">import { MapModel, Model } from "objectmodel";
 
 const Course = Model([ "math", "english", "history" ])
@@ -835,7 +836,8 @@ const Gradebook = MapModel(Course, Grade)
 		</div>
 
 		<div class="panel panel2">
-<pre><code class="language-javascript">const joannaGrades = new Gradebook([
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">const joannaGrades = new Gradebook([
 	["math", "B"],
 	["english", "C"]
 ])
@@ -856,14 +858,18 @@ joannaGrades.set("videogames", "A")</code>
 		</div>
 
 		<div class="panel panel1">
-<pre><code class="language-javascript">import { SetModel } from "objectmodel";
+			<span class="legend">Model</span>
+			<pre><code class="language-javascript">import { SetModel } from "objectmodel";
+
+const Course = Model([ "math", "english", "history" ])
 
 const FavoriteCourses = SetModel(Course)
 </code></pre>
 		</div>
 
 		<div class="panel panel2">
-<pre><code class="language-javascript">const joannaFavorites = FavoriteCourses([ "math", "english" ])
+			<span class="legend">Instance</span>
+			<pre><code class="language-javascript">const joannaFavorites = FavoriteCourses([ "math", "english" ])
 
 joannaGrades.add("sleeping")</code>
 <code class="language-none exception">TypeError: expecting Set value to be "math" or "english" or "history", got String "sleeping"</code></pre>

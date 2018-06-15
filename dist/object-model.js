@@ -438,6 +438,10 @@
 			if (!is(model, instance)) return new model(obj)
 			if (is(model, obj)) return obj
 
+			if(!is(Object, obj) && obj !== undefined){
+				stackError(model.errors, Object, obj);
+			}
+
 			merge(instance, model[_constructor](obj), true);
 			if (!model.validate(instance)) return
 			return getProxy(model, instance, model.definition)

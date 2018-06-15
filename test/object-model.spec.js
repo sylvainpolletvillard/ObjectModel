@@ -169,6 +169,23 @@ QUnit.test("behaviour for properties", function (assert) {
 QUnit.test("edge cases of constructors", function (assert) {
 	assert.ok(ObjectModel({}) instanceof ObjectModel, "ObjectModel can receive empty object as argument");
 
+	const M = ObjectModel({})
+	assert.strictEqual(M.test(undefined), true, "undefined is valid for empty objectmodels, due to null-safe object traversal")
+	assert.strictEqual(M.test(null), false, "null is invalid for empty objectmodels")
+	assert.strictEqual(M.test(1), false, "number is invalid for empty objectmodels")
+	assert.strictEqual(M.test(new Number(1)), true, "Numbers through constructor are valid for empty objectmodels")
+	assert.strictEqual(M.test("string"), false, "string is invalid for empty objectmodels")
+	assert.strictEqual(M.test(function(){}), true, "function is valid for empty objectmodels")
+
+	const O = ObjectModel({ x: [ Number ]})
+	assert.strictEqual(O.test(undefined), true, "undefined is valid for optional objectmodels, due to null-safe object traversal")
+	assert.strictEqual(O.test(null), false, "null is invalid for optional objectmodels")
+	assert.strictEqual(O.test(1), false, "number is invalid for optional objectmodels")
+	assert.strictEqual(O.test(new Number(1)), true, "Numbers through constructor are valid for optional objectmodels")
+	assert.strictEqual(O.test("string"), false, "string is invalid for optional objectmodels")
+	assert.strictEqual(O.test(function(){}), true, "function is valid for optional objectmodels")
+
+
 	/* //TODO: use FunctionModel for ObjectModel API ?
 	 assert.throws(function () {
 	 ObjectModel(undefined)
@@ -302,6 +319,21 @@ QUnit.test("default values", function (assert) {
 	const model2 = myModel({name: "jim", foo: {bar: {buz: 1}}});
 	assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
 	assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
+
+	const Person = Model({
+		name: String,
+		age: [Number]
+	}).defaults({
+		name: "new-name"
+	});
+
+	const Team = Model({
+		lead: Person,
+		members: ArrayModel(Person)
+	});
+
+	assert.strictEqual((new Team({ lead: new Person(), members:[] })).lead.name, "new-name", "default value through composition")
+	assert.throws(() => { new Team({ lead: 1, members:[] })}, "invalid value through composition with default")
 
 });
 
@@ -1255,7 +1287,7 @@ QUnit.test("Null-safe object traversal", function (assert) {
 
 	const config = Config({ local: undefined }); // object duck typed
 
-	assert.equal(config.local.time.format, undefined, "null-safe object traversal getter")
+	assert.strictEqual(config.local.time.format, undefined, "null-safe object traversal getter")
 	config.local.time.format = "12h";
-	assert.equal(config.local.time.format, "12h", "null-safe object traversal setter")
+	assert.strictEqual(config.local.time.format, "12h", "null-safe object traversal setter")
 })

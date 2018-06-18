@@ -1,7 +1,7 @@
-import {Model, ObjectModel} from "./object-model.js"
-import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
+import {Model, ObjectModel, _native} from "./object-model.js"
+import {getProto, is, isArray, isFunction, isPlainObject, isPrivate, mapProps} from "./helpers.js"
 
-let styles = {
+const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
 	listItem: `padding: 0 0 0 1em;`,
 	model: `color: #43a047; font-style: italic`,
@@ -11,10 +11,12 @@ let styles = {
 	boolean: `color: #AA0D91`,
 	property: `color: #881391`,
 	private: `color: #B871BD`,
-	null: `color: #808080`
+	null: `color: #808080`,
+	undeclared: `color: #C0C0C0;`,
+	proto: `color: #B871BD; font-style: italic`
 };
 
-let getModel = (instance) => {
+const getModel = (instance) => {
 	if (instance === undefined || instance === null)
 		return null
 
@@ -25,9 +27,9 @@ let getModel = (instance) => {
 	return proto.constructor
 }
 
-let span = (style, ...children) => ["span", {style}, ...children]
+const span = (style, ...children) => ["span", {style}, ...children]
 
-let format = (x, config) => {
+const format = (x, config) => {
 	if (x === null || x === undefined)
 		return span(styles.null, ""+x);
 
@@ -59,21 +61,7 @@ let format = (x, config) => {
 	return x ? ['object', {object: x, config}] : null
 }
 
-let formatObject = (o, model, config) => {
-	return span('',
-		'{',
-		['ol', {style: styles.list}, ...mapProps(o, prop => {
-			let isPrivate = model && model.conventionForPrivate(prop);
-			return ['li', {style: styles.listItem},
-				span(isPrivate ? styles.private : styles.property, prop), ': ',
-				format(o[prop], config)
-			]
-		})],
-		'}'
-	)
-}
-
-let formatHeader = (x, config) => {
+const formatHeader = (x, config) => {
 	if (is(Model, x))
 		return span(styles.model, getProto(x).name)
 
@@ -83,7 +71,42 @@ let formatHeader = (x, config) => {
 	return null;
 }
 
-let ModelFormatter = {
+const formatObject = (o, model, config) => span('',
+	'{',
+	['ol', {style: styles.list}, ...mapProps(o, prop =>
+		['li', {style: styles.listItem}, span(styles.property, prop), ': ', format(o[prop], config) ])
+	],
+	'}'
+)
+
+const formatModel = (def, model) => span('',
+	'{',
+	['ol', {style: styles.list},
+		...mapProps(def, prop => ['li', {style: styles.listItem},
+			span(isPrivate(prop, model) ? styles.private : styles.property, prop),
+			': ',
+			format(def[prop], { fromModel: true })
+		])
+	],
+	'}'
+)
+
+const formatModelInstance = (o, model) => span('',
+	'{',
+	['ol', {style: styles.list},
+		...mapProps(o[_native], prop => ['li', {style: styles.listItem},
+			span(prop in model.definition ? isPrivate(prop, model) ? styles.private : styles.property : styles.undeclared, prop),
+			': ',
+			format(o[_native][prop], { fromInstance: true })
+		]),
+		['li', {style: styles.listItem},
+			span(styles.proto, '__proto__', ': ', ['object', {object: getProto(o)}])
+		],
+	],
+	'}'
+)
+
+const ModelFormatter = {
 	header(x, config = {}) {
 		if (config.fromModel || is(Model, x))
 			return formatHeader(x, config);
@@ -94,11 +117,11 @@ let ModelFormatter = {
 		return is(Model, x)
 	},
 	body(x) {
-		return format(x.definition, {fromModel: true})
+		return formatModel(x.definition, x)
 	}
 }
 
-let ModelInstanceFormatter = {
+const ModelInstanceFormatter = {
 	header(x, config = {}) {
 		if (config.fromInstance && isPlainObject(x)) {
 			return formatHeader(x, config)
@@ -115,7 +138,7 @@ let ModelInstanceFormatter = {
 		return x && is(ObjectModel, getModel(x))
 	},
 	body(x) {
-		return formatObject(x, getModel(x), {fromInstance: true})
+		return formatModelInstance(x, getModel(x))
 	}
 }
 

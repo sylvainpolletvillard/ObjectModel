@@ -1,8 +1,13 @@
-import {bettertypeof, define, extend, getProto, has, is, isArray, isFunction, isObject, isPlainObject, isString, mapProps, merge, proxify, setConstructor} from "./helpers.js"
+import {
+	bettertypeof, define, extend, getProto, has, is,
+	isArray, isConstant, isFunction, isObject, isPlainObject, isPrivate, isString,
+	mapProps, merge, proxify, setConstructor
+} from "./helpers.js"
 
 export const
 	_constructor = Symbol(),
 	_validate = Symbol(),
+	_native = Symbol(),
 
 	initModel = (model, def) => {
 		model.definition = def
@@ -147,13 +152,13 @@ export const
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		let newPath       = formatPath(path, key),
-		    isPrivate     = model.conventionForPrivate(key),
-		    isConstant    = model.conventionForConstant(key),
+		    isKeyPrivate  = isPrivate(key, model),
+		    isKeyConstant = isConstant(key, model),
 		    isOwnProperty = has(o, key),
 		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
-		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
-			cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model)
+		if (key in def && ((isKeyPrivate && !privateAccess) || (isKeyConstant && o[key] !== undefined)))
+			cannot(`modify ${isKeyPrivate ? "private" : "constant"} ${key}`, model)
 
 		let isInDefinition = has(def, key);
 		if (isInDefinition || !model.sealed) {
@@ -230,7 +235,7 @@ export const
 			let newPath = formatPath(path, key),
 			    defPart = def[key];
 
-			if (!privateAccess && key in def && model.conventionForPrivate(key)) {
+			if (!privateAccess && key in def && isPrivate(key, model)) {
 				cannot(`access to private property ${newPath}`, model)
 				unstackErrors(model)
 				return
@@ -266,16 +271,16 @@ export const
 		},
 
 		has(o, key){
-			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
+			return Reflect.has(o, key) && Reflect.has(def, key) && !isPrivate(key, model)
 		},
 
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
+			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !isPrivate(key, model))
 		},
 
 		getOwnPropertyDescriptor(o, key){
 			let descriptor;
-			if (!model.conventionForPrivate(key)) {
+			if (!isPrivate(key, model)) {
 				descriptor = Object.getOwnPropertyDescriptor(def, key);
 				if (descriptor !== undefined) descriptor.value = o[key];
 			}
@@ -386,6 +391,8 @@ export function ObjectModel(def, params) {
 		}
 
 		merge(instance, model[_constructor](obj), true)
+		instance[_native] = instance
+
 		if (!model.validate(instance)) return
 		return getProxy(model, instance, model.definition)
 	}

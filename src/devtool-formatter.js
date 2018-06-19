@@ -1,5 +1,5 @@
-import {Model, ObjectModel, _native} from "./object-model.js"
-import {getProto, is, isArray, isFunction, isPlainObject, isPrivate, mapProps} from "./helpers.js"
+import {Model, ObjectModel, _isPrivate, _native} from "./object-model.js"
+import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -83,9 +83,10 @@ const formatModel = (def, model) => span('',
 	'{',
 	['ol', {style: styles.list},
 		...mapProps(def, prop => ['li', {style: styles.listItem},
-			span(isPrivate(prop, model) ? styles.private : styles.property, prop),
+			span(model[_isPrivate](prop) ? styles.private : styles.property, prop),
 			': ',
-			format(def[prop], { fromModel: true })
+			format(def[prop], { fromModel: true }),
+			model.prototype[prop] === undefined ? '': span(styles.proto, ' = ', format(model.prototype[prop]))
 		])
 	],
 	'}'
@@ -95,7 +96,7 @@ const formatModelInstance = (o, model) => span('',
 	'{',
 	['ol', {style: styles.list},
 		...mapProps(o[_native], prop => ['li', {style: styles.listItem},
-			span(prop in model.definition ? isPrivate(prop, model) ? styles.private : styles.property : styles.undeclared, prop),
+			span(prop in model.definition ? model[_isPrivate](prop) ? styles.private : styles.property : styles.undeclared, prop),
 			': ',
 			format(o[_native][prop], { fromInstance: true })
 		]),

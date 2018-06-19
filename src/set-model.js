@@ -1,5 +1,5 @@
 import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError} from "./object-model.js"
-import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
+import {extend, is, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let SET_MUTATORS = ["add", "delete", "clear"]
 
@@ -43,7 +43,7 @@ extend(SetModel, Model, {
 	},
 
 	[_validate](set, path, errors, stack){
-		if (set instanceof Set) {
+		if (is(Set, set)) {
 			for (let item of set.values()) {
 				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack)
 			}

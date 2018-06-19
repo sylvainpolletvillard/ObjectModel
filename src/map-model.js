@@ -1,5 +1,5 @@
 import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError} from "./object-model.js";
-import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
+import {extend, is, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let MAP_MUTATORS = ["set", "delete", "clear"]
 
@@ -44,7 +44,7 @@ extend(MapModel, Model, {
 	},
 
 	[_validate](map, path, errors, stack) {
-		if (map instanceof Map) {
+		if (is(Map, map)) {
 			path = path || 'Map'
 			for (let [key, value] of map) {
 				checkDefinition(key, this.definition.key, `${path} key`, errors, stack)

@@ -9,8 +9,6 @@ export const
 	isObject      = o => typeof o === "object",
 	isArray       = a => Array.isArray(a),
 	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
-	isPrivate     = (prop, model) => model.conventionForPrivate(prop),
-	isConstant    = (prop, model) => model.conventionForConstant(prop),
 
 	proxify      = (val, traps) => new Proxy(val, traps),
 	proxifyFn    = (fn, apply) => proxify(fn, {apply}),

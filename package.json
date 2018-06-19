@@ -13,7 +13,7 @@
     "build": "grunt && npm run info",
     "info": "npm-run-all info:*",
     "info:docs": "node build/update-docs",
-    "test": "qunit test/test.js"
+    "test": "grunt test"
   },
   "devDependencies": {
     "filesize": "^3.6.1",

@@ -7,6 +7,14 @@ Model[OBJECT] = function ObjectModel(def){
 		if(!is(model, this)){
 			return new model(obj);
 		}
+
+		if(!is(Object, obj) && obj !== undefined){
+			var err = {};
+			err[EXPECTED] = OBJECT;
+			err[RECEIVED] = obj;
+			model[ERROR_STACK].push(err);
+		}
+
 		obj = defaultTo(model[DEFAULT], obj);
 		merge(this, obj, true);
 		var proxy = getProxy(model, this, model[DEFINITION]);

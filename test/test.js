@@ -159,6 +159,26 @@ function testSuite(Model){
 		assert.throws(function(){ Model.Object() }, /Error.*Model definition is required/, "ObjectModel without definition throws")
 	});
 
+	QUnit.test("edge cases of constructors", function (assert) {
+		assert.ok(Model.Object({}) instanceof Model.Object, "ObjectModel can receive empty object as argument");
+
+		const M = Model.Object({})
+		assert.strictEqual(M.test(undefined), true, "undefined is valid for empty objectmodels, due to null-safe object traversal")
+		assert.strictEqual(M.test(null), false, "null is invalid for empty objectmodels")
+		assert.strictEqual(M.test(1), false, "number is invalid for empty objectmodels")
+		assert.strictEqual(M.test(new Number(1)), true, "Numbers through constructor are valid for empty objectmodels")
+		assert.strictEqual(M.test("string"), false, "string is invalid for empty objectmodels")
+		assert.strictEqual(M.test(function(){}), true, "function is valid for empty objectmodels")
+
+		const O = Model.Object({ x: [ Number ]})
+		assert.strictEqual(O.test(undefined), true, "undefined is valid for optional objectmodels, due to null-safe object traversal")
+		assert.strictEqual(O.test(null), false, "null is invalid for optional objectmodels")
+		assert.strictEqual(O.test(1), false, "number is invalid for optional objectmodels")
+		assert.strictEqual(O.test(new Number(1)), true, "Numbers through constructor are valid for optional objectmodels")
+		assert.strictEqual(O.test("string"), false, "string is invalid for optional objectmodels")
+		assert.strictEqual(O.test(function(){}), true, "function is valid for optional objectmodels")
+	});
+
 	QUnit.test("Optional and multiple parameters", function(assert){
 		var Person = Model({
 			name: [String],
@@ -369,8 +389,8 @@ function testSuite(Model){
 		})(function(options){
 			return options.list.reduce(function(a, b){
 				switch(options.op){
-					case "sum": return a + b; break;
-					case "product": return a * b; break;
+					case "sum": return a + b;
+					case "product": return a * b;
 				}
 			}, options.op === "product" ? 1 : 0);
 		});

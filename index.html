@@ -152,7 +152,7 @@
 
 			<p>Take a look at
 				<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a>
-				and <a href="#common-questions">Browsers support</a> section for more information.
+				and <a href="#common-questions">Browsers/Node support</a> section for more information.
 			</p>
 		</div>
 
@@ -1121,15 +1121,15 @@ console.log(Integer.name) // "Integer"</code></pre>
 		<h2>Common questions</h2>
 
 		<details>
-			<summary id="browser-support">Which browsers are supported ?</summary>
-			<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers, depending of the version of Object Model:</p>
+			<summary id="browser-support">Which browsers and node versions are supported ?</summary>
+			<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers and Node.js versions, depending of the version of Object Model:</p>
 			<dl>
 				<dt><a href="docs/v1">v1.x</a></dt>
-				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+</dd>
+				<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+, Node.js 4.0+</dd>
 				<dt><a href="docs/v2">v2.x</a></dt>
-				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers.</dd>
+				<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back other browsers. Otherwise, same support than v1.</dd>
 				<dt>v3.x</dt>
-				<dd>ObjectModel v3 is built around ES6 Proxies, so requires modern browsers : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+. It also works on Node 6.0+.</dd>
+				<dd>ObjectModel v3 is built around ES6 Proxies, so requires modern environments : Edge 14+, Firefox 47+, Chrome 50+, Safari 10+, Node 6.0+.</dd>
 			</dl>
 		</details>
 

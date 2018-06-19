@@ -1,4 +1,4 @@
-// ObjectModel v2.6.1 - http://objectmodel.js.org
+// ObjectModel v2.6.2 - http://objectmodel.js.org
 //MIT License - Sylvain Pollet-Villard
 ;(function(global){
 // string constants

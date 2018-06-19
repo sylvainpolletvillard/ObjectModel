@@ -7,7 +7,8 @@ module.exports = function(grunt) {
 	}
 
 	var pkg = grunt.file.readJSON('package.json');
-	var BANNER = "// ObjectModel v"+pkg.version+" - "+pkg.homepage + "\n";
+
+	var BANNER = '// ObjectModel v'+pkg.version+' - '+pkg.homepage+ '\n//'+ pkg.license+ ' License - '+ pkg.author +'\n';
 
 	var srcFiles = [
 		'src/constants.js',
@@ -67,42 +68,6 @@ module.exports = function(grunt) {
 			dist: {
 				src: ['test/index.html']
 			}
-		},
-		file_info: {
-			dist: {
-				src: ['dist/object-model.js','dist/object-model.min.js'],
-				options: {
-					stdout: false,
-					inject: [
-						{
-							dest: 'index.html',
-							text: 'all in <strong>{{= sizeText(size(src[1])) }} minified, {{= sizeText(gzipSize(src[1])) }} gzipped</strong>'
-						},
-						{
-							dest: 'index.html',
-							text: 'Minified file ({{= sizeText(size(src[1])) }}, {{= sizeText(gzipSize(src[1])) }} gzipped)'
-						}
-					]
-				}
-			}
-		},
-		"regex-replace": {
-			site: { //specify a target with any name
-				src: ['index.html'],
-				actions: [
-					{
-						name: 'version number',
-						search: esc('Current version: v')+'\\d+\\.\\d+\\.\\d+',
-						replace: 'Current version: v'+pkg.version
-					},{
-						name: 'zip url',
-						search: esc('<a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v')
-						+'\\d+\\.\\d+\\.\\d+'+esc('.zip">object-model-')+'\\d+\\.\\d+\\.\\d+'+esc('.zip</a>'),
-						replace: '<a href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v'
-						+pkg.version+'.zip">object-model-'+pkg.version+'.zip</a>'
-					}
-				]
-			}
 		}
 	});
 
@@ -110,10 +75,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-file-info');
-	grunt.loadNpmTasks('grunt-regex-replace');
 
-	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','uglify:dist','file_info:dist','regex-replace:site']);
+	grunt.registerTask('dist', ['concat:dist','concat:dist_umd','uglify:dist']);
 	grunt.registerTask('test', ['qunit:dist']);
 	grunt.registerTask('default', ['dist','test']);
 

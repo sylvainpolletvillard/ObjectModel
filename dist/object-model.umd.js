@@ -1,4 +1,4 @@
-// ObjectModel v2.6.2 - http://objectmodel.js.org
+// ObjectModel v2.6.3 - http://objectmodel.js.org
 //MIT License - Sylvain Pollet-Villard
 ;(function (globals, factory) {
  if (typeof define === 'function' && define.amd) define(factory); // AMD
@@ -207,6 +207,7 @@ ModelProto[EXTEND] = function(){
 				merge(def, arg, true, true);
 			}
 		})
+		delete proto.constructor;
 	} else {
 		def = args
 			.reduce(function(def, ext){

@@ -579,6 +579,9 @@ function testSuite(Model){
 
 		assert.ok(Woman(ann), "Woman valid model for ann");
 
+		assert.ok(Woman.prototype.constructor === Woman, "extended model has a new constructor");
+		assert.ok(ann.constructor === Woman, "extended model instance has the right constructor");
+
 		assert.throws(function(){
 			UnemployedWoman(ann);
 		}, /TypeError[\s\S]*city/, "ann cant be UnemployedWoman;  model extension nested undefined property");

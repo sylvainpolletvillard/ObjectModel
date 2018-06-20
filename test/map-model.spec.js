@@ -202,5 +202,5 @@ QUnit.test("Automatic model casting", function (assert) {
 
 QUnit.test("toString", function (assert) {
 	assert.equal(MapModel(Number, String).toString(), "Map of Number : String")
-	assert.equal(MapModel(Date, [String, 42]).toString(), "Map of Date : String or 42")
+	assert.equal(MapModel(Date, [String, 42]).toString(), "Map of Date : (String or 42)")
 })

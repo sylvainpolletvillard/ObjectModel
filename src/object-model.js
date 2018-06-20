@@ -57,7 +57,10 @@ export const
 		return def
 	},
 
-	formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or "),
+	formatDefinition = (def, stack) => {
+		let parts = parseDefinition(def).map(d => format(d, stack));
+		return parts.length > 1 ? `(${parts.join(" or ")})` : parts[0]
+	},
 
 	extendDefinition = (def, newParts = []) => {
 		if (!isArray(newParts)) newParts = [newParts]

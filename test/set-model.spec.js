@@ -192,5 +192,5 @@ QUnit.test("Automatic model casting", function (assert) {
 
 QUnit.test("toString", function (assert) {
 	assert.equal(SetModel(Number).toString(), "Set of Number")
-	assert.equal(SetModel([String, 42]).toString(), "Set of String or 42")
+	assert.equal(SetModel([String, 42]).toString(), "Set of (String or 42)")
 })

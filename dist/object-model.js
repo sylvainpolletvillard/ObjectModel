@@ -1,4 +1,4 @@
-// ObjectModel v3.5.0 - http://objectmodel.js.org
+// ObjectModel v3.5.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -60,6 +60,9 @@
 	const
 		_constructor = Symbol(),
 		_validate = Symbol(),
+		_native = Symbol(),
+		_isPrivate = "conventionForPrivate",
+		_isConstant = "conventionForConstant",
 
 		initModel = (model, def) => {
 			model.definition = def;
@@ -107,7 +110,10 @@
 			return def
 		},
 
-		formatDefinition = (def, stack) => parseDefinition(def).map(d => format(d, stack)).join(" or "),
+		formatDefinition = (def, stack) => {
+			let parts = parseDefinition(def).map(d => format(d, stack));
+			return parts.length > 1 ? `(${parts.join(" or ")})` : parts[0]
+		},
 
 		extendDefinition = (def, newParts = []) => {
 			if (!isArray(newParts)) newParts = [newParts];
@@ -203,9 +209,9 @@
 		formatPath = (path, key) => path ? path + '.' + key : key,
 
 		controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
-			let newPath       = formatPath(path, key),
-			    isPrivate     = model.conventionForPrivate(key),
-			    isConstant    = model.conventionForConstant(key),
+			let newPath = formatPath(path, key),
+			    isPrivate  = model[_isPrivate](key),
+			    isConstant = model[_isConstant](key),
 			    isOwnProperty = has(o, key),
 			    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
@@ -258,7 +264,7 @@
 			if (suitableModels.length === 1){
 				// automatically cast to suitable model when explicit (duck typing)
 				let duck = suitableModels[0];
-				return duck instanceof ObjectModel ? new duck(obj) : duck(obj)
+				return is(ObjectModel, duck) ? new duck(obj) : duck(obj)
 			}
 
 			if (suitableModels.length > 1)
@@ -287,7 +293,7 @@
 				let newPath = formatPath(path, key),
 				    defPart = def[key];
 
-				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
+				if (!privateAccess && key in def && model[_isPrivate](key)) {
 					cannot(`access to private property ${newPath}`, model);
 					unstackErrors(model);
 					return
@@ -323,16 +329,16 @@
 			},
 
 			has(o, key){
-				return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
+				return Reflect.has(o, key) && Reflect.has(def, key) && !model[_isPrivate](key)
 			},
 
 			ownKeys(o){
-				return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
+				return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model[_isPrivate](key))
 			},
 
 			getOwnPropertyDescriptor(o, key){
 				let descriptor;
-				if (!model.conventionForPrivate(key)) {
+				if (!model[_isPrivate](key)) {
 					descriptor = Object.getOwnPropertyDescriptor(def, key);
 					if (descriptor !== undefined) descriptor.value = o[key];
 				}
@@ -443,6 +449,8 @@
 			}
 
 			merge(instance, model[_constructor](obj), true);
+			instance[_native] = instance;
+
 			if (!model.validate(instance)) return
 			return getProxy(model, instance, model.definition)
 		};
@@ -511,20 +519,26 @@
 		}
 	});
 
-	let styles = {
+	const styles = {
 		list: `list-style-type: none; padding: 0; margin: 0;`,
 		listItem: `padding: 0 0 0 1em;`,
-		model: `color: #43a047; font-style: italic`,
-		function: `color: #4271ae`,
+		model: `color: #3e999f;`,
+		sealedModel: `color: #3e999f; font-weight: bold`,
+		instance: `color: #718c00; font-style: italic`,
+		function: `color: #4271AE`,
 		string: `color: #C41A16`,
 		number: `color: #1C00CF`,
 		boolean: `color: #AA0D91`,
-		property: `color: #881391`,
-		private: `color: #B871BD`,
-		null: `color: #808080`
+		property: `color: #8959a8`,
+		private: `color: #C19ED8`,
+		constant: `color: #8959a8; font-weight: bold`,
+		privateConstant: `color: #C19ED8; font-weight: bold`,
+		null: `color: #8e908c`,
+		undeclared: `color: #C0C0C0;`,
+		proto: `color: #B871BD; font-style: italic`
 	};
 
-	let getModel = (instance) => {
+	const getModel = (instance) => {
 		if (instance === undefined || instance === null)
 			return null
 
@@ -535,9 +549,9 @@
 		return proto.constructor
 	};
 
-	let span = (style, ...children) => ["span", {style}, ...children];
+	const span = (style, ...children) => ["span", {style}, ...children];
 
-	let format$1 = (x, config) => {
+	const format$1 = (x, config={}) => {
 		if (x === null || x === undefined)
 			return span(styles.null, ""+x);
 
@@ -550,11 +564,11 @@
 		if (typeof x === "string")
 			return span(styles.string, `"${x}"`);
 
-		if (isArray(x)) {
+		if (isArray(x) && config.isModelDefinition) {
 			let def = [];
 			if (x.length === 1) x.push(undefined, null);
 			for (let i = 0; i < x.length; i++) {
-				def.push(format$1(x[i]));
+				def.push(format$1(x[i], config));
 				if (i < x.length - 1) def.push(' or ');
 			}
 			return span('', ...def)
@@ -563,60 +577,70 @@
 		if (isPlainObject(x))
 			return formatObject(x, getModel(x), config)
 
-		if (isFunction(x) && !is(Model, x))
+		if (isFunction(x) && !is(Model, x) && config.isModelDefinition)
 			return span(styles.function, x.name || x.toString());
 
-		return x ? ['object', {object: x, config}] : null
+		return ['object', {object: x, config}]
 	};
 
-	let formatObject = (o, model, config) => {
-		return span('',
-			'{',
-			['ol', {style: styles.list}, ...mapProps(o, prop => {
-				let isPrivate = model && model.conventionForPrivate(prop);
-				return ['li', {style: styles.listItem},
-					span(isPrivate ? styles.private : styles.property, prop), ': ',
-					format$1(o[prop], config)
-				]
-			})],
-			'}'
-		)
-	};
+	const formatObject = (o, model, config) => span('',
+		'{',
+		['ol', {style: styles.list}, ...mapProps(o, prop =>
+			['li', {style: styles.listItem}, span(styles.property, prop), ': ', format$1(o[prop], config) ])
+		],
+		'}'
+	);
 
-	let formatHeader = (x, config) => {
-		if (is(Model, x))
-			return span(styles.model, getProto(x).name)
-
-		if (config.fromModel || isPlainObject(x) || isArray(x))
-			return format$1(x)
-
-		return null;
-	};
-
-	let ModelFormatter = {
+	const ModelFormatter = {
 		header(x, config = {}) {
-			if (config.fromModel || is(Model, x))
-				return formatHeader(x, config);
+			if(is(ObjectModel, x))
+				return span(x.sealed ? styles.sealedModel : styles.model, getProto(x).name)
+
+			if (is(Model, x))
+				return span(styles.model, x.toString())
+
+			if (config.isModelDefinition && isPlainObject(x))
+				return format$1(x, config)
 
 			return null;
 		},
 		hasBody(x) {
-			return is(Model, x)
+			return is(ObjectModel, x)
 		},
-		body(x) {
-			return format$1(x.definition, {fromModel: true})
+		body(model) {
+			return span('',
+				'{',
+				['ol', {style: styles.list}, ...mapProps(model.definition, prop => {
+					let isPrivate = model[_isPrivate](prop),
+					    isConstant = model[_isConstant](prop),
+					    hasDefault = model.prototype.hasOwnProperty(prop),
+					    style = styles.property;
+
+					if(isPrivate) {
+						style = isConstant ? styles.privateConstant : styles.private;
+					} else if(isConstant) {
+						style = styles.constant;
+					}
+
+					return ['li', {style: styles.listItem},
+						span(style, prop), ': ', format$1(model.definition[prop], { isModelDefinition: true }),
+						hasDefault ? span(styles.proto, ' = ', format$1(model.prototype[prop])) : ''
+					]
+				}) ],
+				'}'
+			)
 		}
 	};
 
-	let ModelInstanceFormatter = {
+	const ModelInstanceFormatter = {
 		header(x, config = {}) {
-			if (config.fromInstance && isPlainObject(x)) {
-				return formatHeader(x, config)
+			if (config.isInstanceProperty && isPlainObject(x)) {
+				return format$1(x, config)
 			}
 
 			let model = getModel(x);
 			if (is(Model, model)) {
-				return span(styles.model, model.name)
+				return span(styles.instance, model.name)
 			}
 
 			return null;
@@ -625,7 +649,34 @@
 			return x && is(ObjectModel, getModel(x))
 		},
 		body(x) {
-			return formatObject(x, getModel(x), {fromInstance: true})
+			const model = getModel(x);
+			const o = x[_native] || x;
+			return span('',
+				'{',
+				['ol', {style: styles.list}, ...mapProps(o, prop => {
+					let isPrivate = model[_isPrivate](prop),
+					    isConstant = model[_isConstant](prop),
+					    isDeclared = prop in model.definition,
+					    style = styles.property;
+
+					if(!isDeclared) {
+						style = styles.undeclared;
+					} else if(isPrivate) {
+						style = isConstant ? styles.privateConstant : styles.private;
+					} else if(isConstant) {
+						style = styles.constant;
+					}
+
+					return ['li', {style: styles.listItem},
+						span(style, prop), ': ', format$1(o[prop], { isInstanceProperty: true })
+					]
+				}),
+					['li', {style: styles.listItem},
+						span(styles.proto, '__proto__', ': ', ['object', {object: getProto(x)}])
+					],
+				],
+				'}'
+			)
 		}
 	};
 
@@ -817,7 +868,7 @@
 		},
 
 		[_validate](map, path, errors, stack) {
-			if (map instanceof Map) {
+			if (is(Map, map)) {
 				path = path || 'Map';
 				for (let [key, value] of map) {
 					checkDefinition(key, this.definition.key, `${path} key`, errors, stack);
@@ -876,7 +927,7 @@
 		},
 
 		[_validate](set, path, errors, stack){
-			if (set instanceof Set) {
+			if (is(Set, set)) {
 				for (let item of set.values()) {
 					checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack);
 				}

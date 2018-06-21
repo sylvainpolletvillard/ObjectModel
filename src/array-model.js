@@ -1,4 +1,4 @@
-import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError, unstackErrors} from "./object-model.js"
+import {_original, _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError, unstackErrors} from "./object-model.js"
 import {extend, isArray, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
@@ -8,6 +8,8 @@ export default function ArrayModel(def) {
 	let model = function (array = model.default) {
 		if (model.validate(array)) return proxifyModel(array, model, {
 			get(arr, key) {
+				if(key === _original) return arr
+
 				let val = arr[key];
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 					if (ARRAY_MUTATORS.includes(key)) {

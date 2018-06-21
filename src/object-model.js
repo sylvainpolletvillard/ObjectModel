@@ -7,7 +7,7 @@ import {
 export const
 	_constructor = Symbol(),
 	_validate = Symbol(),
-	_native = Symbol(),
+	_original = Symbol.for("[[Target]]"),
 	_isPrivate = "conventionForPrivate",
 	_isConstant = "conventionForConstant",
 
@@ -234,6 +234,8 @@ export const
 		getPrototypeOf: () => path ? Object.prototype : getProto(obj),
 
 		get(o, key) {
+			if(key === _original) return o
+
 			if (!isString(key))
 				return Reflect.get(o, key)
 
@@ -396,7 +398,6 @@ export function ObjectModel(def, params) {
 		}
 
 		merge(instance, model[_constructor](obj), true)
-		instance[_native] = instance
 
 		if (!model.validate(instance)) return
 		return getProxy(model, instance, model.definition)

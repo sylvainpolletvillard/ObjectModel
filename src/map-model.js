@@ -1,4 +1,4 @@
-import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError} from "./object-model.js";
+import {_original, _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError} from "./object-model.js";
 import {extend, is, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let MAP_MUTATORS = ["set", "delete", "clear"]
@@ -13,6 +13,8 @@ export default function MapModel(key, value) {
 
 		return proxifyModel(map, model, {
 			get(map, key) {
+				if(key === _original) return map
+
 				let val = map[key];
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 					if (key === "set") {

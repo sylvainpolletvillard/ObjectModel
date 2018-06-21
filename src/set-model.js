@@ -1,4 +1,4 @@
-import {_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError} from "./object-model.js"
+import {_original, _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError} from "./object-model.js"
 import {extend, is, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
 
 let SET_MUTATORS = ["add", "delete", "clear"]
@@ -13,6 +13,8 @@ export default function SetModel(def) {
 
 		return proxifyModel(set, model, {
 			get(set, key) {
+				if(key === _original) return set
+
 				let val = set[key]
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 					if (key === "add") {

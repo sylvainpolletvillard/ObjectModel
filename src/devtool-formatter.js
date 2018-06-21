@@ -1,4 +1,4 @@
-import {Model, ObjectModel, _isPrivate, _isConstant, _native} from "./object-model.js"
+import {Model, ObjectModel, _isPrivate, _isConstant, _original} from "./object-model.js"
 import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 
 const styles = {
@@ -121,8 +121,15 @@ const ModelInstanceFormatter = {
 		}
 
 		let model = getModel(x);
-		if (is(Model, model)) {
+		if (is(ObjectModel, model)) {
 			return span(styles.instance, model.name)
+		}
+		if(is(Model, model)){
+			if(model.hasOwnProperty("name")){
+				return span(styles.instance, ['object', { object: x[_original] }], ` (${model.name})`)
+			} else {
+				return ['object', { object: x[_original] }]
+			}
 		}
 
 		return null;
@@ -132,7 +139,7 @@ const ModelInstanceFormatter = {
 	},
 	body(x) {
 		const model = getModel(x)
-		const o = x[_native] || x;
+		const o = x[_original] || x;
 		return span('',
 			'{',
 			['ol', {style: styles.list}, ...mapProps(o, prop => {

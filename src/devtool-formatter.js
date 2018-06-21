@@ -95,7 +95,10 @@ const formatModel = model => {
 	}
 
 	if(model.assertions.length > 0){
-		parts.push('\n(assertions: ', ...model.assertions.map(f => ['object', { object: f }], ')'), ')')
+		parts.push("\n(assertions: ")
+		model.assertions.forEach((f, i) => {
+			parts.push(['object', { object: f }], i < model.assertions.length - 1 ? ", " : ")");
+		})
 	}
 
 	return parts

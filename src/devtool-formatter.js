@@ -1,4 +1,8 @@
-import {Model, ObjectModel, _isPrivate, _isConstant, _original} from "./object-model.js"
+import {Model, BasicModel, ObjectModel, _isPrivate, _isConstant, _original} from "./object-model.js"
+import ArrayModel from "./array-model.js"
+import SetModel from "./set-model.js"
+import MapModel from "./map-model.js"
+import FunctionModel from "./function-model.js"
 import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
 
 const styles = {
@@ -73,13 +77,38 @@ const formatObject = (o, model, config) => span('',
 	'}'
 )
 
+const formatModel = model => {
+	const parts = [],
+	      cfg = { isModelDefinition: true },
+	      def = model.definition;
+
+	if(is(BasicModel, model )) parts.push(format(def, cfg))
+	if(is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
+	if(is(SetModel, model)) parts.push("Set of ", format(def, cfg))
+	if(is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
+	if(is(FunctionModel, model)){
+		parts.push("Function(")
+		def.arguments.forEach((arg, i) => {
+			parts.push(format(arg, cfg), i < def.arguments.length - 1 ? ", " : ")");
+		})
+		if ("return" in def) parts.push(" => ", format(def.return, cfg))
+	}
+
+	if(model.assertions.length > 0){
+		parts.push('\n(assertions: ', ...model.assertions.map(f => ['object', { object: f }], ')'), ')')
+	}
+
+	return parts
+}
+
 const ModelFormatter = {
 	header(x, config = {}) {
 		if(is(ObjectModel, x))
-			return span(x.sealed ? styles.sealedModel : styles.model, getProto(x).name)
+			return span(x.sealed ? styles.sealedModel : styles.model, x.name)
 
-		if (is(Model, x))
-			return span(styles.model, x.toString())
+		if (is(Model, x)) {
+			return span(styles.model, ...formatModel(x))
+		}
 
 		if (config.isModelDefinition && isPlainObject(x))
 			return format(x, config)
@@ -121,15 +150,9 @@ const ModelInstanceFormatter = {
 		}
 
 		let model = getModel(x);
-		if (is(ObjectModel, model)) {
-			return span(styles.instance, model.name)
-		}
 		if(is(Model, model)){
-			if(model.hasOwnProperty("name")){
-				return span(styles.instance, ['object', { object: x[_original] }], ` (${model.name})`)
-			} else {
-				return ['object', { object: x[_original] }]
-			}
+			let parts = is(ObjectModel, model) ? [model.name] : [['object', { object: x[_original] }], ` (${model.name})`];
+			return span(styles.instance, ...parts)
 		}
 
 		return null;

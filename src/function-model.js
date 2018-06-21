@@ -44,7 +44,7 @@ extend(FunctionModel, Model, {
 	toString(stack = []){
 		let out = `Function(${this.definition.arguments.map(
 			argDef => formatDefinition(argDef, stack.slice())
-		).join(",")})`
+		).join(", ")})`
 
 		if ("return" in this.definition) {
 			out += " => " + formatDefinition(this.definition.return, stack)
@@ -71,7 +71,7 @@ extend(FunctionModel, Model, {
 	}
 })
 
-FunctionModel.prototype.assert(function (args) {
+FunctionModel.prototype.assert(function numberOfArgs(args) {
 	return (args.length > this.definition.arguments.length) ? args : true
 }, function (args) {
 	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`

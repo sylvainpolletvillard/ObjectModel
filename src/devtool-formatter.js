@@ -80,28 +80,23 @@ const formatObject = (o, model, config) => span('',
 const formatModel = model => {
 	const parts = [],
 	      cfg = { isModelDefinition: true },
-	      def = model.definition;
+	      def = model.definition,
+	      formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
 
 	if(is(BasicModel, model )) parts.push(format(def, cfg))
 	if(is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
 	if(is(SetModel, model)) parts.push("Set of ", format(def, cfg))
 	if(is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
 	if(is(FunctionModel, model)){
-		parts.push("Function(")
-		def.arguments.forEach((arg, i) => {
-			parts.push(format(arg, cfg), i < def.arguments.length - 1 ? ", " : ")");
-		})
+		parts.push("Function(", ...formatList(def.arguments, arg => format(arg, cfg)), ")")
 		if ("return" in def) parts.push(" => ", format(def.return, cfg))
 	}
 
 	if(model.assertions.length > 0){
-		parts.push("\n(assertions: ")
-		model.assertions.forEach((f, i) => {
-			parts.push(['object', { object: f }], i < model.assertions.length - 1 ? ", " : ")");
-		})
+		parts.push("\n(assertions: ", ...formatList(model.assertions, f => ['object', { object: f }]), ")")
 	}
 
-	return parts
+	return span(styles.model, ...parts)
 }
 
 const ModelFormatter = {
@@ -110,7 +105,7 @@ const ModelFormatter = {
 			return span(x.sealed ? styles.sealedModel : styles.model, x.name)
 
 		if (is(Model, x)) {
-			return span(styles.model, ...formatModel(x))
+			return formatModel(x)
 		}
 
 		if (config.isModelDefinition && isPlainObject(x))

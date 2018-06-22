@@ -8,8 +8,6 @@ export const
 	_constructor = Symbol(),
 	_validate = Symbol(),
 	_original = Symbol.for("[[Target]]"),
-	_isPrivate = "conventionForPrivate",
-	_isConstant = "conventionForConstant",
 
 	initModel = (model, def) => {
 		model.definition = def
@@ -157,8 +155,8 @@ export const
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		let newPath = formatPath(path, key),
-		    isPrivate  = model[_isPrivate](key),
-		    isConstant = model[_isConstant](key),
+		    isPrivate  = model.conventionForPrivate(key),
+		    isConstant = model.conventionForConstant(key),
 		    isOwnProperty = has(o, key),
 		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
@@ -242,7 +240,7 @@ export const
 			let newPath = formatPath(path, key),
 			    defPart = def[key];
 
-			if (!privateAccess && key in def && model[_isPrivate](key)) {
+			if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 				cannot(`access to private property ${newPath}`, model)
 				unstackErrors(model)
 				return
@@ -278,16 +276,16 @@ export const
 		},
 
 		has(o, key){
-			return Reflect.has(o, key) && Reflect.has(def, key) && !model[_isPrivate](key)
+			return Reflect.has(o, key) && Reflect.has(def, key) && !model.conventionForPrivate(key)
 		},
 
 		ownKeys(o){
-			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model[_isPrivate](key))
+			return Reflect.ownKeys(o).filter(key => Reflect.has(def, key) && !model.conventionForPrivate(key))
 		},
 
 		getOwnPropertyDescriptor(o, key){
 			let descriptor;
-			if (!model[_isPrivate](key)) {
+			if (!model.conventionForPrivate(key)) {
 				descriptor = Object.getOwnPropertyDescriptor(def, key);
 				if (descriptor !== undefined) descriptor.value = o[key];
 			}

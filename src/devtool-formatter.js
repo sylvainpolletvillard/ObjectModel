@@ -1,4 +1,4 @@
-import {Model, BasicModel, ObjectModel, _isPrivate, _isConstant, _original} from "./object-model.js"
+import {Model, BasicModel, ObjectModel, _original} from "./object-model.js"
 import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
@@ -120,8 +120,8 @@ const ModelFormatter = {
 		return span('',
 			'{',
 			['ol', {style: styles.list}, ...mapProps(model.definition, prop => {
-				let isPrivate = model[_isPrivate](prop),
-				    isConstant = model[_isConstant](prop),
+				let isPrivate = model.conventionForPrivate(prop),
+				    isConstant = model.conventionForConstant(prop),
 				    hasDefault = model.prototype.hasOwnProperty(prop),
 				    style = styles.property;
 

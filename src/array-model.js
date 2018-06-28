@@ -25,7 +25,7 @@ Model[ARRAY] = function ArrayModel(def){
 		} else {
 			proxy = Object.create(Array[PROTO]);
 			for(var key in array){
-				if(array.hasOwnProperty(key)){
+				if(has(array, key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
@@ -88,7 +88,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 		if(!isProxySupported){
 			for(var key in testArray){ // proxify new array keys if any after method call
-				if(testArray.hasOwnProperty(key) && !(key in proxy)){
+				if(has(testArray, key) && !(key in proxy)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}

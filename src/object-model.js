@@ -16,7 +16,7 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 
 		obj = defaultTo(model[DEFAULT], obj);
-		merge(this, obj, true);
+		merge(this, model[CONSTRUCTOR_PRIVATE](obj), true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
 		model[VALIDATE](proxy);
 		return proxy;
@@ -53,16 +53,18 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkAssertions(obj, this, path, errorStack);
 });
 
+define(ObjectModelProto, CONSTRUCTOR_PRIVATE, function(o){ return o });
+
 function getProxy(model, obj, defNode, path) {
 	if(!isPlainObject(defNode)) {
 		return cast(obj, defNode);
 	}
 
 	var wrapper = is(Object, obj) ? obj : {};
-	var proxy = Object.create(Object.getPrototypeOf(wrapper));
+	var proxy = Object.create(getProto(wrapper));
 
 	for(var key in wrapper){
-		if(wrapper.hasOwnProperty(key) && !(key in defNode)){
+		if(has(wrapper, key) && !(key in defNode)){
 			proxy[key] = wrapper[key]; // properties out of model definition are kept
 		}
 	}

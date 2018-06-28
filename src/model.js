@@ -28,24 +28,31 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	var failed,
-	    initialErrorCollector = this[ERROR_COLLECTOR];
-	this[ERROR_COLLECTOR] = function(){ failed = true };
-	this(obj);
-	this[ERROR_COLLECTOR] = initialErrorCollector;
+	var model = this;
+	while(!has(model, ERROR_COLLECTOR)){
+		model = getProto(model)
+	}
+
+	var initialErrorCollector = model[ERROR_COLLECTOR],
+	    failed;
+
+	model[ERROR_COLLECTOR] = function(){ failed = true };
+	new this(obj); // may trigger this.errorCollector
+	model[ERROR_COLLECTOR] = initialErrorCollector;
 	return !failed;
 };
 
 ModelProto[EXTEND] = function(){
 	var def, proto,
+	    parent = this,
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(is(Model[OBJECT], this)){
+	if(is(Model[OBJECT], parent)){
 		def = {};
 		proto = {};
-		merge(def, this[DEFINITION]);
-		merge(proto, this[PROTO], false, true);
+		merge(def, parent[DEFINITION]);
+		merge(proto, parent[PROTO], false, true);
 		args.forEach(function(arg){
 			if(is(Model, arg)){
 				merge(def, arg[DEFINITION], true);
@@ -74,11 +81,19 @@ ModelProto[EXTEND] = function(){
 		}
 	});
 
-	var submodel = new this[CONSTRUCTOR](def);
-	setConstructorProto(submodel, this[PROTO]);
+	var submodel = new parent[CONSTRUCTOR](def);
+	setConstructorProto(submodel, parent[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
-	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR];
+
+	if(getProto(parent) !== Model[OBJECT][PROTO]) { // extended class
+		submodel[CONSTRUCTOR_PRIVATE] = function(obj){
+			var parentInstance = new parent(obj)
+			merge(obj, parentInstance, true) // get modified props from parent class constructor
+			return obj
+		}
+	}
+
 	return submodel;
 };
 
@@ -251,7 +266,7 @@ function cast(obj, defNode){
 
 	var nbSuitableModels = suitableModels.length;
 	if(nbSuitableModels === 1) {
-		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+		return new suitableModels[0](obj); // automatically cast to the suitable model when explicit
 	}
 	if(nbSuitableModels > 1){
 		console.warn("Ambiguous model for value " + toString(obj)

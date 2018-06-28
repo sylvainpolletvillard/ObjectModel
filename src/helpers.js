@@ -19,8 +19,16 @@ if(!Object.setPrototypeOf && is(Array, {__proto__:[]})){
 	}
 }
 
+function getProto(x){
+	return Object.getPrototypeOf(x)
+}
+
 function is(Constructor, obj){
 	return obj instanceof Constructor;
+}
+
+function has(o, prop){
+	return o.hasOwnProperty(prop)
 }
 
 function isFunction(o){
@@ -32,7 +40,7 @@ function isObject(o){
 }
 
 function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+	return o && isObject(o) && getProto(o) === Object.prototype;
 }
 
 function bettertypeof(obj){
@@ -49,7 +57,7 @@ function defaultTo(defaultVal, val){
 
 function merge(target, src, deep, includingProto) {
 	for(var key in (src || {})){
-		if(includingProto || src.hasOwnProperty(key)){
+		if(includingProto || has(src, key)){
 			if(deep && isPlainObject(src[key])){
 				var o = {};
 				merge(o, target[key], deep);

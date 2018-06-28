@@ -19,6 +19,13 @@ var consoleMock = {
 	}
 }
 
+function loadScript(src, onload){
+	var script = document.createElement('script');
+	script.src = src;
+	script.onload = onload;
+	document.head.appendChild(script);
+}
+
 function testSuite(Model){
 
 	QUnit.test( "Basic models", function( assert ) {
@@ -162,7 +169,7 @@ function testSuite(Model){
 	QUnit.test("edge cases of constructors", function (assert) {
 		assert.ok(Model.Object({}) instanceof Model.Object, "ObjectModel can receive empty object as argument");
 
-		const M = Model.Object({})
+		var M = Model.Object({})
 		assert.strictEqual(M.test(undefined), true, "undefined is valid for empty objectmodels, due to null-safe object traversal")
 		assert.strictEqual(M.test(null), false, "null is invalid for empty objectmodels")
 		assert.strictEqual(M.test(1), false, "number is invalid for empty objectmodels")
@@ -170,7 +177,7 @@ function testSuite(Model){
 		assert.strictEqual(M.test("string"), false, "string is invalid for empty objectmodels")
 		assert.strictEqual(M.test(function(){}), true, "function is valid for empty objectmodels")
 
-		const O = Model.Object({ x: [ Number ]})
+		var O = Model.Object({ x: [ Number ]})
 		assert.strictEqual(O.test(undefined), true, "undefined is valid for optional objectmodels, due to null-safe object traversal")
 		assert.strictEqual(O.test(null), false, "null is invalid for optional objectmodels")
 		assert.strictEqual(O.test(1), false, "number is invalid for optional objectmodels")
@@ -178,6 +185,11 @@ function testSuite(Model){
 		assert.strictEqual(O.test("string"), false, "string is invalid for optional objectmodels")
 		assert.strictEqual(O.test(function(){}), true, "function is valid for optional objectmodels")
 	});
+
+	var isES6ClassSupported = (function(){ try { eval('"use strict"; class foo {}'); return true; } catch (e) {} return false; })();
+	if(isES6ClassSupported){
+		loadScript("es6-classes.js", function(){ testSuiteClasses(Model) })
+	}
 
 	QUnit.test("Optional and multiple parameters", function(assert){
 		var Person = Model({

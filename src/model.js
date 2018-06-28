@@ -31,7 +31,7 @@ ModelProto[TEST] = function(obj){
 	var failed,
 	    initialErrorCollector = this[ERROR_COLLECTOR];
 	this[ERROR_COLLECTOR] = function(){ failed = true };
-	this(obj);
+	new this(obj);
 	this[ERROR_COLLECTOR] = initialErrorCollector;
 	return !failed;
 };

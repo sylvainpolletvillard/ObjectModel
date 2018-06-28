@@ -251,7 +251,7 @@ function cast(obj, defNode){
 
 	var nbSuitableModels = suitableModels.length;
 	if(nbSuitableModels === 1) {
-		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+		return new suitableModels[0](obj); // automatically cast to the suitable model when explicit
 	}
 	if(nbSuitableModels > 1){
 		console.warn("Ambiguous model for value " + toString(obj)

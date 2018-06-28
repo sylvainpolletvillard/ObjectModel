@@ -1,4 +1,4 @@
-// ObjectModel v2.6.3 - http://objectmodel.js.org
+// ObjectModel v2.6.4 - http://objectmodel.js.org
 //MIT License - Sylvain Pollet-Villard
 ;(function(global){
 // string constants
@@ -24,7 +24,8 @@ ERROR_STACK           = "errorStack",
 ERROR_COLLECTOR       = "errorCollector",
 UNSTACK               = "unstack",
 PROTO                 = "prototype",
-CONSTRUCTOR           = "constructor",	
+CONSTRUCTOR           = "constructor",
+CONSTRUCTOR_PRIVATE   = "_constructor",
 DEFAULT               = "default",
 DEFAULT_TO            = "defaultTo",
 DEFAULTS              = "defaults",
@@ -55,8 +56,16 @@ if(!Object.setPrototypeOf && is(Array, {__proto__:[]})){
 	}
 }
 
+function getProto(x){
+	return Object.getPrototypeOf(x)
+}
+
 function is(Constructor, obj){
 	return obj instanceof Constructor;
+}
+
+function has(o, prop){
+	return o.hasOwnProperty(prop)
 }
 
 function isFunction(o){
@@ -68,7 +77,7 @@ function isObject(o){
 }
 
 function isPlainObject(o){
-	return o && isObject(o) && Object.getPrototypeOf(o) === Object.prototype;
+	return o && isObject(o) && getProto(o) === Object.prototype;
 }
 
 function bettertypeof(obj){
@@ -85,7 +94,7 @@ function defaultTo(defaultVal, val){
 
 function merge(target, src, deep, includingProto) {
 	for(var key in (src || {})){
-		if(includingProto || src.hasOwnProperty(key)){
+		if(includingProto || has(src, key)){
 			if(deep && isPlainObject(src[key])){
 				var o = {};
 				merge(o, target[key], deep);
@@ -174,24 +183,31 @@ ModelProto[VALIDATE] = function(obj, errorCollector){
 };
 
 ModelProto[TEST] = function(obj){
-	var failed,
-	    initialErrorCollector = this[ERROR_COLLECTOR];
-	this[ERROR_COLLECTOR] = function(){ failed = true };
-	this(obj);
-	this[ERROR_COLLECTOR] = initialErrorCollector;
+	var model = this;
+	while(!has(model, ERROR_COLLECTOR)){
+		model = getProto(model)
+	}
+
+	var initialErrorCollector = model[ERROR_COLLECTOR],
+	    failed;
+
+	model[ERROR_COLLECTOR] = function(){ failed = true };
+	new this(obj); // may trigger this.errorCollector
+	model[ERROR_COLLECTOR] = initialErrorCollector;
 	return !failed;
 };
 
 ModelProto[EXTEND] = function(){
 	var def, proto,
+	    parent = this,
 		assertions = cloneArray(this[ASSERTIONS]),
 		args = cloneArray(arguments);
 
-	if(is(Model[OBJECT], this)){
+	if(is(Model[OBJECT], parent)){
 		def = {};
 		proto = {};
-		merge(def, this[DEFINITION]);
-		merge(proto, this[PROTO], false, true);
+		merge(def, parent[DEFINITION]);
+		merge(proto, parent[PROTO], false, true);
 		args.forEach(function(arg){
 			if(is(Model, arg)){
 				merge(def, arg[DEFINITION], true);
@@ -220,11 +236,19 @@ ModelProto[EXTEND] = function(){
 		}
 	});
 
-	var submodel = new this[CONSTRUCTOR](def);
-	setConstructorProto(submodel, this[PROTO]);
+	var submodel = new parent[CONSTRUCTOR](def);
+	setConstructorProto(submodel, parent[PROTO]);
 	merge(submodel[PROTO], proto);
 	submodel[ASSERTIONS] = assertions;
-	submodel[ERROR_COLLECTOR] = this[ERROR_COLLECTOR];
+
+	if(getProto(parent) !== Model[OBJECT][PROTO]) { // extended class
+		submodel[CONSTRUCTOR_PRIVATE] = function(obj){
+			var parentInstance = new parent(obj)
+			merge(obj, parentInstance, true) // get modified props from parent class constructor
+			return obj
+		}
+	}
+
 	return submodel;
 };
 
@@ -397,7 +421,7 @@ function cast(obj, defNode){
 
 	var nbSuitableModels = suitableModels.length;
 	if(nbSuitableModels === 1) {
-		return suitableModels[0](obj); // automatically cast to the suitable model when explicit
+		return new suitableModels[0](obj); // automatically cast to the suitable model when explicit
 	}
 	if(nbSuitableModels > 1){
 		console.warn("Ambiguous model for value " + toString(obj)
@@ -424,7 +448,7 @@ Model[OBJECT] = function ObjectModel(def){
 		}
 
 		obj = defaultTo(model[DEFAULT], obj);
-		merge(this, obj, true);
+		merge(this, model[CONSTRUCTOR_PRIVATE](obj), true);
 		var proxy = getProxy(model, this, model[DEFINITION]);
 		model[VALIDATE](proxy);
 		return proxy;
@@ -461,16 +485,18 @@ define(ObjectModelProto, VALIDATOR, function(obj, path, callStack, errorStack){
 	checkAssertions(obj, this, path, errorStack);
 });
 
+define(ObjectModelProto, CONSTRUCTOR_PRIVATE, function(o){ return o });
+
 function getProxy(model, obj, defNode, path) {
 	if(!isPlainObject(defNode)) {
 		return cast(obj, defNode);
 	}
 
 	var wrapper = is(Object, obj) ? obj : {};
-	var proxy = Object.create(Object.getPrototypeOf(wrapper));
+	var proxy = Object.create(getProto(wrapper));
 
 	for(var key in wrapper){
-		if(wrapper.hasOwnProperty(key) && !(key in defNode)){
+		if(has(wrapper, key) && !(key in defNode)){
 			proxy[key] = wrapper[key]; // properties out of model definition are kept
 		}
 	}
@@ -537,7 +563,7 @@ Model[ARRAY] = function ArrayModel(def){
 		} else {
 			proxy = Object.create(Array[PROTO]);
 			for(var key in array){
-				if(array.hasOwnProperty(key)){
+				if(has(array, key)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}
@@ -600,7 +626,7 @@ function proxifyArrayMethod(array, method, model, proxy){
 
 		if(!isProxySupported){
 			for(var key in testArray){ // proxify new array keys if any after method call
-				if(testArray.hasOwnProperty(key) && !(key in proxy)){
+				if(has(testArray, key) && !(key in proxy)){
 					proxifyArrayKey(proxy, array, key, model);
 				}
 			}

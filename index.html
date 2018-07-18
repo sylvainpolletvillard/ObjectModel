@@ -120,7 +120,7 @@
 				<li>Constants and private properties based on name conventions</li>
 				<li>Explicit error messages</li>
 				<li>Customizable error handlers</li>
-				<li>all in <strong class="size-gzip">3.96 KB</strong> minified and gzipped,
+				<li>all in <strong class="size-gzip">3.99 KB</strong> minified and gzipped,
 					even less when using tree-shaking
 				</li>
 			</ul>
@@ -128,17 +128,17 @@
 
 		<div id="download">
 			<h2>Download</h2>
-			<h3>Current version: v<span class="version">3.5.2</span></h3>
+			<h3>Current version: v<span class="version">3.5.3</span></h3>
 			<ul>
 				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
 				<li>From CDN: <a href="https://unpkg.com/objectmodel">unpkg.com/objectmodel</a></li>
-				<li>Minified bundle (<strong class="size-gzip">3.96 KB</strong> gzipped) :
+				<li>Minified bundle (<strong class="size-gzip">3.99 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
 				<li>Source files :
-					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.5.2.zip">object-model-3.5.2.zip</a>
+					<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.5.3.zip">object-model-3.5.3.zip</a>
 				</li>
 			</ul>
 
@@ -661,40 +661,74 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 	<hr>
 
 	<section id="doc-private-and-constants" class="grid doc-code-code">
-		<div class="doc">
-			<h2>Private and constant properties</h2>
-			<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify a <i>_private</i> variable which should not be used outside its class methods. Also, constants are often in <i>ALL_CAPS</i>. Model definitions follow these conventions by making <i>_underscored</i> properties not enumerable and not usable outside of the instance's own methods, and <i>CAPITALIZED</i> properties not writable.</p>
-			<p>You can modify or remove these conventions by overriding the <code>conventionForPrivate</code> and <code>conventionForConstant</code> methods in your model or globally in <code>Model.prototype</code>.</p>
-		</div>
+			<div class="doc">
+				<h2>Private and constant properties</h2>
+				<p>Some variable naming conventions are commonly used in JavaScript. For example, a leading underscore is used to specify
+					a
+					<i>_private</i> variable which should not be used outside its class methods. Also, constants are often in
+					<i>ALL_CAPS</i>. Model definitions follow these conventions by making
+					<i>_underscored</i> properties not enumerable and not usable outside of the instance's own methods, and
+					<i>CAPITALIZED</i> properties not writable.</p>
+			</div>
 
-		<div class="panel panel1">
-			<span class="legend">Model</span>
-			<pre><code class="language-javascript">class Circle extends ObjectModel({
+			<div class="panel panel1">
+				<span class="legend">Model</span>
+				<pre><code class="language-javascript">const Circle = ObjectModel({
 	radius: Number,    // public
-	_diameter: Number, // private
+	_index: Number,    // private
 	UNIT: ["px","cm"], // constant
 	_ID: [Number],     // private and constant
-}){
-	get _diameter(){ return this.radius * 2 }
-	getDiameter(){ return this._diameter }
-}
+}).defaults({
+	_index: 0,
+	getIndex(){ return this._index },
+	setIndex(value){ this._index = value }
+});
 </code></pre>
-		</div>
+			</div>
 
-		<div class="panel panel2">
-			<span class="legend">Instance</span>
-			<pre><code class="language-javascript">let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
+			<div class="panel panel2">
+				<span class="legend">Instance</span>
+				<pre><code class="language-javascript">let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
 c.radius = 100;
 c.UNIT = "cm";</code>
-<code class="language-none exception">TypeError: cannot redefine constant UNIT</code>
-<code class="language-javascript">console.log( c._diameter )</code>
-<code class="language-none exception">TypeError: cannot access to private property _diameter</code>
-<code class="language-javascript">console.log( c.getDiameter() )</code>
-<code class="language-none log">200</code>
+<code class="language-none exception">TypeError: cannot modify constant property UNIT</code>
+
+<code class="language-javascript">c._index = 1;</code>
+<code class="language-none exception">TypeError: cannot modify private property _index</code>
+<code class="language-javascript">console.log( c._index )</code>
+<code class="language-none exception">TypeError: cannot access to private property _index</code>
+<code class="language-javascript">c.setIndex(2);
+console.log( c.getIndex() )</code>
+<code class="language-none log">2</code>
 <code class="language-javascript">Object.keys(c); // private variables are not enumerated</code>
 <code class="language-none log">["radius", "UNIT"]</code></pre>
-		</div>
-	</section>
+			</div>
+
+			<div class="doc">
+				<p>You can modify or remove these conventions by overriding the
+					<code>conventionForPrivate</code> and
+					<code>conventionForConstant</code> methods in your model or globally in
+					<code>Model.prototype</code>.
+				</p>
+			</div>
+
+			<div class="panel panel1">
+				<pre><code class="language-javascript">// change the private convention for all models
+Model.prototype.conventionForPrivate = key => key.startsWith('#');
+
+// remove the constant convention specifically for Circle
+Circle.conventionForConstant = () => false;</code></pre>
+			</div>
+
+			<div class="panel panel2">
+				<pre><code class="language-javascript">// Private and constant conventions have been changed
+c._index = 3;
+c.UNIT = "cm";
+
+console.log(c._index, c.UNIT); // no more errors</code>
+<code class="language-none log">3 "cm"</code></pre>
+			</div>
+		</section>
 	<hr>
 
 	<section id="doc-array-model" class="grid doc-code-code">

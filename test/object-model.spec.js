@@ -441,7 +441,44 @@ QUnit.test("Private and constant properties", function (assert) {
 	})
 
 	let b = new B({ ID: 0 })
-	assert.throws(() => { b.setId(32) }, /TypeError: cannot modify constant ID/, "methods should not be able to modify constants");
+	assert.throws(() => { b.setId(32) }, /TypeError: cannot modify constant property ID/, "methods should not be able to modify constants");
+
+	const Circle = ObjectModel({
+		radius: Number,    // public
+		_index: Number,    // private
+		UNIT: ["px","cm"], // constant
+		_ID: [Number],     // private and constant
+	}).defaults({
+		_index: 0,
+		getIndex(){ return this._index },
+		setIndex(value){ this._index = value }
+	});
+
+	let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
+	c.radius = 100;
+
+	assert.throws(() => { c.UNIT = "cm" }, /TypeError: cannot modify constant property UNIT/, "cannot redefine constant");
+	assert.throws(() => { c._index = 1; }, /TypeError: cannot modify private property _index/, "cannot modify private property")
+	assert.throws(() => { c._index }, /TypeError: cannot access to private property _index/, "cannot access private property")
+
+	c.setIndex(2);
+	assert.strictEqual( c.getIndex(), 2, "can access and mutate private through method" );
+
+	// change the private convention for all models
+	let initialConventionForPrivate = Model.prototype.conventionForPrivate;
+	Model.prototype.conventionForPrivate = key => key === "radius";
+
+	// remove the constant convention for Circle model
+	Circle.conventionForConstant = () => false;
+
+	c.UNIT = "cm";
+	assert.strictEqual(c.UNIT, "cm", "constant convention can be changed specifically for model")
+
+	assert.throws(() => { c.radius }, /TypeError[\s\S]*cannot access to private property/, "private convention can be changed")
+	c._index = 3;
+	assert.strictEqual(c._index, 3, "private convention can be changed and privates can be accessed and mutated")
+
+	Model.prototype.conventionForPrivate = initialConventionForPrivate;
 });
 
 QUnit.test("Non-enumerable and non-writable properties with overridden convention", function (assert) {

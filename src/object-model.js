@@ -1,7 +1,7 @@
 import {
 	bettertypeof, define, extend, getProto, has, is,
 	isArray, isFunction, isObject, isPlainObject, isString,
-	mapProps, merge, proxify, setConstructor
+	mapProps, merge, proxify, proxifyFn, setConstructor
 } from "./helpers.js"
 
 export const
@@ -161,7 +161,7 @@ export const
 		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
-			cannot(`modify ${isPrivate ? "private" : "constant"} ${key}`, model)
+			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
 
 		let isInDefinition = has(def, key);
 		if (isInDefinition || !model.sealed) {
@@ -250,8 +250,13 @@ export const
 				o[key] = cast(o[key], defPart) // cast nested models
 			}
 
-			if (isFunction(o[key])){
-				privateAccess = true;
+			if (isFunction(o[key]) && key !== "constructor") {
+				return proxifyFn(o[key], (fn, ctx, args) => {
+					privateAccess = true;
+					let result = Reflect.apply(fn, ctx, args);
+					privateAccess = false;
+					return result
+				})
 			}
 
 			if(isPlainObject(defPart) && !o[key]){

@@ -19,6 +19,7 @@
     "info": "npm-run-all info:*",
     "info:banner": "node build/add-banner",
     "info:docs": "node build/update-docs",
+    "lint": "eslint . --fix",
     "test": "qunit test/index.js"
   },
   "devDependencies": {
@@ -29,6 +30,9 @@
     "rollup": "^0.63.2",
     "rollup-plugin-terser": "^1.0.1",
     "rollup-watch": "^4.0.0"
+  },
+  "optionalDependencies": {
+    "eslint": "^5.2.0"
   },
   "main": "dist/object-model.js",
   "module": "src/index.js",

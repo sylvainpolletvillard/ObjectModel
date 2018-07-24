@@ -13,7 +13,7 @@ export default function SetModel(def) {
 
 		return proxifyModel(set, model, {
 			get(set, key) {
-				if(key === _original) return set
+				if (key === _original) return set
 
 				let val = set[key]
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
@@ -40,11 +40,11 @@ export default function SetModel(def) {
 }
 
 extend(SetModel, Model, {
-	toString(stack){
+	toString(stack) {
 		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	[_validate](set, path, errors, stack){
+	[_validate](set, path, errors, stack) {
 		if (is(Set, set)) {
 			for (let item of set.values()) {
 				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack)
@@ -53,7 +53,7 @@ extend(SetModel, Model, {
 		checkAssertions(set, this, path, errors)
 	},
 
-	extend(...newParts){
+	extend(...newParts) {
 		return extendModel(new SetModel(extendDefinition(this.definition, newParts)), this)
 	}
 })

@@ -1,20 +1,16 @@
 export const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
 	getProto     = x => Object.getPrototypeOf(x),
+	setProto     = (x,p) => Object.setPrototypeOf(x,p),
 
 	has           = (o, prop) => o.hasOwnProperty(prop),
 	is            = (Constructor, obj) => obj instanceof Constructor,
-	isString      = s => typeof s === "string",
 	isFunction    = f => typeof f === "function",
 	isObject      = o => typeof o === "object",
-	isArray       = a => Array.isArray(a),
 	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
 
-	proxify      = (val, traps) => new Proxy(val, traps),
-	proxifyFn    = (fn, apply) => proxify(fn, {apply}),
-	proxifyModel = (val, model, traps) => proxify(val, Object.assign({getPrototypeOf: () => model.prototype}, traps)),
-
-	mapProps = (o, fn) => Object.keys(o).map(fn),
+	proxifyFn    = (fn, apply) => new Proxy(fn, {apply}),
+	proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({getPrototypeOf: () => model.prototype}, traps)),
 
 	merge = (target, src = {}, deep) => {
 		for (let key in src) {
@@ -34,7 +30,7 @@ export const
 	},
 
 	setConstructor = (model, constructor) => {
-		Object.setPrototypeOf(model, constructor.prototype)
+		setProto(model, constructor.prototype)
 		define(model, "constructor", constructor)
 	},
 
@@ -46,5 +42,5 @@ export const
 				configurable: true
 			}
 		}), props)
-		Object.setPrototypeOf(child, parent)
+		setProto(child, parent)
 	}

@@ -3,7 +3,7 @@ import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
 import FunctionModel from "./function-model.js"
-import {getProto, is, isArray, isFunction, isPlainObject, mapProps} from "./helpers.js"
+import {getProto, is, isFunction, isPlainObject} from "./helpers.js"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -50,7 +50,7 @@ const format = (x, config={}) => {
 	if (typeof x === "string")
 		return span(styles.string, `"${x}"`);
 
-	if (isArray(x) && config.isModelDefinition) {
+	if (Array.isArray(x) && config.isModelDefinition) {
 		let def = [];
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {
@@ -71,7 +71,7 @@ const format = (x, config={}) => {
 
 const formatObject = (o, model, config) => span('',
 	'{',
-	['ol', {style: styles.list}, ...mapProps(o, prop =>
+	['ol', {style: styles.list}, ...Object.keys(o).map(prop =>
 		['li', {style: styles.listItem}, span(styles.property, prop), ': ', format(o[prop], config) ])
 	],
 	'}'
@@ -83,16 +83,16 @@ const formatModel = model => {
 	      def = model.definition,
 	      formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
 
-	if(is(BasicModel, model )) parts.push(format(def, cfg))
-	if(is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
-	if(is(SetModel, model)) parts.push("Set of ", format(def, cfg))
-	if(is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
-	if(is(FunctionModel, model)){
+	if (is(BasicModel, model )) parts.push(format(def, cfg))
+	if (is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
+	if (is(SetModel, model)) parts.push("Set of ", format(def, cfg))
+	if (is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
+	if (is(FunctionModel, model)) {
 		parts.push("Function(", ...formatList(def.arguments, arg => format(arg, cfg)), ")")
 		if ("return" in def) parts.push(" => ", format(def.return, cfg))
 	}
 
-	if(model.assertions.length > 0){
+	if (model.assertions.length > 0) {
 		parts.push("\n(assertions: ", ...formatList(model.assertions, f => ['object', { object: f }]), ")")
 	}
 
@@ -101,7 +101,7 @@ const formatModel = model => {
 
 const ModelFormatter = {
 	header(x, config = {}) {
-		if(is(ObjectModel, x))
+		if (is(ObjectModel, x))
 			return span(x.sealed ? styles.sealedModel : styles.model, x.name)
 
 		if (is(Model, x)) {
@@ -119,15 +119,15 @@ const ModelFormatter = {
 	body(model) {
 		return span('',
 			'{',
-			['ol', {style: styles.list}, ...mapProps(model.definition, prop => {
+			['ol', {style: styles.list}, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
 				    isConstant = model.conventionForConstant(prop),
 				    hasDefault = model.prototype.hasOwnProperty(prop),
 				    style = styles.property;
 
-				if(isPrivate) {
+				if (isPrivate) {
 					style = isConstant ? styles.privateConstant : styles.private
-				} else if(isConstant) {
+				} else if (isConstant) {
 					style = styles.constant
 				}
 
@@ -148,7 +148,7 @@ const ModelInstanceFormatter = {
 		}
 
 		let model = getModel(x);
-		if(is(Model, model)){
+		if (is(Model, model)) {
 			let parts = is(ObjectModel, model) ? [model.name] : [['object', { object: x[_original] }], ` (${model.name})`];
 			return span(styles.instance, ...parts)
 		}
@@ -163,27 +163,30 @@ const ModelInstanceFormatter = {
 		const o = x[_original] || x;
 		return span('',
 			'{',
-			['ol', {style: styles.list}, ...mapProps(o, prop => {
-				let isPrivate = model[_isPrivate](prop),
-				    isConstant = model[_isConstant](prop),
-				    isDeclared = prop in model.definition,
-				    style = styles.property;
+			[
+				'ol',
+				{style: styles.list},
+				...Object.keys(o).map(prop => {
+					let isPrivate = model.conventionForPrivate(prop),
+						isConstant = model.conventionForConstant(prop),
+						isDeclared = prop in model.definition,
+						style = styles.property;
 
-				if(!isDeclared) {
-					style = styles.undeclared
-				} else if(isPrivate) {
-					style = isConstant ? styles.privateConstant : styles.private
-				} else if(isConstant) {
-					style = styles.constant
-				}
+					if (!isDeclared) {
+						style = styles.undeclared
+					} else if (isPrivate) {
+						style = isConstant ? styles.privateConstant : styles.private
+					} else if (isConstant) {
+						style = styles.constant
+					}
 
-				return ['li', {style: styles.listItem},
-					span(style, prop), ': ', format(o[prop], { isInstanceProperty: true })
-				]
-			}),
+					return ['li', {style: styles.listItem},
+						span(style, prop), ': ', format(o[prop], { isInstanceProperty: true })
+					]
+				}),
 				['li', {style: styles.listItem},
 					span(styles.proto, '__proto__', ': ', ['object', {object: getProto(x)}])
-				],
+				]
 			],
 			'}'
 		)

@@ -13,7 +13,7 @@ export default function MapModel(key, value) {
 
 		return proxifyModel(map, model, {
 			get(map, key) {
-				if(key === _original) return map
+				if (key === _original) return map
 
 				let val = map[key];
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
@@ -57,7 +57,7 @@ extend(MapModel, Model, {
 		checkAssertions(map, this, path, errors)
 	},
 
-	extend(keyPart, valuePart){
+	extend(keyPart, valuePart) {
 		let {key, value} = this.definition
 		return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
 	}

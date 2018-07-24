@@ -41,7 +41,7 @@ export default function FunctionModel(...argsDef) {
 }
 
 extend(FunctionModel, Model, {
-	toString(stack = []){
+	toString(stack = []) {
 		let out = `Function(${this.definition.arguments.map(
 			argDef => formatDefinition(argDef, stack.slice())
 		).join(", ")})`
@@ -52,7 +52,7 @@ extend(FunctionModel, Model, {
 		return out
 	},
 
-	return(def){
+	return(def) {
 		this.definition.return = def
 		return this
 	},
@@ -64,10 +64,8 @@ extend(FunctionModel, Model, {
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
-	[_validate](f, path, errors){
-		if (!isFunction(f)) {
-			stackError(errors, "Function", f, path)
-		}
+	[_validate](f, path, errors) {
+		if (!isFunction(f)) stackError(errors, "Function", f, path)
 	}
 })
 

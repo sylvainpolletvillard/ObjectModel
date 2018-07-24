@@ -1,3 +1,4 @@
+/* global Prism */
 {
 
 	const links = [...document.querySelectorAll("#menu a[href^='#']")],

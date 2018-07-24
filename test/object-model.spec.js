@@ -479,6 +479,26 @@ QUnit.test("Private and constant properties", function (assert) {
 	assert.strictEqual(c._index, 3, "private convention can be changed and privates can be accessed and mutated")
 
 	Model.prototype.conventionForPrivate = initialConventionForPrivate;
+
+	class OM extends ObjectModel({
+		_privString: [String],
+		pubNum: [Number]
+	}) {}
+
+	class ParentOM extends ObjectModel({
+		_id: [String],
+		om: OM
+	}) {}
+
+
+	let nestedOM = new OM({
+		_privString: "only for me",
+		pubNum: 42
+	});
+
+	let parent = new ParentOM({ om: nestedOM });
+	assert.ok(parent instanceof ParentOM, "can nest private prop in a child OM");
+	assert.throws(() => parent.om._privString, /TypeError[\s\S]*cannot access to private property/, "cannot access nested private prop in a child OM");
 });
 
 QUnit.test("Non-enumerable and non-writable properties with overridden convention", function (assert) {

@@ -53,6 +53,22 @@ table {
 	}
 }
 
+.tip {
+	position: relative;
+	border: 1px solid #aabbff;
+	border-radius: 5px;
+	padding: 1em 1em 1em 3em;
+
+	&::before {
+		content: "ⓘ ";
+		color: #aabbff;
+		font-size: 2em;
+		position: absolute;
+		top: 0.2em;
+		left: 0.25em;
+	}
+}
+
 .panel {
 	background: #f5f2f0;
 	border: 1px solid #DEDEDE;

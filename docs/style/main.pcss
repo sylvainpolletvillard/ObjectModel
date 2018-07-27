@@ -1,19 +1,21 @@
-@import "reset";
-@import "prism.css";
-@import "helpers";
-@import "fonts";
-@import "colors";
+@import "../lib/prism";
+@import "./fonts.pcss";
+@import "./colors.pcss";
+@import "./index.pcss";
+@import "./menu.pcss";
+@import "./grid.pcss";
+@import "./social.pcss";
 
 body {
-	.font-paragraph();
-	.transition(margin-right .3s ease);
-	color: @fg-default;
+	font-family: $font-paragraph;
+	transition: margin-right .3s ease;
+	color: $fg-default;
 	margin: 0 2em 0.5em 2em;
 }
 
 h1, h2, h3 {
-	color: @fg-highlight;
-	.font-title();
+	color: $fg-highlight;
+	font-family: $font-title;
 }
 
 h2 {
@@ -26,14 +28,13 @@ h2 {
 }
 
 pre {
-	-moz-tab-size: 3;
 	tab-size: 3;
 	margin-top: 0;
 	margin-bottom: 0;
 }
 
 code {
-	.font-code();
+	font-family: $font-code;
 }
 
 code.return {
@@ -75,9 +76,6 @@ hr {
 	height: 1px;
 	border: none;
 	background-color: transparent;
-	background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
-	background-image: -moz-linear-gradient(left, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
-	background-image: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, .03)), color-stop(50%, rgba(0, 0, 0, .1)), to(rgba(0, 0, 0, .03)));
 	background-image: linear-gradient(to right, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
 }
 
@@ -96,27 +94,29 @@ details {
 
 summary {
 	cursor: pointer;
-	.font-title();
+	font-family: $font-title;
 	font-size: 1.2rem;
 	margin: 0.5em 0;
 
 	&:hover {
 		text-decoration: underline;
 	}
+
 	&:active, &:focus {
 		outline: none;
 	}
 }
 
 .warning {
-	color: @fg-highlight;
+	color: $fg-highlight;
 	font-weight: bold;
 }
 
 dt {
 	font-weight: bold;
 	margin-top: 0.5em;
-	&:before {
+
+	&::before {
 		content: "\21E8 \ ";
 	}
 
@@ -136,8 +136,3 @@ dt {
 		text-decoration: underline;
 	}
 }
-
-@import "index";
-@import "menu";
-@import "grid";
-@import "social";

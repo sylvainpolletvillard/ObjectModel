@@ -1,22 +1,20 @@
-@import "helpers";
-@import "colors";
-@import "fonts";
+@import "./colors.pcss";
+@import "./fonts.pcss";
 
-
-@menuWidth: 300px;
-@menu-button-size : 36px;
-@menu-transition: 0.4s;
+$menu-width: 300px;
+$menu-button-size : 36px;
+$menu-transition: 0.4s;
 
 body {
 	position: relative;
-	.transition(left @menu-transition ease);
+	transition: left $menu-transition ease;
 	left: 0;
 }
 
 .lines-button {
 	display: inline-block;
-	padding: @menu-button-size*0.4 @menu-button-size/4 @menu-button-size/2 @menu-button-size/4;
-	transition: @menu-transition;
+	padding: calc($menu-button-size*0.4) calc($menu-button-size/4) calc($menu-button-size/2) calc($menu-button-size/4);
+	transition: $menu-transition;
 	cursor: pointer;
 	user-select: none;
 
@@ -31,7 +29,7 @@ body {
 			&:before,
 			&:after {
 				top: 0;
-				width: @menu-button-size/1.8;
+				width: calc($menu-button-size / 1.8);
 			}
 			&:before { transform: translate3d(75%,10%,0) rotate(40deg); transform-origin: right bottom; }
 			&:after { transform: translate3d(75%,-10%,0) rotate(-40deg); transform-origin: right top; }
@@ -41,47 +39,45 @@ body {
 }
 
 .lines {
-	.line(); //create middle line
 	position: relative;
-	top: -@menu-button-size/14;
+	top: calc(-1 * $menu-button-size / 14);
 
-	/*create the upper and lower lines as pseudo-elements of the middle line*/
-	&:before, &:after {
-		.line();
+	/* create the upper and lower lines as pseudo-elements of the middle line */
+	&::before, &::after {
 		position: absolute;
 		left:0;
 		content: '';
-		transform-origin: @menu-button-size/14 center;
+		transform-origin: calc($menu-button-size/14) center;
 	}
-	&:before { top: -@menu-button-size/4; }
-	&:after { top: @menu-button-size/4; }
-
-
+	&:before { top: calc(-1 * $menu-button-size / 4); }
+	&:after { top: calc($menu-button-size / 4); }
 }
 
-.line() {
-    display: inline-block;
-    width: @menu-button-size;
-    height: @menu-button-size/7;
+.lines,
+.lines::before,
+.lines::after {
+ 	display: inline-block;
+    width: $menu-button-size;
+    height: calc($menu-button-size/7);
     background: #666;
-    border-radius: @menu-button-size/14;
-    transition: all @menu-transition;
- }
+    border-radius: calc($menu-button-size / 14);
+    transition: all $menu-transition;
+}
 
 .lines-button.arrow.active {
 	transform: scale3d(.8,.8,.8);
 }
 
 body.menu-opened .lines-button.arrow .lines{
-	&:before,
-	&:after {
+	&::before,
+	&::after {
 		top: 0;
-		width: @menu-button-size/1.8;
-		transform-origin: @menu-button-size/14 center;
+		width: calc($menu-button-size / 1.8);
+		transform-origin: calc($menu-button-size / 14) center;
 	}
 
-	&:before { transform: rotate3d(0,0,1,-40deg); }
-	&:after { transform: rotate3d(0,0,1,40deg); }
+	&::before { transform: rotate3d(0,0,1,-40deg); }
+	&::after { transform: rotate3d(0,0,1,40deg); }
 }
 
 #menu-button {
@@ -92,14 +88,16 @@ body.menu-opened .lines-button.arrow .lines{
 	cursor: pointer;
 	background: #eee;
 	border: none;
-	box-shadow: @menu-button-size*0.05 @menu-button-size*0.05 @menu-button-size*0.25 #999;
-	.transition(left @menu-transition ease, opacity 0.2s ease;);
+	box-shadow: calc($menu-button-size*0.05) calc($menu-button-size*0.05) calc($menu-button-size*0.25) #999;
+	transition: left $menu-transition ease, opacity 0.2s ease;
+
 	&:hover {
-		box-shadow: @menu-button-size*0.02 @menu-button-size*0.02 @menu-button-size*0.15 #999;
+		box-shadow: calc($menu-button-size*0.02) calc($menu-button-size*0.02) calc($menu-button-size*0.15) #999;
 	}
+
 	&:focus {
 		background-color: #e8e8e8;
-		box-shadow: inset -@menu-button-size*0.02 -@menu-button-size*0.02 @menu-button-size*0.2 #aaa;
+		box-shadow: inset calc(-1*$menu-button-size*0.02) calc(-1*$menu-button-size*0.02) calc($menu-button-size*0.2) #aaa;
 		outline: none;
 	}
 }
@@ -120,27 +118,27 @@ body.menu-opened .lines-button.arrow .lines{
 #menu {
 	position: fixed;
 	margin: 0;
-	padding: @menu-button-size*1.6 0 0 0;
+	padding: calc($menu-button-size*1.6) 0 0 0;
 	height: 100%;
-	background: @bg-secondary;
+	background: $bg-secondary;
 	box-shadow: 0 0 15px #ccc;
-	.box-sizing(border-box);
+	box-sizing: border-box;
 	overflow-y: auto;
 	top: 0;
-	left: -@menuWidth;
+	left: calc(-1 * $menu-width);
 	z-index: 100;
-	width: @menuWidth;
-	.transition(left @menu-transition ease);
+	width: $menu-width;
+	transition: left $menu-transition ease;
 	text-align: left;
-	.hardware-accelerated();
+	transform: translate3d(0,0,0); /* hardware accelerated */
 
 	a {
 		padding: .25em 0 .25em 1em;
 		text-decoration: none;
-		color: @fg-default;
+		color: $fg-default;
 
 		&:hover {
-			background: @bg-secondary-alt;
+			background: $bg-secondary-alt;
 		}
 
 		&.active {
@@ -151,7 +149,7 @@ body.menu-opened .lines-button.arrow .lines{
 	a.title {
 		display: block;
 		font-size: 1.4em;
-		.font-title();
+		font-family: $font-title;
 	}
 
 	a.download-link, a.github-link {
@@ -164,7 +162,7 @@ body.menu-opened .lines-button.arrow .lines{
 			line-height: 1.5em;
 			margin: 0;
 			font-size: 100%;
-			color: @fg-default;
+			color: $fg-default;
 		}
 
 		&::after {
@@ -212,14 +210,14 @@ body.menu-opened .lines-button.arrow .lines{
 }
 
 body.menu-opened {
-	left: @menuWidth;
+	left: $menu-width;
 
 	#menu {
 		left: 0;
 	}
 
 	#menu-button {
-		left: @menuWidth - @menu-button-size*1.5;
+		left: calc($menu-width - $menu-button-size*1.5);
 		border-width: 0 0 1px 1px;
 	}
 }
@@ -227,7 +225,7 @@ body.menu-opened {
 @media (min-width: 1281px) {
 	body {
 		position: absolute;
-		left: @menuWidth;
+		left: $menu-width;
 		right: 0;
 	}
 

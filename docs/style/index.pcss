@@ -1,9 +1,8 @@
-@import "helpers";
-@import "colors";
-@import "fonts";
+@import "./colors.pcss";
+@import "./fonts.pcss";
 
 .header {
-	.font-title();
+	font-family: $font-title;
 	padding: 1em 2em;
 	margin: 0 auto;
 	text-align: center;
@@ -15,7 +14,7 @@
 	}
 
 	.description {
-		.font-title();
+		font-family: $font-title;
 		font-size: 125%;
 		font-weight: 100;
 		line-height: 1.5;
@@ -50,7 +49,7 @@ table {
 		text-align: center;
 	}
 	th {
-		background: @bg-secondary;
+		background: $bg-secondary;
 	}
 }
 

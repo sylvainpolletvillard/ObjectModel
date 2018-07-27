@@ -14,7 +14,6 @@
 	<link rel="shortcut icon" href="docs/favicon.ico" type="image/x-icon">
 
 	<link rel="stylesheet" href="docs/style/main.css"/>
-	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 
 	<script defer src="docs/js/main.compiled.js"></script>
 	<script defer src="dist/object-model.js"></script>
@@ -30,7 +29,7 @@
 		<h2>Download</h2>
 	</a>
 	<hr>
-	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">
+	<a class="title github-link" href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">
 		<h2>View on Github</h2>
 	</a>
 	<hr>
@@ -87,7 +86,7 @@
 		<div class="description">
 			<h2 id="what-is-it">What is this library ?</h2>
 
-			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a> or <a href="https://flowtype.org" target="_blank">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from local storages, external libraries...</p>
+			<p>ObjectModel intends to bring <strong>strong dynamic type checking</strong> to your web applications. Contrary to static type-checking solutions like <a href="https://www.typescriptlang.org" target="_blank" rel="noopener">TypeScript</a> or <a href="https://flowtype.org" target="_blank" rel="noopener">Flow</a>, ObjectModel can also validate data at runtime: JSON from the server, form inputs, content from local storages, external libraries...</p>
 
 			<p>By leveraging <strong>ES6 Proxies</strong>, this library ensures that your variables always match the model definition and validation constraints you added to them. Thanks to the generated exceptions, it will help you spot potential bugs and save you time spent on debugging. ObjectModel is also very easy to master: no new language to learn, no new tools, no compilation step, just a minimalist and intuitive API in a plain old JS micro-library.</p>
 
@@ -129,10 +128,10 @@
 			<h2>Download</h2>
 			<h3>Current version: v<span class="version">3.5.4</span></h3>
 			<ul>
-				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank">NPM</a> :
+				<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">NPM</a> :
 					<code>npm install objectmodel</code>
 				</li>
-				<li>From CDN: <a href="https://unpkg.com/objectmodel">unpkg.com/objectmodel</a></li>
+				<li>From CDN: <a href="https://unpkg.com/objectmodel" rel="noopener">unpkg.com/objectmodel</a></li>
 				<li>Minified bundle (<strong class="size-gzip">3.99 KB</strong> gzipped) :
 					<a href="dist/object-model.min.js">object-model.min.js</a>
 				</li>
@@ -147,7 +146,7 @@
 			<p>If you need to support older browsers, please use the <a href="docs/v2">2.x version</a> instead.</p>
 
 			<p>Take a look at
-				<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">Github Releases</a>
+				<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank" rel="noopener">Github Releases</a>
 				and <a href="#common-questions">Browsers/Node support</a> section for more information.
 			</p>
 		</div>
@@ -155,10 +154,10 @@
 		<div>
 			<h2>Support</h2>
 			<p>Please report bugs on the
-				<a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank">GitHub repository</a>.
+				<a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">GitHub repository</a>.
 			</p>
 			<p>You can also ask for support on the
-				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel" target="_blank">Gitter channel</a>.
+				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">Gitter channel</a>.
 			</p>
 		</div>
 	</section>
@@ -434,7 +433,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 	<section id="doc-composition" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Composition with models as types</h2>
-			<p>Models declared can also be used for type checking, so you can compose structures of models. Note that the property values do not necessarily need to be model instances to be considered valid: only the definition of the associated model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>.</p>
+			<p>Models declared can also be used for type checking, so you can compose structures of models. Note that the property values do not necessarily need to be model instances to be considered valid: only the definition of the associated model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank" rel="noopener">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck, then it's a duck"</i>.</p>
 			<p>When a model definition is recognized, the value is automatically replaced by an instance of the corresponding model. This naive approach is very time saving and allows you, for example, to parse composed models from JSON in one step. If there is somehow an ambiguity (such as two possible valid models within an union type), the value is kept unchanged and a warning console message will inform you how to solve this ambiguity.</p>
 		</div>
 
@@ -508,7 +507,7 @@ expecting child to be {
 
 		<div class="doc">
 			<h3>With ES6 classes</h3>
-			<p>Extended models inherit the parent's prototype chain, so you can easily combine it with class inheritance. Just make sure to respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank">Liskov substitution principle</a> when you extend a type definition.</p>
+			<p>Extended models inherit the parent's prototype chain, so you can easily combine it with class inheritance. Just make sure to respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank" rel="noopener">Liskov substitution principle</a> when you extend a type definition.</p>
 		</div>
 
 		<div class="panel panel1">
@@ -587,8 +586,8 @@ joe.sendConfirmationMail();</code>
 	<section id="doc-sealed" class="grid doc-code-code">
 		<div class="doc">
 			<h2>Sealed object models</h2>
-			<p>By default, an object with properties not declared in the definition is still valid, as long as the rest of the definition is respected. This is an intended behaviour to enable model extensions and respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank">Liskov substitution principle</a>. Also, some frameworks and libraries add their own private properties to your data, and blocking them would prevent these tools from working properly.</p>
-			<p>However, if you really want to prevent all undeclared properties, you can set the <code>model.sealed</code> property to <code>true</code>. This is the equivalent of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal" target="_blank"><code>Object.seal()</code></a> but for object models instances. The undeclared props will be catched on initial and future assignments</p>
+			<p>By default, an object with properties not declared in the definition is still valid, as long as the rest of the definition is respected. This is an intended behaviour to enable model extensions and respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank" rel="noopener">Liskov substitution principle</a>. Also, some frameworks and libraries add their own private properties to your data, and blocking them would prevent these tools from working properly.</p>
+			<p>However, if you really want to prevent all undeclared properties, you can set the <code>model.sealed</code> property to <code>true</code>. This is the equivalent of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal" target="_blank" rel="noopener"><code>Object.seal()</code></a> but for object models instances. The undeclared props will be catched on initial and future assignments</p>
 		</div>
 
 		<div class="panel panel1">
@@ -1290,7 +1289,7 @@ console.log(
 			<summary>Is it possible to convert TypeScript/Flow annotations to Models ?</summary>
 			<p>It may be possible with Babel, but ObjectModel is not the best option for this purpose.</p>
 			<p>Models have been designed to use all the advantages of runtime validation, such as complex assertions, mixed value/type checking or custom error collectors. Compared to static type systems, the feature set is really different. I suggest you to combine the strengths of static and dynamic type-checking: use static annotations in your business logic layer, and Models at your API boundaries to validate user input, network responses or serialized data. You can also use both at the same place as demonstrated in the introduction video.</p>
-			<p>If you are looking for a runtime type-checking solution that acts as a fully transparent layer over an existing static type system, you should try <a href="https://codemix.github.io/flow-runtime/" target="_blank">flow-runtime</a> instead.</p>
+			<p>If you are looking for a runtime type-checking solution that acts as a fully transparent layer over an existing static type system, you should try <a href="https://codemix.github.io/flow-runtime/" target="_blank" rel="noopener">flow-runtime</a> instead.</p>
 		</details>
 
 	</section>
@@ -1298,7 +1297,7 @@ console.log(
 	<section>
 		<h2>I have a question / suggestion / bug to report</h2>
 		<p>Please check the documentation twice, then open an issue on the
-			<a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank">Github repository</a>
+			<a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank" rel="noopener">Github repository</a>
 		</p>
 	</section>
 
@@ -1310,6 +1309,7 @@ console.log(
 				<a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript"
 				   title="Share on Facebook"
 				   target="_blank"
+				   rel="noopener"
 				   onclick="window.open(this.href); return false;">
 					<img class="lazy" data-src="docs/res/facebook.svg" width="48" height="48">
 				</a>
@@ -1317,6 +1317,7 @@ console.log(
 			<li>
 				<a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org"
 				   target="_blank"
+				   rel="noopener"
 				   title="Tweet"
 				   onclick="window.open(this.href); return false;">
 					<img class="lazy" data-src="docs/res/twitter.svg" width="48" height="48">
@@ -1333,6 +1334,7 @@ console.log(
 			<li>
 				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website"
 				   target="_blank"
+				   rel="noopener"
 			       title="Chat on Gitter">
 					<img class="lazy" data-src="docs/res/gitter.svg" width="48" height="48">
 				</a>

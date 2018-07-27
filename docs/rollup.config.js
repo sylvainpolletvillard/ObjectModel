@@ -2,9 +2,9 @@ import babel from 'rollup-plugin-babel';
 import { terser } from "rollup-plugin-terser";
 
 export default {
-	input: 'docs/js/main.js',
+	input: 'js/main.js',
 	output: {
-		file: 'docs/js/main.compiled.js',
+		file: 'js/main.compiled.js',
 		format: 'iife',
 		sourcemap: true
 	},

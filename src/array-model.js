@@ -1,29 +1,28 @@
-import {_original, _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, initModel, Model, stackError, unstackErrors} from "./object-model.js"
-import {extend, isFunction, proxifyFn, proxifyModel, setConstructor} from "./helpers.js"
-
-let ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"]
+import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, Model, stackError, unstackErrors } from "./object-model.js"
+import { extend } from "./helpers.js"
+import { initListModel } from "./list-model.js";
 
 export default function ArrayModel(def) {
+	let castAll = args => args.map(arg => cast(arg, def))
 
-	let model = function (array = model.default) {
-		if (model.validate(array)) return proxifyModel(array, model, {
-			get(arr, key) {
-				if (key === _original) return arr
-
-				let val = arr[key];
-				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
-					if (ARRAY_MUTATORS.includes(key)) {
-						let testArray = arr.slice()
-						fn.apply(testArray, args)
-						model.validate(testArray)
-					}
-
-					let returnValue = fn.apply(arr, args)
-					array.forEach((a, i) => arr[i] = cast(a, model.definition))
-					return returnValue
-				}) : val
-			},
-
+	let model = initListModel(
+		Array,
+		ArrayModel,
+		def,
+		a => Array.isArray(a) ? castAll(a) : a,
+		a => [...a],
+		{
+			"copyWithin": 0,
+			"fill": ([val, ...rest]) => [cast(val, def), ...rest],
+			"pop": 0,
+			"push": castAll,
+			"reverse": 0,
+			"shift": 0,
+			"sort": 0,
+			"splice": ([start, end, ...vals]) => [start, end, ...castAll(vals)],
+			"unshift": castAll,
+		},
+		{
 			set(arr, key, val) {
 				return setArrayKey(arr, key, val, model)
 			},
@@ -31,12 +30,9 @@ export default function ArrayModel(def) {
 			deleteProperty(arr, key) {
 				return !(key in arr) || setArrayKey(arr, key, undefined, model)
 			}
-		})
-	}
+		}
+	)
 
-	extend(model, Array)
-	setConstructor(model, ArrayModel)
-	initModel(model, def)
 	return model
 }
 
@@ -65,7 +61,7 @@ let setArrayKey = (array, key, value, model) => {
 	if (parseInt(key) === +key && key >= 0)
 		value = checkDefinition(value, model.definition, path, model.errors, [])
 
-	let testArray = array.slice()
+	let testArray = [...array]
 	testArray[key] = value
 	checkAssertions(testArray, model, path)
 	let isSuccess = !unstackErrors(model)

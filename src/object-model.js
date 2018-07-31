@@ -23,7 +23,7 @@ export const
 	},
 
 	stackError = (errors, expected, received, path, message) => {
-		errors.push({expected, received, path, message})
+		errors.push({ expected, received, path, message })
 	},
 
 	unstackErrors = (model, errorCollector = model.errorCollector) => {
@@ -64,7 +64,7 @@ export const
 		if (!Array.isArray(newParts)) newParts = [newParts]
 		if (newParts.length > 0) {
 			def = newParts
-				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? [...def] : [def]) // clone to lose ref
 				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
 		}
 
@@ -123,7 +123,7 @@ export const
 			if (result !== true) {
 				let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 					`assertion "${assertion.description}" returned ${format(assertionResult)} `
-					+`for ${path ? path+" =" : "value"} ${format(value)}`
+					+ `for ${path ? path + " =" : "value"} ${format(value)}`
 				stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path))
 			}
 		}
@@ -142,10 +142,10 @@ export const
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 		if (obj.toString !== Object.prototype.toString) return obj.toString()
 		if (obj && isObject(obj)) {
-			let props  = Object.keys(obj),
-			    indent = '\t'.repeat(stack.length)
+			let props = Object.keys(obj),
+				indent = '\t'.repeat(stack.length)
 			return `{${props.map(
-				key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
+				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
 			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 		}
 
@@ -156,10 +156,10 @@ export const
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		let newPath = formatPath(path, key),
-		    isPrivate  = model.conventionForPrivate(key),
-		    isConstant = model.conventionForConstant(key),
-		    isOwnProperty = has(o, key),
-		    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
+			isPrivate = model.conventionForPrivate(key),
+			isConstant = model.conventionForConstant(key),
+			isOwnProperty = has(o, key),
+			initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
@@ -200,7 +200,7 @@ export const
 			return obj // no value or not leaf or already a model instance
 
 		let def = parseDefinition(defNode),
-		    suitableModels = []
+			suitableModels = []
 
 		for (let part of def) {
 			if (is(Model, part) && part.test(obj))
@@ -222,9 +222,9 @@ export const
 	checkUndeclaredProps = (obj, def, errors, path) => {
 		Object.keys(obj).map(key => {
 			let val = obj[key],
-			    subpath = formatPath(path, key)
+				subpath = formatPath(path, key)
 			if (!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
-			else if (isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath)
+			else if (isPlainObject(val)) checkUndeclaredProps(val, def[key], errors, subpath)
 		})
 	},
 
@@ -344,12 +344,12 @@ Object.assign(Model.prototype, {
 
 	test(obj) {
 		let model = this;
-		while(!has(model, "errorCollector")) {
+		while (!has(model, "errorCollector")) {
 			model = getProto(model)
 		}
 
 		let initialErrorCollector = model.errorCollector,
-		    failed;
+			failed;
 
 		model.errorCollector = () => {
 			failed = true
@@ -433,8 +433,8 @@ extend(ObjectModel, Model, {
 
 	extend(...newParts) {
 		let def = Object.assign({}, this.definition),
-		    newAssertions = [],
-		    proto = {}
+			newAssertions = [],
+			proto = {}
 
 		merge(proto, this.prototype, false)
 

@@ -1,5 +1,5 @@
-import {_original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError, unstackErrors} from "./object-model.js"
-import {extend, isFunction, proxifyModel, setConstructor} from "./helpers.js"
+import { _original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError, unstackErrors } from "./object-model.js"
+import { extend, isFunction, proxifyModel, setConstructor } from "./helpers.js"
 
 
 export default function FunctionModel(...argsDef) {
@@ -12,7 +12,7 @@ export default function FunctionModel(...argsDef) {
 				return fn[key]
 			},
 
-			apply (fn, ctx, args) {
+			apply(fn, ctx, args) {
 				let def = model.definition
 
 				def.arguments.forEach((argDef, i) => {
@@ -35,7 +35,7 @@ export default function FunctionModel(...argsDef) {
 
 	extend(model, Function)
 	setConstructor(model, FunctionModel)
-	initModel(model, {arguments: argsDef})
+	initModel(model, { arguments: argsDef })
 
 	return model
 }
@@ -43,7 +43,7 @@ export default function FunctionModel(...argsDef) {
 extend(FunctionModel, Model, {
 	toString(stack = []) {
 		let out = `Function(${this.definition.arguments.map(
-			argDef => formatDefinition(argDef, stack.slice())
+			argDef => formatDefinition(argDef, [...stack])
 		).join(", ")})`
 
 		if ("return" in this.definition) {
@@ -59,8 +59,8 @@ extend(FunctionModel, Model, {
 
 	extend(newArgs, newReturns) {
 		let args = this.definition.arguments,
-		    mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
-		    mixedReturns = extendDefinition(this.definition.return, newReturns)
+			mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
+			mixedReturns = extendDefinition(this.definition.return, newReturns)
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 

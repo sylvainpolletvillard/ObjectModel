@@ -186,8 +186,23 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	a.push({ x: 3 });
 
-	assert.ok(a[1] instanceof N, "test automatic model casting with array mutator method 1/2")
-	assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array mutator method 2/2")
+	assert.ok(a[1] instanceof N, "test automatic model casting with array push method 1/2")
+	assert.equal(a[1].x * a[1].y, 21, "test automatic model casting with array push method 2/2")
+
+	a.splice(1, 1, { x: 4 });
+
+	assert.ok(a[1] instanceof N, "test automatic model casting with array splice method 1/2")
+	assert.equal(a[1].x * a[1].y, 28, "test automatic model casting with array splice method 2/2")
+
+	a.fill({ x: 5 })
+
+	assert.ok(a[1] instanceof N, "test automatic model casting with array fill method 1/2")
+	assert.equal(a[1].x * a[1].y, 35, "test automatic model casting with array fill method 2/2")
+
+	a.unshift({ x: 1 }, { x:6 })
+
+	assert.ok(a[1] instanceof N, "test automatic model casting with array unshift method 1/2")
+	assert.equal(a[1].x * a[1].y, 42, "test automatic model casting with array unshift method 2/2")
 
 	a[0] = { x: 10 };
 

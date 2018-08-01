@@ -51,3 +51,9 @@ for (let code of [...document.querySelectorAll("code[data-source]")]) {
 }
 
 document.addEventListener("DOMContentLoaded", yall);
+
+window.addEventListener("load", () => {
+	document.querySelectorAll('iframe[data-src]').forEach(iframe => {
+		iframe.setAttribute("src", iframe.getAttribute("data-src"))
+	})
+})

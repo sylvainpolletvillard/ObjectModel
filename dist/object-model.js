@@ -1,4 +1,4 @@
-// ObjectModel v3.5.4 - http://objectmodel.js.org
+// ObjectModel v3.6.0 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -8,17 +8,18 @@
 
 	const
 		bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
-		getProto     = x => Object.getPrototypeOf(x),
-		setProto     = (x,p) => Object.setPrototypeOf(x,p),
+		getProto = x => Object.getPrototypeOf(x),
+		setProto = (x, p) => Object.setPrototypeOf(x, p),
 
-		has           = (o, prop) => o.hasOwnProperty(prop),
-		is            = (Constructor, obj) => obj instanceof Constructor,
-		isFunction    = f => typeof f === "function",
-		isObject      = o => typeof o === "object",
+		has = (o, prop) => o.hasOwnProperty(prop),
+		is = (Constructor, obj) => obj instanceof Constructor,
+		isFunction = f => typeof f === "function",
+		isObject = o => typeof o === "object",
 		isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
+		isIterable = x => x && isFunction(x[Symbol.iterator]),
 
-		proxifyFn    = (fn, apply) => new Proxy(fn, {apply}),
-		proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({getPrototypeOf: () => model.prototype}, traps)),
+		proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
+		proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
 
 		merge = (target, src = {}, deep) => {
 			for (let key in src) {
@@ -34,7 +35,7 @@
 		},
 
 		define = (obj, key, value, enumerable = false) => {
-			Object.defineProperty(obj, key, {value, enumerable, writable: true, configurable: true});
+			Object.defineProperty(obj, key, { value, enumerable, writable: true, configurable: true });
 		},
 
 		setConstructor = (model, constructor) => {
@@ -73,7 +74,7 @@
 		},
 
 		stackError = (errors, expected, received, path, message) => {
-			errors.push({expected, received, path, message});
+			errors.push({ expected, received, path, message });
 		},
 
 		unstackErrors = (model, errorCollector = model.errorCollector) => {
@@ -114,7 +115,7 @@
 			if (!Array.isArray(newParts)) newParts = [newParts];
 			if (newParts.length > 0) {
 				def = newParts
-					.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? def.slice() : [def]) // clone to lose ref
+					.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? [...def] : [def]) // clone to lose ref
 					.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
 			}
 
@@ -173,7 +174,7 @@
 				if (result !== true) {
 					let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 						`assertion "${assertion.description}" returned ${format(assertionResult)} `
-						+`for ${path ? path+" =" : "value"} ${format(value)}`;
+						+ `for ${path ? path + " =" : "value"} ${format(value)}`;
 					stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
 				}
 			}
@@ -192,10 +193,10 @@
 			if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 			if (obj.toString !== Object.prototype.toString) return obj.toString()
 			if (obj && isObject(obj)) {
-				let props  = Object.keys(obj),
-				    indent = '\t'.repeat(stack.length);
+				let props = Object.keys(obj),
+					indent = '\t'.repeat(stack.length);
 				return `{${props.map(
-				key => `\n${indent + key}: ${format(obj[key], stack.slice())}`
+				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
 			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 			}
 
@@ -206,10 +207,10 @@
 
 		controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 			let newPath = formatPath(path, key),
-			    isPrivate  = model.conventionForPrivate(key),
-			    isConstant = model.conventionForConstant(key),
-			    isOwnProperty = has(o, key),
-			    initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
+				isPrivate = model.conventionForPrivate(key),
+				isConstant = model.conventionForConstant(key),
+				isOwnProperty = has(o, key),
+				initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
 			if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 				cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model);
@@ -250,7 +251,7 @@
 				return obj // no value or not leaf or already a model instance
 
 			let def = parseDefinition(defNode),
-			    suitableModels = [];
+				suitableModels = [];
 
 			for (let part of def) {
 				if (is(Model, part) && part.test(obj))
@@ -272,9 +273,9 @@
 		checkUndeclaredProps = (obj, def, errors, path) => {
 			Object.keys(obj).map(key => {
 				let val = obj[key],
-				    subpath = formatPath(path, key);
+					subpath = formatPath(path, key);
 				if (!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
-				else if (isPlainObject(val))	checkUndeclaredProps(val, def[key], errors, subpath);
+				else if (isPlainObject(val)) checkUndeclaredProps(val, def[key], errors, subpath);
 			});
 		},
 
@@ -394,12 +395,12 @@
 
 		test(obj) {
 			let model = this;
-			while(!has(model, "errorCollector")) {
+			while (!has(model, "errorCollector")) {
 				model = getProto(model);
 			}
 
 			let initialErrorCollector = model.errorCollector,
-			    failed;
+				failed;
 
 			model.errorCollector = () => {
 				failed = true;
@@ -483,8 +484,8 @@
 
 		extend(...newParts) {
 			let def = Object.assign({}, this.definition),
-			    newAssertions = [],
-			    proto = {};
+				newAssertions = [],
+				proto = {};
 
 			merge(proto, this.prototype, false);
 
@@ -525,29 +526,58 @@
 		}
 	});
 
-	let ARRAY_MUTATORS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
+	const initListModel = (base, constructor, def, init, clone, mutators, otherTraps = {}) => {
 
-	function ArrayModel(def) {
+		let model = function (list = model.default) {
+			list = init(list);
 
-		let model = function (array = model.default) {
-			if (model.validate(array)) return proxifyModel(array, model, {
-				get(arr, key) {
-					if (key === _original) return arr
+			if (model.validate(list)) return proxifyModel(list, model, Object.assign({
+				get(l, key) {
+					if (key === _original) return l
 
-					let val = arr[key];
+					let val = l[key];
 					return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
-						if (ARRAY_MUTATORS.includes(key)) {
-							let testArray = arr.slice();
-							fn.apply(testArray, args);
-							model.validate(testArray);
+						if (has(mutators, key)) {
+							if (mutators[key]) args = mutators[key](args); // autocast method args
+
+							let testingClone = clone(l);
+							fn.apply(testingClone, args);
+							model.validate(testingClone);
 						}
 
-						let returnValue = fn.apply(arr, args);
-						array.forEach((a, i) => arr[i] = cast(a, model.definition));
-						return returnValue
+						return fn.apply(l, args)
 					}) : val
-				},
+				}
+			}, otherTraps))
+		};
 
+		extend(model, base);
+		setConstructor(model, constructor);
+		initModel(model, def);
+		return model
+	};
+
+	function ArrayModel(def) {
+		let castAll = args => args.map(arg => cast(arg, def));
+
+		let model = initListModel(
+			Array,
+			ArrayModel,
+			def,
+			a => Array.isArray(a) ? castAll(a) : a,
+			a => [...a],
+			{
+				"copyWithin": 0,
+				"fill": ([val, ...rest]) => [cast(val, def), ...rest],
+				"pop": 0,
+				"push": castAll,
+				"reverse": 0,
+				"shift": 0,
+				"sort": 0,
+				"splice": ([start, end, ...vals]) => [start, end, ...castAll(vals)],
+				"unshift": castAll,
+			},
+			{
 				set(arr, key, val) {
 					return setArrayKey(arr, key, val, model)
 				},
@@ -555,12 +585,9 @@
 				deleteProperty(arr, key) {
 					return !(key in arr) || setArrayKey(arr, key, undefined, model)
 				}
-			})
-		};
+			}
+		);
 
-		extend(model, Array);
-		setConstructor(model, ArrayModel);
-		initModel(model, def);
 		return model
 	}
 
@@ -589,7 +616,7 @@
 		if (parseInt(key) === +key && key >= 0)
 			value = checkDefinition(value, model.definition, path, model.errors, []);
 
-		let testArray = array.slice();
+		let testArray = [...array];
 		testArray[key] = value;
 		checkAssertions(testArray, model, path);
 		let isSuccess = !unstackErrors(model);
@@ -597,42 +624,19 @@
 		return isSuccess
 	};
 
-	let SET_MUTATORS = ["add", "delete", "clear"];
-
 	function SetModel(def) {
-
-		let model = function (iterable = model.default) {
-			let castValue = val => cast(val, model.definition),
-			    set = new Set([...iterable].map(castValue));
-
-			if (!model.validate(set)) return
-
-			return proxifyModel(set, model, {
-				get(set, key) {
-					if (key === _original) return set
-
-					let val = set[key];
-					return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
-						if (key === "add") {
-							args[0] = castValue(args[0]);
-						}
-
-						if (SET_MUTATORS.includes(key)) {
-							let testSet = new Set(set);
-							fn.apply(testSet, args);
-							model.validate(testSet);
-						}
-
-						return fn.apply(set, args)
-					}) : val
-				}
-			})
-		};
-
-		extend(model, Set);
-		setConstructor(model, SetModel);
-		initModel(model, def);
-		return model
+		return initListModel(
+			Set,
+			SetModel,
+			def,
+			it => isIterable(it) ? new Set([...it].map(val => cast(val, def))) : it,
+			set => new Set(set),
+			{
+				"add": ([val]) => [cast(val, def)],
+				"delete": 0,
+				"clear": 0
+			}
+		)
 	}
 
 	extend(SetModel, Model, {
@@ -654,47 +658,27 @@
 		}
 	});
 
-	let MAP_MUTATORS = ["set", "delete", "clear"];
-
 	function MapModel(key, value) {
 
-		let model = function (iterable = model.default) {
-			let castKeyValue = pair => ["key", "value"].map((prop, i) => cast(pair[i], model.definition[prop])),
-			    map = new Map([...iterable].map(castKeyValue));
+		let castKeyValue = ([k, v]) => [cast(k, key), cast(v, value)];
 
-			if (!model.validate(map)) return
-
-			return proxifyModel(map, model, {
-				get(map, key) {
-					if (key === _original) return map
-
-					let val = map[key];
-					return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
-						if (key === "set") {
-							args = castKeyValue(args);
-						}
-
-						if (MAP_MUTATORS.includes(key)) {
-							let testMap = new Map(map);
-							fn.apply(testMap, args);
-							model.validate(testMap);
-						}
-
-						return fn.apply(map, args)
-					}) : val
-				}
-			})
-		};
-
-		extend(model, Map);
-		setConstructor(model, MapModel);
-		initModel(model, {key, value});
-		return model
+		return initListModel(
+			Map,
+			MapModel,
+			{ key, value },
+			it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
+			map => new Map(map),
+			{
+				"set": castKeyValue,
+				"delete": 0,
+				"clear": 0
+			}
+		)
 	}
 
 	extend(MapModel, Model, {
 		toString(stack) {
-			let {key, value} = this.definition;
+			let { key, value } = this.definition;
 			return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
 		},
 
@@ -711,7 +695,7 @@
 		},
 
 		extend(keyPart, valuePart) {
-			let {key, value} = this.definition;
+			let { key, value } = this.definition;
 			return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
 		}
 	});
@@ -726,7 +710,7 @@
 					return fn[key]
 				},
 
-				apply (fn, ctx, args) {
+				apply(fn, ctx, args) {
 					let def = model.definition;
 
 					def.arguments.forEach((argDef, i) => {
@@ -749,7 +733,7 @@
 
 		extend(model, Function);
 		setConstructor(model, FunctionModel);
-		initModel(model, {arguments: argsDef});
+		initModel(model, { arguments: argsDef });
 
 		return model
 	}
@@ -757,7 +741,7 @@
 	extend(FunctionModel, Model, {
 		toString(stack = []) {
 			let out = `Function(${this.definition.arguments.map(
-			argDef => formatDefinition(argDef, stack.slice())
+			argDef => formatDefinition(argDef, [...stack])
 		).join(", ")})`;
 
 			if ("return" in this.definition) {
@@ -773,8 +757,8 @@
 
 		extend(newArgs, newReturns) {
 			let args = this.definition.arguments,
-			    mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
-			    mixedReturns = extendDefinition(this.definition.return, newReturns);
+				mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
+				mixedReturns = extendDefinition(this.definition.return, newReturns);
 			return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 		},
 

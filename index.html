@@ -96,8 +96,8 @@
 		</div>
 
 		<div id="video-demo">
-			<iframe src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0"
-			        width="640" height="360" frameborder="0" allowfullscreen>
+			<iframe data-src="https://www.youtube.com/embed/zmojfyNH_EE?rel=0&amp;showinfo=0"
+			        src="" width="640" height="360" frameborder="0" allowfullscreen>
 			</iframe>
 		</div>
 	</section>
@@ -1295,6 +1295,33 @@ console.log(
 			<p>It may be possible with Babel, but ObjectModel is not the best option for this purpose.</p>
 			<p>Models have been designed to use all the advantages of runtime validation, such as complex assertions, mixed value/type checking or custom error collectors. Compared to static type systems, the feature set is really different. I suggest you to combine the strengths of static and dynamic type-checking: use static annotations in your business logic layer, and Models at your API boundaries to validate user input, network responses or serialized data. You can also use both at the same place as demonstrated in the introduction video.</p>
 			<p>If you are looking for a runtime type-checking solution that acts as a fully transparent layer over an existing static type system, you should try <a href="https://codemix.github.io/flow-runtime/" target="_blank" rel="noopener">flow-runtime</a> instead.</p>
+		</details>
+
+		<details>
+			<summary>How do I validate values returned by Promises or other async structures ?</summary>
+
+			<div class="grid doc-code-code">
+				<div class="doc">
+					<p>It is impossible to validate both the Promise and the resolved value at the same time, because of its asynchronous nature. So it actually requires two different models: a first one to check if it is actually a Promise, then a second one to validate the emitted value once the promise is resolved. See <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues/88" target="_blank" rel="noopener">this issue</a> for details.</p>
+				</div>
+
+				<div class="panel panel1">
+					<span class="legend">Example helper for Promises</span>
+					<pre><code class="language-javascript">const PromiseOf = definition => {
+	const PromiseModel = BasicModel(Promise);
+	const ResolvedValueModel = Model(definition)
+	return p => PromiseModel(p).then(x => ResolvedValueModel(x))
+}</code></pre>
+				</div>
+				<div class="panel panel2">
+					<span class="legend">Usage</span>
+					<pre><code class="language-javascript">let p = new Promise(resolve => setTimeout(() => resolve(42), 1000));
+
+PromiseOf(Number)(p).then(n => {
+   // ObjectModel has validated both the Promise and the resolved value
+})</code></pre>
+				</div>
+			</div>
 		</details>
 
 	</section>

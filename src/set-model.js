@@ -1,13 +1,13 @@
 import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, Model, stackError } from "./object-model.js"
 import { initListModel } from "./list-model.js"
-import { extend, is } from "./helpers.js"
+import { extend, is, isIterable } from "./helpers.js"
 
 export default function SetModel(def) {
 	return initListModel(
 		Set,
 		SetModel,
 		def,
-		iterable => new Set([...iterable].map(val => cast(val, def))),
+		it => isIterable(it) ? new Set([...it].map(val => cast(val, def))) : it,
 		set => new Set(set),
 		{
 			"add": ([val]) => [cast(val, def)],

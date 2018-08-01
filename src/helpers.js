@@ -8,6 +8,7 @@ export const
 	isFunction = f => typeof f === "function",
 	isObject = o => typeof o === "object",
 	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
+	isIterable = x => x && isFunction(x[Symbol.iterator]),
 
 	proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
 	proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),

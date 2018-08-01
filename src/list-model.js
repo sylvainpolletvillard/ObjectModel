@@ -4,7 +4,7 @@ import { extend, has, isFunction, proxifyFn, proxifyModel, setConstructor } from
 export const initListModel = (base, constructor, def, init, clone, mutators, otherTraps = {}) => {
 
 	let model = function (list = model.default) {
-		if (init) list = init(list)
+		list = init(list)
 
 		if (model.validate(list)) return proxifyModel(list, model, Object.assign({
 			get(l, key) {
@@ -13,7 +13,7 @@ export const initListModel = (base, constructor, def, init, clone, mutators, oth
 				let val = l[key];
 				return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 					if (has(mutators, key)) {
-						if (isFunction(mutators[key])) args = mutators[key](args) // autocast method args
+						if (mutators[key]) args = mutators[key](args) // autocast method args
 
 						let testingClone = clone(l)
 						fn.apply(testingClone, args)

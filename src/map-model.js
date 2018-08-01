@@ -1,6 +1,6 @@
 import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, Model, stackError } from "./object-model.js";
 import { initListModel } from "./list-model.js"
-import { extend, is } from "./helpers.js"
+import { extend, is, isIterable } from "./helpers.js"
 
 export default function MapModel(key, value) {
 
@@ -10,9 +10,8 @@ export default function MapModel(key, value) {
 		Map,
 		MapModel,
 		{ key, value },
-		iterable => new Map([...iterable].map(castKeyValue)),
+		it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
 		map => new Map(map),
-
 		{
 			"set": castKeyValue,
 			"delete": 0,

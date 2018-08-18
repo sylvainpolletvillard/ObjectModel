@@ -1,4 +1,7 @@
-import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, Model, stackError } from "./object-model.js";
+import {
+	_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	format, formatDefinition, Model, stackError
+} from "./object-model.js";
 import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
@@ -38,8 +41,11 @@ extend(MapModel, Model, {
 		checkAssertions(map, this, path, errors)
 	},
 
-	extend(keyPart, valuePart) {
+	extend(keyParts, valueParts) {
 		let { key, value } = this.definition
-		return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
+		return extendModel(new MapModel(
+			extendDefinition(key, keyParts),
+			extendDefinition(value, valueParts)
+		), this)
 	}
 })

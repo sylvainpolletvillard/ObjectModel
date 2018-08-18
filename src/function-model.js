@@ -1,4 +1,7 @@
-import { _original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel, format, formatDefinition, initModel, Model, stackError, unstackErrors } from "./object-model.js"
+import {
+	_original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	format, formatDefinition, initModel, Model, stackError, unstackErrors
+} from "./object-model.js"
 import { extend, isFunction, proxifyModel, setConstructor } from "./helpers.js"
 
 
@@ -8,8 +11,7 @@ export default function FunctionModel(...argsDef) {
 		if (!model.validate(fn)) return
 		return proxifyModel(fn, model, {
 			get(fn, key) {
-				if (key === _original) return fn
-				return fn[key]
+				return key === _original ? fn : fn[key]
 			},
 
 			apply(fn, ctx, args) {

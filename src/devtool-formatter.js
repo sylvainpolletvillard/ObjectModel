@@ -1,9 +1,9 @@
-import {Model, BasicModel, ObjectModel, _original} from "./object-model.js"
+import { Model, BasicModel, ObjectModel, _original } from "./object-model.js"
 import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
 import FunctionModel from "./function-model.js"
-import {getProto, is, isFunction, isPlainObject} from "./helpers.js"
+import { getProto, is, isFunction, isPlainObject } from "./helpers.js"
 
 const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
@@ -35,11 +35,11 @@ const getModel = (instance) => {
 	return proto.constructor
 }
 
-const span = (style, ...children) => ["span", {style}, ...children]
+const span = (style, ...children) => ["span", { style }, ...children]
 
-const format = (x, config={}) => {
+const format = (x, config = {}) => {
 	if (x === null || x === undefined)
-		return span(styles.null, ""+x);
+		return span(styles.null, "" + x);
 
 	if (typeof x === "boolean")
 		return span(styles.boolean, x);
@@ -66,24 +66,24 @@ const format = (x, config={}) => {
 	if (isFunction(x) && !is(Model, x) && config.isModelDefinition)
 		return span(styles.function, x.name || x.toString());
 
-	return ['object', {object: x, config}]
+	return ['object', { object: x, config }]
 }
 
 const formatObject = (o, model, config) => span('',
 	'{',
-	['ol', {style: styles.list}, ...Object.keys(o).map(prop =>
-		['li', {style: styles.listItem}, span(styles.property, prop), ': ', format(o[prop], config) ])
+	['ol', { style: styles.list }, ...Object.keys(o).map(prop =>
+		['li', { style: styles.listItem }, span(styles.property, prop), ': ', format(o[prop], config)])
 	],
 	'}'
 )
 
 const formatModel = model => {
 	const parts = [],
-	      cfg = { isModelDefinition: true },
-	      def = model.definition,
-	      formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
+		cfg = { isModelDefinition: true },
+		def = model.definition,
+		formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
 
-	if (is(BasicModel, model )) parts.push(format(def, cfg))
+	if (is(BasicModel, model)) parts.push(format(def, cfg))
 	if (is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
 	if (is(SetModel, model)) parts.push("Set of ", format(def, cfg))
 	if (is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
@@ -119,11 +119,11 @@ const ModelFormatter = {
 	body(model) {
 		return span('',
 			'{',
-			['ol', {style: styles.list}, ...Object.keys(model.definition).map(prop => {
+			['ol', { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
-				    isConstant = model.conventionForConstant(prop),
-				    hasDefault = model.prototype.hasOwnProperty(prop),
-				    style = styles.property;
+					isConstant = model.conventionForConstant(prop),
+					hasDefault = model.prototype.hasOwnProperty(prop),
+					style = styles.property;
 
 				if (isPrivate) {
 					style = isConstant ? styles.privateConstant : styles.private
@@ -131,11 +131,11 @@ const ModelFormatter = {
 					style = styles.constant
 				}
 
-				return ['li', {style: styles.listItem},
+				return ['li', { style: styles.listItem },
 					span(style, prop), ': ', format(model.definition[prop], { isModelDefinition: true }),
 					hasDefault ? span(styles.proto, ' = ', format(model.prototype[prop])) : ''
 				]
-			}) ],
+			})],
 			'}'
 		)
 	}
@@ -165,7 +165,7 @@ const ModelInstanceFormatter = {
 			'{',
 			[
 				'ol',
-				{style: styles.list},
+				{ style: styles.list },
 				...Object.keys(o).map(prop => {
 					let isPrivate = model.conventionForPrivate(prop),
 						isConstant = model.conventionForConstant(prop),
@@ -180,12 +180,12 @@ const ModelInstanceFormatter = {
 						style = styles.constant
 					}
 
-					return ['li', {style: styles.listItem},
+					return ['li', { style: styles.listItem },
 						span(style, prop), ': ', format(o[prop], { isInstanceProperty: true })
 					]
 				}),
-				['li', {style: styles.listItem},
-					span(styles.proto, '__proto__', ': ', ['object', {object: getProto(x)}])
+				['li', { style: styles.listItem },
+					span(styles.proto, '__proto__', ': ', ['object', { object: getProto(x) }])
 				]
 			],
 			'}'

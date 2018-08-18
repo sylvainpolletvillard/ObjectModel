@@ -31,7 +31,7 @@ export const
 		if (nbErrors > 0) {
 			let errors = model.errors.map(err => {
 				if (!err.message) {
-					let def = Array.isArray(err.expected) ? err.expected : [err.expected]
+					let def = [].concat(err.expected)
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 				}
@@ -61,10 +61,10 @@ export const
 	},
 
 	extendDefinition = (def, newParts = []) => {
-		if (!Array.isArray(newParts)) newParts = [newParts]
+		newParts = [].concat(newParts)
 		if (newParts.length > 0) {
 			def = newParts
-				.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? [...def] : [def]) // clone to lose ref
+				.reduce((def, ext) => def.concat(ext), [].concat(def)) // clone to lose ref
 				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
 		}
 
@@ -406,7 +406,7 @@ export function ObjectModel(def, params) {
 			stackError(model.errors, Object, obj);
 		}
 
-		merge(this, model[_constructor](obj), true)
+		merge(this, model[_constructor](obj))
 
 		if (!model.validate(this)) return
 		return getProxy(model, this, model.definition)
@@ -432,28 +432,26 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts) {
-		let def = Object.assign({}, this.definition),
-			newAssertions = [],
-			proto = {}
-
-		merge(proto, this.prototype, false)
+		let definition = Object.assign({}, this.definition),
+			proto = Object.assign({}, this.prototype),
+			newAssertions = []
 
 		for (let part of newParts) {
 			if (is(Model, part)) {
-				merge(def, part.definition, true)
+				merge(definition, part.definition)
 				newAssertions.push(...part.assertions)
 			}
-			if (isFunction(part)) merge(proto, part.prototype, true)
-			if (isObject(part)) merge(def, part, true)
+			if (isFunction(part)) merge(proto, part.prototype)
+			if (isObject(part)) merge(definition, part)
 		}
 
-		let submodel = extendModel(new ObjectModel(def), this, proto)
+		let submodel = extendModel(new ObjectModel(definition), this, proto)
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class
 			submodel[_constructor] = (obj) => {
 				let parentInstance = new this(obj)
-				merge(obj, parentInstance, true) // get modified props from parent class constructor
+				merge(obj, parentInstance) // get modified props from parent class constructor
 				return obj
 			}
 		}

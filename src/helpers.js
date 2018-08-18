@@ -1,7 +1,7 @@
 export const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
-	getProto = x => Object.getPrototypeOf(x),
-	setProto = (x, p) => Object.setPrototypeOf(x, p),
+	getProto = Object.getPrototypeOf,
+	setProto = Object.setPrototypeOf,
 
 	has = (o, prop) => o.hasOwnProperty(prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
@@ -13,17 +13,18 @@ export const
 	proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
 	proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
 
-	merge = (target, src = {}, deep) => {
+	merge = (target, src = {}) => {
 		for (let key in src) {
-			if (deep && isPlainObject(src[key])) {
+			if (isPlainObject(src[key])) {
 				let o = {}
-				merge(o, target[key], deep)
-				merge(o, src[key], deep)
+				merge(o, target[key])
+				merge(o, src[key])
 				target[key] = o
 			} else {
 				target[key] = src[key]
 			}
 		}
+		return target
 	},
 
 	define = (obj, key, value, enumerable = false) => {

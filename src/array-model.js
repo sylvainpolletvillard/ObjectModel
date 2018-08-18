@@ -1,4 +1,7 @@
-import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, Model, stackError, unstackErrors } from "./object-model.js"
+import {
+	_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	formatDefinition, Model, stackError, unstackErrors
+} from "./object-model.js"
 import { extend } from "./helpers.js"
 import { initListModel } from "./list-model.js";
 
@@ -58,7 +61,7 @@ extend(ArrayModel, Model, {
 
 let setArrayKey = (array, key, value, model) => {
 	let path = `Array[${key}]`;
-	if (parseInt(key) === +key && key >= 0)
+	if (parseInt(key) >= 0)
 		value = checkDefinition(value, model.definition, path, model.errors, [])
 
 	let testArray = [...array]

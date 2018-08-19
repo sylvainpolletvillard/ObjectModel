@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <title>Benchmark: Map Models without autocast</title>
+</head>
+
+<body>
+    <h1>Benchmark: Map Models without autocast</h1>
+</body>
+
+<script src="bench-lib.js"></script>
+
+<script type="module">
+    import { Model, BasicModel, ObjectModel, MapModel } from "../../src/index.js"
+
+    const Integer = BasicModel(Number).assert(Number.isInteger).as("Integer");
+    const PositiveNumber = BasicModel(Number).assert(function isPositive(n) { return n >= 0 }).as("PositiveNumber")
+    const PositiveInteger = PositiveNumber.extend().assert(Number.isInteger).as("PositiveInteger");
+
+    let mockId = () => Math.ceil(Math.random() * 100)
+    let mockOM = () => new OM(Object.assign({}, ...Array(10).fill().map((x, i) => ({ ["id" + i]: mockId() }))))
+    let mockOMapData = n => (new Array(n)).fill(0).map(x => [mockId(), mockOM()])
+
+    const Id = PositiveInteger.extend().as('Id');
+
+    class OM extends ObjectModel({
+        id0: [Id],
+        id0: [Id],
+        id1: [Id],
+        id2: [Id],
+        id3: [Id],
+        id4: [Id],
+        id5: [Id],
+        id6: [Id],
+        id7: [Id],
+        id8: [Id],
+        id9: [Id]
+    }) { };
+
+    const OMap = MapModel(Id, OM)
+
+
+    bench([100, 1000, 10000].map(n => ({
+        description: `Init MapModel with ${n} elements`,
+        nbIter: 3,
+        run() {
+            const data = mockOMapData(n);
+            new OMap(data)
+        }
+    })))
+
+</script>
+
+</html>

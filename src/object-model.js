@@ -197,14 +197,14 @@ export const
 	},
 
 	cast = (obj, defNode = []) => {
-		if (!obj || isPlainObject(defNode) || isModelInstance(obj))
+		if (!obj || isPlainObject(defNode) || is(BasicModel, defNode) || isModelInstance(obj))
 			return obj // no value or not leaf or already a model instance
 
 		let def = parseDefinition(defNode),
 			suitableModels = []
 
 		for (let part of def) {
-			if (is(Model, part) && part.test(obj))
+			if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
 				suitableModels.push(part)
 		}
 

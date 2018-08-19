@@ -24,7 +24,7 @@ QUnit.test("constructor && proto", function (assert) {
 QUnit.test("instanciation && mutation methods watchers", function (assert) {
 
 	const Arr = ArrayModel(Number);
-	const a   = Arr([]);
+	const a = Arr([]);
 
 	assert.ok(a instanceof Arr && a instanceof Array, "Array models can be instanciated");
 
@@ -49,7 +49,7 @@ QUnit.test("instanciation && mutation methods watchers", function (assert) {
 QUnit.test("validation in constructor", function (assert) {
 
 	const Arr = ArrayModel(Number);
-	const b   = Arr([1, 2, 3]);
+	const b = Arr([1, 2, 3]);
 	assert.equal(b.length, 3, "array.length is ok");
 
 	assert.throws(function () {
@@ -70,10 +70,10 @@ QUnit.test("union types & submodels", function (assert) {
 	});
 
 	const Arr = ArrayModel([Question, String, Boolean]);
-	const a   = Arr(["test"]);
+	const a = Arr(["test"]);
 	a.unshift(true);
-	a.push(Question({answer: 42}));
-	a.push({answer: 43});
+	a.push(Question({ answer: 42 }));
+	a.push({ answer: 43 });
 	assert.throws(function () {
 		a.unshift(42);
 	}, /TypeError/, "unshift multiple types");
@@ -90,8 +90,8 @@ QUnit.test("union types & fixed values", function (assert) {
 		Arr(["3", 2, true, 1]);
 	}, /TypeError[\s\S]*Array\[3]/, "ArrayModel fixed values");
 
-	const Cards     = ArrayModel([Number, "J", "Q", "K"]); // array of Numbers, J, Q or K
-	const Hand      = Cards.extend().assert(cards => cards.length === 2);
+	const Cards = ArrayModel([Number, "J", "Q", "K"]); // array of Numbers, J, Q or K
+	const Hand = Cards.extend().assert(cards => cards.length === 2);
 	const pokerHand = new Hand(["K", 10]);
 
 	assert.ok(Object.getPrototypeOf(Hand.prototype) === Cards.prototype, "extension respect prototypal chain");
@@ -111,12 +111,12 @@ QUnit.test("union types & fixed values", function (assert) {
 
 QUnit.test("Child array models in object models", function (assert) {
 
-	const Child  = ObjectModel({arr: ArrayModel(String)});
-	const Parent = ObjectModel({child: Child});
+	const Child = ObjectModel({ arr: ArrayModel(String) });
+	const Parent = ObjectModel({ child: Child });
 
-	const childO = Child({arr: ["a", "b", "c"]});
+	const childO = Child({ arr: ["a", "b", "c"] });
 	assert.ok(childO.arr instanceof Array, "child array model is array");
-	const parentO = Parent({child: childO});
+	const parentO = Parent({ child: childO });
 	assert.ok(parentO.child.arr instanceof Array, "child array model from parent is array");
 
 	childO.arr.push("a");
@@ -132,7 +132,7 @@ QUnit.test("Child array models in object models", function (assert) {
 QUnit.test("defaults values", function (assert) {
 
 	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
-	const a        = ArrModel();
+	const a = ArrModel();
 
 	assert.ok(a instanceof Array && a.length === 0, "Array model default value");
 
@@ -152,24 +152,24 @@ QUnit.test("defaults values", function (assert) {
 
 QUnit.test("Assertions", function (assert) {
 
-	const ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr){ return arr.length <= 3; });
-	let arr = ArrayMax3([1,2]);
+	const ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr) { return arr.length <= 3; });
+	let arr = ArrayMax3([1, 2]);
 
 	arr.push(3);
-	assert.throws(function(){ arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
+	assert.throws(function () { arr.push(4); }, /TypeError[\s\S]*maxRange/, "test assertion after array method");
 
-	const ArraySumMax10 = ArrayModel(Number).assert(function(arr){
-		return arr.reduce(function(a,b){ return a+b; },0) <= 10;
+	const ArraySumMax10 = ArrayModel(Number).assert(function (arr) {
+		return arr.reduce(function (a, b) { return a + b; }, 0) <= 10;
 	});
 
-	arr = ArraySumMax10([2,3,4]);
-	assert.throws(function(){ arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
+	arr = ArraySumMax10([2, 3, 4]);
+	assert.throws(function () { arr[1] = 7; }, /TypeError/, "test assertion after array key assignment");
 
 	const AssertArray = ArrayModel(Number).assert(v => v.length >= 0, "may throw exception");
 
 	new AssertArray([]);
 
-	assert.throws(function(){ new AssertArray(); },
+	assert.throws(function () { new AssertArray(); },
 		/assertion "may throw exception" returned TypeError.*for value undefined/,
 		"assertions catch exceptions on Array models");
 
@@ -179,7 +179,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 	const Arr = ArrayModel(N);
-	const a = Arr([ { x:9 } ]);
+	const a = Arr([{ x: 9 }]);
 
 	assert.ok(a[0] instanceof N, "test automatic model casting with array init 1/2")
 	assert.equal(a[0].x * a[0].y, 63, "test automatic model casting with array init 2/2")
@@ -199,7 +199,7 @@ QUnit.test("Automatic model casting", function (assert) {
 	assert.ok(a[1] instanceof N, "test automatic model casting with array fill method 1/2")
 	assert.equal(a[1].x * a[1].y, 35, "test automatic model casting with array fill method 2/2")
 
-	a.unshift({ x: 1 }, { x:6 })
+	a.unshift({ x: 1 }, { x: 6 })
 
 	assert.ok(a[1] instanceof N, "test automatic model casting with array unshift method 1/2")
 	assert.equal(a[1].x * a[1].y, 42, "test automatic model casting with array unshift method 2/2")
@@ -211,20 +211,20 @@ QUnit.test("Automatic model casting", function (assert) {
 
 });
 
-QUnit.test("Other traps", function(assert){
+QUnit.test("Other traps", function (assert) {
 
 	const Arr = ArrayModel(Number);
-	const a = Arr([ 1, 2, 3 ])
+	const a = Arr([1, 2, 3])
 
 	delete a.unknownProperty;
 	delete a[3];
 
-	assert.throws(function(){
+	assert.throws(function () {
 		delete a[2]
 	}, /TypeError/, "deleteProperty trap block array holes if def != undefined")
 
 	const ArrB = ArrayModel([Number]);
-	const b = ArrB([ 1, 2, 3 ])
+	const b = ArrB([1, 2, 3])
 
 	delete b[2]
 	assert.equal(b[2], undefined, "deleteProperty trap does not block when def is optional")
@@ -233,4 +233,23 @@ QUnit.test("Other traps", function(assert){
 QUnit.test("toString", function (assert) {
 	assert.equal(ArrayModel(Number).toString(), "Array of Number")
 	assert.equal(ArrayModel([String, 42]).toString(), "Array of (String or 42)")
+})
+
+QUnit.test("Dynamic definition", function (assert) {
+	let A = ArrayModel(String);
+	let a1 = A(["hello", "world"])
+	A.definition = Number;
+	let a2 = A([1, 2, 3])
+	assert.equal(A.test(a1), false, "definition can be dynamically changed 1/4")
+	assert.equal(A.test(a2), true, "definition can be dynamically changed 2/4")
+	a1.splice(0, a1.length);
+	assert.throws(() => a1.push("hello"), /TypeError/, "definition can be dynamically changed 3/4")
+	a1.push(42);
+	assert.equal(a1[0], 42, "definition can be dynamically changed 4/4")
+
+	let OM = ObjectModel({ n: Number });
+	A.definition = OM;
+	a1.splice(0, a1.length);
+	a1.push({ n: 42 });
+	assert.ok(a1[0] instanceof OM, "autocast still works after definition dynamically changed")
 })

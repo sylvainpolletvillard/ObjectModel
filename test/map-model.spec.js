@@ -54,7 +54,7 @@ QUnit.test("instanciation && mutation methods watchers", function (assert) {
 QUnit.test("validation in constructor", function (assert) {
 
 	const Dict = MapModel(String, Number)
-	const m = Dict([ ["one", 1], ["two", 2] ]);
+	const m = Dict([["one", 1], ["two", 2]]);
 	assert.equal(m.size, 2, "map size is ok");
 
 	assert.throws(function () {
@@ -73,10 +73,10 @@ QUnit.test("union types & submodels", function (assert) {
 	const Answer = ObjectModel({ answer: Number })
 
 	const Dict = MapModel([Question, String], [Answer, String, Boolean]);
-	const m   = Dict([ ["test", "test"] ]);
+	const m = Dict([["test", "test"]]);
 	m.set("is it real life ?", true);
 	m.set(Question({ question: "life universe and everything" }), Answer({ answer: 42 }));
-	m.set("another one with autocast", {answer: 43});
+	m.set("another one with autocast", { answer: 43 });
 	assert.throws(function () {
 		m.set(42, false);
 	}, /TypeError.*expecting Map key to be.*[\s\S]*42/, "map set multiple types for keys");
@@ -95,34 +95,34 @@ QUnit.test("union types & fixed values", function (assert) {
 
 	DictA([[true, 4], [2, "5"]]);
 	const DictB = DictA.extend().assert(m => m.size === 2);
-	const dictB = new DictB([ [2, 4], ["3", "5"] ]);
+	const dictB = new DictB([[2, 4], ["3", "5"]]);
 
 	assert.ok(Object.getPrototypeOf(DictB.prototype) === DictA.prototype, "extension respect prototypal chain");
 	assert.ok(dictB instanceof DictB && dictB instanceof DictA, "map model inheritance");
-	DictA([ [true, 4], [2, "5"] ]).set("3", 4);
+	DictA([[true, 4], [2, "5"]]).set("3", 4);
 	assert.throws(function () {
-		DictB([ [true, 4], [2, "5"] ]).set("3", 4);
+		DictB([[true, 4], [2, "5"]]).set("3", 4);
 	}, /TypeError/, "min/max of inherit map model");
 
 	const DictC = DictB.extend("new", "val");
-	DictC([ ["new", "5"], [true, "val"] ]);
+	DictC([["new", "5"], [true, "val"]]);
 	assert.throws(function () {
-		DictB([ ["new", "5"], ["3", 4] ]);
+		DictB([["new", "5"], ["3", 4]]);
 	}, /TypeError/, "map model type extension 1/2");
 	assert.throws(function () {
-		DictB([ ["3", 4], [true, "val"] ]);
+		DictB([["3", 4], [true, "val"]]);
 	}, /TypeError/, "map model type extension 2/2");
 
 })
 
 QUnit.test("Child map models in object models", function (assert) {
 
-	const Child  = ObjectModel({map: MapModel(Number, String)});
-	const Parent = ObjectModel({child: Child});
+	const Child = ObjectModel({ map: MapModel(Number, String) });
+	const Parent = ObjectModel({ child: Child });
 
-	const childO = Child({map: new Map([[1, "one"], [2, "two"]])});
+	const childO = Child({ map: new Map([[1, "one"], [2, "two"]]) });
 	assert.ok(childO.map instanceof Map, "child map model is instanceof Map");
-	const parentO = Parent({child: childO});
+	const parentO = Parent({ child: childO });
 	assert.ok(parentO.child.map instanceof Map, "child map model from parent is Map");
 
 	childO.map.set(3, "three");
@@ -161,7 +161,7 @@ QUnit.test("assertions", function (assert) {
 	const MapMax3 = MapModel(Number, String).assert(function maxEntries(map) {
 		return map.size <= 3;
 	});
-	let map       = MapMax3([[1, "one"], [2, "two"]]);
+	let map = MapMax3([[1, "one"], [2, "two"]]);
 
 	map.set(3, "three");
 	assert.throws(function () {
@@ -181,17 +181,17 @@ QUnit.test("assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const X = ObjectModel({x: Number}).defaults({x: 5})
-	const Y = ObjectModel({y: [Number]}).defaults({y: 7});
+	const X = ObjectModel({ x: Number }).defaults({ x: 5 })
+	const Y = ObjectModel({ y: [Number] }).defaults({ y: 7 });
 	const M = MapModel(X, Y);
-	const m = M([[{x: 9}, {}]]);
+	const m = M([[{ x: 9 }, {}]]);
 
 	assert.ok(Array.from(m.keys())[0] instanceof X, "test automatic model casting with map init 1/3")
 	assert.ok(Array.from(m.values())[0] instanceof Y, "test automatic model casting with map init 2/3")
 	let [k, v] = Array.from(m.entries())[0];
 	assert.equal(k.x * v.y, 63, "test automatic model casting with map init 3/3")
 
-	m.set({x: 3}, {y: 4})
+	m.set({ x: 3 }, { y: 4 })
 
 	assert.ok(Array.from(m.keys())[1] instanceof X, "test automatic model casting with map mutator method 1/3")
 	assert.ok(Array.from(m.values())[1] instanceof Y, "test automatic model casting with map mutator method 2/3");
@@ -203,4 +203,24 @@ QUnit.test("Automatic model casting", function (assert) {
 QUnit.test("toString", function (assert) {
 	assert.equal(MapModel(Number, String).toString(), "Map of Number : String")
 	assert.equal(MapModel(Date, [String, 42]).toString(), "Map of Date : (String or 42)")
+})
+
+QUnit.test("dynamic definition", function (assert) {
+	let M = MapModel(String, String);
+	let m1 = M([["hello", "world"]])
+	M.definition.key = Number;
+	M.definition.value = Number;
+	let m2 = M([[1, 1], [2, 1], [3, 2], [4, 3], [5, 5]])
+	assert.equal(M.test(m1), false, "definition can be dynamically changed 1/4")
+	assert.equal(M.test(m2), true, "definition can be dynamically changed 2/4")
+	m1.clear();
+	assert.throws(() => m1.set("hello", "world"), /TypeError/, "definition can be dynamically changed 3/4")
+	m1.set(0, 42);
+	assert.equal(m1.get(0), 42, "definition can be dynamically changed 4/4")
+
+	let OM = ObjectModel({ n: Number });
+	M.definition.value = OM;
+	m1.clear();
+	m1.set(1, { n: 42 });
+	assert.ok(m1.get(1) instanceof OM, "autocast still works after definition dynamically changed")
 })

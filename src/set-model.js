@@ -3,18 +3,20 @@ import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
 export default function SetModel(def) {
-	return initListModel(
+	let model = initListModel(
 		Set,
 		SetModel,
 		def,
-		it => isIterable(it) ? new Set([...it].map(val => cast(val, def))) : it,
+		it => isIterable(it) ? new Set([...it].map(val => cast(val, model.definition))) : it,
 		set => new Set(set),
 		{
-			"add": ([val]) => [cast(val, def)],
+			"add": ([val]) => [cast(val, model.definition)],
 			"delete": 0,
 			"clear": 0
 		}
 	)
+
+	return model
 }
 
 extend(SetModel, Model, {

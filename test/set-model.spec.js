@@ -74,10 +74,10 @@ QUnit.test("union types & submodels", function (assert) {
 	});
 
 	const Quiz = SetModel([Question, String, Boolean]);
-	const s    = Quiz(["test", true, {answer: 42}]);
+	const s = Quiz(["test", true, { answer: 42 }]);
 	s.add("is it real life ?");
 	s.add(true);
-	s.add({answer: 43});
+	s.add({ answer: 43 });
 	assert.throws(function () {
 		s.add(42);
 	}, /TypeError[\s\S]*got Number 42/m, "set invalid type on union type");
@@ -113,12 +113,12 @@ QUnit.test("union types & fixed values", function (assert) {
 
 QUnit.test("Child set models in object models", function (assert) {
 
-	const Child  = ObjectModel({set: SetModel(Number)});
-	const Parent = ObjectModel({child: Child});
+	const Child = ObjectModel({ set: SetModel(Number) });
+	const Parent = ObjectModel({ child: Child });
 
-	const childO = Child({set: new Set([1, 2, 3, 5, 8])});
+	const childO = Child({ set: new Set([1, 2, 3, 5, 8]) });
 	assert.ok(childO.set instanceof Set, "child set model is instanceof Set");
-	const parentO = Parent({child: childO});
+	const parentO = Parent({ child: childO });
 	assert.ok(parentO.child.set instanceof Set, "child set model from parent is Set");
 
 	childO.set.add(13);
@@ -175,15 +175,15 @@ QUnit.test("assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const N = ObjectModel({x: Number, y: [Number]}).defaults({x: 5, y: 7});
+	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 	const S = SetModel(N);
-	const s = S([{x: 9}]);
+	const s = S([{ x: 9 }]);
 
 	let n = Array.from(s.values())[0];
 	assert.ok(n instanceof N, "test automatic model casting with set init 1/2")
 	assert.equal(n.x * n.y, 63, "test automatic model casting with set init 2/2")
 
-	s.add({x: 3});
+	s.add({ x: 3 });
 	n = Array.from(s.values())[1];
 
 	assert.ok(n instanceof N, "test automatic model casting with array mutator method 1/2")
@@ -193,4 +193,23 @@ QUnit.test("Automatic model casting", function (assert) {
 QUnit.test("toString", function (assert) {
 	assert.equal(SetModel(Number).toString(), "Set of Number")
 	assert.equal(SetModel([String, 42]).toString(), "Set of (String or 42)")
+})
+
+QUnit.test("dynamic definition", function (assert) {
+	let S = SetModel(String);
+	let s1 = S(["hello", "world"])
+	S.definition = Number;
+	let s2 = S([1, 2, 3])
+	assert.equal(S.test(s1), false, "definition can be dynamically changed 1/4")
+	assert.equal(S.test(s2), true, "definition can be dynamically changed 2/4")
+	s1.clear();
+	assert.throws(() => s1.add("hello"), /TypeError/, "definition can be dynamically changed 3/4")
+	s1.add(42);
+	assert.ok(s1.has(42), "definition can be dynamically changed 4/4")
+
+	let OM = ObjectModel({ n: Number });
+	S.definition = OM;
+	s1.clear();
+	s1.add({ n: 42 });
+	assert.ok([...s1][0] instanceof OM, "autocast still works after definition dynamically changed")
 })

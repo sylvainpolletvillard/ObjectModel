@@ -6,7 +6,7 @@ import { extend } from "./helpers.js"
 import { initListModel } from "./list-model.js";
 
 export default function ArrayModel(def) {
-	let castAll = args => args.map(arg => cast(arg, def))
+	let castAll = args => args.map(arg => cast(arg, model.definition))
 
 	let model = initListModel(
 		Array,

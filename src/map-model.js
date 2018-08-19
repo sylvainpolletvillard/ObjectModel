@@ -6,10 +6,8 @@ import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
 export default function MapModel(key, value) {
-
-	let castKeyValue = ([k, v]) => [cast(k, key), cast(v, value)]
-
-	return initListModel(
+	let castKeyValue = ([k, v]) => [cast(k, model.definition.key), cast(v, model.definition.value)]
+	let model = initListModel(
 		Map,
 		MapModel,
 		{ key, value },
@@ -21,6 +19,8 @@ export default function MapModel(key, value) {
 			"clear": 0
 		}
 	)
+
+	return model
 }
 
 extend(MapModel, Model, {

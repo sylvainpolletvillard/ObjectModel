@@ -71,26 +71,27 @@ export const
 		return def
 	},
 
-	checkDefinition = (obj, def, path, errors, stack) => {
+	checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
 		let indexFound = stack.indexOf(def)
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 			return obj //if found twice in call stack, cycle detected, skip validation
 
-		obj = cast(obj, def)
-
 		if (is(Model, def)) {
+			if (shouldCast) obj = cast(obj, def)
 			def[_validate](obj, path, errors, stack.concat(def))
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
 				let val = obj ? obj[_get] ? obj[_get](key) : obj[key] : undefined;
-				checkDefinition(val, def[key], formatPath(path, key), errors, stack)
+				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
 			})
 		}
 		else {
 			let pdef = parseDefinition(def)
-			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
+			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
+				if (shouldCast) obj = cast(obj, def)
 				return obj
+			}
 
 			stackError(errors, def, obj, path)
 		}
@@ -98,11 +99,11 @@ export const
 		return obj
 	},
 
-	checkDefinitionPart = (obj, def, path, stack) => {
+	checkDefinitionPart = (obj, def, path, stack, shouldCast) => {
 		if (obj == null) return obj === def
 		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
 			let errors = []
-			checkDefinition(obj, def, path, errors, stack)
+			checkDefinition(obj, def, path, errors, stack, shouldCast)
 			return !errors.length
 		}
 		if (is(RegExp, def)) return def.test(obj)
@@ -337,8 +338,8 @@ Object.assign(Model.prototype, {
 		checkAssertions(obj, this, path, errors)
 	},
 
-	validate(obj, errorCollector) {
-		this[_validate](obj, null, this.errors, [])
+	validate(obj, errorCollector, shouldCast) {
+		this[_validate](obj, null, this.errors, [], shouldCast)
 		return !unstackErrors(this, errorCollector)
 	},
 
@@ -408,7 +409,7 @@ export function ObjectModel(def, params) {
 
 		merge(this, model[_constructor](obj))
 
-		if (!model.validate(this)) return
+		if (!model.validate(this, undefined, true)) return
 		return getProxy(model, this, model.definition)
 	}
 
@@ -461,10 +462,10 @@ extend(ObjectModel, Model, {
 
 	[_constructor]: o => o,
 
-	[_validate](obj, path, errors, stack) {
+	[_validate](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {
 			let def = this.definition
-			checkDefinition(obj, def, path, errors, stack)
+			checkDefinition(obj, def, path, errors, stack, shouldCast)
 			if (this.sealed) checkUndeclaredProps(obj, def, errors)
 		}
 		else stackError(errors, this, obj, path)

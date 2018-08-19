@@ -18,7 +18,7 @@ export default function FunctionModel(...argsDef) {
 				let def = model.definition
 
 				def.arguments.forEach((argDef, i) => {
-					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [])
+					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
 				})
 
 				checkAssertions(args, model, "arguments")
@@ -27,7 +27,7 @@ export default function FunctionModel(...argsDef) {
 				if (!model.errors.length) {
 					result = Reflect.apply(fn, ctx, args)
 					if ("return" in def)
-						result = checkDefinition(result, def.return, "return value", model.errors, [])
+						result = checkDefinition(result, def.return, "return value", model.errors, [], true)
 				}
 				unstackErrors(model)
 				return result

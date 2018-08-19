@@ -46,9 +46,7 @@ extend(ArrayModel, Model, {
 
 	[_validate](arr, path, errors, stack) {
 		if (Array.isArray(arr))
-			arr.forEach((a, i) => {
-				arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack)
-			})
+			arr.forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack))
 		else stackError(errors, this, arr, path)
 
 		checkAssertions(arr, this, path, errors)
@@ -62,7 +60,7 @@ extend(ArrayModel, Model, {
 let setArrayKey = (array, key, value, model) => {
 	let path = `Array[${key}]`;
 	if (parseInt(key) >= 0)
-		value = checkDefinition(value, model.definition, path, model.errors, [])
+		value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
 	let testArray = [...array]
 	testArray[key] = value

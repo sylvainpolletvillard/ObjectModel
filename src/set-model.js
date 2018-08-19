@@ -2,11 +2,11 @@ import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, ex
 import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
-export default function SetModel(def) {
+export default function SetModel(initialDefinition) {
 	let model = initListModel(
 		Set,
 		SetModel,
-		def,
+		initialDefinition,
 		it => isIterable(it) ? new Set([...it].map(val => cast(val, model.definition))) : it,
 		set => new Set(set),
 		{

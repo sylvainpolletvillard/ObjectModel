@@ -5,18 +5,18 @@ import {
 import { extend } from "./helpers.js"
 import { initListModel } from "./list-model.js";
 
-export default function ArrayModel(def) {
+export default function ArrayModel(initialDefinition) {
 	let castAll = args => args.map(arg => cast(arg, model.definition))
 
 	let model = initListModel(
 		Array,
 		ArrayModel,
-		def,
+		initialDefinition,
 		a => Array.isArray(a) ? castAll(a) : a,
 		a => [...a],
 		{
 			"copyWithin": 0,
-			"fill": ([val, ...rest]) => [cast(val, def), ...rest],
+			"fill": ([val, ...rest]) => [cast(val, model.definition), ...rest],
 			"pop": 0,
 			"push": castAll,
 			"reverse": 0,

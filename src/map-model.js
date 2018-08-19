@@ -5,12 +5,12 @@ import {
 import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
-export default function MapModel(key, value) {
+export default function MapModel(initialKeyDefinition, initialValueDefinition) {
 	let castKeyValue = ([k, v]) => [cast(k, model.definition.key), cast(v, model.definition.value)]
 	let model = initListModel(
 		Map,
 		MapModel,
-		{ key, value },
+		{ key: initialKeyDefinition, value: initialValueDefinition },
 		it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
 		map => new Map(map),
 		{

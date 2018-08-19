@@ -210,8 +210,7 @@ export const
 
 		if (suitableModels.length === 1) {
 			// automatically cast to suitable model when explicit (duck typing)
-			let duck = suitableModels[0];
-			return is(ObjectModel, duck) ? new duck(obj) : duck(obj)
+			return new suitableModels[0](obj)
 		}
 
 		if (suitableModels.length > 1)

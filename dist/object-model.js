@@ -1,4 +1,4 @@
-// ObjectModel v3.6.0 - http://objectmodel.js.org
+// ObjectModel v3.6.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -8,8 +8,8 @@
 
 	const
 		bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
-		getProto = x => Object.getPrototypeOf(x),
-		setProto = (x, p) => Object.setPrototypeOf(x, p),
+		getProto = Object.getPrototypeOf,
+		setProto = Object.setPrototypeOf,
 
 		has = (o, prop) => o.hasOwnProperty(prop),
 		is = (Constructor, obj) => obj instanceof Constructor,
@@ -21,17 +21,18 @@
 		proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
 		proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
 
-		merge = (target, src = {}, deep) => {
+		merge = (target, src = {}) => {
 			for (let key in src) {
-				if (deep && isPlainObject(src[key])) {
+				if (isPlainObject(src[key])) {
 					let o = {};
-					merge(o, target[key], deep);
-					merge(o, src[key], deep);
+					merge(o, target[key]);
+					merge(o, src[key]);
 					target[key] = o;
 				} else {
 					target[key] = src[key];
 				}
 			}
+			return target
 		},
 
 		define = (obj, key, value, enumerable = false) => {
@@ -82,7 +83,7 @@
 			if (nbErrors > 0) {
 				let errors = model.errors.map(err => {
 					if (!err.message) {
-						let def = Array.isArray(err.expected) ? err.expected : [err.expected];
+						let def = [].concat(err.expected);
 						err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
 							+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
 					}
@@ -112,36 +113,37 @@
 		},
 
 		extendDefinition = (def, newParts = []) => {
-			if (!Array.isArray(newParts)) newParts = [newParts];
+			newParts = [].concat(newParts);
 			if (newParts.length > 0) {
 				def = newParts
-					.reduce((def, ext) => def.concat(ext), Array.isArray(def) ? [...def] : [def]) // clone to lose ref
+					.reduce((def, ext) => def.concat(ext), [].concat(def)) // clone to lose ref
 					.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
 			}
 
 			return def
 		},
 
-		checkDefinition = (obj, def, path, errors, stack) => {
+		checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
 			let indexFound = stack.indexOf(def);
 			if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 				return obj //if found twice in call stack, cycle detected, skip validation
 
-			obj = cast(obj, def);
-
 			if (is(Model, def)) {
+				if (shouldCast) obj = cast(obj, def);
 				def[_validate](obj, path, errors, stack.concat(def));
 			}
 			else if (isPlainObject(def)) {
 				Object.keys(def).map(key => {
 					let val = obj ? obj[_get] ? obj[_get](key) : obj[key] : undefined;
-					checkDefinition(val, def[key], formatPath(path, key), errors, stack);
+					checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast);
 				});
 			}
 			else {
 				let pdef = parseDefinition(def);
-				if (pdef.some(part => checkDefinitionPart(obj, part, path, stack)))
+				if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
+					if (shouldCast) obj = cast(obj, def);
 					return obj
+				}
 
 				stackError(errors, def, obj, path);
 			}
@@ -149,11 +151,11 @@
 			return obj
 		},
 
-		checkDefinitionPart = (obj, def, path, stack) => {
+		checkDefinitionPart = (obj, def, path, stack, shouldCast) => {
 			if (obj == null) return obj === def
 			if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
 				let errors = [];
-				checkDefinition(obj, def, path, errors, stack);
+				checkDefinition(obj, def, path, errors, stack, shouldCast);
 				return !errors.length
 			}
 			if (is(RegExp, def)) return def.test(obj)
@@ -247,21 +249,20 @@
 		},
 
 		cast = (obj, defNode = []) => {
-			if (!obj || isPlainObject(defNode) || isModelInstance(obj))
+			if (!obj || isPlainObject(defNode) || is(BasicModel, defNode) || isModelInstance(obj))
 				return obj // no value or not leaf or already a model instance
 
 			let def = parseDefinition(defNode),
 				suitableModels = [];
 
 			for (let part of def) {
-				if (is(Model, part) && part.test(obj))
+				if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
 					suitableModels.push(part);
 			}
 
 			if (suitableModels.length === 1) {
 				// automatically cast to suitable model when explicit (duck typing)
-				let duck = suitableModels[0];
-				return is(ObjectModel, duck) ? new duck(obj) : duck(obj)
+				return new suitableModels[0](obj)
 			}
 
 			if (suitableModels.length > 1)
@@ -388,8 +389,8 @@
 			checkAssertions(obj, this, path, errors);
 		},
 
-		validate(obj, errorCollector) {
-			this[_validate](obj, null, this.errors, []);
+		validate(obj, errorCollector, shouldCast) {
+			this[_validate](obj, null, this.errors, [], shouldCast);
 			return !unstackErrors(this, errorCollector)
 		},
 
@@ -457,9 +458,9 @@
 				stackError(model.errors, Object, obj);
 			}
 
-			merge(this, model[_constructor](obj), true);
+			merge(this, model[_constructor](obj));
 
-			if (!model.validate(this)) return
+			if (!model.validate(this, undefined, true)) return
 			return getProxy(model, this, model.definition)
 		};
 
@@ -483,28 +484,26 @@
 		},
 
 		extend(...newParts) {
-			let def = Object.assign({}, this.definition),
-				newAssertions = [],
-				proto = {};
-
-			merge(proto, this.prototype, false);
+			let definition = Object.assign({}, this.definition),
+				proto = Object.assign({}, this.prototype),
+				newAssertions = [];
 
 			for (let part of newParts) {
 				if (is(Model, part)) {
-					merge(def, part.definition, true);
+					merge(definition, part.definition);
 					newAssertions.push(...part.assertions);
 				}
-				if (isFunction(part)) merge(proto, part.prototype, true);
-				if (isObject(part)) merge(def, part, true);
+				if (isFunction(part)) merge(proto, part.prototype);
+				if (isObject(part)) merge(definition, part);
 			}
 
-			let submodel = extendModel(new ObjectModel(def), this, proto);
+			let submodel = extendModel(new ObjectModel(definition), this, proto);
 			submodel.assertions = [...this.assertions, ...newAssertions];
 
 			if (getProto(this) !== ObjectModel.prototype) { // extended class
 				submodel[_constructor] = (obj) => {
 					let parentInstance = new this(obj);
-					merge(obj, parentInstance, true); // get modified props from parent class constructor
+					merge(obj, parentInstance); // get modified props from parent class constructor
 					return obj
 				};
 			}
@@ -514,10 +513,10 @@
 
 		[_constructor]: o => o,
 
-		[_validate](obj, path, errors, stack) {
+		[_validate](obj, path, errors, stack, shouldCast) {
 			if (isObject(obj)) {
 				let def = this.definition;
-				checkDefinition(obj, def, path, errors, stack);
+				checkDefinition(obj, def, path, errors, stack, shouldCast);
 				if (this.sealed) checkUndeclaredProps(obj, def, errors);
 			}
 			else stackError(errors, this, obj, path);
@@ -557,18 +556,18 @@
 		return model
 	};
 
-	function ArrayModel(def) {
-		let castAll = args => args.map(arg => cast(arg, def));
+	function ArrayModel(initialDefinition) {
+		let castAll = args => args.map(arg => cast(arg, model.definition));
 
 		let model = initListModel(
 			Array,
 			ArrayModel,
-			def,
+			initialDefinition,
 			a => Array.isArray(a) ? castAll(a) : a,
 			a => [...a],
 			{
 				"copyWithin": 0,
-				"fill": ([val, ...rest]) => [cast(val, def), ...rest],
+				"fill": ([val, ...rest]) => [cast(val, model.definition), ...rest],
 				"pop": 0,
 				"push": castAll,
 				"reverse": 0,
@@ -598,9 +597,7 @@
 
 		[_validate](arr, path, errors, stack) {
 			if (Array.isArray(arr))
-				arr.forEach((a, i) => {
-					arr[i] = checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack);
-				});
+				arr.forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack));
 			else stackError(errors, this, arr, path);
 
 			checkAssertions(arr, this, path, errors);
@@ -613,8 +610,8 @@
 
 	let setArrayKey = (array, key, value, model) => {
 		let path = `Array[${key}]`;
-		if (parseInt(key) === +key && key >= 0)
-			value = checkDefinition(value, model.definition, path, model.errors, []);
+		if (parseInt(key) >= 0)
+			value = checkDefinition(value, model.definition, path, model.errors, [], true);
 
 		let testArray = [...array];
 		testArray[key] = value;
@@ -624,19 +621,21 @@
 		return isSuccess
 	};
 
-	function SetModel(def) {
-		return initListModel(
+	function SetModel(initialDefinition) {
+		let model = initListModel(
 			Set,
 			SetModel,
-			def,
-			it => isIterable(it) ? new Set([...it].map(val => cast(val, def))) : it,
+			initialDefinition,
+			it => isIterable(it) ? new Set([...it].map(val => cast(val, model.definition))) : it,
 			set => new Set(set),
 			{
-				"add": ([val]) => [cast(val, def)],
+				"add": ([val]) => [cast(val, model.definition)],
 				"delete": 0,
 				"clear": 0
 			}
-		)
+		);
+
+		return model
 	}
 
 	extend(SetModel, Model, {
@@ -658,14 +657,12 @@
 		}
 	});
 
-	function MapModel(key, value) {
-
-		let castKeyValue = ([k, v]) => [cast(k, key), cast(v, value)];
-
-		return initListModel(
+	function MapModel(initialKeyDefinition, initialValueDefinition) {
+		let castKeyValue = ([k, v]) => [cast(k, model.definition.key), cast(v, model.definition.value)];
+		let model = initListModel(
 			Map,
 			MapModel,
-			{ key, value },
+			{ key: initialKeyDefinition, value: initialValueDefinition },
 			it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
 			map => new Map(map),
 			{
@@ -673,7 +670,9 @@
 				"delete": 0,
 				"clear": 0
 			}
-		)
+		);
+
+		return model
 	}
 
 	extend(MapModel, Model, {
@@ -694,9 +693,12 @@
 			checkAssertions(map, this, path, errors);
 		},
 
-		extend(keyPart, valuePart) {
+		extend(keyParts, valueParts) {
 			let { key, value } = this.definition;
-			return extendModel(new MapModel(extendDefinition(key, keyPart), extendDefinition(value, valuePart)), this)
+			return extendModel(new MapModel(
+				extendDefinition(key, keyParts),
+				extendDefinition(value, valueParts)
+			), this)
 		}
 	});
 
@@ -706,15 +708,14 @@
 			if (!model.validate(fn)) return
 			return proxifyModel(fn, model, {
 				get(fn, key) {
-					if (key === _original) return fn
-					return fn[key]
+					return key === _original ? fn : fn[key]
 				},
 
 				apply(fn, ctx, args) {
 					let def = model.definition;
 
 					def.arguments.forEach((argDef, i) => {
-						args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, []);
+						args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true);
 					});
 
 					checkAssertions(args, model, "arguments");
@@ -723,7 +724,7 @@
 					if (!model.errors.length) {
 						result = Reflect.apply(fn, ctx, args);
 						if ("return" in def)
-							result = checkDefinition(result, def.return, "return value", model.errors, []);
+							result = checkDefinition(result, def.return, "return value", model.errors, [], true);
 					}
 					unstackErrors(model);
 					return result
@@ -803,11 +804,11 @@
 		return proto.constructor
 	};
 
-	const span = (style, ...children) => ["span", {style}, ...children];
+	const span = (style, ...children) => ["span", { style }, ...children];
 
-	const format$1 = (x, config={}) => {
+	const format$1 = (x, config = {}) => {
 		if (x === null || x === undefined)
-			return span(styles.null, ""+x);
+			return span(styles.null, "" + x);
 
 		if (typeof x === "boolean")
 			return span(styles.boolean, x);
@@ -834,24 +835,24 @@
 		if (isFunction(x) && !is(Model, x) && config.isModelDefinition)
 			return span(styles.function, x.name || x.toString());
 
-		return ['object', {object: x, config}]
+		return ['object', { object: x, config }]
 	};
 
 	const formatObject = (o, model, config) => span('',
 		'{',
-		['ol', {style: styles.list}, ...Object.keys(o).map(prop =>
-			['li', {style: styles.listItem}, span(styles.property, prop), ': ', format$1(o[prop], config) ])
+		['ol', { style: styles.list }, ...Object.keys(o).map(prop =>
+			['li', { style: styles.listItem }, span(styles.property, prop), ': ', format$1(o[prop], config)])
 		],
 		'}'
 	);
 
 	const formatModel = model => {
 		const parts = [],
-		      cfg = { isModelDefinition: true },
-		      def = model.definition,
-		      formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
+			cfg = { isModelDefinition: true },
+			def = model.definition,
+			formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
 
-		if (is(BasicModel, model )) parts.push(format$1(def, cfg));
+		if (is(BasicModel, model)) parts.push(format$1(def, cfg));
 		if (is(ArrayModel, model)) parts.push("Array of ", format$1(def, cfg));
 		if (is(SetModel, model)) parts.push("Set of ", format$1(def, cfg));
 		if (is(MapModel, model)) parts.push("Map of ", format$1(def.key, cfg), " : ", format$1(def.value, cfg));
@@ -887,11 +888,11 @@
 		body(model) {
 			return span('',
 				'{',
-				['ol', {style: styles.list}, ...Object.keys(model.definition).map(prop => {
+				['ol', { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 					let isPrivate = model.conventionForPrivate(prop),
-					    isConstant = model.conventionForConstant(prop),
-					    hasDefault = model.prototype.hasOwnProperty(prop),
-					    style = styles.property;
+						isConstant = model.conventionForConstant(prop),
+						hasDefault = model.prototype.hasOwnProperty(prop),
+						style = styles.property;
 
 					if (isPrivate) {
 						style = isConstant ? styles.privateConstant : styles.private;
@@ -899,11 +900,11 @@
 						style = styles.constant;
 					}
 
-					return ['li', {style: styles.listItem},
+					return ['li', { style: styles.listItem },
 						span(style, prop), ': ', format$1(model.definition[prop], { isModelDefinition: true }),
 						hasDefault ? span(styles.proto, ' = ', format$1(model.prototype[prop])) : ''
 					]
-				}) ],
+				})],
 				'}'
 			)
 		}
@@ -933,7 +934,7 @@
 				'{',
 				[
 					'ol',
-					{style: styles.list},
+					{ style: styles.list },
 					...Object.keys(o).map(prop => {
 						let isPrivate = model.conventionForPrivate(prop),
 							isConstant = model.conventionForConstant(prop),
@@ -948,12 +949,12 @@
 							style = styles.constant;
 						}
 
-						return ['li', {style: styles.listItem},
+						return ['li', { style: styles.listItem },
 							span(style, prop), ': ', format$1(o[prop], { isInstanceProperty: true })
 						]
 					}),
-					['li', {style: styles.listItem},
-						span(styles.proto, '__proto__', ': ', ['object', {object: getProto(x)}])
+					['li', { style: styles.listItem },
+						span(styles.proto, '__proto__', ': ', ['object', { object: getProto(x) }])
 					]
 				],
 				'}'

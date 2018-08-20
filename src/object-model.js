@@ -6,8 +6,10 @@ import {
 export const
 	_constructor = Symbol(),
 	_validate = Symbol(),
-	_original = Symbol(),
+	_original = Symbol(), // used to bypass proxy
 	_get = Symbol(), // used to bypass private access
+
+	MODE_CAST = Symbol(), // used to skip validation at instanciation for perf
 
 	initModel = (model, def) => {
 		model.definition = def
@@ -210,7 +212,7 @@ export const
 
 		if (suitableModels.length === 1) {
 			// automatically cast to suitable model when explicit (duck typing)
-			return new suitableModels[0](obj)
+			return new suitableModels[0](obj, MODE_CAST)
 		}
 
 		if (suitableModels.length > 1)
@@ -398,7 +400,7 @@ extend(BasicModel, Model, {
 
 
 export function ObjectModel(def, params) {
-	let model = function (obj = model.default) {
+	let model = function (obj = model.default, mode) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
 
@@ -408,8 +410,9 @@ export function ObjectModel(def, params) {
 
 		merge(this, model[_constructor](obj))
 
-		if (!model.validate(this, undefined, true)) return
-		return getProxy(model, this, model.definition)
+		if (mode === MODE_CAST || model.validate(this, undefined, true)) {
+			return getProxy(model, this, model.definition)
+		}
 	}
 
 	Object.assign(model, params)

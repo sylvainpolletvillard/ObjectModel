@@ -1,0 +1,52 @@
+<html>
+
+<head>
+    <title>Benchmark: Array Models</title>
+</head>
+
+<body>
+    <h1>Benchmark: Array Models</h1>
+</body>
+
+<script src="bench-lib.js"></script>
+
+<script type="module">
+    import { Model, BasicModel, ObjectModel, ArrayModel } from "../../src/index.js"
+
+    const Integer = BasicModel(Number).assert(Number.isInteger).as("Integer");
+    const PositiveNumber = BasicModel(Number).assert(function isPositive(n) { return n >= 0 }).as("PositiveNumber")
+    const PositiveInteger = PositiveNumber.extend().assert(Number.isInteger).as("PositiveInteger");
+
+    let mockId = () => Math.ceil(Math.random() * 100)
+    let mockOM = () => Object.assign({}, ...Array(10).fill().map((x, i) => ({ ["id" + i]: mockId() })))
+    let mockAMData = n => (new Array(n)).fill(0).map(x => mockOM())
+
+    const Id = PositiveInteger.extend().as('Id');
+
+    class OM extends ObjectModel({
+        id0: [Id],
+        id1: [Id],
+        id2: [Id],
+        id3: [Id],
+        id4: [Id],
+        id5: [Id],
+        id6: [Id],
+        id7: [Id],
+        id8: [Id],
+        id9: [Id]
+    }) { };
+
+    const AM = ArrayModel(OM)
+
+    bench([100, 1000, 10000].map(n => ({
+        description: `Init ArrayModel with ${n} elements`,
+        nbIter: 3,
+        run() {
+            const data = mockAMData(n);
+            new AM(data)
+        }
+    })))
+
+</script>
+
+</html>

@@ -1,4 +1,4 @@
-// ObjectModel v3.6.1 - http://objectmodel.js.org
+// ObjectModel v3.7.0 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -56,10 +56,10 @@
 		};
 
 	const
-		_constructor = Symbol(),
 		_validate = Symbol(),
-		_original = Symbol(),
-		_get = Symbol(), // used to bypass private access
+		_original = Symbol(), // used to bypass proxy
+
+		MODE_CAST = Symbol(), // used to skip validation at instanciation for perf
 
 		initModel = (model, def) => {
 			model.definition = def;
@@ -134,7 +134,7 @@
 			}
 			else if (isPlainObject(def)) {
 				Object.keys(def).map(key => {
-					let val = obj ? obj[_get] ? obj[_get](key) : obj[key] : undefined;
+					let val = obj ? obj[key] : undefined;
 					checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast);
 				});
 			}
@@ -185,7 +185,7 @@
 		format = (obj, stack = []) => {
 			if (stack.length > 15 || stack.includes(obj)) return '...'
 			if (obj === null || obj === undefined) return String(obj)
-			if (typeof obj === 'string') return `"${obj}"`
+			if (typeof obj === "string") return `"${obj}"`
 			if (is(Model, obj)) return obj.toString(stack)
 
 			stack.unshift(obj);
@@ -262,7 +262,7 @@
 
 			if (suitableModels.length === 1) {
 				// automatically cast to suitable model when explicit (duck typing)
-				return new suitableModels[0](obj)
+				return new suitableModels[0](obj, MODE_CAST)
 			}
 
 			if (suitableModels.length > 1)
@@ -283,7 +283,7 @@
 		getProxy = (model, obj, def, path, privateAccess) => {
 			if (!isPlainObject(def)) return cast(obj, def)
 
-			const grantTemporaryPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
+			const grantPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
 				privateAccess = true;
 				let result = Reflect.apply(fn, ctx, args);
 				privateAccess = false;
@@ -296,7 +296,6 @@
 
 				get(o, key) {
 					if (key === _original) return o
-					if (key === _get) return grantTemporaryPrivateAccess(prop => o[prop])
 
 					if (typeof key !== "string") return Reflect.get(o, key)
 
@@ -314,7 +313,7 @@
 					}
 
 					if (isFunction(o[key]) && key !== "constructor") {
-						return grantTemporaryPrivateAccess(o[key])
+						return grantPrivateAccess(o[key])
 					}
 
 					if (isPlainObject(defPart) && !o[key]) {
@@ -450,7 +449,7 @@
 
 
 	function ObjectModel(def, params) {
-		let model = function (obj = model.default) {
+		let model = function (obj = model.default, mode) {
 			if (!is(model, this)) return new model(obj)
 			if (is(model, obj)) return obj
 
@@ -458,10 +457,12 @@
 				stackError(model.errors, Object, obj);
 			}
 
-			merge(this, model[_constructor](obj));
+			if (model.parentClass) merge(obj, new model.parentClass(obj));
+			merge(this, obj);
 
-			if (!model.validate(this, undefined, true)) return
-			return getProxy(model, this, model.definition)
+			if (mode === MODE_CAST || model.validate(this, undefined, true)) {
+				return getProxy(model, this, model.definition)
+			}
 		};
 
 		Object.assign(model, params);
@@ -501,22 +502,16 @@
 			submodel.assertions = [...this.assertions, ...newAssertions];
 
 			if (getProto(this) !== ObjectModel.prototype) { // extended class
-				submodel[_constructor] = (obj) => {
-					let parentInstance = new this(obj);
-					merge(obj, parentInstance); // get modified props from parent class constructor
-					return obj
-				};
+				submodel.parentClass = this;
 			}
 
 			return submodel
 		},
 
-		[_constructor]: o => o,
-
 		[_validate](obj, path, errors, stack, shouldCast) {
 			if (isObject(obj)) {
 				let def = this.definition;
-				checkDefinition(obj, def, path, errors, stack, shouldCast);
+				checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast);
 				if (this.sealed) checkUndeclaredProps(obj, def, errors);
 			}
 			else stackError(errors, this, obj, path);
@@ -527,27 +522,29 @@
 
 	const initListModel = (base, constructor, def, init, clone, mutators, otherTraps = {}) => {
 
-		let model = function (list = model.default) {
+		let model = function (list = model.default, mode) {
 			list = init(list);
 
-			if (model.validate(list)) return proxifyModel(list, model, Object.assign({
-				get(l, key) {
-					if (key === _original) return l
+			if (mode === MODE_CAST || model.validate(list)) {
+				return proxifyModel(list, model, Object.assign({
+					get(l, key) {
+						if (key === _original) return l
 
-					let val = l[key];
-					return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
-						if (has(mutators, key)) {
-							if (mutators[key]) args = mutators[key](args); // autocast method args
+						let val = l[key];
+						return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
+							if (has(mutators, key)) {
+								if (mutators[key]) args = mutators[key](args); // autocast method args
 
-							let testingClone = clone(l);
-							fn.apply(testingClone, args);
-							model.validate(testingClone);
-						}
+								let testingClone = clone(l);
+								fn.apply(testingClone, args);
+								model.validate(testingClone);
+							}
 
-						return fn.apply(l, args)
-					}) : val
-				}
-			}, otherTraps))
+							return fn.apply(l, args)
+						}) : val
+					}
+				}, otherTraps))
+			}
 		};
 
 		extend(model, base);

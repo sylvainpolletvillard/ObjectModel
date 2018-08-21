@@ -4,7 +4,6 @@ import {
 } from "./helpers.js"
 
 export const
-	_constructor = Symbol(),
 	_validate = Symbol(),
 	_original = Symbol(), // used to bypass proxy
 
@@ -406,7 +405,8 @@ export function ObjectModel(def, params) {
 			stackError(model.errors, Object, obj);
 		}
 
-		merge(this, model[_constructor](obj))
+		if (model.parentClass) merge(obj, new model.parentClass(obj))
+		merge(this, obj)
 
 		if (mode === MODE_CAST || model.validate(this, undefined, true)) {
 			return getProxy(model, this, model.definition)
@@ -450,17 +450,11 @@ extend(ObjectModel, Model, {
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class
-			submodel[_constructor] = (obj) => {
-				let parentInstance = new this(obj)
-				merge(obj, parentInstance) // get modified props from parent class constructor
-				return obj
-			}
+			submodel.parentClass = this;
 		}
 
 		return submodel
 	},
-
-	[_constructor]: o => o,
 
 	[_validate](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {

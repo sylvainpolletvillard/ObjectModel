@@ -7,7 +7,6 @@ export const
 	_constructor = Symbol(),
 	_validate = Symbol(),
 	_original = Symbol(), // used to bypass proxy
-	_get = Symbol(), // used to bypass private access
 
 	MODE_CAST = Symbol(), // used to skip validation at instanciation for perf
 
@@ -84,7 +83,7 @@ export const
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
-				let val = obj ? obj[_get] ? obj[_get](key) : obj[key] : undefined;
+				let val = obj ? obj[key] : undefined;
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
 			})
 		}
@@ -135,7 +134,7 @@ export const
 	format = (obj, stack = []) => {
 		if (stack.length > 15 || stack.includes(obj)) return '...'
 		if (obj === null || obj === undefined) return String(obj)
-		if (typeof obj === 'string') return `"${obj}"`
+		if (typeof obj === "string") return `"${obj}"`
 		if (is(Model, obj)) return obj.toString(stack)
 
 		stack.unshift(obj)
@@ -233,7 +232,7 @@ export const
 	getProxy = (model, obj, def, path, privateAccess) => {
 		if (!isPlainObject(def)) return cast(obj, def)
 
-		const grantTemporaryPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
+		const grantPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
 			privateAccess = true;
 			let result = Reflect.apply(fn, ctx, args);
 			privateAccess = false;
@@ -246,7 +245,6 @@ export const
 
 			get(o, key) {
 				if (key === _original) return o
-				if (key === _get) return grantTemporaryPrivateAccess(prop => o[prop])
 
 				if (typeof key !== "string") return Reflect.get(o, key)
 
@@ -264,7 +262,7 @@ export const
 				}
 
 				if (isFunction(o[key]) && key !== "constructor") {
-					return grantTemporaryPrivateAccess(o[key])
+					return grantPrivateAccess(o[key])
 				}
 
 				if (isPlainObject(defPart) && !o[key]) {
@@ -467,7 +465,7 @@ extend(ObjectModel, Model, {
 	[_validate](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {
 			let def = this.definition
-			checkDefinition(obj, def, path, errors, stack, shouldCast)
+			checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast)
 			if (this.sealed) checkUndeclaredProps(obj, def, errors)
 		}
 		else stackError(errors, this, obj, path)

@@ -34,7 +34,7 @@ QUnit.test("instanciation && mutation methods watchers", function (assert) {
 
 	assert.throws(function () {
 		m.set("four", "4");
-	}, /TypeError.*four/, "set calls are catched");
+	}, /TypeError.*expecting Map.set arguments\[1] to be Number, got String "4"/, "set calls are catched");
 
 	assert.equal(m.size, 3, "map size change is ok 1/2");
 
@@ -79,10 +79,10 @@ QUnit.test("union types & submodels", function (assert) {
 	m.set("another one with autocast", { answer: 43 });
 	assert.throws(function () {
 		m.set(42, false);
-	}, /TypeError.*expecting Map key to be.*[\s\S]*42/, "map set multiple types for keys");
+	}, /TypeError.*expecting Map.set arguments\[0] to be.*[\s\S]*Number 42/, "map set multiple types for keys");
 	assert.throws(function () {
 		m.set("test", 42)
-	}, /TypeError.*test/, "map set multiple types for values");
+	}, /TypeError.*expecting Map.set arguments\[1] to be.*[\s\S]*Number 42/, "map set multiple types for values");
 
 })
 

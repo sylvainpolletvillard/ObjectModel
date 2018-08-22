@@ -40,7 +40,7 @@
 
     bench([100, 1000, 10000].map(n => ({
         description: `Init MapModel with ${n} elements`,
-        nbIter: 3,
+        nbIter: 10,
         run() {
             const data = mockOMapData(n);
             const map = new OMap([])

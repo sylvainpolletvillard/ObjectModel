@@ -19,7 +19,7 @@
 
     let mockId = () => Math.ceil(Math.random() * 100)
     let mockOM = () => Object.assign({}, ...Array(10).fill().map((x, i) => ({ ["id" + i]: mockId() })))
-    let mockOMapData = n => (new Array(n)).fill(0).map(x => [mockId(), mockOM()])
+    let mockOMapData = n => (new Array(n)).fill(0).map((x, i) => [i, mockOM()])
 
     const Id = PositiveInteger.extend().as('Id');
 

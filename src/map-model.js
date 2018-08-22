@@ -14,9 +14,9 @@ export default function MapModel(initialKeyDefinition, initialValueDefinition) {
 		it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
 		map => new Map(map),
 		{
-			"set": castKeyValue,
-			"delete": 0,
-			"clear": 0
+			"set": [0, 1, i => i === 0 ? model.definition.key : model.definition.value],
+			"delete": [],
+			"clear": []
 		}
 	)
 

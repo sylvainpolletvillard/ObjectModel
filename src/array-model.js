@@ -15,15 +15,15 @@ export default function ArrayModel(initialDefinition) {
 		a => Array.isArray(a) ? castAll(a) : a,
 		a => [...a],
 		{
-			"copyWithin": 0,
-			"fill": ([val, ...rest]) => [cast(val, model.definition), ...rest],
-			"pop": 0,
-			"push": castAll,
-			"reverse": 0,
-			"shift": 0,
-			"sort": 0,
-			"splice": ([start, end, ...vals]) => [start, end, ...castAll(vals)],
-			"unshift": castAll,
+			"copyWithin": [],
+			"fill": [0, 0],
+			"pop": [],
+			"push": [0],
+			"reverse": [],
+			"shift": [],
+			"sort": [],
+			"splice": [2],
+			"unshift": [0]
 		},
 		{
 			set(arr, key, val) {

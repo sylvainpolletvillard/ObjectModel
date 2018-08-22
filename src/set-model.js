@@ -10,9 +10,9 @@ export default function SetModel(initialDefinition) {
 		it => isIterable(it) ? new Set([...it].map(val => cast(val, model.definition))) : it,
 		set => new Set(set),
 		{
-			"add": ([val]) => [cast(val, model.definition)],
-			"delete": 0,
-			"clear": 0
+			"add": [0, 0],
+			"delete": [],
+			"clear": []
 		}
 	)
 

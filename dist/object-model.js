@@ -1,4 +1,4 @@
-// ObjectModel v3.7.0 - http://objectmodel.js.org
+// ObjectModel v3.7.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -388,8 +388,8 @@
 			checkAssertions(obj, this, path, errors);
 		},
 
-		validate(obj, errorCollector, shouldCast) {
-			this[_validate](obj, null, this.errors, [], shouldCast);
+		validate(obj, errorCollector) {
+			this[_validate](obj, null, this.errors, []);
 			return !unstackErrors(this, errorCollector)
 		},
 
@@ -460,9 +460,12 @@
 			if (model.parentClass) merge(obj, new model.parentClass(obj));
 			merge(this, obj);
 
-			if (mode === MODE_CAST || model.validate(this, undefined, true)) {
-				return getProxy(model, this, model.definition)
+			if (mode !== MODE_CAST) {
+				model[_validate](this, null, model.errors, [], true);
+				unstackErrors(model);
 			}
+
+			return getProxy(model, this, model.definition)
 		};
 
 		Object.assign(model, params);
@@ -533,11 +536,20 @@
 						let val = l[key];
 						return isFunction(val) ? proxifyFn(val, (fn, ctx, args) => {
 							if (has(mutators, key)) {
-								if (mutators[key]) args = mutators[key](args); // autocast method args
+								// indexes of arguments to check def + cast
+								let [begin, end = args.length - 1, getArgDef] = mutators[key];
+								for (let i = begin; i <= end; i++) {
+									let argDef = getArgDef ? getArgDef(i) : model.definition;
+									args[i] = checkDefinition(args[i], argDef, `${base.name}.${key} arguments[${i}]`, model.errors, [], true);
+								}
 
-								let testingClone = clone(l);
-								fn.apply(testingClone, args);
-								model.validate(testingClone);
+								if (model.assertions.length > 0) {
+									let testingClone = clone(l);
+									fn.apply(testingClone, args);
+									checkAssertions(testingClone, model, `after ${key} mutation`);
+								}
+
+								unstackErrors(model);
 							}
 
 							return fn.apply(l, args)
@@ -563,15 +575,15 @@
 			a => Array.isArray(a) ? castAll(a) : a,
 			a => [...a],
 			{
-				"copyWithin": 0,
-				"fill": ([val, ...rest]) => [cast(val, model.definition), ...rest],
-				"pop": 0,
-				"push": castAll,
-				"reverse": 0,
-				"shift": 0,
-				"sort": 0,
-				"splice": ([start, end, ...vals]) => [start, end, ...castAll(vals)],
-				"unshift": castAll,
+				"copyWithin": [],
+				"fill": [0, 0],
+				"pop": [],
+				"push": [0],
+				"reverse": [],
+				"shift": [],
+				"sort": [],
+				"splice": [2],
+				"unshift": [0]
 			},
 			{
 				set(arr, key, val) {
@@ -626,9 +638,9 @@
 			it => isIterable(it) ? new Set([...it].map(val => cast(val, model.definition))) : it,
 			set => new Set(set),
 			{
-				"add": ([val]) => [cast(val, model.definition)],
-				"delete": 0,
-				"clear": 0
+				"add": [0, 0],
+				"delete": [],
+				"clear": []
 			}
 		);
 
@@ -663,9 +675,9 @@
 			it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
 			map => new Map(map),
 			{
-				"set": castKeyValue,
-				"delete": 0,
-				"clear": 0
+				"set": [0, 1, i => i === 0 ? model.definition.key : model.definition.value],
+				"delete": [],
+				"clear": []
 			}
 		);
 

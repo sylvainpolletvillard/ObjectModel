@@ -336,8 +336,8 @@ Object.assign(Model.prototype, {
 		checkAssertions(obj, this, path, errors)
 	},
 
-	validate(obj, errorCollector, shouldCast) {
-		this[_validate](obj, null, this.errors, [], shouldCast)
+	validate(obj, errorCollector) {
+		this[_validate](obj, null, this.errors, [])
 		return !unstackErrors(this, errorCollector)
 	},
 
@@ -408,9 +408,12 @@ export function ObjectModel(def, params) {
 		if (model.parentClass) merge(obj, new model.parentClass(obj))
 		merge(this, obj)
 
-		if (mode === MODE_CAST || model.validate(this, undefined, true)) {
-			return getProxy(model, this, model.definition)
+		if (mode !== MODE_CAST) {
+			model[_validate](this, null, model.errors, [], true)
+			unstackErrors(model)
 		}
+
+		return getProxy(model, this, model.definition)
 	}
 
 	Object.assign(model, params)

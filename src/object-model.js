@@ -7,7 +7,7 @@ export const
 	_validate = Symbol(),
 	_original = Symbol(), // used to bypass proxy
 
-	MODE_CAST = Symbol(), // used to skip validation at instanciation for perf
+	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
 	initModel = (model, def) => {
 		model.definition = def
@@ -26,7 +26,7 @@ export const
 		errors.push({ expected, received, path, message })
 	},
 
-	unstackErrors = (model, errorCollector = model.errorCollector) => {
+	unstackErrors = (model, collector = model.errorCollector) => {
 		let nbErrors = model.errors.length
 		if (nbErrors > 0) {
 			let errors = model.errors.map(err => {
@@ -38,7 +38,7 @@ export const
 				return err
 			})
 			model.errors = []
-			errorCollector.call(model, errors) // throw all errors collected
+			collector.call(model, errors) // throw all errors collected
 		}
 		return nbErrors
 	},
@@ -210,7 +210,7 @@ export const
 
 		if (suitableModels.length === 1) {
 			// automatically cast to suitable model when explicit (duck typing)
-			return new suitableModels[0](obj, MODE_CAST)
+			return new suitableModels[0](obj, SKIP_VALIDATE)
 		}
 
 		if (suitableModels.length > 1)
@@ -408,7 +408,7 @@ export function ObjectModel(def, params) {
 		if (model.parentClass) merge(obj, new model.parentClass(obj))
 		merge(this, obj)
 
-		if (mode !== MODE_CAST) {
+		if (mode !== SKIP_VALIDATE) {
 			model[_validate](this, null, model.errors, [], true)
 			unstackErrors(model)
 		}

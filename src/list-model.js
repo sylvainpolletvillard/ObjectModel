@@ -1,4 +1,4 @@
-import { _original, _validate, MODE_CAST, checkAssertions, checkDefinition, initModel, unstackErrors } from "./object-model.js"
+import { _original, checkAssertions, checkDefinition, initModel, unstackErrors, SKIP_VALIDATE } from "./object-model.js"
 import { extend, has, isFunction, proxifyFn, proxifyModel, setConstructor } from "./helpers.js"
 
 export const initListModel = (base, constructor, def, init, clone, mutators, otherTraps = {}) => {
@@ -6,7 +6,7 @@ export const initListModel = (base, constructor, def, init, clone, mutators, oth
 	let model = function (list = model.default, mode) {
 		list = init(list)
 
-		if (mode === MODE_CAST || model.validate(list)) {
+		if (mode === SKIP_VALIDATE || model.validate(list)) {
 			return proxifyModel(list, model, Object.assign({
 				get(l, key) {
 					if (key === _original) return l

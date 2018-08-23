@@ -32,7 +32,7 @@ export default function FunctionModel(...argsDef) {
 				unstackErrors(model)
 				return result
 			}
-		});
+		})
 	}
 
 	return initModel(model, FunctionModel, { arguments: argsDef }, Function)

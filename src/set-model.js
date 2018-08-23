@@ -1,4 +1,7 @@
-import { _validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel, formatDefinition, Model, stackError } from "./object-model.js"
+import {
+	_validate, cast, checkAssertions, checkDefinition,
+	extendDefinition, extendModel, formatDefinition, Model, stackError
+} from "./object-model.js"
 import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 

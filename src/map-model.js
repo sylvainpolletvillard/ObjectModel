@@ -1,24 +1,24 @@
 import {
 	_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel,
 	format, formatDefinition, Model, stackError
-} from "./object-model.js";
+} from "./object-model.js"
 import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
 export default function MapModel(initialKeyDefinition, initialValueDefinition) {
-	let castKeyValue = ([k, v]) => [cast(k, model.definition.key), cast(v, model.definition.value)]
-	let model = initListModel(
-		Map,
-		MapModel,
-		{ key: initialKeyDefinition, value: initialValueDefinition },
-		it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
-		map => new Map(map),
-		{
-			"set": [0, 1, i => i === 0 ? model.definition.key : model.definition.value],
-			"delete": [],
-			"clear": []
-		}
-	)
+	let getDef = i => i === 0 ? model.definition.key : model.definition.value,
+		model = initListModel(
+			Map,
+			MapModel,
+			{ key: initialKeyDefinition, value: initialValueDefinition },
+			it => isIterable(it) ? new Map([...it].map(pair => pair.map((x,i) => cast(x, getDef(i))))) : it,
+			map => new Map(map),
+			{
+				"set": [0, 1, getDef],
+				"delete": [],
+				"clear": []
+			}
+		)
 
 	return model
 }

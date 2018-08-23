@@ -15,7 +15,7 @@ export const
 		model.definition = def
 		model.assertions = [...model.assertions]
 		define(model, "errors", [])
-		delete model.name;
+		delete model.name
 		return model
 	},
 
@@ -59,7 +59,7 @@ export const
 	},
 
 	formatDefinition = (def, stack) => {
-		let parts = parseDefinition(def).map(d => format(d, stack));
+		let parts = parseDefinition(def).map(d => format(d, stack))
 		return parts.length > 1 ? `(${parts.join(" or ")})` : parts[0]
 	},
 
@@ -85,7 +85,7 @@ export const
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
-				let val = obj ? obj[key] : undefined;
+				let val = obj ? obj[key] : undefined
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
 			})
 		}
@@ -168,7 +168,7 @@ export const
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
 
-		let isInDefinition = has(def, key);
+		let isInDefinition = has(def, key)
 		if (isInDefinition || !model.sealed) {
 			applyMutation(newPath)
 			if (isInDefinition) checkDefinition(o[key], def[key], newPath, model.errors, [])
@@ -235,9 +235,9 @@ export const
 		if (!isPlainObject(def)) return cast(obj, def)
 
 		const grantPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
-			privateAccess = true;
-			let result = Reflect.apply(fn, ctx, args);
-			privateAccess = false;
+			privateAccess = true
+			let result = Reflect.apply(fn, ctx, args)
+			privateAccess = false
 			return result
 		})
 
@@ -251,7 +251,7 @@ export const
 				if (typeof key !== "string") return Reflect.get(o, key)
 
 				let newPath = formatPath(path, key),
-					defPart = def[key];
+					defPart = def[key]
 
 				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model)
@@ -297,10 +297,10 @@ export const
 			},
 
 			getOwnPropertyDescriptor(o, key) {
-				let descriptor;
+				let descriptor
 				if (!model.conventionForPrivate(key)) {
-					descriptor = Object.getOwnPropertyDescriptor(def, key);
-					if (descriptor !== undefined) descriptor.value = o[key];
+					descriptor = Object.getOwnPropertyDescriptor(def, key)
+					if (descriptor !== undefined) descriptor.value = o[key]
 				}
 
 				return descriptor
@@ -325,7 +325,7 @@ Object.assign(Model.prototype, {
 	},
 
 	as(name) {
-		define(this, "name", name);
+		define(this, "name", name)
 		return this
 	},
 
@@ -345,13 +345,13 @@ Object.assign(Model.prototype, {
 	},
 
 	test(obj) {
-		let model = this;
+		let model = this
 		while (!has(model, "errorCollector")) {
 			model = getProto(model)
 		}
 
 		let initialErrorCollector = model.errorCollector,
-			failed;
+			failed
 
 		model.errorCollector = () => {
 			failed = true
@@ -403,7 +403,7 @@ export function ObjectModel(def, params) {
 		if (is(model, obj)) return obj
 
 		if (!is(Object, obj) && obj !== undefined) {
-			stackError(model.errors, Object, obj);
+			stackError(model.errors, Object, obj)
 		}
 
 		if (model.parentClass) merge(obj, new model.parentClass(obj))
@@ -451,7 +451,7 @@ extend(ObjectModel, Model, {
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class
-			submodel.parentClass = this;
+			submodel.parentClass = this
 		}
 
 		return submodel

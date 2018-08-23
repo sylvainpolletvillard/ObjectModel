@@ -3,16 +3,14 @@ import {
 	formatDefinition, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend } from "./helpers.js"
-import { initListModel } from "./list-model.js";
+import { initListModel } from "./list-model.js"
 
 export default function ArrayModel(initialDefinition) {
-	let castAll = args => args.map(arg => cast(arg, model.definition))
-
 	let model = initListModel(
 		Array,
 		ArrayModel,
 		initialDefinition,
-		a => Array.isArray(a) ? castAll(a) : a,
+		a => Array.isArray(a) ? a.map(arg => cast(arg, model.definition)) : a,
 		a => [...a],
 		{
 			"copyWithin": [],
@@ -58,7 +56,7 @@ extend(ArrayModel, Model, {
 })
 
 let setArrayKey = (array, key, value, model) => {
-	let path = `Array[${key}]`;
+	let path = `Array[${key}]`
 	if (parseInt(key) >= 0)
 		value = checkDefinition(value, model.definition, path, model.errors, [], true)
 

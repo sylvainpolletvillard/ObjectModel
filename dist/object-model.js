@@ -1,4 +1,4 @@
-// ObjectModel v3.7.2 - http://objectmodel.js.org
+// ObjectModel v3.7.3 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -62,7 +62,7 @@
 		SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
 		initModel = (model, constructor, def, base) => {
-			if(base) extend(model, base);
+			if (base) extend(model, base);
 			setConstructor(model, constructor);
 			model.definition = def;
 			model.assertions = [...model.assertions];
@@ -476,8 +476,15 @@
 	extend(ObjectModel, Model, {
 		sealed: false,
 
-		defaults(p) {
-			Object.assign(this.prototype, p);
+		defaults(obj) {
+			let def = this.definition;
+			for (let key in obj) {
+				if (has(def, key)) {
+					obj[key] = checkDefinition(obj[key], def[key], key, this.errors, [], true);
+				}
+			}
+			unstackErrors(this);
+			Object.assign(this.prototype, obj);
 			return this
 		},
 
@@ -587,7 +594,7 @@
 			},
 			{
 				set(arr, key, val) {
-					return controlMutation$1(model, arr, key, val, (a,v) => a[key] = v, true)
+					return controlMutation$1(model, arr, key, val, (a, v) => a[key] = v, true)
 				},
 
 				deleteProperty(arr, key) {
@@ -606,7 +613,7 @@
 
 		[_validate](arr, path, errors, stack) {
 			if (Array.isArray(arr))
-				arr.forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack));
+				(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack));
 			else stackError(errors, this, arr, path);
 
 			checkAssertions(arr, this, path, errors);
@@ -672,7 +679,7 @@
 				Map,
 				MapModel,
 				{ key: initialKeyDefinition, value: initialValueDefinition },
-				it => isIterable(it) ? new Map([...it].map(pair => pair.map((x,i) => cast(x, getDef(i))))) : it,
+				it => isIterable(it) ? new Map([...it].map(pair => pair.map((x, i) => cast(x, getDef(i))))) : it,
 				map => new Map(map),
 				{
 					"set": [0, 1, getDef],

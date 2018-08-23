@@ -10,7 +10,7 @@ export const
 	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
 	initModel = (model, constructor, def, base) => {
-		if(base) extend(model, base)
+		if (base) extend(model, base)
 		setConstructor(model, constructor)
 		model.definition = def
 		model.assertions = [...model.assertions]

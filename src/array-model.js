@@ -1,6 +1,6 @@
 import {
-	_validate, cast, checkAssertions, checkDefinition, extendDefinition, extendModel,
-	formatDefinition, Model, stackError, unstackErrors
+	_original, _validate, cast, checkAssertions, checkDefinition,
+	extendDefinition, extendModel, formatDefinition, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend } from "./helpers.js"
 import { initListModel } from "./list-model.js"
@@ -25,7 +25,7 @@ export default function ArrayModel(initialDefinition) {
 		},
 		{
 			set(arr, key, val) {
-				return controlMutation(model, arr, key, val, (a,v) => a[key] = v, true)
+				return controlMutation(model, arr, key, val, (a, v) => a[key] = v, true)
 			},
 
 			deleteProperty(arr, key) {
@@ -44,7 +44,7 @@ extend(ArrayModel, Model, {
 
 	[_validate](arr, path, errors, stack) {
 		if (Array.isArray(arr))
-			arr.forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack))
+			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack))
 		else stackError(errors, this, arr, path)
 
 		checkAssertions(arr, this, path, errors)

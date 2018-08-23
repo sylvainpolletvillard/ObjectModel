@@ -2,7 +2,7 @@ import {
 	_original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel,
 	format, formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
-import { extend, isFunction, proxifyModel, setConstructor } from "./helpers.js"
+import { extend, isFunction, proxifyModel } from "./helpers.js"
 
 
 export default function FunctionModel(...argsDef) {
@@ -35,11 +35,7 @@ export default function FunctionModel(...argsDef) {
 		});
 	}
 
-	extend(model, Function)
-	setConstructor(model, FunctionModel)
-	initModel(model, { arguments: argsDef })
-
-	return model
+	return initModel(model, FunctionModel, { arguments: argsDef }, Function)
 }
 
 extend(FunctionModel, Model, {

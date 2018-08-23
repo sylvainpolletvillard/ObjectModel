@@ -9,11 +9,14 @@ export const
 
 	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
-	initModel = (model, def) => {
+	initModel = (model, constructor, def, base) => {
+		if(base) extend(model, base)
+		setConstructor(model, constructor)
 		model.definition = def
 		model.assertions = [...model.assertions]
 		define(model, "errors", [])
 		delete model.name;
+		return model
 	},
 
 	extendModel = (child, parent, newProps) => {
@@ -379,9 +382,7 @@ export function BasicModel(def) {
 		return model.validate(val) ? val : undefined
 	}
 
-	setConstructor(model, BasicModel)
-	initModel(model, def)
-	return model
+	return initModel(model, BasicModel, def)
 }
 
 extend(BasicModel, Model, {
@@ -417,10 +418,7 @@ export function ObjectModel(def, params) {
 	}
 
 	Object.assign(model, params)
-	extend(model, Object)
-	setConstructor(model, ObjectModel)
-	initModel(model, def)
-	return model
+	return initModel(model, ObjectModel, def, Object)
 }
 
 extend(ObjectModel, Model, {

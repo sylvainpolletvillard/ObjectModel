@@ -1,5 +1,5 @@
 import { _original, checkAssertions, checkDefinition, initModel, unstackErrors, SKIP_VALIDATE } from "./object-model.js"
-import { extend, has, isFunction, proxifyFn, proxifyModel, setConstructor } from "./helpers.js"
+import { has, isFunction, proxifyFn, proxifyModel } from "./helpers.js"
 
 export const initListModel = (base, constructor, def, init, clone, mutators, otherTraps = {}) => {
 
@@ -37,8 +37,5 @@ export const initListModel = (base, constructor, def, init, clone, mutators, oth
 		}
 	}
 
-	extend(model, base)
-	setConstructor(model, constructor)
-	initModel(model, def)
-	return model
+	return initModel(model, constructor, def, base)
 }

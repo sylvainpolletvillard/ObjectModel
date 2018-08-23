@@ -1,4 +1,4 @@
-// ObjectModel v3.7.1 - http://objectmodel.js.org
+// ObjectModel v3.7.2 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -59,13 +59,16 @@
 		_validate = Symbol(),
 		_original = Symbol(), // used to bypass proxy
 
-		MODE_CAST = Symbol(), // used to skip validation at instanciation for perf
+		SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
-		initModel = (model, def) => {
+		initModel = (model, constructor, def, base) => {
+			if(base) extend(model, base);
+			setConstructor(model, constructor);
 			model.definition = def;
 			model.assertions = [...model.assertions];
 			define(model, "errors", []);
 			delete model.name;
+			return model
 		},
 
 		extendModel = (child, parent, newProps) => {
@@ -78,7 +81,7 @@
 			errors.push({ expected, received, path, message });
 		},
 
-		unstackErrors = (model, errorCollector = model.errorCollector) => {
+		unstackErrors = (model, collector = model.errorCollector) => {
 			let nbErrors = model.errors.length;
 			if (nbErrors > 0) {
 				let errors = model.errors.map(err => {
@@ -90,7 +93,7 @@
 					return err
 				});
 				model.errors = [];
-				errorCollector.call(model, errors); // throw all errors collected
+				collector.call(model, errors); // throw all errors collected
 			}
 			return nbErrors
 		},
@@ -262,7 +265,7 @@
 
 			if (suitableModels.length === 1) {
 				// automatically cast to suitable model when explicit (duck typing)
-				return new suitableModels[0](obj, MODE_CAST)
+				return new suitableModels[0](obj, SKIP_VALIDATE)
 			}
 
 			if (suitableModels.length > 1)
@@ -431,9 +434,7 @@
 			return model.validate(val) ? val : undefined
 		};
 
-		setConstructor(model, BasicModel);
-		initModel(model, def);
-		return model
+		return initModel(model, BasicModel, def)
 	}
 
 	extend(BasicModel, Model, {
@@ -460,7 +461,7 @@
 			if (model.parentClass) merge(obj, new model.parentClass(obj));
 			merge(this, obj);
 
-			if (mode !== MODE_CAST) {
+			if (mode !== SKIP_VALIDATE) {
 				model[_validate](this, null, model.errors, [], true);
 				unstackErrors(model);
 			}
@@ -469,10 +470,7 @@
 		};
 
 		Object.assign(model, params);
-		extend(model, Object);
-		setConstructor(model, ObjectModel);
-		initModel(model, def);
-		return model
+		return initModel(model, ObjectModel, def, Object)
 	}
 
 	extend(ObjectModel, Model, {
@@ -528,7 +526,7 @@
 		let model = function (list = model.default, mode) {
 			list = init(list);
 
-			if (mode === MODE_CAST || model.validate(list)) {
+			if (mode === SKIP_VALIDATE || model.validate(list)) {
 				return proxifyModel(list, model, Object.assign({
 					get(l, key) {
 						if (key === _original) return l
@@ -540,7 +538,14 @@
 								let [begin, end = args.length - 1, getArgDef] = mutators[key];
 								for (let i = begin; i <= end; i++) {
 									let argDef = getArgDef ? getArgDef(i) : model.definition;
-									args[i] = checkDefinition(args[i], argDef, `${base.name}.${key} arguments[${i}]`, model.errors, [], true);
+									args[i] = checkDefinition(
+										args[i],
+										argDef,
+										`${base.name}.${key} arguments[${i}]`,
+										model.errors,
+										[],
+										true
+									);
 								}
 
 								if (model.assertions.length > 0) {
@@ -559,20 +564,15 @@
 			}
 		};
 
-		extend(model, base);
-		setConstructor(model, constructor);
-		initModel(model, def);
-		return model
+		return initModel(model, constructor, def, base)
 	};
 
 	function ArrayModel(initialDefinition) {
-		let castAll = args => args.map(arg => cast(arg, model.definition));
-
 		let model = initListModel(
 			Array,
 			ArrayModel,
 			initialDefinition,
-			a => Array.isArray(a) ? castAll(a) : a,
+			a => Array.isArray(a) ? a.map(arg => cast(arg, model.definition)) : a,
 			a => [...a],
 			{
 				"copyWithin": [],
@@ -587,11 +587,11 @@
 			},
 			{
 				set(arr, key, val) {
-					return setArrayKey(arr, key, val, model)
+					return controlMutation$1(model, arr, key, val, (a,v) => a[key] = v, true)
 				},
 
 				deleteProperty(arr, key) {
-					return !(key in arr) || setArrayKey(arr, key, undefined, model)
+					return controlMutation$1(model, arr, key, undefined, a => delete a[key])
 				}
 			}
 		);
@@ -617,16 +617,16 @@
 		}
 	});
 
-	let setArrayKey = (array, key, value, model) => {
+	let controlMutation$1 = (model, array, key, value, applyMutation, canBeExtended) => {
 		let path = `Array[${key}]`;
-		if (parseInt(key) >= 0)
-			value = checkDefinition(value, model.definition, path, model.errors, [], true);
+		let isInDef = (parseInt(key) >= 0 && (canBeExtended || key in array));
+		if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true);
 
 		let testArray = [...array];
-		testArray[key] = value;
+		applyMutation(testArray);
 		checkAssertions(testArray, model, path);
 		let isSuccess = !unstackErrors(model);
-		if (isSuccess) array[key] = value;
+		if (isSuccess) applyMutation(array, value);
 		return isSuccess
 	};
 
@@ -667,27 +667,26 @@
 	});
 
 	function MapModel(initialKeyDefinition, initialValueDefinition) {
-		let castKeyValue = ([k, v]) => [cast(k, model.definition.key), cast(v, model.definition.value)];
-		let model = initListModel(
-			Map,
-			MapModel,
-			{ key: initialKeyDefinition, value: initialValueDefinition },
-			it => isIterable(it) ? new Map([...it].map(castKeyValue)) : it,
-			map => new Map(map),
-			{
-				"set": [0, 1, i => i === 0 ? model.definition.key : model.definition.value],
-				"delete": [],
-				"clear": []
-			}
-		);
+		let getDef = i => i === 0 ? model.definition.key : model.definition.value,
+			model = initListModel(
+				Map,
+				MapModel,
+				{ key: initialKeyDefinition, value: initialValueDefinition },
+				it => isIterable(it) ? new Map([...it].map(pair => pair.map((x,i) => cast(x, getDef(i))))) : it,
+				map => new Map(map),
+				{
+					"set": [0, 1, getDef],
+					"delete": [],
+					"clear": []
+				}
+			);
 
 		return model
 	}
 
 	extend(MapModel, Model, {
 		toString(stack) {
-			let { key, value } = this.definition;
-			return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
+			return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 		},
 
 		[_validate](map, path, errors, stack) {
@@ -703,10 +702,9 @@
 		},
 
 		extend(keyParts, valueParts) {
-			let { key, value } = this.definition;
 			return extendModel(new MapModel(
-				extendDefinition(key, keyParts),
-				extendDefinition(value, valueParts)
+				extendDefinition(this.definition.key, keyParts),
+				extendDefinition(this.definition.value, valueParts)
 			), this)
 		}
 	});
@@ -738,14 +736,10 @@
 					unstackErrors(model);
 					return result
 				}
-			});
+			})
 		};
 
-		extend(model, Function);
-		setConstructor(model, FunctionModel);
-		initModel(model, { arguments: argsDef });
-
-		return model
+		return initModel(model, FunctionModel, { arguments: argsDef }, Function)
 	}
 
 	extend(FunctionModel, Model, {

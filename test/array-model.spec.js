@@ -253,3 +253,27 @@ QUnit.test("Dynamic definition", function (assert) {
 	a1.push({ n: 42 });
 	assert.ok(a1[0] instanceof OM, "autocast still works after definition dynamically changed")
 })
+
+QUnit.test("delete key", function (assert) {
+	let A = ArrayModel([Number]);
+	let a = A([1,2,3])
+	delete a[2]
+	assert.equal(3 in a, false, "delete should remove own array key")
+	assert.equal(a.length, 3, "delete should not update length")
+	assert.equal(Object.keys(a).length, 2, "delete should leave an empty hole")
+
+	console.log(a)
+
+	const ArrayDense = ArrayModel([Number]).assert(function hasNoHoles(arr){
+		return arr.filter(() => true).length === arr.length
+	 }).as("ArrayDense");
+
+	 A = ArrayDense.extend([Number]);
+	 a = A([4,5,6])
+	 assert.throws(() => {
+		 delete a[2]
+	 }, /TypeError.*hasNoHoles/, "ArrayDense should prevent deleting keys")
+
+	 console.log(a)
+
+})

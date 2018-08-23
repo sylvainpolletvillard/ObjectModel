@@ -25,8 +25,7 @@ export default function MapModel(initialKeyDefinition, initialValueDefinition) {
 
 extend(MapModel, Model, {
 	toString(stack) {
-		let { key, value } = this.definition
-		return `Map of ${formatDefinition(key, stack)} : ${formatDefinition(value, stack)}`
+		return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 	},
 
 	[_validate](map, path, errors, stack) {
@@ -42,10 +41,9 @@ extend(MapModel, Model, {
 	},
 
 	extend(keyParts, valueParts) {
-		let { key, value } = this.definition
 		return extendModel(new MapModel(
-			extendDefinition(key, keyParts),
-			extendDefinition(value, valueParts)
+			extendDefinition(this.definition.key, keyParts),
+			extendDefinition(this.definition.value, valueParts)
 		), this)
 	}
 })

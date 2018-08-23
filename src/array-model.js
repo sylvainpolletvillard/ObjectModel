@@ -25,11 +25,11 @@ export default function ArrayModel(initialDefinition) {
 		},
 		{
 			set(arr, key, val) {
-				return setArrayKey(arr, key, val, model)
+				return controlMutation(model, arr, key, val, (a,v) => a[key] = v, true)
 			},
 
 			deleteProperty(arr, key) {
-				return !(key in arr) || setArrayKey(arr, key, undefined, model)
+				return controlMutation(model, arr, key, undefined, a => delete a[key])
 			}
 		}
 	)
@@ -55,15 +55,15 @@ extend(ArrayModel, Model, {
 	}
 })
 
-let setArrayKey = (array, key, value, model) => {
+let controlMutation = (model, array, key, value, applyMutation, canBeExtended) => {
 	let path = `Array[${key}]`
-	if (parseInt(key) >= 0)
-		value = checkDefinition(value, model.definition, path, model.errors, [], true)
+	let isInDef = (parseInt(key) >= 0 && (canBeExtended || key in array))
+	if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
 	let testArray = [...array]
-	testArray[key] = value
+	applyMutation(testArray)
 	checkAssertions(testArray, model, path)
 	let isSuccess = !unstackErrors(model)
-	if (isSuccess) array[key] = value
+	if (isSuccess) applyMutation(array, value)
 	return isSuccess
 }

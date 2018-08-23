@@ -424,8 +424,15 @@ export function ObjectModel(def, params) {
 extend(ObjectModel, Model, {
 	sealed: false,
 
-	defaults(p) {
-		Object.assign(this.prototype, p)
+	defaults(obj) {
+		let def = this.definition
+		for (let key in obj) {
+			if (has(def, key)) {
+				obj[key] = checkDefinition(obj[key], def[key], key, this.errors, [], true)
+			}
+		}
+		unstackErrors(this)
+		Object.assign(this.prototype, obj)
 		return this
 	},
 

@@ -2,7 +2,7 @@
 
 QUnit.module("Object Models");
 
-const consoleMock = (function(console) {
+const consoleMock = (function (console) {
 	const methods = ["debug", "log", "warn", "error"];
 	const originals = {};
 	const mocks = {}
@@ -10,7 +10,7 @@ const consoleMock = (function(console) {
 
 	methods.forEach(method => {
 		originals[method] = console[method]
-		mocks[method] = function(){ lastArgs[method] = arguments }
+		mocks[method] = function () { lastArgs[method] = arguments }
 	})
 
 	return {
@@ -108,7 +108,7 @@ QUnit.test("behaviour for properties", function (assert) {
 		joe.address.work.city = [];
 	}, /TypeError.*got Array/, "invalid Array set");
 	assert.throws(function () {
-		joe.address.work = {city: 42};
+		joe.address.work = { city: 42 };
 	}, /TypeError.*got Number 42/, "invalid Object set");
 	assert.throws(function () {
 		Person({
@@ -118,7 +118,7 @@ QUnit.test("behaviour for properties", function (assert) {
 			female: "false"
 		});
 	}, /TypeError.*expecting female to be Boolean.*got String "false"/,
-	"invalid prop at object model instanciation");
+		"invalid prop at object model instanciation");
 
 	joe = Person({
 		name: "Joe",
@@ -158,7 +158,7 @@ QUnit.test("behaviour for properties", function (assert) {
 	const A = ObjectModel({
 		id: [Number]
 	}).defaults({
-		setId(id){ this.id = id; }
+		setId(id) { this.id = id; }
 	})
 
 	let a = new A({})
@@ -175,15 +175,15 @@ QUnit.test("edge cases of constructors", function (assert) {
 	assert.strictEqual(M.test(1), false, "number is invalid for empty objectmodels")
 	assert.strictEqual(M.test(new Number(1)), true, "Numbers through constructor are valid for empty objectmodels")
 	assert.strictEqual(M.test("string"), false, "string is invalid for empty objectmodels")
-	assert.strictEqual(M.test(function(){}), true, "function is valid for empty objectmodels")
+	assert.strictEqual(M.test(function () { }), true, "function is valid for empty objectmodels")
 
-	const O = ObjectModel({ x: [ Number ]})
+	const O = ObjectModel({ x: [Number] })
 	assert.strictEqual(O.test(undefined), true, "undefined is valid for optional objectmodels, due to null-safe object traversal")
 	assert.strictEqual(O.test(null), false, "null is invalid for optional objectmodels")
 	assert.strictEqual(O.test(1), false, "number is invalid for optional objectmodels")
 	assert.strictEqual(O.test(new Number(1)), true, "Numbers through constructor are valid for optional objectmodels")
 	assert.strictEqual(O.test("string"), false, "string is invalid for optional objectmodels")
-	assert.strictEqual(O.test(function(){}), true, "function is valid for optional objectmodels")
+	assert.strictEqual(O.test(function () { }), true, "function is valid for optional objectmodels")
 
 
 	/* //TODO: use FunctionModel for ObjectModel API ?
@@ -212,13 +212,13 @@ QUnit.test("optional and multiple parameters", function (assert) {
 		}
 	});
 
-	var joe = Person({female: false});
+	var joe = Person({ female: false });
 	assert.ok(joe instanceof Person, "instanceof model test");
 	joe.name = "joe";
 	joe.name = undefined;
 	joe.name = null;
-	joe.age  = new Date(1995, 1, 23);
-	joe.age  = undefined;
+	joe.age = new Date(1995, 1, 23);
+	joe.age = undefined;
 	assert.throws(function () {
 		joe.age = null;
 	}, /TypeError.*got null/, "invalid set null");
@@ -230,8 +230,8 @@ QUnit.test("optional and multiple parameters", function (assert) {
 	}, /TypeError.*got undefined/, "invalid set undefined");
 	joe.address.work.city = "Lille";
 	joe.address.work.city = undefined;
-	joe.haircolor         = "blond";
-	joe.haircolor         = undefined;
+	joe.haircolor = "blond";
+	joe.haircolor = undefined;
 	assert.throws(function () {
 		joe.name = false;
 	}, /TypeError.*expecting name to be String.*got Boolean false/, "invalid type for optional prop");
@@ -269,7 +269,7 @@ QUnit.test("fixed values", function (assert) {
 		x: true
 	});
 
-	model.x         = 666;
+	model.x = 666;
 	model.haircolor = "brown";
 
 	assert.throws(function () {
@@ -316,7 +316,7 @@ QUnit.test("default values", function (assert) {
 	assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
 	assert.ok(myModel.test({}), "defaults should be applied when testing duck typed objects")
 
-	const model2 = myModel({name: "jim", foo: {bar: {buz: 1}}});
+	const model2 = myModel({ name: "jim", foo: { bar: { buz: 1 } } });
 	assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
 	assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
 
@@ -332,16 +332,18 @@ QUnit.test("default values", function (assert) {
 		members: ArrayModel(Person)
 	});
 
-	assert.strictEqual((new Team({ lead: new Person(), members:[] })).lead.name, "new-name", "default value through composition")
-	assert.throws(() => { new Team({ lead: 1, members:[] })}, "invalid value through composition with default")
+	assert.strictEqual((new Team({ lead: new Person(), members: [] })).lead.name, "new-name", "default value through composition")
+	assert.throws(() => { new Team({ lead: 1, members: [] }) }, "invalid value through composition with default")
 
+	assert.throws(() => { myModel.defaults({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
+	assert.throws(() => { myModel.defaults({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
 });
 
 QUnit.test("defaultTo with defaults", function (assert) {
 
-	const myModel = new ObjectModel({x: Number, y: String})
-		.defaultTo({x: 42})
-		.defaults({y: "hello"})
+	const myModel = new ObjectModel({ x: Number, y: String })
+		.defaultTo({ x: 42 })
+		.defaults({ y: "hello" })
 
 	assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
 	assert.strictEqual(myModel.prototype.y, "hello", "object model defaults store values to proto")
@@ -418,16 +420,16 @@ QUnit.test("Private and constant properties", function (assert) {
 		Object.prototype.toString.call(m._p);
 	}, /TypeError[\s\S]*cannot access to private/, "try to access private from outside");
 
-	M.prototype.incrementPrivate = function(){ this._p++ }
-	M.prototype.getPrivate = function(){ return this._p }
+	M.prototype.incrementPrivate = function () { this._p++ }
+	M.prototype.getPrivate = function () { return this._p }
 	m.incrementPrivate();
 	assert.equal(m.getPrivate(), 43, "can access and mutate private props through methods")
 
 	const A = ObjectModel({
 		_id: [Number]
 	}).defaults({
-		getId(){ return this._id },
-		setId(id){ this._id = id; }
+		getId() { return this._id },
+		setId(id) { this._id = id; }
 	})
 
 	let a = new A({})
@@ -437,7 +439,7 @@ QUnit.test("Private and constant properties", function (assert) {
 	const B = ObjectModel({
 		ID: [Number]
 	}).defaults({
-		setId(id){ this.ID = id; }
+		setId(id) { this.ID = id; }
 	})
 
 	let b = new B({ ID: 0 })
@@ -446,12 +448,12 @@ QUnit.test("Private and constant properties", function (assert) {
 	const Circle = ObjectModel({
 		radius: Number,    // public
 		_index: Number,    // private
-		UNIT: ["px","cm"], // constant
+		UNIT: ["px", "cm"], // constant
 		_ID: [Number],     // private and constant
 	}).defaults({
 		_index: 0,
-		getIndex(){ return this._index },
-		setIndex(value){ this._index = value }
+		getIndex() { return this._index },
+		setIndex(value) { this._index = value }
 	});
 
 	let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });
@@ -462,7 +464,7 @@ QUnit.test("Private and constant properties", function (assert) {
 	assert.throws(() => { c._index }, /TypeError: cannot access to private property _index/, "cannot access private property")
 
 	c.setIndex(2);
-	assert.strictEqual( c.getIndex(), 2, "can access and mutate private through method" );
+	assert.strictEqual(c.getIndex(), 2, "can access and mutate private through method");
 
 	// change the private convention for all models
 	let initialConventionForPrivate = Model.prototype.conventionForPrivate;
@@ -483,12 +485,12 @@ QUnit.test("Private and constant properties", function (assert) {
 	class OM extends ObjectModel({
 		_privString: [String],
 		pubNum: [Number]
-	}) {}
+	}) { }
 
 	class ParentOM extends ObjectModel({
 		_id: [String],
 		om: OM
-	}) {}
+	}) { }
 
 
 	let nestedOM = new OM({
@@ -510,7 +512,7 @@ QUnit.test("Non-enumerable and non-writable properties with overridden conventio
 	});
 
 	myModel.conventionForConstant = s => s.indexOf("constant_") === 0;
-	myModel.conventionForPrivate  = s => s.indexOf("private_") === 0;
+	myModel.conventionForPrivate = s => s.indexOf("private_") === 0;
 
 	const m = myModel({
 		private_prop: 42,
@@ -556,7 +558,7 @@ QUnit.test("Extensions", function (assert) {
 		}
 	});
 
-	const Woman = Person.extend({female: true});
+	const Woman = Person.extend({ female: true });
 
 	assert.ok(Person(joe), "Person valid model for joe");
 
@@ -628,14 +630,14 @@ QUnit.test("Extensions", function (assert) {
 	assert.equal(joe instanceof UnemployedWoman, false, "joe not instanceof UnemployedWoman");
 	assert.equal(ann instanceof UnemployedWoman, false, "ann not instanceof UnemployedWoman");
 
-	let Vehicle = {speed: Number};
-	let Car     = Object.create(Vehicle);
-	let Ferrari = ObjectModel({expensive: true}).extend(Car);
+	let Vehicle = { speed: Number };
+	let Car = Object.create(Vehicle);
+	let Ferrari = ObjectModel({ expensive: true }).extend(Car);
 	assert.ok("speed" in Ferrari.definition, "should retrieve definitions from parent prototypes when extending with objects");
 
-	Vehicle = function () {};
+	Vehicle = function () { };
 	Vehicle.prototype.speed = 99;
-	Car = function () {};
+	Car = function () { };
 	Car.prototype = new Vehicle();
 	Ferrari = ObjectModel({ price: [Number] }).extend(Car);
 
@@ -797,7 +799,7 @@ QUnit.test("Composition", function (assert) {
 
 	const Family = ObjectModel({
 		father: Person,
-		mother: Person.extend({female: true}),
+		mother: Person.extend({ female: true }),
 		children: ArrayModel(Person),
 		grandparents: [ArrayModel(Person).assert(function (persons) {
 			return persons && persons.length <= 4
@@ -865,10 +867,10 @@ QUnit.test("Composition", function (assert) {
 
 QUnit.test("Assertions", function (assert) {
 
-	const NestedModel = ObjectModel({foo: {bar: {baz: Boolean}}})
+	const NestedModel = ObjectModel({ foo: { bar: { baz: Boolean } } })
 		.assert(o => o.foo.bar.baz === true);
 
-	const nestedModel = NestedModel({foo: {bar: {baz: true}}});
+	const nestedModel = NestedModel({ foo: { bar: { baz: true } } });
 
 	assert.throws(function () {
 		nestedModel.foo.bar.baz = false;
@@ -890,30 +892,30 @@ QUnit.test("Assertions", function (assert) {
 	assert.equal(Model.prototype.assertions.length, 1, "check number of assertions on BasicModel.prototype")
 	assert.equal(ObjectModel.prototype.assertions.length, 2, "check number of assertions on ObjectModel.prototype");
 
-	const M = ObjectModel({a: String});
+	const M = ObjectModel({ a: String });
 
 	assert.throws(function () {
-		M({a: "test"})
+		M({ a: "test" })
 	}, /TypeError/, "expected message without data");
 
 	assert.throws(function () {
-		M({a: "test"})
+		M({ a: "test" })
 	}, /TypeError/, "expected message with data -1");
 
 	// clean up global assertions
 	Model.prototype.assertions = [];
 	delete ObjectModel.prototype.assertions;
 
-	const AssertObject = ObjectModel({name: [String]})
+	const AssertObject = ObjectModel({ name: [String] })
 		.assert((o => o.name.toLowerCase().length === o.name.length), "may throw exception");
 
-	new AssertObject({name: "joe"});
+	new AssertObject({ name: "joe" });
 
 	assert.throws(function () {
-		new AssertObject({name: undefined});
+		new AssertObject({ name: undefined });
 	},
-	/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
-	"assertions catch exceptions on Object models");
+		/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
+		"assertions catch exceptions on Object models");
 
 });
 
@@ -930,16 +932,16 @@ QUnit.test("validate method", function (assert) {
 		country: BasicModel(String).assert(assertFunction, "Country must be GB")
 	});
 
-	const gbAddress = {city: "London", country: "GB"};
-	const frAddress = {city: "Paris", country: "FR"};
+	const gbAddress = { city: "London", country: "GB" };
+	const frAddress = { city: "Paris", country: "FR" };
 
 	const Order = new ObjectModel({
 		sku: String,
 		address: Address
 	});
 
-	const gbOrder = {sku: "ABC123", address: gbAddress};
-	const frOrder = {sku: "ABC123", address: frAddress};
+	const gbOrder = { sku: "ABC123", address: gbAddress };
+	const frOrder = { sku: "ABC123", address: frAddress };
 
 	Order.validate(gbOrder); // no errors
 	assert.throws(function () {
@@ -959,7 +961,7 @@ QUnit.test("validate method", function (assert) {
 
 });
 
-QUnit.test("Cyclic detection", function(assert){
+QUnit.test("Cyclic detection", function (assert) {
 
 	let A, B, a, b;
 
@@ -971,7 +973,7 @@ QUnit.test("Cyclic detection", function(assert){
 	b = B({ a: a });
 
 	assert.ok(a.b = b, "valid cyclic value assignment");
-	assert.throws(function(){a.b = a; }, /TypeError/, "invalid cyclic value assignment");
+	assert.throws(function () { a.b = a; }, /TypeError/, "invalid cyclic value assignment");
 
 	A = ObjectModel({ b: [] });
 	B = ObjectModel({ a: A });
@@ -986,7 +988,7 @@ QUnit.test("Cyclic detection", function(assert){
 	b = B({ a: a });
 
 	assert.ok((a.b = { c: { d: b } }), "valid deep cyclic value assignment");
-	assert.throws(function(){
+	assert.throws(function () {
 		a.b = { c: { d: a } };
 	}, /TypeError/, "invalid deep cyclic value assignment");
 
@@ -1003,8 +1005,8 @@ QUnit.test("Cyclic detection", function(assert){
 	const joe = Honey({ sweetie: undefined }); // ann is not yet defined
 	const ann = Sweetie({ honey: joe });
 	assert.ok(joe.sweetie = ann, "website example valid assignment");
-	assert.throws(function(){ joe.sweetie = "dog" }, /TypeError/, "website example invalid assignment 1");
-	assert.throws(function(){ joe.sweetie = joe }, /TypeError/, "website example invalid assignment 2");
+	assert.throws(function () { joe.sweetie = "dog" }, /TypeError/, "website example invalid assignment 1");
+	assert.throws(function () { joe.sweetie = joe }, /TypeError/, "website example invalid assignment 2");
 
 });
 
@@ -1058,35 +1060,35 @@ QUnit.test("Custom error collectors", function (assert) {
 		assert.equal(err.message, 'expecting d.e.f to be null, got undefined', "check nested error.message custom collector");
 	})
 
-	M = ObjectModel({x: Number});
-	M.errorCollector = function noop() {};
+	M = ObjectModel({ x: Number });
+	M.errorCollector = function noop() { };
 
-	assert.equal(M.test({x: "nope"}), false, "model.test should work even when errorCollector does not throw exceptions");
+	assert.equal(M.test({ x: "nope" }), false, "model.test should work even when errorCollector does not throw exceptions");
 
 });
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	let User = new ObjectModel({username: String, email: String})
-		.defaults({username: 'foo', email: 'foo@foo'});
+	let User = new ObjectModel({ username: String, email: String })
+		.defaults({ username: 'foo', email: 'foo@foo' });
 
-	let Article = new ObjectModel({title: String, user: User})
-		.defaults({title: 'bar', user: new User()});
+	let Article = new ObjectModel({ title: String, user: User })
+		.defaults({ title: 'bar', user: new User() });
 
 	let a = new Article();
-	a.user = {username: 'joe', email: 'foo'};
+	a.user = { username: 'joe', email: 'foo' };
 
 	assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
 	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
 
-	User = new ObjectModel({username: String, email: String})
-		.defaults({username: 'foo', email: 'foo@foo'});
+	User = new ObjectModel({ username: String, email: String })
+		.defaults({ username: 'foo', email: 'foo@foo' });
 
-	Article = new ObjectModel({title: String, user: [User]})
-		.defaults({title: 'bar', user: new User()});
+	Article = new ObjectModel({ title: String, user: [User] })
+		.defaults({ title: 'bar', user: new User() });
 
 	a = new Article();
-	a.user = {username: 'joe', email: 'foo'};
+	a.user = { username: 'joe', email: 'foo' };
 
 	assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
 	assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
@@ -1094,21 +1096,21 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	const Type1 = ObjectModel({ name: String, other1: [Boolean] });
 	const Type2 = ObjectModel({ name: String, other2: [Number] });
-	const Container = ObjectModel({ foo: { bar: [Type1, Type2] }});
+	const Container = ObjectModel({ foo: { bar: [Type1, Type2] } });
 
 	consoleMock.apply();
-	let c = new Container({ foo: { bar: { name: "dunno" }}});
+	let c = new Container({ foo: { bar: { name: "dunno" } } });
 
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
 		.test(consoleMock.lastArgs.warn[0]),
-	"should warn about ambiguous model for object sub prop"
+		"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
 	assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");
 	consoleMock.revert();
 
 	consoleMock.apply();
-	c = new Container({ foo: { bar: Type2({ name: "dunno" }) }});
+	c = new Container({ foo: { bar: Type2({ name: "dunno" }) } });
 	assert.ok(consoleMock.lastArgs.warn.length === 0, "should not warn when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
@@ -1121,13 +1123,13 @@ QUnit.test("delete trap", function (assert) {
 	const M = ObjectModel({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
 	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
 
-	assert.throws(function(){ delete m._p }, /TypeError.*private/, "cannot delete private prop");
-	assert.throws(function(){ delete m.C }, /TypeError.*constant/, "cannot delete constant prop");
+	assert.throws(function () { delete m._p }, /TypeError.*private/, "cannot delete private prop");
+	assert.throws(function () { delete m.C }, /TypeError.*constant/, "cannot delete constant prop");
 	delete m.u; // can delete undefined properties
-	assert.throws(function(){ delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
+	assert.throws(function () { delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
 	delete m.x // can delete optional properties
 	M.sealed = true;
-	assert.throws(function(){ delete m.unknown }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot delete property out of model definition");
+	assert.throws(function () { delete m.unknown }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot delete property out of model definition");
 
 })
 
@@ -1136,13 +1138,13 @@ QUnit.test("defineProperty trap", function (assert) {
 	const M = ObjectModel({ _p: Boolean, C: Number, u: undefined, n: null, x: [Boolean] })
 	const m = M({ _p: true, C: 42, u: undefined, n: null, x: false })
 
-	assert.throws(function(){ Object.defineProperty(m, "_p", { value: true }) }, /TypeError.*private/, "cannot define private prop");
-	assert.throws(function(){ Object.defineProperty(m, "C", { value: 43 })}, /TypeError.*constant/, "cannot define constant prop");
-	assert.throws(function(){ Object.defineProperty(m, "u", { value: "test" })}, /TypeError.*expecting u to be undefined/, "check type after defineProperty");
-	assert.throws(function(){ Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
+	assert.throws(function () { Object.defineProperty(m, "_p", { value: true }) }, /TypeError.*private/, "cannot define private prop");
+	assert.throws(function () { Object.defineProperty(m, "C", { value: 43 }) }, /TypeError.*constant/, "cannot define constant prop");
+	assert.throws(function () { Object.defineProperty(m, "u", { value: "test" }) }, /TypeError.*expecting u to be undefined/, "check type after defineProperty");
+	assert.throws(function () { Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
 	Object.defineProperty(m, "x", { value: undefined }) // can define optional properties
 	ObjectModel.prototype.sealed = true;
-	assert.throws(function(){ Object.defineProperty(m, "unknown", { value: "test" }) }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot define property out of model definition");
+	assert.throws(function () { Object.defineProperty(m, "unknown", { value: "test" }) }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot define property out of model definition");
 	ObjectModel.prototype.sealed = false;
 
 })
@@ -1184,22 +1186,22 @@ QUnit.test("class constructors", function (assert) {
 
 	const PersonModel = ObjectModel({ firstName: String, lastName: String, fullName: String })
 	class Person extends PersonModel {
-		constructor({ firstName, lastName }){
+		constructor({ firstName, lastName }) {
 			const fullName = `${firstName} ${lastName}`
 			super({ firstName, lastName, fullName })
 		}
 	}
 
 	const person = new Person({ firstName: "John", lastName: "Smith" })
-	assert.ok(person instanceof Person,  "person instanceof Person")
-	assert.ok(person instanceof PersonModel,  "person instanceof PersonModel")
-	assert.equal(person.fullName, "John Smith",	"check es6 class constructor")
+	assert.ok(person instanceof Person, "person instanceof Person")
+	assert.ok(person instanceof PersonModel, "person instanceof PersonModel")
+	assert.equal(person.fullName, "John Smith", "check es6 class constructor")
 
 	const UserModel = Person.extend({ role: String });
 	class User extends UserModel {
-		constructor({ firstName, lastName, role }){
+		constructor({ firstName, lastName, role }) {
 			super({ firstName, lastName, role })
-			if(role === "admin"){
+			if (role === "admin") {
 				this.fullName += " [ADMIN]"
 			}
 		}
@@ -1207,19 +1209,19 @@ QUnit.test("class constructors", function (assert) {
 
 	const user = new User({ firstName: "John", lastName: "Smith", role: "admin" })
 
-	assert.ok(user instanceof User,  "user instanceof User")
-	assert.ok(user instanceof UserModel,  "user instanceof UserModel")
-	assert.ok(user instanceof Person,  "user instanceof Person")
-	assert.ok(user instanceof PersonModel,  "user instanceof PersonModel")
+	assert.ok(user instanceof User, "user instanceof User")
+	assert.ok(user instanceof UserModel, "user instanceof UserModel")
+	assert.ok(user instanceof Person, "user instanceof Person")
+	assert.ok(user instanceof PersonModel, "user instanceof PersonModel")
 	assert.equal(user.fullName, "John Smith [ADMIN]", "check es6 class constructor with extended class")
 	assert.equal(Object.keys(User.definition).sort().join(","), "firstName,fullName,lastName,role", "check definition keys")
 	assert.equal(Object.keys(user).sort().join(","), "firstName,fullName,lastName,role", "check instance keys")
-	assert.throws(function(){ user.role = null; }, /TypeError/, "extended class model check definition")
+	assert.throws(function () { user.role = null; }, /TypeError/, "extended class model check definition")
 
 	const Lovers = class Lovers extends ObjectModel({
 		husband: Person,
 		wife: Person,
-	}) {};
+	}) { };
 
 	const joe = { firstName: 'Joe', lastName: "Smith" };
 	const ann = new Person({ firstName: "Ann", lastName: "Smith" });
@@ -1233,14 +1235,14 @@ QUnit.test("class constructors", function (assert) {
 
 	assert.equal(Person.test({ firstName: 0, lastName: "" }), false, `test method with class-based models`);
 
-	class Request extends ObjectModel({ id: [Number] }){
-		setId(id){
+	class Request extends ObjectModel({ id: [Number] }) {
+		setId(id) {
 			this.id = id;
 		}
 	}
 
 	let x = new Request({});
-	assert.throws(function(){ x.setId("32") }, /TypeError/, "class setters methods should provide type checking");
+	assert.throws(function () { x.setId("32") }, /TypeError/, "class setters methods should provide type checking");
 })
 
 QUnit.test("Sealed models", function (assert) {
@@ -1260,7 +1262,7 @@ QUnit.test("Sealed models", function (assert) {
 		}
 	});
 
-	assert.throws(function() {
+	assert.throws(function () {
 		new Package({
 			name: "Test item",
 			data: {
@@ -1268,19 +1270,19 @@ QUnit.test("Sealed models", function (assert) {
 				hard_dependencies: {
 					one: {
 						name: "module 1",
-						subobj: {subname: "submodule 1"},
+						subobj: { subname: "submodule 1" },
 						bad_attr: false
 					},
 					two: {
 						name: "module 2",
-						subobj: {subname: "submodule 2"},
+						subobj: { subname: "submodule 2" },
 					}
 				}
 			}
 		});
 	}, /TypeError.*bad_attr/, "prevent undeclared props on initial assignment of sealed object model")
 
-	assert.throws(function() {
+	assert.throws(function () {
 		new Package({
 			name: "Test item",
 			data: {
@@ -1288,11 +1290,11 @@ QUnit.test("Sealed models", function (assert) {
 				hard_dependencies: {
 					one: {
 						name: "module 1",
-						subobj: {subname: "submodule 1"}
+						subobj: { subname: "submodule 1" }
 					},
 					two: {
 						name: "module 2",
-						subobj: {subname: "submodule 2", bad_attr: false},
+						subobj: { subname: "submodule 2", bad_attr: false },
 					}
 				}
 			}
@@ -1306,22 +1308,22 @@ QUnit.test("Sealed models", function (assert) {
 			hard_dependencies: {
 				one: {
 					name: "module 1",
-					subobj: {subname: "submodule 1"}
+					subobj: { subname: "submodule 1" }
 				},
 				two: {
 					name: "module 2",
-					subobj: {subname: "submodule 2"},
+					subobj: { subname: "submodule 2" },
 				}
 			}
 		}
 	});
 
-	assert.throws(function() {
+	assert.throws(function () {
 		test_item.data.hard_dependencies.one.bad_attr = true
 	}, /TypeError.*bad_attr/, "prevent undeclared props on post mutation of sealed object model")
 	assert.equal(test_item.data.hard_dependencies.one.bad_attr, undefined)
 
-	assert.throws(function() {
+	assert.throws(function () {
 		test_item.data.hard_dependencies.two.subobj.bad_attr = true
 	}, /TypeError.*bad_attr/, "prevent nested undeclared props on post mutation of sealed object model")
 	assert.equal(test_item.data.hard_dependencies.two.subobj.bad_attr, undefined)
@@ -1337,7 +1339,7 @@ QUnit.test("Null-safe object traversal", function (assert) {
 	const Config = new ObjectModel({
 		local: {
 			time: {
-				format: ["12h","24h", undefined]
+				format: ["12h", "24h", undefined]
 			}
 		}
 	});

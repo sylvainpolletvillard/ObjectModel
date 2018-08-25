@@ -1,4 +1,4 @@
-// ObjectModel v3.7.3 - http://objectmodel.js.org
+// ObjectModel v3.7.4 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -92,7 +92,8 @@
 					}
 					return err
 				});
-				model.errors = [];
+
+				model.errors.length = 0;
 				collector.call(model, errors); // throw all errors collected
 			}
 			return nbErrors

@@ -40,7 +40,8 @@ export const
 				}
 				return err
 			})
-			model.errors = []
+
+			model.errors.length = 0
 			collector.call(model, errors) // throw all errors collected
 		}
 		return nbErrors

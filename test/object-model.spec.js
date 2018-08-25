@@ -1243,6 +1243,19 @@ QUnit.test("class constructors", function (assert) {
 
 	let x = new Request({});
 	assert.throws(function () { x.setId("32") }, /TypeError/, "class setters methods should provide type checking");
+
+	const BaseOM = ObjectModel({})
+	class BaseClass extends BaseOM { }
+
+	const SubOM = BaseClass.extend({ test: [Boolean] }).assert(o => o.test)
+	class SubClass extends SubOM { }
+
+	SubClass.validate({ test: false }, () => { });
+
+	assert.equal(SubClass.errors.length, 0, "class-based models errors are cleaned up properly 1/4")
+	assert.equal(SubOM.errors.length, 0, "class-based models errors are cleaned up properly 2/4")
+	assert.equal(BaseClass.errors.length, 0, "class-based models errors are cleaned up properly 3/4")
+	assert.equal(BaseOM.errors.length, 0, "class-based models errors are cleaned up properly 4/4")
 })
 
 QUnit.test("Sealed models", function (assert) {

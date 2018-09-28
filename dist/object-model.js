@@ -1,4 +1,4 @@
-// ObjectModel v3.7.4 - http://objectmodel.js.org
+// ObjectModel v3.7.5 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -316,7 +316,7 @@
 						o[key] = cast(o[key], defPart); // cast nested models
 					}
 
-					if (isFunction(o[key]) && key !== "constructor") {
+					if (isFunction(o[key]) && key !== "constructor" && !privateAccess) {
 						return grantPrivateAccess(o[key])
 					}
 

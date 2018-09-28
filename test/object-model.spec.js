@@ -501,6 +501,17 @@ QUnit.test("Private and constant properties", function (assert) {
 	let parent = new ParentOM({ om: nestedOM });
 	assert.ok(parent instanceof ParentOM, "can nest private prop in a child OM");
 	assert.throws(() => parent.om._privString, /TypeError[\s\S]*cannot access to private property/, "cannot access nested private prop in a child OM");
+
+	const O = ObjectModel({ _priv: String }).defaults({
+		getPriv() {
+			this.randomMethod();
+			return this._priv
+		},
+		randomMethod() { }
+	})
+
+	const o = new O({ _priv: "test" })
+	assert.strictEqual(o.getPriv(), "test", "can grant private access even if several methods are called");
 });
 
 QUnit.test("Non-enumerable and non-writable properties with overridden convention", function (assert) {

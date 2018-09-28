@@ -264,7 +264,7 @@ export const
 					o[key] = cast(o[key], defPart) // cast nested models
 				}
 
-				if (isFunction(o[key]) && key !== "constructor") {
+				if (isFunction(o[key]) && key !== "constructor" && !privateAccess) {
 					return grantPrivateAccess(o[key])
 				}
 

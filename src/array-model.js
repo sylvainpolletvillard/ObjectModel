@@ -57,7 +57,7 @@ extend(ArrayModel, Model, {
 
 let controlMutation = (model, array, key, value, applyMutation, canBeExtended) => {
 	let path = `Array[${key}]`
-	let isInDef = (parseInt(key) >= 0 && (canBeExtended || key in array))
+	let isInDef = (+key >= 0 && (canBeExtended || key in array))
 	if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
 	let testArray = [...array]

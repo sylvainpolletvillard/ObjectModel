@@ -1,4 +1,4 @@
-// ObjectModel v3.7.5 - http://objectmodel.js.org
+// ObjectModel v3.7.6 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -627,7 +627,7 @@
 
 	let controlMutation$1 = (model, array, key, value, applyMutation, canBeExtended) => {
 		let path = `Array[${key}]`;
-		let isInDef = (parseInt(key) >= 0 && (canBeExtended || key in array));
+		let isInDef = (+key >= 0 && (canBeExtended || key in array));
 		if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true);
 
 		let testArray = [...array];

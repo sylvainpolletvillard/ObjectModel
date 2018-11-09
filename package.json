@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "3.7.5",
+  "version": "3.7.6",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
@@ -26,10 +26,10 @@
     "filesize": "^3.6.1",
     "gzip-size": "^5.0.0",
     "npm-run-all": "^4.1.3",
-    "qunit": "^2.6.2",
-    "rollup": "^0.66.2",
+    "qunit": "^2.8.0",
+    "rollup": "^0.67.0",
     "rollup-plugin-terser": "^3.0.0",
-    "rollup-watch": "^4.0.0"
+    "rollup-watch": "^4.3.1"
   },
   "optionalDependencies": {
     "eslint": "^5.2.0"

@@ -1,6 +1,27 @@
-$bg-primary: rgb(252,251,227);
-$bg-secondary: rgb(240,240,240);
-$bg-secondary-alt: rgb(248,248,248);
+body {
+	--bg-primary: rgb(255, 255, 255);
+	--bg-secondary: rgb(240, 240, 240);
+	--bg-secondary-alt: rgb(248, 248, 248);
 
-$fg-default: #344940;
-$fg-highlight: rgb(75, 75, 75);
+	--fg-default: #344940;
+	--fg-secondary: #666;
+	--fg-highlight: rgb(75, 75, 75);
+
+	--shadow: #ccc;
+}
+
+@media (prefers-color-scheme: dark) {
+	/* these styles will apply at night time
+       or if user explicitely asks for a dark color scheme */
+	body {
+		--bg-primary: #1a1918;
+		--bg-secondary: #262423;
+		--bg-secondary-alt: #3d2d23;
+
+		--fg-default: rgb(240, 235, 230);
+		--fg-secondary: #999;
+		--fg-highlight: rgb(252, 251, 227);
+
+		--shadow: #333;
+	}
+}

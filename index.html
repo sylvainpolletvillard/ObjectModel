@@ -10,6 +10,16 @@
 
 	<title>ObjectModel</title>
 
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-74235687-2"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+
+		gtag('config', 'UA-74235687-2');
+	</script>
+
 	<link rel="icon" type="image/png" href="docs/favicon-32x32.png" sizes="32x32" />
 	<link rel="icon" type="image/png" href="docs/favicon-16x16.png" sizes="16x16" />
 	<link rel="shortcut icon" href="docs/favicon.ico" type="image/x-icon">
@@ -17,7 +27,8 @@
 	<link rel="stylesheet" href="docs/style/main.compiled.css" />
 
 	<script defer src="docs/js/main.compiled.js"></script>
-	<script defer src="dist/object-model.js"></script>
+	<script async src="dist/object-model.js"></script>
+	<script async src="docs/lib/nightlife.js"></script>
 </head>
 
 <body>
@@ -78,7 +89,7 @@
 	<div id="page">
 
 		<header class="header">
-			<img src="docs/res/logo.png" alt="ObjectModel" width="800" height="150">
+			<img id="logo" src="docs/res/logo.png" alt="ObjectModel" width="800" height="150">
 			<hr>
 			<p class="description">Strong Dynamically Typed Object Modeling for JavaScript</p>
 		</header>
@@ -503,7 +514,7 @@ const couple = Lovers({
    wife: ann // object model
 });
 
-couple.husband instanceof Person === true // object has been casted to Person</code></pre>
+couple.husband instanceof Person === true // has been casted to Person</code></pre>
 			</div>
 		</section>
 

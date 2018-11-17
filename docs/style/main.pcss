@@ -1,20 +1,22 @@
-@import "../lib/prism";
 @import "./fonts.pcss";
-@import "./colors.pcss";
 @import "./index.pcss";
 @import "./menu.pcss";
 @import "./grid.pcss";
 @import "./social.pcss";
+@import "./prism.pcss";
 
 body {
 	font-family: $font-paragraph;
-	transition: margin-right .3s ease;
-	color: $fg-default;
+	transition: margin-right 0.3s ease;
+	color: var(--fg-default);
+	background-color: var(--bg-primary);
 	margin: 0 2em 0.5em 2em;
 }
 
-h1, h2, h3 {
-	color: $fg-highlight;
+h1,
+h2,
+h3 {
+	color: var(--fg-highlight);
 	font-family: $font-title;
 }
 
@@ -50,7 +52,7 @@ code.exception {
 	&::before {
 		content: "";
 		display: inline-block;
-		background: url('../res/error.svg') no-repeat;
+		background: url("../res/error.svg") no-repeat;
 		background-size: 1em 1em;
 		width: 1.2em;
 		height: 1em;
@@ -76,7 +78,12 @@ hr {
 	height: 1px;
 	border: none;
 	background-color: transparent;
-	background-image: linear-gradient(to right, rgba(0, 0, 0, .03) 0, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .03) 100%);
+	background-image: linear-gradient(
+		to right,
+		rgba(0, 0, 0, 0.03) 0,
+		rgba(0, 0, 0, 0.1) 50%,
+		rgba(0, 0, 0, 0.03) 100%
+	);
 }
 
 mark {
@@ -102,13 +109,14 @@ summary {
 		text-decoration: underline;
 	}
 
-	&:active, &:focus {
+	&:active,
+	&:focus {
 		outline: none;
 	}
 }
 
 .warning {
-	color: $fg-highlight;
+	color: var(--fg-highlight);
 	font-weight: bold;
 }
 
@@ -123,9 +131,9 @@ dt {
 	code {
 		margin-left: 1em;
 		font-weight: normal;
-		font-family: Consolas, Monaco, 'Andale Mono', monospace;
-		color: #666;
-		text-shadow: 1px 1px white;
+		font-family: Consolas, Monaco, "Andale Mono", monospace;
+		color: var(--fg-secondary);
+		text-shadow: 1px 1px var(--shadow);
 	}
 }
 
@@ -134,5 +142,19 @@ dt {
 	color: inherit;
 	&:hover {
 		text-decoration: underline;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	a {
+		color: goldenrod;
+
+		&:visited {
+			color: orangered;
+		}
+	}
+
+	#logo {
+		filter: invert(0.85);
 	}
 }

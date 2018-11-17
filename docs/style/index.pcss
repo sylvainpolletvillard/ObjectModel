@@ -19,7 +19,7 @@
 		font-weight: 100;
 		line-height: 1.5;
 		margin: 0;
-		color: #666;
+		color: var(--fg-secondary);
 		letter-spacing: -0.02em;
 	}
 }
@@ -41,18 +41,6 @@ details dl {
 	}
 }
 
-table {
-	width: 100%;
-	th, td {
-		border: 1px solid gray;
-		padding: .5em;
-		text-align: center;
-	}
-	th {
-		background: $bg-secondary;
-	}
-}
-
 .tip {
 	position: relative;
 	border: 1px solid #aabbff;
@@ -70,16 +58,18 @@ table {
 }
 
 .panel {
-	background: #f5f2f0;
-	border: 1px solid #DEDEDE;
 	position: relative;
+	background: var(--bg-secondary);
+	border-radius: 8px;
+	border: 2px solid #eaeaea;
 
 	pre {
 		margin: 0;
 		font-size: 90%;
 	}
 
-	pre, code {
+	pre,
+	code {
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 		white-space: pre-wrap;
@@ -88,11 +78,10 @@ table {
 
 	.legend {
 		position: absolute;
-		right: 0;
 		top: 0;
-		background-color: rgba(220, 220, 220, 0.25);
+		right: 0;
+		background-color: #eaeaea;
 		color: #909090;
-		text-shadow: 0 -1px 0 #ffffff;
 		padding: 2px 4px;
 	}
 

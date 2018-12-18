@@ -29,3 +29,6 @@ export const FutureDate = BasicModel(Date).assert(function isInTheFuture(date) {
 export const ArrayNotEmpty = BasicModel(Array).assert(function isNotEmpty(arr) { return arr.length > 0 }).as("ArrayNotEmpty");
 export const ArrayUnique = BasicModel(Array).assert(function hasNoDuplicates(arr) { return arr.every((x, i) => arr.indexOf(x) === i) }).as("ArrayUnique");
 export const ArrayDense = BasicModel(Array).assert(function hasNoHoles(arr) { return arr.filter(() => true).length === arr.length }).as("ArrayDense");
+
+// Others
+export const PromiseOf = model => p => BasicModel(Promise)(p).then(x => model(x));

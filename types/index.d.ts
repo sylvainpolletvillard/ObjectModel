@@ -28,8 +28,8 @@ export interface Model {
 }
 
 export interface ModelConstructor {
-	(definition: any, params?: ObjectModelParams): ObjectModel;
-	new(definition: any, params?: ObjectModelParams): ObjectModel;
+	(definition: any): ObjectModel;
+	new(definition: any): ObjectModel;
 }
 
 export interface BasicModel extends Model {
@@ -58,12 +58,8 @@ export interface ObjectModel extends Model {
 }
 
 export interface ObjectModelConstructor {
-	(definition: Object, params?: ObjectModelParams): ObjectModel;
-	new(definition: Object, params?: ObjectModelParams): ObjectModel;
-}
-
-export interface ObjectModelParams {
-	sealed?: boolean;
+	(definition: Object): ObjectModel;
+	new(definition: Object): ObjectModel;
 }
 
 export interface ArrayModel extends Model {

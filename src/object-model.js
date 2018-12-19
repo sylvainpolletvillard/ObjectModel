@@ -169,13 +169,9 @@ export const
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
 
-		let isInDefinition = has(def, key)
-		if (isInDefinition || !model.sealed) {
-			applyMutation(newPath)
-			if (isInDefinition) checkDefinition(o[key], def[key], newPath, model.errors, [])
-			checkAssertions(o, model, newPath)
-		}
-		else rejectUndeclaredProp(newPath, o[key], model.errors)
+		applyMutation(newPath)
+		if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, [])
+		checkAssertions(o, model, newPath)
 
 		let nbErrors = model.errors.length
 		if (nbErrors) {
@@ -190,14 +186,6 @@ export const
 
 	cannot = (msg, model) => {
 		model.errors.push({ message: "cannot " + msg })
-	},
-
-	rejectUndeclaredProp = (path, received, errors) => {
-		errors.push({
-			path,
-			received,
-			message: `property ${path} is not declared in the sealed model definition`
-		})
 	},
 
 	cast = (obj, defNode = []) => {
@@ -221,15 +209,6 @@ export const
 			console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`)
 
 		return obj
-	},
-
-	checkUndeclaredProps = (obj, def, errors, path) => {
-		Object.keys(obj).map(key => {
-			let val = obj[key],
-				subpath = formatPath(path, key)
-			if (!has(def, key)) rejectUndeclaredProp(subpath, val, errors)
-			else if (isPlainObject(val)) checkUndeclaredProps(val, def[key], errors, subpath)
-		})
 	},
 
 	getProxy = (model, obj, def, path, privateAccess) => {
@@ -398,7 +377,7 @@ extend(BasicModel, Model, {
 })
 
 
-export function ObjectModel(def, params) {
+export function ObjectModel(def) {
 	let model = function (obj, mode) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
@@ -419,13 +398,10 @@ export function ObjectModel(def, params) {
 		return getProxy(model, this, model.definition)
 	}
 
-	Object.assign(model, params)
 	return initModel(model, ObjectModel, def, Object)
 }
 
 extend(ObjectModel, Model, {
-	sealed: false,
-
 	defaults(obj) {
 		let def = this.definition
 		for (let key in obj) {
@@ -472,7 +448,6 @@ extend(ObjectModel, Model, {
 		if (isObject(obj)) {
 			let def = this.definition
 			checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast)
-			if (this.sealed) checkUndeclaredProps(obj, def, errors)
 		}
 		else stackError(errors, this, obj, path)
 

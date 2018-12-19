@@ -69,7 +69,6 @@
 				<li><a href="#doc-composition">Composition</a></li>
 				<li><a href="#doc-extensions">Inheritance by extensions</a></li>
 				<li><a href="#doc-multiple-inheritance">Multiple inheritance</a></li>
-				<li><a href="#doc-sealed">Sealed models</a></li>
 				<li><a href="#doc-assertions">Assertions for custom tests</a></li>
 				<li><a href="#doc-private-and-constants">Private and constant properties</a></li>
 				<li><a href="#doc-array-model">Array models</a></li>
@@ -140,7 +139,7 @@
 					<li>Constants and private properties based on name conventions</li>
 					<li>Explicit error messages</li>
 					<li>Customizable error handlers</li>
-					<li>all in <strong class="size-gzip">4.03 KB</strong> minified and gzipped,
+					<li>all in <strong class="size-gzip">3.92 KB</strong> minified and gzipped,
 						even less when using tree-shaking
 					</li>
 				</ul>
@@ -148,17 +147,17 @@
 
 			<div id="download">
 				<h2>Download</h2>
-				<h3>Current version: v<span class="version">3.7.6</span></h3>
+				<h3>Current version: v<span class="version">4.0.0-alpha1</span></h3>
 				<ul>
 					<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">NPM</a> :
 						<code>npm install objectmodel</code>
 					</li>
 					<li>From CDN: <a href="https://unpkg.com/objectmodel" rel="noopener">unpkg.com/objectmodel</a></li>
-					<li>Minified bundle (<strong class="size-gzip">4.03 KB</strong> gzipped) :
+					<li>Minified bundle (<strong class="size-gzip">3.92 KB</strong> gzipped) :
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v3.7.6.zip">object-model-3.7.6.zip</a>
+						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha1.zip">object-model-4.0.0-alpha1.zip</a>
 					</li>
 				</ul>
 
@@ -633,43 +632,6 @@ Object.keys(Client.definition);</code>
 
 joe.sendConfirmationMail();</code>
 <code class="language-none log">joe@email.net: Dear Joe, thank you for ordering 100 diapers on daddy.net</code></pre>
-			</div>
-		</section>
-
-		<hr>
-
-		<section id="doc-sealed" class="grid doc-code-code">
-			<div class="doc">
-				<h2>Sealed object models</h2>
-				<p>By default, an object with properties not declared in the definition is still valid, as long as the rest of the
-					definition is respected. This is an intended behaviour to enable model extensions and respect the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle"
-					 target="_blank" rel="noopener">Liskov substitution principle</a>. Also, some frameworks and libraries add their
-					own private properties to your data, and blocking them would prevent these tools from working properly.</p>
-				<p>However, if you really want to prevent all undeclared properties, you can set the <code>model.sealed</code>
-					property to <code>true</code>. This is the equivalent of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal"
-					 target="_blank" rel="noopener"><code>Object.seal()</code></a> but for object models instances. The undeclared
-					props will be catched on initial and future assignments</p>
-			</div>
-
-			<div class="panel panel1">
-				<span class="legend">Model</span>
-				<pre><code class="language-javascript">const Package = ObjectModel({
-	name: String,
-	config: { verbose: [Boolean] }
-}, { sealed: true });
-// or Package.sealed = true
-</code></pre>
-			</div>
-
-			<div class="panel panel2">
-				<span class="legend">Instance</span>
-				<pre><code class="language-javascript">const Foo = new Package({ name: "foo", _id: 1 });</code>
-<code class="language-none exception">TypeError: property _id is not declared in the sealed model definition</code>
-<code class="language-javascript">const Bar = new Package({ name: "bar" });
-Bar.config.hack = true;</code>
-<code class="language-none exception">TypeError: property config.hack is not declared in the sealed model definition</code>
-<code class="language-javascript">Package.sealed = false;
-Bar.config.hack = true; // no more exceptions thrown</code></pre>
 			</div>
 		</section>
 
@@ -1223,9 +1185,6 @@ console.log(Integer.name) // "Integer"</code></pre>
 			<dl>
 				<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
 				<dd>Set the default values for some model properties.</dd>
-				<dt>sealed <code>objectModel.sealed = true</code></dt>
-				<dd>If set to <code>true</code>, undeclared properties will be forbidden for this model. Can also be set on <code>Model.prototype</code>.<br>By
-					default, additional properties are tolerated in order to allow model extensions.</dd>
 			</dl>
 			<h3>Function models</h3>
 			<dl>

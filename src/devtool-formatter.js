@@ -9,7 +9,6 @@ const styles = {
 	list: `list-style-type: none; padding: 0; margin: 0;`,
 	listItem: `padding: 0 0 0 1em;`,
 	model: `color: #3e999f;`,
-	sealedModel: `color: #3e999f; font-weight: bold`,
 	instance: `color: #718c00; font-style: italic`,
 	function: `color: #4271AE`,
 	string: `color: #C41A16`,
@@ -102,7 +101,7 @@ const formatModel = model => {
 const ModelFormatter = {
 	header(x, config = {}) {
 		if (is(ObjectModel, x))
-			return span(x.sealed ? styles.sealedModel : styles.model, x.name)
+			return span(styles.model, x.name)
 
 		if (is(Model, x)) {
 			return formatModel(x)

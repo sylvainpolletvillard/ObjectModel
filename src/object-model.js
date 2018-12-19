@@ -330,7 +330,7 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	defaultTo(val) {
+	defaults(val) {
 		this.default = val
 		return this
 	},
@@ -399,7 +399,7 @@ extend(BasicModel, Model, {
 
 
 export function ObjectModel(def, params) {
-	let model = function (obj = model.default, mode) {
+	let model = function (obj, mode) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
 
@@ -407,6 +407,7 @@ export function ObjectModel(def, params) {
 			stackError(model.errors, Object, obj)
 		}
 
+		merge(this, model.default)
 		if (model.parentClass) merge(obj, new model.parentClass(obj))
 		merge(this, obj)
 
@@ -433,7 +434,7 @@ extend(ObjectModel, Model, {
 			}
 		}
 		unstackErrors(this)
-		Object.assign(this.prototype, obj)
+		this.default = obj;
 		return this
 	},
 
@@ -444,18 +445,20 @@ extend(ObjectModel, Model, {
 	extend(...newParts) {
 		let definition = Object.assign({}, this.definition),
 			proto = Object.assign({}, this.prototype),
+			defaults = Object.assign({}, this.default),
 			newAssertions = []
 
 		for (let part of newParts) {
 			if (is(Model, part)) {
 				merge(definition, part.definition)
+				merge(defaults, part.default)
 				newAssertions.push(...part.assertions)
 			}
 			if (isFunction(part)) merge(proto, part.prototype)
 			if (isObject(part)) merge(definition, part)
 		}
 
-		let submodel = extendModel(new ObjectModel(definition), this, proto)
+		let submodel = extendModel(new ObjectModel(definition), this, proto).defaults(defaults)
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class

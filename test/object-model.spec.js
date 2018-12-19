@@ -295,7 +295,7 @@ QUnit.test("fixed values", function (assert) {
 
 QUnit.test("default values", function (assert) {
 
-	const myModel = new ObjectModel({
+	let myModel = new ObjectModel({
 		name: String,
 		foo: {
 			bar: {
@@ -337,19 +337,13 @@ QUnit.test("default values", function (assert) {
 
 	assert.throws(() => { myModel.defaults({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
 	assert.throws(() => { myModel.defaults({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
-});
 
-QUnit.test("defaultTo with defaults", function (assert) {
+	myModel = new ObjectModel({ x: Number, y: String })
+		.defaults({ x: 42, y: "hello" })
 
-	const myModel = new ObjectModel({ x: Number, y: String })
-		.defaultTo({ x: 42 })
-		.defaults({ y: "hello" })
-
-	assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
-	assert.strictEqual(myModel.prototype.y, "hello", "object model defaults store values to proto")
+	assert.strictEqual(myModel.default.x, 42, "object model defaults store the value as default property")
 	assert.strictEqual(myModel().x, 42, "object model default property is applied when undefined is passed");
 	assert.strictEqual(myModel().y, "hello", "defaulted object model still inherit from model proto");
-	assert.strictEqual(myModel.default.y, undefined, "object model default value itself does not inherit from from model proto");
 
 	myModel.default.x = "nope";
 

@@ -94,8 +94,8 @@ QUnit.test("Union type", function (assert) {
 QUnit.test("default values", function (assert) {
 
 	const myModel = BasicModel([String, Boolean, Date]);
-	myModel.defaultTo("blob");
-	assert.strictEqual(myModel.default, "blob", "basic model defaultTo store the value as default property")
+	myModel.defaults("blob");
+	assert.strictEqual(myModel.default, "blob", "basic model defaults store the value as default property")
 	assert.strictEqual(myModel(), "blob", "basic model default property is applied when undefined is passed");
 	myModel.default = 42;
 	assert.throws(function () {
@@ -152,13 +152,13 @@ QUnit.test("Assertions", function (assert) {
 	assert.throws(function () {
 		new AssertBasic();
 	},
-	/assertion "may throw exception" returned TypeError.*for value undefined/,
-	"assertions catch exceptions on Basic models"
+		/assertion "may throw exception" returned TypeError.*for value undefined/,
+		"assertions catch exceptions on Basic models"
 	);
 
 });
 
-QUnit.test("Custom error collectors", function(assert) {
+QUnit.test("Custom error collectors", function (assert) {
 
 	assert.expect(13);
 
@@ -186,7 +186,7 @@ QUnit.test("Custom error collectors", function(assert) {
 		return s !== "nope"
 	}, "shouldnt be nope")("nope");
 
-	BasicModel(Number).validate("nope", function(errors){
+	BasicModel(Number).validate("nope", function (errors) {
 		assert.ok(errors.length === 1, "check errors.length custom collector");
 		var err = errors[0];
 		assert.equal(err.expected, Number, "check error.expected custom collector");
@@ -194,8 +194,8 @@ QUnit.test("Custom error collectors", function(assert) {
 		assert.equal(err.message, 'expecting Number, got String "nope"', "check error.message custom collector");
 	});
 
-	BasicModel(String).assert(function(s){ return s !== "nope" }, "shouldnt be nope")
-		.validate("nope", function(errors){
+	BasicModel(String).assert(function (s) { return s !== "nope" }, "shouldnt be nope")
+		.validate("nope", function (errors) {
 			assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message,
 				'assertion "shouldnt be nope" returned false for value "nope"',
@@ -206,15 +206,15 @@ QUnit.test("Custom error collectors", function(assert) {
 
 });
 
-QUnit.test("Extensions", function(assert){
+QUnit.test("Extensions", function (assert) {
 
 	var PositiveInteger = BasicModel(Number)
 		.assert(Number.isInteger)
 		.assert(n => n >= 0, "should be greater or equal to zero")
 
 	function isPrime(n) {
-		for (var i=2, m=Math.sqrt(n); i <= m ; i++){
-			if(n%i === 0) return false;
+		for (var i = 2, m = Math.sqrt(n); i <= m; i++) {
+			if (n % i === 0) return false;
 		}
 		return n > 1;
 	}

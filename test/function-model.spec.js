@@ -68,8 +68,8 @@ QUnit.test("object models methods", function (assert) {
 		return "Hello " + otherguy.name + ", " + this.sayMyName();
 	});
 
-	const joe = new Person({name: "Joe", age: 28});
-	const ann = new Person({name: "Ann", age: 23});
+	const joe = new Person({ name: "Joe", age: 28 });
+	const ann = new Person({ name: "Ann", age: 23 });
 
 	assert.equal(joe.sayMyName(), "my name is Joe", "valid function model method call 1/2");
 	assert.equal(joe.greet(ann), "Hello Ann, my name is Joe", "valid function model method call 2/2");
@@ -85,12 +85,12 @@ QUnit.test("defaults arguments & arguments control", function (assert) {
 	const Calculator = FunctionModel(Number, ["+", "-", "*", "/", undefined], [Number])
 		.return(Number);
 
-	const calc = new Calculator(function (a=0, operator='+', b=1) {
-		switch(operator){
-			case "+": return a+b
-			case "-": return a-b
-			case "*": return a*b
-			case "/": return a/b
+	const calc = new Calculator(function (a = 0, operator = '+', b = 1) {
+		switch (operator) {
+			case "+": return a + b
+			case "-": return a - b
+			case "*": return a * b
+			case "/": return a / b
 		}
 		return null
 	});
@@ -119,25 +119,25 @@ QUnit.test("other models & objects as arguments", function (assert) {
 		}, options.op === "product" ? 1 : 0);
 	});
 
-	assert.equal(api({list: [1, 2, 3, 4], op: "sum"}), 10, "FunctionModel object argument 1/5");
-	assert.equal(api({list: [1, 2, 3, 4], op: "product"}), 24, "FunctionModel object argument 2/5");
+	assert.equal(api({ list: [1, 2, 3, 4], op: "sum" }), 10, "FunctionModel object argument 1/5");
+	assert.equal(api({ list: [1, 2, 3, 4], op: "product" }), 24, "FunctionModel object argument 2/5");
 	assert.throws(function () {
-		api({list: [1, 2, "3", 4], op: "product"});
+		api({ list: [1, 2, "3", 4], op: "product" });
 	}, /TypeError/, "FunctionModel object argument 3/5");
 	assert.throws(function () {
-		api({list: [1, 2, 3, 4], op: "divide"});
+		api({ list: [1, 2, 3, 4], op: "divide" });
 	}, /TypeError/, "FunctionModel object argument 4/5");
 	assert.throws(function () {
-		api({list: [1, 2, 3, 4]});
+		api({ list: [1, 2, 3, 4] });
 	}, /TypeError/, "FunctionModel object argument 5/5");
 
 	assert.ok(FunctionModel() instanceof FunctionModel, "FunctionModel does not throw when receiving no arguments");
 
 });
 
-QUnit.test("defaultTo", function (assert) {
+QUnit.test("defaults", function (assert) {
 
-	const yell = FunctionModel(String).return(String).defaultTo(s => s.toUpperCase());
+	const yell = FunctionModel(String).return(String).defaults(s => s.toUpperCase());
 
 	assert.strictEqual(yell()("yo!"), "YO!", "Function model default value");
 	assert.throws(function () {
@@ -158,7 +158,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
 	const F = FunctionModel(N, N).return(N);
-	const f = F(function(a,b){ return { x: a.x+b.x, y: a.y+b.y } });
+	const f = F(function (a, b) { return { x: a.x + b.x, y: a.y + b.y } });
 	const returnValue = f({ x: 1 }, { x: 2 });
 
 	assert.ok(returnValue instanceof N, "test automatic model casting with return value");

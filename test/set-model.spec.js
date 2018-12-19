@@ -130,7 +130,7 @@ QUnit.test("Child set models in object models", function (assert) {
 
 QUnit.test("defaults values", function (assert) {
 
-	const S = SetModel(Number).defaultTo(new Set([1, 2]));
+	const S = SetModel(Number).defaults(new Set([1, 2]));
 	const a = S();
 
 	assert.ok(a instanceof Set && a.size === 2, "Set model default value");

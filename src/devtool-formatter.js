@@ -122,7 +122,7 @@ const ModelFormatter = {
 			['ol', { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
 					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.prototype.hasOwnProperty(prop),
+					hasDefault = model.default && model.default.hasOwnProperty(prop),
 					style = styles.property;
 
 				if (isPrivate) {
@@ -133,7 +133,7 @@ const ModelFormatter = {
 
 				return ['li', { style: styles.listItem },
 					span(style, prop), ': ', format(model.definition[prop], { isModelDefinition: true }),
-					hasDefault ? span(styles.proto, ' = ', format(model.prototype[prop])) : ''
+					hasDefault ? span(styles.proto, ' = ', format(model.default[prop])) : ''
 				]
 			})],
 			'}'

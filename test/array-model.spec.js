@@ -131,7 +131,7 @@ QUnit.test("Child array models in object models", function (assert) {
 
 QUnit.test("defaults values", function (assert) {
 
-	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
+	const ArrModel = ArrayModel([Number, String]).defaults([]);
 	const a = ArrModel();
 
 	assert.ok(a instanceof Array && a.length === 0, "Array model default value");

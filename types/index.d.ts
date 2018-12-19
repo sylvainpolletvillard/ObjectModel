@@ -15,7 +15,7 @@ export interface Model {
 
 	as(name: string): this;
 
-	defaultTo(defaultValue: any): this;
+	defaults(defaultValue: any): this;
 
 	validate(instance: any, errorCollector?: (errors: ModelError[]) => void): void;
 

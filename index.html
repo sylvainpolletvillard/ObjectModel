@@ -422,13 +422,13 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 		<section id="doc-default-values" class="grid doc-code-code">
 			<div class="doc">
 				<h2>Default values assignment</h2>
-				<p>You can set a default value for any model with <code>model.defaultTo(value)</code>. This default value will be
-					used if the argument passed to the model constructor is undefined.</p>
+				<p>You can set a default value for any model with <code>model.defaults(value)</code>. This default value will be
+					used if no argument is passed to the model constructor.</p>
 			</div>
 
 			<div class="panel panel1">
 				<span class="legend">Model</span>
-				<pre><code class="language-javascript">let N = BasicModel(Number).defaultTo(1)</code></pre>
+				<pre><code class="language-javascript">let N = BasicModel(Number).defaults(1)</code></pre>
 			</div>
 
 			<div class="panel panel2">
@@ -1192,7 +1192,7 @@ console.log(Integer.name) // "Integer"</code></pre>
 				<dt>default <code>model.default</code></dt>
 				<dd>Returns the default value if defined</dd>
 
-				<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
+				<dt><a href="#doc-default-values">defaults</a> <code>model.defaults(defaultValue)</code></dt>
 				<dd>Set the default value of the model</dd>
 
 				<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
@@ -1222,7 +1222,7 @@ console.log(Integer.name) // "Integer"</code></pre>
 			<h3>Object models</h3>
 			<dl>
 				<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
-				<dd>Merge the object passed within the model prototype to set defaults values for some model properties.</dd>
+				<dd>Set the default values for some model properties.</dd>
 				<dt>sealed <code>objectModel.sealed = true</code></dt>
 				<dd>If set to <code>true</code>, undeclared properties will be forbidden for this model. Can also be set on <code>Model.prototype</code>.<br>By
 					default, additional properties are tolerated in order to allow model extensions.</dd>
@@ -1375,8 +1375,8 @@ Model.prototype.parse = function(json, models){
 					</div>
 					<div class="panel panel2">
 						<span class="legend">Example</span>
-						<pre><code class="language-javascript">const Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
-      Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
+						<pre><code class="language-javascript">const Type1 = ObjectModel({ content: String }).defaults({ content: 'Content 1' }),
+      Type2 = ObjectModel({ content: String }).defaults({ content: 'Content 2' }),
 	  Container = ObjectModel({ items: ArrayModel([Type1, Type2]) });
 
 // List all your serializable models here

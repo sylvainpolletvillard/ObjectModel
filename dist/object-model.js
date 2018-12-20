@@ -1,4 +1,4 @@
-// ObjectModel v3.7.6 - http://objectmodel.js.org
+// ObjectModel v4.0.0-alpha - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19,7 +19,7 @@
 		isIterable = x => x && isFunction(x[Symbol.iterator]),
 
 		proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
-		proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
+		proxifyModel = (val, model, traps) => new Proxy(val, { getPrototypeOf: () => model.prototype, ...traps }),
 
 		merge = (target, src = {}) => {
 			for (let key in src) {
@@ -221,13 +221,9 @@
 			if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 				cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model);
 
-			let isInDefinition = has(def, key);
-			if (isInDefinition || !model.sealed) {
-				applyMutation(newPath);
-				if (isInDefinition) checkDefinition(o[key], def[key], newPath, model.errors, []);
-				checkAssertions(o, model, newPath);
-			}
-			else rejectUndeclaredProp(newPath, o[key], model.errors);
+			applyMutation(newPath);
+			if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, []);
+			checkAssertions(o, model, newPath);
 
 			let nbErrors = model.errors.length;
 			if (nbErrors) {
@@ -242,14 +238,6 @@
 
 		cannot = (msg, model) => {
 			model.errors.push({ message: "cannot " + msg });
-		},
-
-		rejectUndeclaredProp = (path, received, errors) => {
-			errors.push({
-				path,
-				received,
-				message: `property ${path} is not declared in the sealed model definition`
-			});
 		},
 
 		cast = (obj, defNode = []) => {
@@ -273,15 +261,6 @@
 				console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
 
 			return obj
-		},
-
-		checkUndeclaredProps = (obj, def, errors, path) => {
-			Object.keys(obj).map(key => {
-				let val = obj[key],
-					subpath = formatPath(path, key);
-				if (!has(def, key)) rejectUndeclaredProp(subpath, val, errors);
-				else if (isPlainObject(val)) checkUndeclaredProps(val, def[key], errors, subpath);
-			});
 		},
 
 		getProxy = (model, obj, def, path, privateAccess) => {
@@ -450,8 +429,8 @@
 	});
 
 
-	function ObjectModel(def, params) {
-		let model = function (obj = model.default, mode) {
+	function ObjectModel(def) {
+		let model = function (obj, mode) {
 			if (!is(model, this)) return new model(obj)
 			if (is(model, obj)) return obj
 
@@ -459,6 +438,7 @@
 				stackError(model.errors, Object, obj);
 			}
 
+			merge(this, model.default);
 			if (model.parentClass) merge(obj, new model.parentClass(obj));
 			merge(this, obj);
 
@@ -470,14 +450,11 @@
 			return getProxy(model, this, model.definition)
 		};
 
-		Object.assign(model, params);
 		return initModel(model, ObjectModel, def, Object)
 	}
 
 	extend(ObjectModel, Model, {
-		sealed: false,
-
-		defaults(obj) {
+		defaultTo(obj) {
 			let def = this.definition;
 			for (let key in obj) {
 				if (has(def, key)) {
@@ -485,7 +462,7 @@
 				}
 			}
 			unstackErrors(this);
-			Object.assign(this.prototype, obj);
+			this.default = obj;
 			return this
 		},
 
@@ -494,20 +471,22 @@
 		},
 
 		extend(...newParts) {
-			let definition = Object.assign({}, this.definition),
-				proto = Object.assign({}, this.prototype),
+			let definition = { ...this.definition },
+				proto = { ...this.prototype },
+				defaults = { ...this.default },
 				newAssertions = [];
 
 			for (let part of newParts) {
 				if (is(Model, part)) {
 					merge(definition, part.definition);
+					merge(defaults, part.default);
 					newAssertions.push(...part.assertions);
 				}
 				if (isFunction(part)) merge(proto, part.prototype);
 				if (isObject(part)) merge(definition, part);
 			}
 
-			let submodel = extendModel(new ObjectModel(definition), this, proto);
+			let submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults);
 			submodel.assertions = [...this.assertions, ...newAssertions];
 
 			if (getProto(this) !== ObjectModel.prototype) { // extended class
@@ -521,7 +500,6 @@
 			if (isObject(obj)) {
 				let def = this.definition;
 				checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast);
-				if (this.sealed) checkUndeclaredProps(obj, def, errors);
 			}
 			else stackError(errors, this, obj, path);
 
@@ -535,7 +513,7 @@
 			list = init(list);
 
 			if (mode === SKIP_VALIDATE || model.validate(list)) {
-				return proxifyModel(list, model, Object.assign({
+				return proxifyModel(list, model, {
 					get(l, key) {
 						if (key === _original) return l
 
@@ -567,8 +545,9 @@
 
 							return fn.apply(l, args)
 						}) : val
-					}
-				}, otherTraps))
+					},
+					...otherTraps
+				})
 			}
 		};
 
@@ -789,7 +768,6 @@
 		list: `list-style-type: none; padding: 0; margin: 0;`,
 		listItem: `padding: 0 0 0 1em;`,
 		model: `color: #3e999f;`,
-		sealedModel: `color: #3e999f; font-weight: bold`,
 		instance: `color: #718c00; font-style: italic`,
 		function: `color: #4271AE`,
 		string: `color: #C41A16`,
@@ -882,7 +860,7 @@
 	const ModelFormatter = {
 		header(x, config = {}) {
 			if (is(ObjectModel, x))
-				return span(x.sealed ? styles.sealedModel : styles.model, x.name)
+				return span(styles.model, x.name)
 
 			if (is(Model, x)) {
 				return formatModel(x)
@@ -902,7 +880,7 @@
 				['ol', { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 					let isPrivate = model.conventionForPrivate(prop),
 						isConstant = model.conventionForConstant(prop),
-						hasDefault = model.prototype.hasOwnProperty(prop),
+						hasDefault = model.default && model.default.hasOwnProperty(prop),
 						style = styles.property;
 
 					if (isPrivate) {
@@ -913,7 +891,7 @@
 
 					return ['li', { style: styles.listItem },
 						span(style, prop), ': ', format$1(model.definition[prop], { isModelDefinition: true }),
-						hasDefault ? span(styles.proto, ' = ', format$1(model.prototype[prop])) : ''
+						hasDefault ? span(styles.proto, ' = ', format$1(model.default[prop])) : ''
 					]
 				})],
 				'}'

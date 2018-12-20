@@ -135,12 +135,16 @@ QUnit.test("default values", function (assert) {
 	const a = ArrModel();
 
 	assert.ok(a instanceof Array && a.length === 0, "Array model default value");
+	a.push(1, 2);
+
+	const b = ArrModel();
+	assert.ok(b instanceof Array && b.length === 0, "Avoid default value common reference issue for Array models");
 
 	ArrModel.default.push(1, 2, 3);
 
-	const b = ArrModel();
+	const c = ArrModel();
 
-	assert.ok(b.length === 3 && b.join(";") === "1;2;3", "array model default value is mutable array");
+	assert.ok(c.length === 3 && c.join(";") === "1;2;3", "array model default value is mutable array");
 
 	ArrModel.default = "nope";
 

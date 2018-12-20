@@ -56,7 +56,7 @@ QUnit.test("object models methods", function (assert) {
 		age: Number,
 		// function without arguments returning a String
 		sayMyName: FunctionModel().return(String)
-	}).defaults({
+	}).defaultTo({
 		sayMyName: function () {
 			return "my name is " + this.name;
 		}
@@ -80,7 +80,7 @@ QUnit.test("object models methods", function (assert) {
 
 });
 
-QUnit.test("defaults arguments & arguments control", function (assert) {
+QUnit.test("default arguments & arguments control", function (assert) {
 
 	const Calculator = FunctionModel(Number, ["+", "-", "*", "/", undefined], [Number])
 		.return(Number);
@@ -96,7 +96,7 @@ QUnit.test("defaults arguments & arguments control", function (assert) {
 	});
 
 	assert.equal(calc(3, "+"), 4, "default argument value");
-	assert.equal(calc(41), 42, "defaults arguments values");
+	assert.equal(calc(41), 42, "default arguments values");
 	assert.throws(function () {
 		calc(6, "*", false);
 	}, /TypeError/, "invalid argument type");
@@ -135,9 +135,9 @@ QUnit.test("other models & objects as arguments", function (assert) {
 
 });
 
-QUnit.test("defaults", function (assert) {
+QUnit.test("default value", function (assert) {
 
-	const yell = FunctionModel(String).return(String).defaults(s => s.toUpperCase());
+	const yell = FunctionModel(String).return(String).defaultTo(s => s.toUpperCase());
 
 	assert.strictEqual(yell()("yo!"), "YO!", "Function model default value");
 	assert.throws(function () {
@@ -156,7 +156,7 @@ QUnit.test("defaults", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+	const N = ObjectModel({ x: Number, y: [Number] }).defaultTo({ x: 5, y: 7 });
 	const F = FunctionModel(N, N).return(N);
 	const f = F(function (a, b) { return { x: a.x + b.x, y: a.y + b.y } });
 	const returnValue = f({ x: 1 }, { x: 2 });

@@ -157,7 +157,7 @@ QUnit.test("behaviour for properties", function (assert) {
 
 	const A = ObjectModel({
 		id: [Number]
-	}).defaults({
+	}).defaultTo({
 		setId(id) { this.id = id; }
 	})
 
@@ -302,7 +302,7 @@ QUnit.test("default values", function (assert) {
 				buz: Number
 			}
 		}
-	}).defaults({
+	}).defaultTo({
 		name: "joe",
 		foo: {
 			bar: {
@@ -312,18 +312,18 @@ QUnit.test("default values", function (assert) {
 	});
 
 	const model = myModel();
-	assert.strictEqual(model.name, "joe", "defaults values correctly applied");
-	assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
-	assert.ok(myModel.test({}), "defaults should be applied when testing duck typed objects")
+	assert.strictEqual(model.name, "joe", "default values correctly applied");
+	assert.strictEqual(model.foo.bar.buz, 0, "default nested props values correctly applied");
+	assert.ok(myModel.test({}), "default should be applied when testing duck typed objects")
 
 	const model2 = myModel({ name: "jim", foo: { bar: { buz: 1 } } });
-	assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
-	assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
+	assert.strictEqual(model2.name, "jim", "default values not applied if provided");
+	assert.strictEqual(model2.foo.bar.buz, 1, "default nested props values not applied if provided");
 
 	const Person = Model({
 		name: String,
 		age: [Number]
-	}).defaults({
+	}).defaultTo({
 		name: "new-name"
 	});
 
@@ -335,11 +335,11 @@ QUnit.test("default values", function (assert) {
 	assert.strictEqual((new Team({ lead: new Person(), members: [] })).lead.name, "new-name", "default value through composition")
 	assert.throws(() => { new Team({ lead: 1, members: [] }) }, "invalid value through composition with default")
 
-	assert.throws(() => { myModel.defaults({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
-	assert.throws(() => { myModel.defaults({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
+	assert.throws(() => { myModel.defaultTo({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
+	assert.throws(() => { myModel.defaultTo({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
 
 	myModel = new ObjectModel({ x: Number, y: String })
-		.defaults({ x: 42, y: "hello" })
+		.defaultTo({ x: 42, y: "hello" })
 
 	assert.strictEqual(myModel.default.x, 42, "object model defaults store the value as default property")
 	assert.strictEqual(myModel().x, 42, "object model default property is applied when undefined is passed");
@@ -421,7 +421,7 @@ QUnit.test("Private and constant properties", function (assert) {
 
 	const A = ObjectModel({
 		_id: [Number]
-	}).defaults({
+	}).defaultTo({
 		getId() { return this._id },
 		setId(id) { this._id = id; }
 	})
@@ -432,7 +432,7 @@ QUnit.test("Private and constant properties", function (assert) {
 
 	const B = ObjectModel({
 		ID: [Number]
-	}).defaults({
+	}).defaultTo({
 		setId(id) { this.ID = id; }
 	})
 
@@ -444,7 +444,7 @@ QUnit.test("Private and constant properties", function (assert) {
 		_index: Number,    // private
 		UNIT: ["px", "cm"], // constant
 		_ID: [Number],     // private and constant
-	}).defaults({
+	}).defaultTo({
 		_index: 0,
 		getIndex() { return this._index },
 		setIndex(value) { this._index = value }
@@ -496,7 +496,7 @@ QUnit.test("Private and constant properties", function (assert) {
 	assert.ok(parent instanceof ParentOM, "can nest private prop in a child OM");
 	assert.throws(() => parent.om._privString, /TypeError[\s\S]*cannot access to private property/, "cannot access nested private prop in a child OM");
 
-	const O = ObjectModel({ _priv: String }).defaults({
+	const O = ObjectModel({ _priv: String }).defaultTo({
 		getPriv() {
 			this.randomMethod();
 			return this._priv
@@ -736,17 +736,17 @@ QUnit.test("Multiple inheritance", function (assert) {
 		m2.d.d2 = 1;
 	}, /TypeError[\s\S]*d2/, "type checking multiple inheritance 8/8");
 
-	A.defaults({
+	A.defaultTo({
 		a: false,
 		b: false
 	});
 
-	B.defaults({
+	B.defaultTo({
 		b: 0,
 		c: 0
 	});
 
-	C.defaults({
+	C.defaultTo({
 		c: "",
 		d: {
 			d1: false,
@@ -754,7 +754,7 @@ QUnit.test("Multiple inheritance", function (assert) {
 		}
 	});
 
-	D.defaults({
+	D.defaultTo({
 		a: "",
 		d: {
 			d2: 0,
@@ -1075,10 +1075,10 @@ QUnit.test("Custom error collectors", function (assert) {
 QUnit.test("Automatic model casting", function (assert) {
 
 	let User = new ObjectModel({ username: String, email: String })
-		.defaults({ username: 'foo', email: 'foo@foo' });
+		.defaultTo({ username: 'foo', email: 'foo@foo' });
 
 	let Article = new ObjectModel({ title: String, user: User })
-		.defaults({ title: 'bar', user: new User() });
+		.defaultTo({ title: 'bar', user: new User() });
 
 	let a = new Article();
 	a.user = { username: 'joe', email: 'foo' };
@@ -1087,10 +1087,10 @@ QUnit.test("Automatic model casting", function (assert) {
 	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
 
 	User = new ObjectModel({ username: String, email: String })
-		.defaults({ username: 'foo', email: 'foo@foo' });
+		.defaultTo({ username: 'foo', email: 'foo@foo' });
 
 	Article = new ObjectModel({ title: String, user: [User] })
-		.defaults({ title: 'bar', user: new User() });
+		.defaultTo({ title: 'bar', user: new User() });
 
 	a = new Article();
 	a.user = { username: 'joe', email: 'foo' };

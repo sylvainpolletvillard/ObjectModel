@@ -129,9 +129,9 @@ QUnit.test("Child array models in object models", function (assert) {
 
 });
 
-QUnit.test("defaults values", function (assert) {
+QUnit.test("default values", function (assert) {
 
-	const ArrModel = ArrayModel([Number, String]).defaults([]);
+	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
 	const a = ArrModel();
 
 	assert.ok(a instanceof Array && a.length === 0, "Array model default value");
@@ -177,7 +177,7 @@ QUnit.test("Assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+	const N = ObjectModel({ x: Number, y: [Number] }).defaultTo({ x: 5, y: 7 });
 	const Arr = ArrayModel(N);
 	const a = Arr([{ x: 9 }]);
 
@@ -274,17 +274,17 @@ QUnit.test("delete key", function (assert) {
 
 })
 
-QUnit.test("Arraymodel as ObjectModel defaults", function (assert) {
+QUnit.test("Arraymodel as ObjectModel default prop", function (assert) {
 	class OM extends ObjectModel({
 		a: ArrayModel(Number)
-	}).defaults({
+	}).defaultTo({
 		a: []
 	}) { }
 
 	let o = new OM();
 
-	assert.ok(Array.isArray(o.a), "ArrayModel works as ObjectModel defaults")
+	assert.ok(Array.isArray(o.a), "ArrayModel works as ObjectModel default prop")
 	o.a.push(1, 2, 3)
-	assert.equal(o.a.length, 3, "ArrayModel as ObjectModel defaults can be mutated")
+	assert.equal(o.a.length, 3, "ArrayModel as ObjectModel default prop can be mutated")
 
 })

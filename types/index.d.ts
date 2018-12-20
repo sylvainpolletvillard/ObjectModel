@@ -15,7 +15,7 @@ export interface Model {
 
 	as(name: string): this;
 
-	defaults(defaultValue: any): this;
+	defaultTo(defaultValue: any): this;
 
 	validate(instance: any, errorCollector?: (errors: ModelError[]) => void): void;
 
@@ -51,8 +51,6 @@ export interface ObjectModel extends Model {
 	new(): Object;
 	(object: object): Object;
 	new(object: object): Object;
-
-	sealed: boolean;
 
 	extend(...otherDefinitions: Array<Object | ObjectModel>): this;
 }

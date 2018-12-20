@@ -309,7 +309,7 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	defaults(val) {
+	defaultTo(val) {
 		this.default = val
 		return this
 	},
@@ -402,7 +402,7 @@ export function ObjectModel(def) {
 }
 
 extend(ObjectModel, Model, {
-	defaults(obj) {
+	defaultTo(obj) {
 		let def = this.definition
 		for (let key in obj) {
 			if (has(def, key)) {
@@ -419,9 +419,9 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts) {
-		let definition = Object.assign({}, this.definition),
-			proto = Object.assign({}, this.prototype),
-			defaults = Object.assign({}, this.default),
+		let definition = { ...this.definition },
+			proto = { ...this.prototype },
+			defaults = { ...this.default },
 			newAssertions = []
 
 		for (let part of newParts) {
@@ -434,7 +434,7 @@ extend(ObjectModel, Model, {
 			if (isObject(part)) merge(definition, part)
 		}
 
-		let submodel = extendModel(new ObjectModel(definition), this, proto).defaults(defaults)
+		let submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults)
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class

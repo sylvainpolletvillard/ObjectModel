@@ -135,9 +135,9 @@ QUnit.test("Child map models in object models", function (assert) {
 
 });
 
-QUnit.test("defaults values", function (assert) {
+QUnit.test("default values", function (assert) {
 
-	const M = MapModel(Number, String).defaults(new Map([[1, "one"], [2, "two"]]));
+	const M = MapModel(Number, String).defaultTo(new Map([[1, "one"], [2, "two"]]));
 	const a = M();
 
 	assert.ok(a instanceof Map && a.size === 2, "Map model default value");
@@ -181,8 +181,8 @@ QUnit.test("assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const X = ObjectModel({ x: Number }).defaults({ x: 5 })
-	const Y = ObjectModel({ y: [Number] }).defaults({ y: 7 });
+	const X = ObjectModel({ x: Number }).defaultTo({ x: 5 })
+	const Y = ObjectModel({ y: [Number] }).defaultTo({ y: 7 });
 	const M = MapModel(X, Y);
 	const m = M([[{ x: 9 }, {}]]);
 

@@ -94,8 +94,8 @@ QUnit.test("Union type", function (assert) {
 QUnit.test("default values", function (assert) {
 
 	const myModel = BasicModel([String, Boolean, Date]);
-	myModel.defaults("blob");
-	assert.strictEqual(myModel.default, "blob", "basic model defaults store the value as default property")
+	myModel.defaultTo("blob");
+	assert.strictEqual(myModel.default, "blob", "basic model default store the value as default property")
 	assert.strictEqual(myModel(), "blob", "basic model default property is applied when undefined is passed");
 	myModel.default = 42;
 	assert.throws(function () {
@@ -152,8 +152,8 @@ QUnit.test("Assertions", function (assert) {
 	assert.throws(function () {
 		new AssertBasic();
 	},
-		/assertion "may throw exception" returned TypeError.*for value undefined/,
-		"assertions catch exceptions on Basic models"
+	/assertion "may throw exception" returned TypeError.*for value undefined/,
+	"assertions catch exceptions on Basic models"
 	);
 
 });

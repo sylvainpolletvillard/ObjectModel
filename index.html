@@ -139,7 +139,7 @@
 					<li>Constants and private properties based on name conventions</li>
 					<li>Explicit error messages</li>
 					<li>Customizable error handlers</li>
-					<li>all in <strong class="size-gzip">3.92 KB</strong> minified and gzipped,
+					<li>all in <strong class="size-gzip">3.91 KB</strong> minified and gzipped,
 						even less when using tree-shaking
 					</li>
 				</ul>
@@ -147,17 +147,17 @@
 
 			<div id="download">
 				<h2>Download</h2>
-				<h3>Current version: v<span class="version">4.0.0-alpha1</span></h3>
+				<h3>Current version: v<span class="version">4.0.0-alpha</span></h3>
 				<ul>
 					<li>From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">NPM</a> :
 						<code>npm install objectmodel</code>
 					</li>
 					<li>From CDN: <a href="https://unpkg.com/objectmodel" rel="noopener">unpkg.com/objectmodel</a></li>
-					<li>Minified bundle (<strong class="size-gzip">3.92 KB</strong> gzipped) :
+					<li>Minified bundle (<strong class="size-gzip">3.91 KB</strong> gzipped) :
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha1.zip">object-model-4.0.0-alpha1.zip</a>
+						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha.zip">object-model-4.0.0-alpha.zip</a>
 					</li>
 				</ul>
 
@@ -421,13 +421,13 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 		<section id="doc-default-values" class="grid doc-code-code">
 			<div class="doc">
 				<h2>Default values assignment</h2>
-				<p>You can set a default value for any model with <code>model.defaults(value)</code>. This default value will be
+				<p>You can set a default value for any model with <code>model.defaultTo(value)</code>. This default value will be
 					used if no argument is passed to the model constructor.</p>
 			</div>
 
 			<div class="panel panel1">
 				<span class="legend">Model</span>
-				<pre><code class="language-javascript">let N = BasicModel(Number).defaults(1)</code></pre>
+				<pre><code class="language-javascript">let N = BasicModel(Number).defaultTo(1)</code></pre>
 			</div>
 
 			<div class="panel panel2">
@@ -436,9 +436,9 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 			</div>
 
 			<div class="doc">
-				<p>To specify default values for some properties of your object models, put them in the model prototype. You can
-					also use the <code>defaults</code> method as a shorthand for setting all the default values at once. If these are
-					not defined at object instanciation, their default value will be assigned.</p>
+				<p>For object models, the <code>defaultTo</code> method can be used to specify default values for some properties
+					of your object models. If these are not defined at object instanciation, their default value will be assigned. You
+					can also put them in the model prototype if you prefer to rely on prototypal inheritance.</p>
 			</div>
 
 			<div class="panel panel1">
@@ -448,7 +448,7 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 	size: [Number],
 	creationDate: [Date],
 	writable: Boolean
-}).defaults({
+}).defaultTo({
 	name: "Untitled file",
 	size: 0,
 	writable: true
@@ -711,7 +711,7 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 	_index: Number,    // private
 	UNIT: ["px","cm"], // constant
 	_ID: [Number],     // private and constant
-}).defaults({
+}).defaultTo({
 	_index: 0,
 	getIndex(){ return this._index },
 	setIndex(value){ this._index = value }
@@ -854,10 +854,12 @@ const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 			<div class="doc">
 				<p>In classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You
 					can do the same with instances of function models. Another option is to provide a default implementation in the
-					model definition by using the <code>defaults</code> method. <a href="#doc-default-values">See the 'Default values'
-						section</a>. The difference is that all the properties in the model definition are required for an object to be
-					considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code>
-					to be valid as a Person, while the function <code>greet</code> is not mandatory.</p>
+					model definition by using the <code>defaultTo</code> method.
+					<a href="#doc-default-values">See the 'Default values' section</a>.
+					The difference is that all the properties in the model definition are required for an object
+					to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code>
+					to be valid as a Person, while the function <code>greet</code> is not mandatory.
+				</p>
 			</div>
 
 			<div class="panel panel1">
@@ -866,7 +868,7 @@ const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 	name: String,
 	// function without arguments returning a String
 	sayMyName: FunctionModel().return(String)
-}).defaults({
+}).defaultTo({
 	sayMyName: function(){ return "my name is " + this.name }
 })
 
@@ -1154,7 +1156,7 @@ console.log(Integer.name) // "Integer"</code></pre>
 				<dt>default <code>model.default</code></dt>
 				<dd>Returns the default value if defined</dd>
 
-				<dt><a href="#doc-default-values">defaults</a> <code>model.defaults(defaultValue)</code></dt>
+				<dt><a href="#doc-default-values">defaultTo</a> <code>model.defaultTo(defaultValue)</code></dt>
 				<dd>Set the default value of the model</dd>
 
 				<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
@@ -1183,7 +1185,7 @@ console.log(Integer.name) // "Integer"</code></pre>
 			</dl>
 			<h3>Object models</h3>
 			<dl>
-				<dt>defaults <code>objectModel.defaults(defaultValuesObject)</code></dt>
+				<dt>defaultTo <code>objectModel.defaultTo(defaultValuesObject)</code></dt>
 				<dd>Set the default values for some model properties.</dd>
 			</dl>
 			<h3>Function models</h3>
@@ -1334,8 +1336,8 @@ Model.prototype.parse = function(json, models){
 					</div>
 					<div class="panel panel2">
 						<span class="legend">Example</span>
-						<pre><code class="language-javascript">const Type1 = ObjectModel({ content: String }).defaults({ content: 'Content 1' }),
-      Type2 = ObjectModel({ content: String }).defaults({ content: 'Content 2' }),
+						<pre><code class="language-javascript">const Type1 = ObjectModel({ content: String }).defaultTo({ content: 'Content 1' }),
+      Type2 = ObjectModel({ content: String }).defaultTo({ content: 'Content 2' }),
 	  Container = ObjectModel({ items: ArrayModel([Type1, Type2]) });
 
 // List all your serializable models here

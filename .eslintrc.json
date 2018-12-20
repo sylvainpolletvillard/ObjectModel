@@ -6,14 +6,16 @@
 		"es6": true
 	},
 	"parserOptions": {
-		"ecmaVersion": 2015,
+		"ecmaVersion": 2018,
 		"sourceType": "module"
 	},
 	"rules": {
 		"indent": [
 			"error",
 			"tab",
-			{ "SwitchCase": 1 }
+			{
+				"SwitchCase": 1
+			}
 		],
 		"no-mixed-spaces-and-tabs": [
 			"error",

@@ -19,7 +19,7 @@
 		isIterable = x => x && isFunction(x[Symbol.iterator]),
 
 		proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
-		proxifyModel = (val, model, traps) => new Proxy(val, { getPrototypeOf: () => model.prototype, ...traps }),
+		proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
 
 		merge = (target, src = {}) => {
 			for (let key in src) {
@@ -56,6 +56,7 @@
 		};
 
 	const
+		_check = Symbol(),
 		_validate = Symbol(),
 		_original = Symbol(), // used to bypass proxy
 
@@ -130,11 +131,11 @@
 		checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
 			let indexFound = stack.indexOf(def);
 			if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
-				return obj //if found twice in call stack, cycle detected, skip validation
+				return obj // if found twice in call stack, cycle detected, skip validation
 
 			if (is(Model, def)) {
 				if (shouldCast) obj = cast(obj, def);
-				def[_validate](obj, path, errors, stack.concat(def));
+				def[_check](obj, path, errors, stack.concat(def));
 			}
 			else if (isPlainObject(def)) {
 				Object.keys(def).map(key => {
@@ -253,7 +254,7 @@
 			}
 
 			if (suitableModels.length === 1) {
-				// automatically cast to suitable model when explicit (duck typing)
+				// automatically cast to suitable model when explicit (autocasting)
 				return new suitableModels[0](obj, SKIP_VALIDATE)
 			}
 
@@ -366,17 +367,17 @@
 			return this
 		},
 
-		[_validate](obj, path, errors, stack) {
+		[_check](obj, path, errors, stack) {
 			checkDefinition(obj, this.definition, path, errors, stack);
 			checkAssertions(obj, this, path, errors);
 		},
 
-		validate(obj, errorCollector) {
-			this[_validate](obj, null, this.errors, []);
-			return !unstackErrors(this, errorCollector)
+		[_validate](obj) {
+			this[_check](obj, null, this.errors, [], true);
+			return !unstackErrors(this)
 		},
 
-		test(obj) {
+		test(obj, errorCollector) {
 			let model = this;
 			while (!has(model, "errorCollector")) {
 				model = getProto(model);
@@ -385,11 +386,12 @@
 			let initialErrorCollector = model.errorCollector,
 				failed;
 
-			model.errorCollector = () => {
+			model.errorCollector = errors => {
 				failed = true;
+				if (errorCollector) errorCollector.call(this, errors);
 			};
 
-			new this(obj); // may trigger this.errorCollector
+			new this(obj); // may trigger errorCollector
 
 			model.errorCollector = initialErrorCollector;
 			return !failed
@@ -411,7 +413,7 @@
 
 	function BasicModel(def) {
 		let model = function (val = model.default) {
-			return model.validate(val) ? val : undefined
+			return model[_validate](val) ? val : undefined
 		};
 
 		return initModel(model, BasicModel, def)
@@ -442,10 +444,7 @@
 			if (model.parentClass) merge(obj, new model.parentClass(obj));
 			merge(this, obj);
 
-			if (mode !== SKIP_VALIDATE) {
-				model[_validate](this, null, model.errors, [], true);
-				unstackErrors(model);
-			}
+			if (mode !== SKIP_VALIDATE) model[_validate](this);
 
 			return getProxy(model, this, model.definition)
 		};
@@ -496,7 +495,7 @@
 			return submodel
 		},
 
-		[_validate](obj, path, errors, stack, shouldCast) {
+		[_check](obj, path, errors, stack, shouldCast) {
 			if (isObject(obj)) {
 				let def = this.definition;
 				checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast);
@@ -512,8 +511,8 @@
 		let model = function (list = model.default, mode) {
 			list = init(list);
 
-			if (mode === SKIP_VALIDATE || model.validate(list)) {
-				return proxifyModel(list, model, {
+			if (mode === SKIP_VALIDATE || model[_validate](list)) {
+				return proxifyModel(list, model, Object.assign({
 					get(l, key) {
 						if (key === _original) return l
 
@@ -545,9 +544,8 @@
 
 							return fn.apply(l, args)
 						}) : val
-					},
-					...otherTraps
-				})
+					}
+				}, otherTraps))
 			}
 		};
 
@@ -591,7 +589,7 @@
 			return 'Array of ' + formatDefinition(this.definition, stack)
 		},
 
-		[_validate](arr, path, errors, stack) {
+		[_check](arr, path, errors, stack) {
 			if (Array.isArray(arr))
 				(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack));
 			else stackError(errors, this, arr, path);
@@ -639,7 +637,7 @@
 			return "Set of " + formatDefinition(this.definition, stack)
 		},
 
-		[_validate](set, path, errors, stack) {
+		[_check](set, path, errors, stack) {
 			if (is(Set, set)) {
 				for (let item of set.values()) {
 					checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack);
@@ -676,7 +674,7 @@
 			return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 		},
 
-		[_validate](map, path, errors, stack) {
+		[_check](map, path, errors, stack) {
 			if (is(Map, map)) {
 				path = path || 'Map';
 				for (let [key, value] of map) {
@@ -699,31 +697,32 @@
 	function FunctionModel(...argsDef) {
 
 		let model = function (fn = model.default) {
-			if (!model.validate(fn)) return
-			return proxifyModel(fn, model, {
-				get(fn, key) {
-					return key === _original ? fn : fn[key]
-				},
+			if (model[_validate](fn)) {
+				return proxifyModel(fn, model, {
+					get(fn, key) {
+						return key === _original ? fn : fn[key]
+					},
 
-				apply(fn, ctx, args) {
-					let def = model.definition;
+					apply(fn, ctx, args) {
+						let def = model.definition;
 
-					def.arguments.forEach((argDef, i) => {
-						args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true);
-					});
+						def.arguments.forEach((argDef, i) => {
+							args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true);
+						});
 
-					checkAssertions(args, model, "arguments");
+						checkAssertions(args, model, "arguments");
 
-					let result;
-					if (!model.errors.length) {
-						result = Reflect.apply(fn, ctx, args);
-						if ("return" in def)
-							result = checkDefinition(result, def.return, "return value", model.errors, [], true);
+						let result;
+						if (!model.errors.length) {
+							result = Reflect.apply(fn, ctx, args);
+							if ("return" in def)
+								result = checkDefinition(result, def.return, "return value", model.errors, [], true);
+						}
+						unstackErrors(model);
+						return result
 					}
-					unstackErrors(model);
-					return result
-				}
-			})
+				})
+			}
 		};
 
 		return initModel(model, FunctionModel, { arguments: argsDef }, Function)
@@ -753,7 +752,7 @@
 			return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 		},
 
-		[_validate](f, path, errors) {
+		[_check](f, path, errors) {
 			if (!isFunction(f)) stackError(errors, "Function", f, path);
 		}
 	});

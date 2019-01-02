@@ -39,7 +39,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModel.extend === "function", "test object model method extend");
 	assert.ok(typeof EmptyObjectModel.assert === "function", "test object model method assert");
 	assert.ok(typeof EmptyObjectModel.test === "function", "test object model method test");
-	assert.ok(typeof EmptyObjectModel.validate === "function", "test object model method validate");
 	assert.ok(typeof EmptyObjectModel.definition === "object", "test object model prop definition");
 	assert.ok(typeof EmptyObjectModel.assertions === "object", "test object model prop assertions");
 
@@ -48,7 +47,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModelThroughConstructor.extend === "function", "test new model method extend");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assert === "function", "test new model method assert");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.test === "function", "test new model method test");
-	assert.ok(typeof EmptyObjectModelThroughConstructor.validate === "function", "test new model method validate");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.definition === "object", "test new model prop definition");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assertions === "object", "test new model prop assertions");
 })
@@ -314,7 +312,7 @@ QUnit.test("default values", function (assert) {
 	const model = myModel();
 	assert.strictEqual(model.name, "joe", "default values correctly applied");
 	assert.strictEqual(model.foo.bar.buz, 0, "default nested props values correctly applied");
-	assert.ok(myModel.test({}), "default should be applied when testing duck typed objects")
+	assert.ok(myModel.test({}), "default should be applied when testing autocasted objects")
 
 	const model2 = myModel({ name: "jim", foo: { bar: { buz: 1 } } });
 	assert.strictEqual(model2.name, "jim", "default values not applied if provided");
@@ -847,14 +845,14 @@ QUnit.test("Composition", function (assert) {
 		children: []
 	});
 
-	assert.ok(Person.test(duckmother), "Duck typing for object properties 1/2");
-	assert.notOk(duckmother instanceof Person, "Duck typing for object properties 2/2");
+	assert.ok(Person.test(duckmother), "Autocasting for object properties 1/2");
+	assert.notOk(duckmother instanceof Person, "Autocasting for object properties 2/2");
 
 	joefamily.mother.name = "Daisy";
-	assert.equal(joefamily.mother.name, "Daisy", "Duck typing submodel property can be modified");
+	assert.equal(joefamily.mother.name, "Daisy", "Autocasted submodel property can be modified");
 	assert.throws(function () {
 		joefamily.mother.female = "Quack !";
-	}, /TypeError[\s\S]*female/, "validation of submodel duck typed at modification");
+	}, /TypeError[\s\S]*female/, "validation of submodel autocasted at modification");
 
 	assert.throws(function () {
 		new Family({
@@ -866,7 +864,7 @@ QUnit.test("Composition", function (assert) {
 			},
 			children: []
 		});
-	}, /TypeError[\s\S]*female/, "validation of submodel duck typed at instanciation");
+	}, /TypeError[\s\S]*female/, "validation of submodel autocasted at instanciation");
 
 });
 
@@ -924,7 +922,7 @@ QUnit.test("Assertions", function (assert) {
 
 });
 
-QUnit.test("validate method", function (assert) {
+QUnit.test("test method", function (assert) {
 
 	const assertFunction = (c => c === "GB");
 
@@ -948,13 +946,13 @@ QUnit.test("validate method", function (assert) {
 	const gbOrder = { sku: "ABC123", address: gbAddress };
 	const frOrder = { sku: "ABC123", address: frAddress };
 
-	Order.validate(gbOrder); // no errors
+	new Order(gbOrder); // no errors
 	assert.throws(function () {
-		Order.validate(frOrder);
+		new Order(frOrder);
 	}, "should validate sub-objects assertions");
 
 	const errors = [];
-	Order.validate(frOrder, function (err) {
+	Order.test(frOrder, function (err) {
 		errors.push(...err);
 	});
 
@@ -1050,7 +1048,7 @@ QUnit.test("Custom error collectors", function (assert) {
 				f: null
 			}
 		}
-	}).validate({
+	}).test({
 		d: {
 			e: {
 				f: undefined
@@ -1083,8 +1081,8 @@ QUnit.test("Automatic model casting", function (assert) {
 	let a = new Article();
 	a.user = { username: 'joe', email: 'foo' };
 
-	assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
-	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
+	assert.ok(a.user instanceof User, "automatic model casting when assigning an autocasted object");
+	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of autocasted object");
 
 	User = new ObjectModel({ username: String, email: String })
 		.defaultTo({ username: 'foo', email: 'foo@foo' });
@@ -1095,8 +1093,8 @@ QUnit.test("Automatic model casting", function (assert) {
 	a = new Article();
 	a.user = { username: 'joe', email: 'foo' };
 
-	assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
-	assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
+	assert.ok(a.user instanceof User, "automatic optional model casting when assigning an autocasted object");
+	assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of autocasted object");
 
 
 	const Type1 = ObjectModel({ name: String, other1: [Boolean] });
@@ -1227,11 +1225,11 @@ QUnit.test("class constructors", function (assert) {
 	const ann = new Person({ firstName: "Ann", lastName: "Smith" });
 
 	const couple = new Lovers({
-		husband: joe, // object duck typed
+		husband: joe, // object autocasted
 		wife: ann, // object model
 	});
 
-	assert.ok(couple.husband instanceof Person, "duck tying works with class-based models");
+	assert.ok(couple.husband instanceof Person, "autocasting works with class-based models");
 
 	assert.equal(Person.test({ firstName: 0, lastName: "" }), false, `test method with class-based models`);
 
@@ -1250,7 +1248,7 @@ QUnit.test("class constructors", function (assert) {
 	const SubOM = BaseClass.extend({ test: [Boolean] }).assert(o => o.test)
 	class SubClass extends SubOM { }
 
-	SubClass.validate({ test: false }, () => { });
+	SubClass.test({ test: false }, () => { });
 
 	assert.equal(SubClass.errors.length, 0, "class-based models errors are cleaned up properly 1/4")
 	assert.equal(SubOM.errors.length, 0, "class-based models errors are cleaned up properly 2/4")
@@ -1267,7 +1265,7 @@ QUnit.test("Null-safe object traversal", function (assert) {
 		}
 	});
 
-	const config = Config({ local: undefined }); // object duck typed
+	const config = Config({ local: undefined }); // object autocasted
 
 	assert.strictEqual(config.local.time.format, undefined, "null-safe object traversal getter")
 	config.local.time.format = "12h";

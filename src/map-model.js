@@ -1,5 +1,5 @@
 import {
-	_validate, cast, checkAssertions, checkDefinition,
+	_check, cast, checkAssertions, checkDefinition,
 	extendDefinition, extendModel, format, formatDefinition, Model, stackError
 } from "./object-model.js"
 import { initListModel } from "./list-model.js"
@@ -28,7 +28,7 @@ extend(MapModel, Model, {
 		return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 	},
 
-	[_validate](map, path, errors, stack) {
+	[_check](map, path, errors, stack) {
 		if (is(Map, map)) {
 			path = path || 'Map'
 			for (let [key, value] of map) {

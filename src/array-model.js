@@ -1,5 +1,5 @@
 import {
-	_original, _validate, cast, checkAssertions, checkDefinition,
+	_original, _check, cast, checkAssertions, checkDefinition,
 	extendDefinition, extendModel, formatDefinition, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend } from "./helpers.js"
@@ -42,7 +42,7 @@ extend(ArrayModel, Model, {
 		return 'Array of ' + formatDefinition(this.definition, stack)
 	},
 
-	[_validate](arr, path, errors, stack) {
+	[_check](arr, path, errors, stack) {
 		if (Array.isArray(arr))
 			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack))
 		else stackError(errors, this, arr, path)

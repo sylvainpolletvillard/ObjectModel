@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof Dict.extend === "function", "test Map model method extend");
 	assert.ok(typeof Dict.assert === "function", "test Map model method assert");
 	assert.ok(typeof Dict.test === "function", "test Map model method test");
-	assert.ok(typeof Dict.validate === "function", "test Map model method validate");
 	assert.ok(Dict.definition.key === String, "test Map model prop definition 1/2");
 	assert.ok(Dict.definition.value === Number, "test Map model prop definition 2/2");
 	assert.ok(typeof Dict.assertions === "object", "test Map model prop assertions");

@@ -1,5 +1,5 @@
 import {
-	_original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	_check, _original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel,
 	format, formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend, isFunction, proxifyModel } from "./helpers.js"
@@ -8,31 +8,32 @@ import { extend, isFunction, proxifyModel } from "./helpers.js"
 export default function FunctionModel(...argsDef) {
 
 	let model = function (fn = model.default) {
-		if (!model.validate(fn)) return
-		return proxifyModel(fn, model, {
-			get(fn, key) {
-				return key === _original ? fn : fn[key]
-			},
+		if (model[_validate](fn)) {
+			return proxifyModel(fn, model, {
+				get(fn, key) {
+					return key === _original ? fn : fn[key]
+				},
 
-			apply(fn, ctx, args) {
-				let def = model.definition
+				apply(fn, ctx, args) {
+					let def = model.definition
 
-				def.arguments.forEach((argDef, i) => {
-					args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
-				})
+					def.arguments.forEach((argDef, i) => {
+						args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
+					})
 
-				checkAssertions(args, model, "arguments")
+					checkAssertions(args, model, "arguments")
 
-				let result
-				if (!model.errors.length) {
-					result = Reflect.apply(fn, ctx, args)
-					if ("return" in def)
-						result = checkDefinition(result, def.return, "return value", model.errors, [], true)
+					let result
+					if (!model.errors.length) {
+						result = Reflect.apply(fn, ctx, args)
+						if ("return" in def)
+							result = checkDefinition(result, def.return, "return value", model.errors, [], true)
+					}
+					unstackErrors(model)
+					return result
 				}
-				unstackErrors(model)
-				return result
-			}
-		})
+			})
+		}
 	}
 
 	return initModel(model, FunctionModel, { arguments: argsDef }, Function)
@@ -62,7 +63,7 @@ extend(FunctionModel, Model, {
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
-	[_validate](f, path, errors) {
+	[_check](f, path, errors) {
 		if (!isFunction(f)) stackError(errors, "Function", f, path)
 	}
 })

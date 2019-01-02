@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof MySet.extend === "function", "test Set model method extend");
 	assert.ok(typeof MySet.assert === "function", "test Set model method assert");
 	assert.ok(typeof MySet.test === "function", "test Set model method test");
-	assert.ok(typeof MySet.validate === "function", "test Set model method validate");
 	assert.ok(MySet.definition === String, "test Set model prop definition");
 	assert.ok(typeof MySet.assertions === "object", "test Set model prop assertions");
 

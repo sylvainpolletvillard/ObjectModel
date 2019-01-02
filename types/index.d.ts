@@ -17,9 +17,7 @@ export interface Model {
 
 	defaultTo(defaultValue: any): this;
 
-	validate(instance: any, errorCollector?: (errors: ModelError[]) => void): void;
-
-	test(value: any): boolean;
+	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
 
 	errorCollector(errors: ModelError[]);
 

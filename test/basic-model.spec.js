@@ -10,7 +10,6 @@ QUnit.test("constructor && proto are correctly defined", function (assert) {
 	assert.ok(typeof NumberModel.extend === "function", "test model method extend");
 	assert.ok(typeof NumberModel.assert === "function", "test model method assert");
 	assert.ok(typeof NumberModel.test === "function", "test model method test");
-	assert.ok(typeof NumberModel.validate === "function", "test model method validate");
 	assert.ok(NumberModel.definition === Number, "test model prop definition");
 	assert.ok(typeof NumberModel.assertions === "object", "test model prop assertions");
 
@@ -19,7 +18,6 @@ QUnit.test("constructor && proto are correctly defined", function (assert) {
 	assert.ok(typeof NumberModelThroughConstructor.extend === "function", "test new model method extend");
 	assert.ok(typeof NumberModelThroughConstructor.assert === "function", "test new model method assert");
 	assert.ok(typeof NumberModelThroughConstructor.test === "function", "test new model method test");
-	assert.ok(typeof NumberModelThroughConstructor.validate === "function", "test new model method validate");
 	assert.ok(NumberModelThroughConstructor.definition === Number, "test new model prop definition");
 	assert.ok(typeof NumberModelThroughConstructor.assertions === "object", "test new model prop assertions");
 });
@@ -83,11 +81,6 @@ QUnit.test("Union type", function (assert) {
 
 	assert.ok(myModel.test("666") === true, "model.test 1/2");
 	assert.ok(myModel.test(666) === false, "model.test 2/2");
-
-	myModel.validate("666"); // should not throw
-	assert.throws(function () {
-		myModel.validate(666)
-	}, /TypeError/, "test undefined value");
 
 });
 
@@ -186,7 +179,7 @@ QUnit.test("Custom error collectors", function (assert) {
 		return s !== "nope"
 	}, "shouldnt be nope")("nope");
 
-	BasicModel(Number).validate("nope", function (errors) {
+	BasicModel(Number).test("nope", function (errors) {
 		assert.ok(errors.length === 1, "check errors.length custom collector");
 		var err = errors[0];
 		assert.equal(err.expected, Number, "check error.expected custom collector");
@@ -195,7 +188,7 @@ QUnit.test("Custom error collectors", function (assert) {
 	});
 
 	BasicModel(String).assert(function (s) { return s !== "nope" }, "shouldnt be nope")
-		.validate("nope", function (errors) {
+		.test("nope", function (errors) {
 			assert.ok(errors.length === 1, 'local custom collector assertion error catch 1/2');
 			assert.equal(errors[0].message,
 				'assertion "shouldnt be nope" returned false for value "nope"',

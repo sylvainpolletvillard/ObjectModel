@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof Operation.extend === "function", "test Function model method extend");
 	assert.ok(typeof Operation.assert === "function", "test Function model method assert");
 	assert.ok(typeof Operation.test === "function", "test Function model method test");
-	assert.ok(typeof Operation.validate === "function", "test Function model method validate");
 	assert.ok(typeof Operation.return === "function", "test Function model method return");
 	assert.equal(Operation.definition.arguments.map(a => a.name).join(','),
 		'Number,Number', "test Function model prop definition");

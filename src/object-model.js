@@ -4,6 +4,7 @@ import {
 } from "./helpers.js"
 
 export const
+	_check = Symbol(),
 	_validate = Symbol(),
 	_original = Symbol(), // used to bypass proxy
 
@@ -78,11 +79,11 @@ export const
 	checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
 		let indexFound = stack.indexOf(def)
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
-			return obj //if found twice in call stack, cycle detected, skip validation
+			return obj // if found twice in call stack, cycle detected, skip validation
 
 		if (is(Model, def)) {
 			if (shouldCast) obj = cast(obj, def)
-			def[_validate](obj, path, errors, stack.concat(def))
+			def[_check](obj, path, errors, stack.concat(def))
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
@@ -201,7 +202,7 @@ export const
 		}
 
 		if (suitableModels.length === 1) {
-			// automatically cast to suitable model when explicit (duck typing)
+			// automatically cast to suitable model when explicit (autocasting)
 			return new suitableModels[0](obj, SKIP_VALIDATE)
 		}
 
@@ -314,17 +315,17 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	[_validate](obj, path, errors, stack) {
+	[_check](obj, path, errors, stack) {
 		checkDefinition(obj, this.definition, path, errors, stack)
 		checkAssertions(obj, this, path, errors)
 	},
 
-	validate(obj, errorCollector) {
-		this[_validate](obj, null, this.errors, [])
-		return !unstackErrors(this, errorCollector)
+	[_validate](obj) {
+		this[_check](obj, null, this.errors, [], true);
+		return !unstackErrors(this)
 	},
 
-	test(obj) {
+	test(obj, errorCollector) {
 		let model = this
 		while (!has(model, "errorCollector")) {
 			model = getProto(model)
@@ -333,11 +334,12 @@ Object.assign(Model.prototype, {
 		let initialErrorCollector = model.errorCollector,
 			failed
 
-		model.errorCollector = () => {
+		model.errorCollector = errors => {
 			failed = true
+			if (errorCollector) errorCollector.call(this, errors)
 		}
 
-		new this(obj) // may trigger this.errorCollector
+		new this(obj) // may trigger errorCollector
 
 		model.errorCollector = initialErrorCollector
 		return !failed
@@ -359,7 +361,7 @@ Object.assign(Model.prototype, {
 
 export function BasicModel(def) {
 	let model = function (val = model.default) {
-		return model.validate(val) ? val : undefined
+		return model[_validate](val) ? val : undefined
 	}
 
 	return initModel(model, BasicModel, def)
@@ -390,10 +392,7 @@ export function ObjectModel(def) {
 		if (model.parentClass) merge(obj, new model.parentClass(obj))
 		merge(this, obj)
 
-		if (mode !== SKIP_VALIDATE) {
-			model[_validate](this, null, model.errors, [], true)
-			unstackErrors(model)
-		}
+		if (mode !== SKIP_VALIDATE) model[_validate](this)
 
 		return getProxy(model, this, model.definition)
 	}
@@ -444,7 +443,7 @@ extend(ObjectModel, Model, {
 		return submodel
 	},
 
-	[_validate](obj, path, errors, stack, shouldCast) {
+	[_check](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {
 			let def = this.definition
 			checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast)

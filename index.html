@@ -139,7 +139,7 @@
 					<li>Constants and private properties based on name conventions</li>
 					<li>Explicit error messages</li>
 					<li>Customizable error handlers</li>
-					<li>all in <strong class="size-gzip">3.91 KB</strong> minified and gzipped,
+					<li>all in <strong class="size-gzip">3.92 KB</strong> minified and gzipped,
 						even less when using tree-shaking
 					</li>
 				</ul>
@@ -153,7 +153,7 @@
 						<code>npm install objectmodel</code>
 					</li>
 					<li>From CDN: <a href="https://unpkg.com/objectmodel" rel="noopener">unpkg.com/objectmodel</a></li>
-					<li>Minified bundle (<strong class="size-gzip">3.91 KB</strong> gzipped) :
+					<li>Minified bundle (<strong class="size-gzip">3.92 KB</strong> gzipped) :
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
@@ -293,8 +293,8 @@ rick.lastName = 132;</code>
 			<div class="doc">
 				<h2>Optional properties</h2>
 				<p>By default, model properties are mandatory. That means all properties defined are required on instance
-					declaration, otherwise an exception will be raised. But you can specify a property to be optional by using the
-					bracket notation, borrowed from the JSDoc specification</p>
+					declaration, otherwise an exception will be raised. But you can specify a property to be optional
+					by using the bracket notation, borrowed from the JSDoc specification</p>
 			</div>
 
 			<div class="panel panel1">
@@ -318,9 +318,10 @@ const roger = User({ name: "Roger" }); // email is mandatory</code>
 		<section id="doc-multiple-types" class="grid doc-code-code">
 			<div class="doc">
 				<h2>Multiple types</h2>
-				<p>Several valid types can be specified for one property, aka union types. So optional properties are actually
-					union types between the original type and the values <code>undefined</code> and <code>null</code>. To declare an
-					optional union type, add <code>undefined</code> to the list.</p>
+				<p>Several valid types can be specified for one property, aka <strong>union types</strong>.
+					So optional properties are actually union types between the original type and the values
+					<code>undefined</code> and <code>null</code>. To declare an optional union type, add
+					<code>undefined</code> to the list.</p>
 			</div>
 
 			<div class="panel panel1">
@@ -393,8 +394,8 @@ opening.easing = 1;</code>
 	}
 });
 
-const config = { local: undefined }; // object duck typed
-const model_config = Config(config); // object model</code></pre>
+const config = { local: undefined };
+const new_config = Config(config); // object model</code></pre>
 			</div>
 
 			<div class="panel panel2">
@@ -411,8 +412,8 @@ if(config != null
 }
 
 // with object models, no worries :)
-if(model_config.local.time.format === "12h"){ hour %= 12; }
-// model_config.local.time.format returns undefined</code></pre>
+if(new_config.local.time.format === "12h"){ hour %= 12; }
+// new_config.local.time.format returns undefined</code></pre>
 			</div>
 		</section>
 
@@ -476,15 +477,15 @@ if(model_config.local.time.format === "12h"){ hour %= 12; }
 		<section id="doc-composition" class="grid doc-code-code">
 			<div class="doc">
 				<h2>Composition with models as types</h2>
-				<p>Models declared can also be used for type checking, so you can compose structures of models. Note that the
-					property values do not necessarily need to be model instances to be considered valid: only the definition of the
-					associated model must be respected. This is called <a href="http://en.wikipedia.org/wiki/Duck_typing" target="_blank"
-					 rel="noopener">duck typing</a>, which can be summarized as <i>"If it looks like a duck and quacks like a duck,
-						then it's a duck"</i>.</p>
-				<p>When a model definition is recognized, the value is automatically replaced by an instance of the corresponding
-					model. This naive approach is very time saving and allows you, for example, to parse composed models from JSON in
-					one step. If there is somehow an ambiguity (such as two possible valid models within an union type), the value is
-					kept unchanged and a warning console message will inform you how to solve this ambiguity.</p>
+				<p>Nested properties definitions can be models too, so you can compose structures of models.</p>
+				<p>When a property value matches a model definition, the value is automatically replaced by an instance of the
+					corresponding model. This mechanic is referred as <strong>autocasting</strong> and can be compared to
+					<a href="https://en.wikipedia.org/wiki/Duck_typing" target="_blank" class="no-hl">duck typing</a></a>.
+					Autocasting works for object models properties, but also for Array/Map/Set models items when inserted, and for
+					FunctionModel arguments and return value.</p>
+				<p>This naive approach is very time saving and allows you, for example, to parse composed models from JSON in one
+					step. If there is somehow an ambiguity (such as two suitable models within an union type), the value is kept
+					unchanged and a warning console message will inform you how to solve this ambiguity.</p>
 			</div>
 
 			<div class="panel panel1">
@@ -509,7 +510,7 @@ const ann = new Person({
 });
 
 const couple = Lovers({
-   husband: joe,  // object duck typed
+   husband: joe,  // object autocasted
    wife: ann // object model
 });
 
@@ -523,7 +524,7 @@ couple.husband instanceof Person === true // has been casted to Person</code></p
 			<div class="doc">
 				<h2>Inheritance by extension</h2>
 				<p>Extensions create new models based on existing model definitions. You can declare new properties or override
-					previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance.</p>
+					previous ones. Therefore, it is an easy way to reproduce subtyping and class inheritance patterns.</p>
 			</div>
 
 			<div class="panel panel1">
@@ -674,7 +675,7 @@ const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 <code class="language-none exception">TypeError: assertion should be greater or equal to zero returned false for value -1</code>
 
 <code class="language-javascript">PositiveInteger(Math.sqrt(2));</code>
-<code class="language-none exception">TypeError: assertion isInteger returned false for value 1.4142135623730951</code>
+<code class="language-none exception">TypeError: assertion isInteger returned false for value 1.414213562373</code>
 
 <code class="language-javascript">PrimeNumber(83);</code>
 <code class="language-none log">83</code>
@@ -779,7 +780,8 @@ console.log(c._index, c.UNIT); // no more errors</code>
 const Cards = new ArrayModel([Number, "J","Q","K"]);
 
 // Hand is an array of 2 Numbers, J, Q, or K
-const Hand = Cards.extend().assert(a => a.length === 2, "should have two cards");</code></pre>
+const Hand = Cards.extend()
+                  .assert(a => a.length === 2, "should have two cards");</code></pre>
 			</div>
 
 			<div class="panel panel2">
@@ -833,10 +835,10 @@ myHand[0] = "Joker"</code>
 			<div class="panel panel1">
 				<pre><code class="language-javascript">import { FunctionModel, BasicModel } from "objectmodel";
 
-const Operand = BasicModel(Number).assert(Number.isFinite);
+const Numb = BasicModel(Number).assert(Number.isFinite);
 const Operator = BasicModel(["+","-","*","/"])
 
-const Calculator = FunctionModel(Operand, Operator, Operand).return(Operand);
+const Calculator = FunctionModel(Numb, Operator, Numb).return(Numb);
 
 const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 </code></pre>
@@ -853,9 +855,9 @@ const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 
 			<div class="doc">
 				<p>In classical JavaScript OOP programming, methods are declared in the constructor's <code>prototype</code>. You
-					can do the same with instances of function models. Another option is to provide a default implementation in the
-					model definition by using the <code>defaultTo</code> method.
-					<a href="#doc-default-values">See the 'Default values' section</a>.
+					can do the same with instances of function models.</p>
+				<p>Another option is to provide a default implementation in the model definition by using the <code>defaultTo</code>
+					method. See the <a href="#doc-default-values">Default values</a> section.
 					The difference is that all the properties in the model definition are required for an object
 					to be considered suitable for the model. In the following example, an object must have a function <code>sayMyName</code>
 					to be valid as a Person, while the function <code>greet</code> is not mandatory.
@@ -874,7 +876,9 @@ const calc = new Calculator((a, operator, b) => eval(a + operator + b));
 
 // takes one Person as argument, returns a String
 Person.prototype.greet = FunctionModel(Person).return(String)(
-	function(otherguy){ return "Hello "+ otherguy.name + ", " + this.sayMyName() }
+	function(otherguy){
+		return "Hello "+ otherguy.name + ", " + this.sayMyName()
+	}
 )</code></pre>
 			</div>
 
@@ -1040,11 +1044,11 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 			<div class="doc">
 				<h3>Single-use error collector</h3>
-				<p>And this is how you define an error collector to be used only once with <code>validate(obj, myErrorCollector)</code></p>
+				<p>And this is how you define an error collector to be used only once with <code>test(obj, myErrorCollector)</code></p>
 			</div>
 
 			<div class="panel panel1">
-				<pre><code class="language-javascript">Student.validate({
+				<pre><code class="language-javascript">Student.test({
 	name: "Joanna",
 	course: "cheating",
 	grade: 90
@@ -1162,17 +1166,10 @@ console.log(Integer.name) // "Integer"</code></pre>
 				<dt>errorCollector <code>model.errorCollector = function(errors){ ... }</code></dt>
 				<dd>Function called when validation errors are detected</dd>
 
-				<dt><a href="#doc-composition">test</a> <code>model.test(value)</code></dt>
+				<dt><a href="#doc-composition">test</a> <code>model.test(value, [errorCollector])</code></dt>
 				<dd>Returns <code>true</code> if the value passed validates the model definition.
-					Works with <a href="#doc-composition">duck typing</a>.</dd>
-
-				<dt>validate <code>model.validate(instance, [errorCollector])</code></dt>
-				<dd>Manually triggers the validation of a model instance over its definition.
-					It is automatically done whenever an instance property changes.
-					<br>
-					Note that contrary to the <code>test</code> method, the object is not cast to its suitable model
-					(a.k.a <a href="#doc-composition">duck typing</a>) before being validated.
-				</dd>
+					Works with <a href="#doc-composition">autocasting</a>.
+					A custom error collector can be specified to retrieve the validation errors.</dd>
 
 				<dt><a href="#doc-private-and-constants">conventionForConstant</a> <code>function(variableName)</code></dt>
 				<dd>Internal function used to identify a constant property based on naming convention. You can override it to suit

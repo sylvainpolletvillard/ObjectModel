@@ -1,3 +1,5 @@
+@import "./fonts.pcss";
+
 @media (prefers-color-scheme: light) {
 	/* PrismJS 1.15.0
 https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript */
@@ -12,7 +14,7 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 		color: black;
 		background: none;
 		text-shadow: 0 1px white;
-		font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+		font-family: $font-code;
 		text-align: left;
 		white-space: pre;
 		word-spacing: normal;
@@ -147,11 +149,11 @@ https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javasc
 @media (prefers-color-scheme: dark) {
 	.panel {
 		background: #141414;
-		border-color: #545454;
+		border-color: var(--bg-secondary);
 		box-shadow: inset 1px 1px 0.5em #000;
 
 		.legend {
-			background-color: #545454;
+			background-color: var(--bg-secondary);
 		}
 	}
 
@@ -166,7 +168,7 @@ https://prismjs.com/download.html#themes=prism-twilight&languages=markup+css+cli
 	pre[class*="language-"] {
 		color: white;
 		background: none;
-		font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+		font-family: $font-code;
 		text-align: left;
 		text-shadow: 0 -0.1em 0.2em black;
 		white-space: pre;

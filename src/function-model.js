@@ -36,7 +36,8 @@ export default function FunctionModel(...argsDef) {
 		}
 	}
 
-	return initModel(model, FunctionModel, { arguments: argsDef }, Function)
+	extend(model, Function)
+	return initModel(model, FunctionModel, { arguments: argsDef })
 }
 
 extend(FunctionModel, Model, {

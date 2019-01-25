@@ -10,8 +10,7 @@ export const
 
 	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
-	initModel = (model, constructor, def, base) => {
-		if (base) extend(model, base)
+	initModel = (model, constructor, def) => {
 		setConstructor(model, constructor)
 		model.definition = def
 		model.assertions = [...model.assertions]
@@ -397,7 +396,8 @@ export function ObjectModel(def) {
 		return getProxy(model, this, model.definition)
 	}
 
-	return initModel(model, ObjectModel, def, Object)
+	extend(model, Object)
+	return initModel(model, ObjectModel, def)
 }
 
 extend(ObjectModel, Model, {

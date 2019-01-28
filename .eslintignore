@@ -5,3 +5,4 @@ docs/**/lib
 docs/v1
 docs/v2
 *.compiled.js
+*.html

@@ -1,10 +1,10 @@
-// ObjectModel v3.7.6 - http://objectmodel.js.org
+// ObjectModel v3.7.7 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.window = global.window || {})));
-}(this, (function (exports) { 'use strict';
+	(global = global || self, factory(global.window = global.window || {}));
+}(this, function (exports) { 'use strict';
 
 	const
 		bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
@@ -99,7 +99,7 @@
 			return nbErrors
 		},
 
-		isModelInstance = i => i && is(Model, getProto(i).constructor),
+		isModelInstance = i => i && getProto(i) && is(Model, getProto(i).constructor),
 
 		parseDefinition = (def) => {
 			if (isPlainObject(def)) {
@@ -455,7 +455,7 @@
 			if (!is(model, this)) return new model(obj)
 			if (is(model, obj)) return obj
 
-			if (!is(Object, obj) && obj !== undefined) {
+			if (obj === null || (!isObject(obj) && !isFunction(obj) && obj !== undefined)) {
 				stackError(model.errors, Object, obj);
 			}
 
@@ -988,5 +988,5 @@
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
 //# sourceMappingURL=object-model.js.map

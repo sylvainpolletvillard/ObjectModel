@@ -118,7 +118,7 @@ QUnit.test("behaviour for properties", function (assert) {
 			female: "false"
 		});
 	}, /TypeError.*expecting female to be Boolean.*got String "false"/,
-		"invalid prop at object model instanciation");
+	"invalid prop at object model instanciation");
 
 	joe = Person({
 		name: "Joe",
@@ -925,8 +925,8 @@ QUnit.test("Assertions", function (assert) {
 	assert.throws(function () {
 		new AssertObject({ name: undefined });
 	},
-		/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
-		"assertions catch exceptions on Object models");
+	/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
+	"assertions catch exceptions on Object models");
 
 });
 
@@ -1114,7 +1114,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
 		.test(consoleMock.lastArgs.warn[0]),
-		"should warn about ambiguous model for object sub prop"
+	"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
 	assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");
@@ -1126,6 +1126,14 @@ QUnit.test("Automatic model casting", function (assert) {
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values when explicit model cast in ambiguous context");
 	assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
 	consoleMock.revert();
+
+	let noProto = Object.create(null);
+	noProto.x = true;
+	let noProtoModel = ObjectModel({ x: Boolean })
+	let noProtoInstance = noProtoModel(noProto)
+	assert.equal(noProtoInstance.x, true, "should be able to init with no-proto objects");
+	noProtoInstance.y = Object.create(null);
+	assert.ok(typeof noProtoInstance.y === "object", "should be able to mutate and cast with no-proto objects");
 
 })
 

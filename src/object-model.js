@@ -47,7 +47,7 @@ export const
 		return nbErrors
 	},
 
-	isModelInstance = i => i && is(Model, getProto(i).constructor),
+	isModelInstance = i => i && getProto(i) && is(Model, getProto(i).constructor),
 
 	parseDefinition = (def) => {
 		if (isPlainObject(def)) {
@@ -403,7 +403,7 @@ export function ObjectModel(def, params) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
 
-		if (!is(Object, obj) && obj !== undefined) {
+		if (obj === null || (!isObject(obj) && !isFunction(obj) && obj !== undefined)) {
 			stackError(model.errors, Object, obj)
 		}
 

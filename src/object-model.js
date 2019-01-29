@@ -146,7 +146,7 @@ export const
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
 		if (obj.toString !== Object.prototype.toString) return obj.toString()
-		if (obj && isObject(obj)) {
+		if (isObject(obj)) {
 			let props = Object.keys(obj),
 				indent = '\t'.repeat(stack.length)
 			return `{${props.map(
@@ -383,7 +383,7 @@ export function ObjectModel(def) {
 		if (!is(model, this)) return new model(obj)
 		if (is(model, obj)) return obj
 
-		if (obj === null || (!isObject(obj) && !isFunction(obj) && obj !== undefined)) {
+		if (!isObject(obj) && !isFunction(obj) && obj !== undefined) {
 			stackError(model.errors, Object, obj)
 		}
 

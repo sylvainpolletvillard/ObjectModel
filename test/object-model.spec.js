@@ -1119,6 +1119,14 @@ QUnit.test("Automatic model casting", function (assert) {
 	assert.ok(c.foo.bar instanceof Type2, "should preserve model when explicit cast in ambiguous context");
 	consoleMock.revert();
 
+	let noProto = Object.create(null);
+	noProto.x = true;
+	let noProtoModel = ObjectModel({ x: Boolean })
+	let noProtoInstance = noProtoModel(noProto)
+	assert.equal(noProtoInstance.x, true, "should be able to init with no-proto objects");
+	noProtoInstance.y = Object.create(null);
+	assert.ok(typeof noProtoInstance.y === "object", "should be able to mutate and cast with no-proto objects");
+
 })
 
 QUnit.test("delete trap", function (assert) {

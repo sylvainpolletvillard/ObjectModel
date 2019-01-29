@@ -3,8 +3,8 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.window = global.window || {})));
-}(this, (function (exports) { 'use strict';
+	(global = global || self, factory(global.window = global.window || {}));
+}(this, function (exports) { 'use strict';
 
 	const
 		bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
@@ -62,8 +62,7 @@
 
 		SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
-		initModel = (model, constructor, def, base) => {
-			if (base) extend(model, base);
+		initModel = (model, constructor, def) => {
 			setConstructor(model, constructor);
 			model.definition = def;
 			model.assertions = [...model.assertions];
@@ -100,7 +99,7 @@
 			return nbErrors
 		},
 
-		isModelInstance = i => i && is(Model, getProto(i).constructor),
+		isModelInstance = i => i && getProto(i) && is(Model, getProto(i).constructor),
 
 		parseDefinition = (def) => {
 			if (isPlainObject(def)) {
@@ -436,7 +435,7 @@
 			if (!is(model, this)) return new model(obj)
 			if (is(model, obj)) return obj
 
-			if (!is(Object, obj) && obj !== undefined) {
+			if (obj === null || (!isObject(obj) && !isFunction(obj) && obj !== undefined)) {
 				stackError(model.errors, Object, obj);
 			}
 
@@ -449,7 +448,8 @@
 			return getProxy(model, this, model.definition)
 		};
 
-		return initModel(model, ObjectModel, def, Object)
+		extend(model, Object);
+		return initModel(model, ObjectModel, def)
 	}
 
 	extend(ObjectModel, Model, {
@@ -549,7 +549,8 @@
 			}
 		};
 
-		return initModel(model, constructor, def, base)
+		extend(model, base);
+		return initModel(model, constructor, def)
 	};
 
 	function ArrayModel(initialDefinition) {
@@ -725,7 +726,8 @@
 			}
 		};
 
-		return initModel(model, FunctionModel, { arguments: argsDef }, Function)
+		extend(model, Function);
+		return initModel(model, FunctionModel, { arguments: argsDef })
 	}
 
 	extend(FunctionModel, Model, {
@@ -965,5 +967,5 @@
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
 //# sourceMappingURL=object-model.js.map

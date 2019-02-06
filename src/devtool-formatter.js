@@ -1,4 +1,4 @@
-import { Model, BasicModel, ObjectModel, _original } from "./object-model.js"
+import { _original, Model, BasicModel, ObjectModel } from "./object-model.js"
 import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"

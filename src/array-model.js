@@ -2,8 +2,8 @@ import {
 	_original, _check, cast, checkAssertions, checkDefinition,
 	extendDefinition, extendModel, formatDefinition, Model, stackError, unstackErrors
 } from "./object-model.js"
-import { extend } from "./helpers.js"
 import { initListModel } from "./list-model.js"
+import { extend } from "./helpers.js"
 
 export default function ArrayModel(initialDefinition) {
 	let model = initListModel(

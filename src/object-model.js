@@ -1,6 +1,6 @@
 import {
 	bettertypeof, define, extend, getProto, has, is, isFunction, isObject, isPlainObject,
-	merge, proxifyFn, setConstructor
+	merge, proxify, setConstructor
 } from "./helpers.js"
 
 export const
@@ -10,13 +10,35 @@ export const
 
 	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
 
-	initModel = (model, constructor, def) => {
+	initModel = (def, constructor, parent, init, getTraps, useNew) => {
+		let model = function (val = model.default, mode) {
+			if (useNew && !is(model, this)) return new model(val)
+			if (init) val = init(val, model, this)
+
+			if (mode === SKIP_VALIDATE || model[_validate](val))
+				return getTraps ? proxify(val, getTraps(model)) : val
+		}
+
+		if (parent) extend(model, parent)
 		setConstructor(model, constructor)
 		model.definition = def
 		model.assertions = [...model.assertions]
 		define(model, "errors", [])
 		delete model.name
 		return model
+	},
+
+	initObjectModel = (obj, model, _this) => {
+		if (is(model, obj)) return obj
+
+		if (!isObject(obj) && !isFunction(obj) && obj !== undefined) {
+			stackError(model.errors, Object, obj)
+		}
+
+		merge(_this, model.default)
+		if (model.parentClass) merge(obj, new model.parentClass(obj))
+		merge(_this, obj)
+		return _this
 	},
 
 	extendModel = (child, parent, newProps) => {
@@ -211,19 +233,24 @@ export const
 		return obj
 	},
 
-	getProxy = (model, obj, def, path, privateAccess) => {
-		if (!isPlainObject(def)) return cast(obj, def)
 
-		const grantPrivateAccess = f => proxifyFn(f, (fn, ctx, args) => {
-			privateAccess = true
-			let result = Reflect.apply(fn, ctx, args)
-			privateAccess = false
-			return result
+	getProp = (val, model, def, path, privateAccess) => {
+		if (!isPlainObject(def)) return cast(val, def)
+		return proxify(val, getTraps(model, def, path, privateAccess))
+	},
+
+	getTraps = (model, def, path, privateAccess) => {
+		const grantPrivateAccess = f => proxify(f, {
+			apply(fn, ctx, args) {
+				privateAccess = true
+				let result = Reflect.apply(fn, ctx, args)
+				privateAccess = false
+				return result
+			}
 		})
 
-		return new Proxy(obj, {
-
-			getPrototypeOf: () => path ? Object.prototype : getProto(obj),
+		return {
+			getPrototypeOf: obj => path ? Object.prototype : getProto(obj),
 
 			get(o, key) {
 				if (key === _original) return o
@@ -251,12 +278,12 @@ export const
 					o[key] = {} // null-safe traversal
 				}
 
-				return getProxy(model, o[key], defPart, newPath, privateAccess)
+				return getProp(o[key], model, defPart, newPath, privateAccess)
 			},
 
 			set(o, key, val) {
 				return controlMutation(model, def, path, o, key, privateAccess,
-					newPath => Reflect.set(o, key, getProxy(model, val, def[key], newPath))
+					newPath => Reflect.set(o, key, getProp(val, model, def[key], newPath))
 				)
 			},
 
@@ -285,7 +312,7 @@ export const
 
 				return descriptor
 			}
-		})
+		}
 	}
 
 
@@ -359,11 +386,7 @@ Object.assign(Model.prototype, {
 
 
 export function BasicModel(def) {
-	let model = function (val = model.default) {
-		return model[_validate](val) ? val : undefined
-	}
-
-	return initModel(model, BasicModel, def)
+	return initModel(def, BasicModel)
 }
 
 extend(BasicModel, Model, {
@@ -377,27 +400,8 @@ extend(BasicModel, Model, {
 	}
 })
 
-
 export function ObjectModel(def) {
-	let model = function (obj, mode) {
-		if (!is(model, this)) return new model(obj)
-		if (is(model, obj)) return obj
-
-		if (!isObject(obj) && !isFunction(obj) && obj !== undefined) {
-			stackError(model.errors, Object, obj)
-		}
-
-		merge(this, model.default)
-		if (model.parentClass) merge(obj, new model.parentClass(obj))
-		merge(this, obj)
-
-		if (mode !== SKIP_VALIDATE) model[_validate](this)
-
-		return getProxy(model, this, model.definition)
-	}
-
-	extend(model, Object)
-	return initModel(model, ObjectModel, def)
+	return initModel(def, ObjectModel, Object, initObjectModel, model => getTraps(model, def), true)
 }
 
 extend(ObjectModel, Model, {

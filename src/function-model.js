@@ -1,43 +1,36 @@
 import {
-	_check, _original, _validate, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	_check, _original, checkAssertions, checkDefinition, extendDefinition, extendModel,
 	format, formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
-import { extend, isFunction, proxifyModel } from "./helpers.js"
-
+import { extend, isFunction } from "./helpers.js"
 
 export default function FunctionModel(...argsDef) {
+	return initModel({ arguments: argsDef }, FunctionModel, Function, null, model => ({
+		getPrototypeOf: () => model.prototype,
 
-	let model = function (fn = model.default) {
-		if (model[_validate](fn)) {
-			return proxifyModel(fn, model, {
-				get(fn, key) {
-					return key === _original ? fn : fn[key]
-				},
+		get(fn, key) {
+			return key === _original ? fn : fn[key]
+		},
 
-				apply(fn, ctx, args) {
-					let def = model.definition
+		apply(fn, ctx, args) {
+			let def = model.definition
 
-					def.arguments.forEach((argDef, i) => {
-						args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
-					})
-
-					checkAssertions(args, model, "arguments")
-
-					let result
-					if (!model.errors.length) {
-						result = Reflect.apply(fn, ctx, args)
-						if ("return" in def)
-							result = checkDefinition(result, def.return, "return value", model.errors, [], true)
-					}
-					unstackErrors(model)
-					return result
-				}
+			def.arguments.forEach((argDef, i) => {
+				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
 			})
-		}
-	}
 
-	extend(model, Function)
-	return initModel(model, FunctionModel, { arguments: argsDef })
+			checkAssertions(args, model, "arguments")
+
+			let result
+			if (!model.errors.length) {
+				result = Reflect.apply(fn, ctx, args)
+				if ("return" in def)
+					result = checkDefinition(result, def.return, "return value", model.errors, [], true)
+			}
+			unstackErrors(model)
+			return result
+		}
+	}))
 }
 
 extend(FunctionModel, Model, {

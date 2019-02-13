@@ -30,11 +30,6 @@ export const
 		Object.defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
 	},
 
-	setConstructor = (model, constructor) => {
-		setProto(model, constructor.prototype)
-		define(model, "constructor", constructor)
-	},
-
 	extend = (child, parent, props) => {
 		child.prototype = Object.assign(Object.create(parent.prototype, {
 			constructor: {

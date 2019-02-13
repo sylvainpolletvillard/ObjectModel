@@ -1,26 +1,26 @@
 import {
 	bettertypeof, define, extend, getProto, has, is, isFunction, isObject, isPlainObject,
-	merge, proxify, setConstructor
+	merge, proxify, setProto
 } from "./helpers.js"
 
 export const
 	_check = Symbol(),
-	_validate = Symbol(),
 	_original = Symbol(), // used to bypass proxy
 
-	SKIP_VALIDATE = Symbol(), // used to skip validation at instanciation for perf
+	SKIP_INITIAL_CHECK = Symbol(), // used to skip validation at instanciation for perf
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
 		let model = function (val = model.default, mode) {
 			if (useNew && !is(model, this)) return new model(val)
 			if (init) val = init(val, model, this)
 
-			if (mode === SKIP_VALIDATE || model[_validate](val))
+			if (mode === SKIP_INITIAL_CHECK || check(model, val))
 				return getTraps ? proxify(val, getTraps(model)) : val
 		}
 
 		if (parent) extend(model, parent)
-		setConstructor(model, constructor)
+		setProto(model, constructor.prototype)
+		model.constructor = constructor
 		model.definition = def
 		model.assertions = [...model.assertions]
 		define(model, "errors", [])
@@ -97,6 +97,11 @@ export const
 		return def
 	},
 
+	check = (model, obj) => {
+		model[_check](obj, null, model.errors, [], true);
+		return !unstackErrors(model)
+	},
+
 	checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
 		let indexFound = stack.indexOf(def)
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
@@ -115,8 +120,7 @@ export const
 		else {
 			let pdef = parseDefinition(def)
 			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
-				if (shouldCast) obj = cast(obj, def)
-				return obj
+				return shouldCast ? cast(obj, def) : obj
 			}
 
 			stackError(errors, def, obj, path)
@@ -224,7 +228,7 @@ export const
 
 		if (suitableModels.length === 1) {
 			// automatically cast to suitable model when explicit (autocasting)
-			return new suitableModels[0](obj, SKIP_VALIDATE)
+			return new suitableModels[0](obj, SKIP_INITIAL_CHECK)
 		}
 
 		if (suitableModels.length > 1)
@@ -344,11 +348,6 @@ Object.assign(Model.prototype, {
 	[_check](obj, path, errors, stack) {
 		checkDefinition(obj, this.definition, path, errors, stack)
 		checkAssertions(obj, this, path, errors)
-	},
-
-	[_validate](obj) {
-		this[_check](obj, null, this.errors, [], true);
-		return !unstackErrors(this)
 	},
 
 	test(obj, errorCollector) {

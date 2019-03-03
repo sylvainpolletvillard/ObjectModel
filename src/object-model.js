@@ -5,16 +5,15 @@ import {
 
 export const
 	_check = Symbol(),
+	_checked = Symbol(), // used to skip validation at instanciation for perf
 	_original = Symbol(), // used to bypass proxy
-
-	SKIP_INITIAL_CHECK = Symbol(), // used to skip validation at instanciation for perf
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
 		let model = function (val = model.default, mode) {
 			if (useNew && !is(model, this)) return new model(val)
 			if (init) val = init(val, model, this)
 
-			if (mode === SKIP_INITIAL_CHECK || check(model, val))
+			if (mode === _checked || check(model, val))
 				return getTraps ? proxify(val, getTraps(model)) : val
 		}
 
@@ -130,6 +129,7 @@ export const
 	},
 
 	checkDefinitionPart = (obj, def, path, stack, shouldCast) => {
+		if (def === Any) return true
 		if (obj == null) return obj === def
 		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
 			let errors = []
@@ -228,7 +228,7 @@ export const
 
 		if (suitableModels.length === 1) {
 			// automatically cast to suitable model when explicit (autocasting)
-			return new suitableModels[0](obj, SKIP_INITIAL_CHECK)
+			return new suitableModels[0](obj, _checked)
 		}
 
 		if (suitableModels.length > 1)
@@ -456,3 +456,17 @@ extend(ObjectModel, Model, {
 		checkAssertions(obj, this, path, errors)
 	}
 })
+
+export const Any = proxify(BasicModel(), {
+	apply(target, ctx, [def]) {
+		return Object.assign(Object.create(Any), { definition: def })
+	}
+})
+Any.definition = Any
+Any.toString = () => "Any"
+
+Any.remaining = function (def) { this.definition = def }
+extend(Any.remaining, Any, {
+	toString() { return "..." + formatDefinition(this.definition) }
+})
+Any[Symbol.iterator] = function* () { yield new Any.remaining(this.definition) }

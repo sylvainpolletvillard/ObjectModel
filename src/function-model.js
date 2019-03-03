@@ -1,8 +1,8 @@
 import {
-	_check, _original, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	_check, _original, Any, checkAssertions, checkDefinition, extendDefinition, extendModel,
 	format, formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
-import { extend, isFunction } from "./helpers.js"
+import { extend, is, isFunction } from "./helpers.js"
 
 export default function FunctionModel(...argsDef) {
 	return initModel({ arguments: argsDef }, FunctionModel, Function, null, model => ({
@@ -13,11 +13,16 @@ export default function FunctionModel(...argsDef) {
 		},
 
 		apply(fn, ctx, args) {
-			let def = model.definition
+			let def = model.definition,
+				nbArgsDef = def.arguments.length,
+				remainingArgDefIndex = def.arguments.findIndex(argDef => is(Any.remaining, argDef)),
+				remainingArgDef = def.arguments[remainingArgDefIndex],
+				nbArgsToCheck = remainingArgDef ? Math.max(args.length, remainingArgDefIndex) : nbArgsDef
 
-			def.arguments.forEach((argDef, i) => {
+			for (let i = 0; i < nbArgsToCheck; i++) {
+				let argDef = remainingArgDef && i >= remainingArgDefIndex ? remainingArgDef.definition : def.arguments[i]
 				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
-			})
+			}
 
 			checkAssertions(args, model, "arguments")
 
@@ -63,7 +68,8 @@ extend(FunctionModel, Model, {
 })
 
 FunctionModel.prototype.assert(function numberOfArgs(args) {
-	return (args.length > this.definition.arguments.length) ? args : true
+	let argsDef = this.definition.arguments;
+	return (args.length > argsDef.length && !argsDef.some(argDef => is(Any.remaining, argDef))) ? args : true
 }, function (args) {
 	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`
 })

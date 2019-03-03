@@ -1,4 +1,4 @@
-import { _original, Model, BasicModel, ObjectModel } from "./object-model.js"
+import { _original, Model, Any, BasicModel, ObjectModel } from "./object-model.js"
 import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
@@ -100,6 +100,12 @@ const formatModel = model => {
 
 const ModelFormatter = {
 	header(x, config = {}) {
+		if (x === Any)
+			return span(styles.model, "Any")
+
+		if (is(Any.remaining, x))
+			return span(styles.model, "...", format(x.definition, { isModelDefinition: true }))
+
 		if (is(ObjectModel, x))
 			return span(styles.model, x.name)
 

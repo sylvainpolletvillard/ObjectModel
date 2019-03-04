@@ -14,13 +14,11 @@ export default function FunctionModel(...argsDef) {
 
 		apply(fn, ctx, args) {
 			let def = model.definition,
-				nbArgsDef = def.arguments.length,
-				remainingArgDefIndex = def.arguments.findIndex(argDef => is(Any.remaining, argDef)),
-				remainingArgDef = def.arguments[remainingArgDefIndex],
-				nbArgsToCheck = remainingArgDef ? Math.max(args.length, remainingArgDefIndex) : nbArgsDef
+				remainingArgDef = def.arguments.find(argDef => is(Any.remaining, argDef)),
+				nbArgsToCheck = remainingArgDef ? Math.max(args.length, def.arguments.length - 1) : def.arguments.length
 
 			for (let i = 0; i < nbArgsToCheck; i++) {
-				let argDef = remainingArgDef && i >= remainingArgDefIndex ? remainingArgDef.definition : def.arguments[i]
+				let argDef = remainingArgDef && i >= def.arguments.length - 1 ? remainingArgDef.definition : def.arguments[i]
 				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
 			}
 

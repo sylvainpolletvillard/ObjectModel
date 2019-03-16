@@ -7,7 +7,7 @@ export default {
 	output: {
 		name: 'window',
 		file: 'dist/object-model' + (isProduction ? '.min.js' : '.js'),
-		format: 'umd',
+		format: 'esm',
 		sourcemap: true,
 		extend: true
 	},

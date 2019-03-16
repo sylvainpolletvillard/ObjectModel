@@ -39,7 +39,7 @@ export default function ArrayModel(initialDefinition) {
 
 extend(ArrayModel, Model, {
 	toString(stack) {
-		return 'Array of ' + formatDefinition(this.definition, stack)
+		return "Array of " + formatDefinition(this.definition, stack)
 	},
 
 	[_check](arr, path, errors, stack) {

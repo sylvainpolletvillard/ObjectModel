@@ -161,7 +161,7 @@ export const
 	},
 
 	format = (obj, stack = []) => {
-		if (stack.length > 15 || stack.includes(obj)) return '...'
+		if (stack.length > 15 || stack.includes(obj)) return "..."
 		if (obj === null || obj === undefined) return String(obj)
 		if (typeof obj === "string") return `"${obj}"`
 		if (is(Model, obj)) return obj.toString(stack)
@@ -170,20 +170,20 @@ export const
 
 		if (isFunction(obj)) return obj.name || obj.toString()
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
-		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(', ')}]`
+		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
 		if (obj.toString !== Object.prototype.toString) return obj.toString()
 		if (isObject(obj)) {
 			let props = Object.keys(obj),
-				indent = '\t'.repeat(stack.length)
+				indent = "\t".repeat(stack.length)
 			return `{${props.map(
 				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
-			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
+			).join(", ")} ${props.length ? `\n${indent.slice(1)}` : ""}}`
 		}
 
 		return String(obj)
 	},
 
-	formatPath = (path, key) => path ? path + '.' + key : key,
+	formatPath = (path, key) => path ? path + "." + key : key,
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		let newPath = formatPath(path, key),
@@ -371,7 +371,7 @@ Object.assign(Model.prototype, {
 	},
 
 	errorCollector(errors) {
-		let e = new TypeError(errors.map(e => e.message).join('\n'))
+		let e = new TypeError(errors.map(e => e.message).join("\n"))
 		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, "") // blackbox objectmodel in stacktrace
 		throw e
 	},

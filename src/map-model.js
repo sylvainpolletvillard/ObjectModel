@@ -30,7 +30,7 @@ extend(MapModel, Model, {
 
 	[_check](map, path, errors, stack) {
 		if (is(Map, map)) {
-			path = path || 'Map'
+			path = path || "Map"
 			for (let [key, value] of map) {
 				checkDefinition(key, this.definition.key, `${path} key`, errors, stack)
 				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack)

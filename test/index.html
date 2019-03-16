@@ -6,8 +6,10 @@
 	<title>QUnit - ObjectModel unit tests</title>
 	<link rel="stylesheet" href="lib/qunit.css">
 	<script src="lib/qunit.js"></script>
-	<script src="../dist/object-model.min.js"></script>
-
+	<script type="module">
+		import * as globals from "../dist/object-model.min.js"
+		Object.assign(window, globals)
+	</script>
 	<script src="model.spec.js"></script>
 	<script src="basic-model.spec.js"></script>
 	<script src="any-model.spec.js"></script>

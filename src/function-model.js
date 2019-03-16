@@ -1,6 +1,6 @@
 import {
 	_check, _original, Any, checkAssertions, checkDefinition, extendDefinition, extendModel,
-	format, formatDefinition, initModel, Model, stackError, unstackErrors
+	formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend, is, isFunction } from "./helpers.js"
 
@@ -63,11 +63,4 @@ extend(FunctionModel, Model, {
 	[_check](f, path, errors) {
 		if (!isFunction(f)) stackError(errors, "Function", f, path)
 	}
-})
-
-FunctionModel.prototype.assert(function numberOfArgs(args) {
-	let argsDef = this.definition.arguments;
-	return (args.length > argsDef.length && !argsDef.some(argDef => is(Any.remaining, argDef))) ? args : true
-}, function (args) {
-	return `expecting ${this.definition.arguments.length} arguments for ${format(this)}, got ${args.length}`
 })

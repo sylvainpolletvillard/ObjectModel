@@ -26,7 +26,6 @@ QUnit.test("instanciation and controls", function (assert) {
 	const op = FunctionModel(Number, Number).return(Number);
 
 	const add = op(function (a, b) { return a + b; });
-	const add3 = op(function (a, b, c) { return a + b + c; });
 	const noop = op(function () { return undefined; });
 	const addStr = op(function (a, b) { return String(a) + String(b); });
 
@@ -36,9 +35,6 @@ QUnit.test("instanciation and controls", function (assert) {
 	assert.throws(function () {
 		add(15)
 	}, /TypeError/, "too few arguments");
-	assert.throws(function () {
-		add3(15, 25, 42)
-	}, /TypeError/, "too much arguments");
 	assert.throws(function () {
 		noop(15, 25)
 	}, /TypeError/, "no return");

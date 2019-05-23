@@ -23,14 +23,13 @@
     "test": "qunit test/esm-loader.js"
   },
   "devDependencies": {
-    "esm": "^3.2.18",
+    "esm": "^3.2.25",
     "filesize": "^4.1.2",
-    "gzip-size": "^5.0.0",
+    "gzip-size": "^5.1.1",
     "npm-run-all": "^4.1.5",
     "qunit": "^2.9.2",
-    "rollup": "^1.6.0",
-    "rollup-plugin-terser": "^4.0.4",
-    "rollup-watch": "^4.3.1"
+    "rollup": "^1.12.3",
+    "rollup-plugin-terser": "^5.0.0"
   },
   "optionalDependencies": {
     "eslint": "^5.2.0"

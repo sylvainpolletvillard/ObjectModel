@@ -8,20 +8,20 @@
 		"watch:css": "npm run build:css -- --watch"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.2.2",
-		"@babel/preset-env": "^7.2.3",
-		"autoprefixer": "^9.4.3",
-		"browserslist": "^4.3.6",
-		"css-prefers-color-scheme": "^3.1.1",
-		"cssnano": "^4.1.7",
+		"@babel/core": "^7.4.5",
+		"@babel/preset-env": "^7.4.5",
+		"autoprefixer": "^9.6.0",
+		"browserslist": "^4.6.2",
+		"css-prefers-color-scheme": "^4.0.0",
+		"cssnano": "^4.1.10",
 		"npm-run-all": "^4.1.5",
-		"postcss": "^7.0.7",
-		"postcss-cli": "^6.1.0",
+		"postcss": "^7.0.17",
+		"postcss-cli": "^6.1.2",
 		"postcss-import": "^12.0.1",
-		"postcss-nested": "^4.1.1",
-		"postcss-normalize": "^7.0.1",
-		"postcss-simple-vars": "^5.0.1",
-		"rollup": "^0.68.1",
-		"rollup-plugin-babel": "^4.1.0"
+		"postcss-nested": "^4.1.2",
+		"postcss-normalize": "^8.0.1",
+		"postcss-simple-vars": "^5.0.2",
+		"rollup": "^1.14.6",
+		"rollup-plugin-babel": "^4.3.2"
 	}
 }

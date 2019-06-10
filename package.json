@@ -23,15 +23,13 @@
     "test": "qunit test/index.js"
   },
   "devDependencies": {
-    "filesize": "^4.0.0",
-    "gzip-size": "^5.0.0",
+    "eslint": "^5.16.0",
+    "filesize": "^4.1.2",
+    "gzip-size": "^5.1.1",
     "npm-run-all": "^4.1.5",
-    "qunit": "^2.9.1",
+    "qunit": "^2.9.2",
     "rollup": "^1.14.6",
-    "rollup-plugin-terser": "^4.0.4"
-  },
-  "optionalDependencies": {
-    "eslint": "^5.2.0"
+    "rollup-plugin-terser": "^5.0.0"
   },
   "main": "dist/object-model.js",
   "module": "src/index.js",

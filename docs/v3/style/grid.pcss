@@ -1,0 +1,104 @@
+section {
+	margin: 2em auto;
+}
+
+.grid {
+	display: grid;
+	grid-gap: 1em 2em;
+}
+
+@media (min-width: 1024px) and (max-width: 1599px) {
+
+	.doc-code {
+		grid-template-columns: 1fr;
+	}
+
+	.doc-code-code {
+		grid-template-columns: 1fr;
+	}
+
+}
+
+@media (min-width: 1600px) {
+	#features { grid-area: features; }
+	#download { grid-area: download; }
+	#github { grid-area: github; }
+
+	#features-and-download {
+		grid-template-areas:
+			"features download"
+			"features github"
+	}
+}
+
+@media (min-width: 1600px) and (max-width: 2200px) {
+	.doc-code {
+		grid-template-columns: 1fr 1fr;
+
+		.doc {
+			grid-column-start: 1;
+			grid-column-end: 3;
+		}
+		.panel {
+			grid-column-start: 1;
+			grid-column-end: 3;
+		}
+	}
+
+	.doc-code-code {
+		grid-template-columns: 1fr 1fr;
+
+		.doc {
+			grid-column-start: 1;
+			grid-column-end: 3;
+		}
+	}
+
+	#doc-custom-collectors {
+		.doc:nth-of-type(1){
+			grid-column-start: 1;
+			grid-column-end: 2;
+		}
+		.doc:nth-of-type(2){
+			grid-column-start: 2;
+			grid-column-end: 3;
+		}
+	}
+}
+
+@media (min-width: 1920px) {
+	#introduction {
+		grid-template-areas: "description video";
+	}
+
+	#features-and-download {
+		grid-template-areas: "features download github";
+	}
+}
+
+@media (min-width: 2200px) {
+	.doc-code {
+		grid-template-columns: auto 640px 640px;
+
+		.panel {
+			grid-column-start: 2;
+			grid-column-end: 4;
+		}
+	}
+
+	.doc-code-code {
+		grid-template-columns: auto 640px 640px;
+	}
+
+	#doc-custom-collectors {
+		.doc:nth-of-type(1){
+			grid-column-start: 1;
+			grid-column-end: 2;
+		}
+		.doc:nth-of-type(2){
+			grid-column-start: 2;
+			grid-column-end: 4;
+		}
+	}
+
+}

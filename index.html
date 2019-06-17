@@ -165,7 +165,8 @@
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha.zip">object-model-4.0.0-alpha.zip</a>
+						<a class="link-zip"
+							href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha.zip">object-model-4.0.0-alpha.zip</a>
 					</li>
 				</ul>
 
@@ -1313,12 +1314,11 @@ console.log(Integer.name) // "Integer"</code></pre>
 
 			<details>
 				<summary>What is the impact on performance ?</summary>
-				<p>To get dynamic type validation, Object models have to override properties setters so that each
-					assignment passes through a function that acts as a proxy. This has a cost, especially on old
-					browsers. Therefore, it is not advisable to use object models in performance-critical parts of your
-					applications. In particular, Array models and circular references in models have the most impact on
-					performance. But in general, the loss of time does not exceed a few milliseconds and is quite
-					negligible.</p>
+				<p>To get dynamic type validation, Object models have to use Proxies to catch properties assignments.
+					This has a performance cost, especially on older browsers. Therefore, it is not advisable to use
+					object models in performance-critical parts of your applications. In particular, Array models and
+					circular references in models have the most impact on performance. But in general, the loss of time
+					does not exceed a few milliseconds and is quite negligible.</p>
 			</details>
 
 			<details>
@@ -1365,6 +1365,14 @@ User.create = function(properties){
 const joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 					</div>
 				</div>
+			</details>
+
+			<details>
+				<summary>How do I prevent adding undeclared properties to my object models ?</summary>
+				<p>This feature, previously known as <b>sealed models</b>, has been removed from the library since v4.x.
+					It is now available as a custom model
+					<a target="_blank" href="examples/sealed.js">available here</a>.
+				</p>
 			</details>
 
 			<details>

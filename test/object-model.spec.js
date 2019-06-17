@@ -39,7 +39,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModel.extend === "function", "test object model method extend");
 	assert.ok(typeof EmptyObjectModel.assert === "function", "test object model method assert");
 	assert.ok(typeof EmptyObjectModel.test === "function", "test object model method test");
-	assert.ok(typeof EmptyObjectModel.validate === "function", "test object model method validate");
 	assert.ok(typeof EmptyObjectModel.definition === "object", "test object model prop definition");
 	assert.ok(typeof EmptyObjectModel.assertions === "object", "test object model prop assertions");
 
@@ -48,7 +47,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof EmptyObjectModelThroughConstructor.extend === "function", "test new model method extend");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assert === "function", "test new model method assert");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.test === "function", "test new model method test");
-	assert.ok(typeof EmptyObjectModelThroughConstructor.validate === "function", "test new model method validate");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.definition === "object", "test new model prop definition");
 	assert.ok(typeof EmptyObjectModelThroughConstructor.assertions === "object", "test new model prop assertions");
 })
@@ -157,7 +155,7 @@ QUnit.test("behaviour for properties", function (assert) {
 
 	const A = ObjectModel({
 		id: [Number]
-	}).defaults({
+	}).defaultTo({
 		setId(id) { this.id = id; }
 	})
 
@@ -295,14 +293,14 @@ QUnit.test("fixed values", function (assert) {
 
 QUnit.test("default values", function (assert) {
 
-	const myModel = new ObjectModel({
+	let myModel = new ObjectModel({
 		name: String,
 		foo: {
 			bar: {
 				buz: Number
 			}
 		}
-	}).defaults({
+	}).defaultTo({
 		name: "joe",
 		foo: {
 			bar: {
@@ -312,18 +310,18 @@ QUnit.test("default values", function (assert) {
 	});
 
 	const model = myModel();
-	assert.strictEqual(model.name, "joe", "defaults values correctly applied");
-	assert.strictEqual(model.foo.bar.buz, 0, "defaults nested props values correctly applied");
-	assert.ok(myModel.test({}), "defaults should be applied when testing duck typed objects")
+	assert.strictEqual(model.name, "joe", "default values correctly applied");
+	assert.strictEqual(model.foo.bar.buz, 0, "default nested props values correctly applied");
+	assert.ok(myModel.test({}), "default should be applied when testing autocasted objects")
 
 	const model2 = myModel({ name: "jim", foo: { bar: { buz: 1 } } });
-	assert.strictEqual(model2.name, "jim", "defaults values not applied if provided");
-	assert.strictEqual(model2.foo.bar.buz, 1, "defaults nested props values not applied if provided");
+	assert.strictEqual(model2.name, "jim", "default values not applied if provided");
+	assert.strictEqual(model2.foo.bar.buz, 1, "default nested props values not applied if provided");
 
 	const Person = Model({
 		name: String,
 		age: [Number]
-	}).defaults({
+	}).defaultTo({
 		name: "new-name"
 	});
 
@@ -335,21 +333,15 @@ QUnit.test("default values", function (assert) {
 	assert.strictEqual((new Team({ lead: new Person(), members: [] })).lead.name, "new-name", "default value through composition")
 	assert.throws(() => { new Team({ lead: 1, members: [] }) }, "invalid value through composition with default")
 
-	assert.throws(() => { myModel.defaults({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
-	assert.throws(() => { myModel.defaults({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
-});
+	assert.throws(() => { myModel.defaultTo({ name: undefined }) }, /TypeError.*expecting name to be String, got undefined/, "check definition of provided defaults")
+	assert.throws(() => { myModel.defaultTo({ foo: { bar: { buz: "nope" } } }) }, /TypeError.*expecting foo.bar.buz to be Number, got String/, "check nested definition of provided defaults")
 
-QUnit.test("defaultTo with defaults", function (assert) {
+	myModel = new ObjectModel({ x: Number, y: String })
+		.defaultTo({ x: 42, y: "hello" })
 
-	const myModel = new ObjectModel({ x: Number, y: String })
-		.defaultTo({ x: 42 })
-		.defaults({ y: "hello" })
-
-	assert.strictEqual(myModel.default.x, 42, "object model defaultTo store the value as default property")
-	assert.strictEqual(myModel.prototype.y, "hello", "object model defaults store values to proto")
+	assert.strictEqual(myModel.default.x, 42, "object model defaults store the value as default property")
 	assert.strictEqual(myModel().x, 42, "object model default property is applied when undefined is passed");
 	assert.strictEqual(myModel().y, "hello", "defaulted object model still inherit from model proto");
-	assert.strictEqual(myModel.default.y, undefined, "object model default value itself does not inherit from from model proto");
 
 	myModel.default.x = "nope";
 
@@ -427,7 +419,7 @@ QUnit.test("Private and constant properties", function (assert) {
 
 	const A = ObjectModel({
 		_id: [Number]
-	}).defaults({
+	}).defaultTo({
 		getId() { return this._id },
 		setId(id) { this._id = id; }
 	})
@@ -438,7 +430,7 @@ QUnit.test("Private and constant properties", function (assert) {
 
 	const B = ObjectModel({
 		ID: [Number]
-	}).defaults({
+	}).defaultTo({
 		setId(id) { this.ID = id; }
 	})
 
@@ -450,7 +442,7 @@ QUnit.test("Private and constant properties", function (assert) {
 		_index: Number,    // private
 		UNIT: ["px", "cm"], // constant
 		_ID: [Number],     // private and constant
-	}).defaults({
+	}).defaultTo({
 		_index: 0,
 		getIndex() { return this._index },
 		setIndex(value) { this._index = value }
@@ -502,7 +494,7 @@ QUnit.test("Private and constant properties", function (assert) {
 	assert.ok(parent instanceof ParentOM, "can nest private prop in a child OM");
 	assert.throws(() => parent.om._privString, /TypeError[\s\S]*cannot access to private property/, "cannot access nested private prop in a child OM");
 
-	const O = ObjectModel({ _priv: String }).defaults({
+	const O = ObjectModel({ _priv: String }).defaultTo({
 		getPriv() {
 			this.randomMethod();
 			return this._priv
@@ -742,17 +734,17 @@ QUnit.test("Multiple inheritance", function (assert) {
 		m2.d.d2 = 1;
 	}, /TypeError[\s\S]*d2/, "type checking multiple inheritance 8/8");
 
-	A.defaults({
+	A.defaultTo({
 		a: false,
 		b: false
 	});
 
-	B.defaults({
+	B.defaultTo({
 		b: 0,
 		c: 0
 	});
 
-	C.defaults({
+	C.defaultTo({
 		c: "",
 		d: {
 			d1: false,
@@ -760,7 +752,7 @@ QUnit.test("Multiple inheritance", function (assert) {
 		}
 	});
 
-	D.defaults({
+	D.defaultTo({
 		a: "",
 		d: {
 			d2: 0,
@@ -853,14 +845,14 @@ QUnit.test("Composition", function (assert) {
 		children: []
 	});
 
-	assert.ok(Person.test(duckmother), "Duck typing for object properties 1/2");
-	assert.notOk(duckmother instanceof Person, "Duck typing for object properties 2/2");
+	assert.ok(Person.test(duckmother), "Autocasting for object properties 1/2");
+	assert.notOk(duckmother instanceof Person, "Autocasting for object properties 2/2");
 
 	joefamily.mother.name = "Daisy";
-	assert.equal(joefamily.mother.name, "Daisy", "Duck typing submodel property can be modified");
+	assert.equal(joefamily.mother.name, "Daisy", "Autocasted submodel property can be modified");
 	assert.throws(function () {
 		joefamily.mother.female = "Quack !";
-	}, /TypeError[\s\S]*female/, "validation of submodel duck typed at modification");
+	}, /TypeError[\s\S]*female/, "validation of submodel autocasted at modification");
 
 	assert.throws(function () {
 		new Family({
@@ -872,7 +864,7 @@ QUnit.test("Composition", function (assert) {
 			},
 			children: []
 		});
-	}, /TypeError[\s\S]*female/, "validation of submodel duck typed at instanciation");
+	}, /TypeError[\s\S]*female/, "validation of submodel autocasted at instanciation");
 
 });
 
@@ -930,7 +922,7 @@ QUnit.test("Assertions", function (assert) {
 
 });
 
-QUnit.test("validate method", function (assert) {
+QUnit.test("test method", function (assert) {
 
 	const assertFunction = (c => c === "GB");
 
@@ -954,13 +946,13 @@ QUnit.test("validate method", function (assert) {
 	const gbOrder = { sku: "ABC123", address: gbAddress };
 	const frOrder = { sku: "ABC123", address: frAddress };
 
-	Order.validate(gbOrder); // no errors
+	new Order(gbOrder); // no errors
 	assert.throws(function () {
-		Order.validate(frOrder);
+		new Order(frOrder);
 	}, "should validate sub-objects assertions");
 
 	const errors = [];
-	Order.validate(frOrder, function (err) {
+	Order.test(frOrder, function (err) {
 		errors.push(...err);
 	});
 
@@ -1056,7 +1048,7 @@ QUnit.test("Custom error collectors", function (assert) {
 				f: null
 			}
 		}
-	}).validate({
+	}).test({
 		d: {
 			e: {
 				f: undefined
@@ -1081,28 +1073,28 @@ QUnit.test("Custom error collectors", function (assert) {
 QUnit.test("Automatic model casting", function (assert) {
 
 	let User = new ObjectModel({ username: String, email: String })
-		.defaults({ username: 'foo', email: 'foo@foo' });
+		.defaultTo({ username: 'foo', email: 'foo@foo' });
 
 	let Article = new ObjectModel({ title: String, user: User })
-		.defaults({ title: 'bar', user: new User() });
+		.defaultTo({ title: 'bar', user: new User() });
 
 	let a = new Article();
 	a.user = { username: 'joe', email: 'foo' };
 
-	assert.ok(a.user instanceof User, "automatic model casting when assigning a duck typed object");
-	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of duck typed object");
+	assert.ok(a.user instanceof User, "automatic model casting when assigning an autocasted object");
+	assert.ok(a.user.username === "joe", "preserved props after automatic model casting of autocasted object");
 
 	User = new ObjectModel({ username: String, email: String })
-		.defaults({ username: 'foo', email: 'foo@foo' });
+		.defaultTo({ username: 'foo', email: 'foo@foo' });
 
 	Article = new ObjectModel({ title: String, user: [User] })
-		.defaults({ title: 'bar', user: new User() });
+		.defaultTo({ title: 'bar', user: new User() });
 
 	a = new Article();
 	a.user = { username: 'joe', email: 'foo' };
 
-	assert.ok(a.user instanceof User, "automatic optional model casting when assigning a duck typed object");
-	assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of duck typed object");
+	assert.ok(a.user instanceof User, "automatic optional model casting when assigning an autocasted object");
+	assert.ok(a.user.username === "joe", "preserved props after automatic optional model casting of autocasted object");
 
 
 	const Type1 = ObjectModel({ name: String, other1: [Boolean] });
@@ -1147,8 +1139,6 @@ QUnit.test("delete trap", function (assert) {
 	delete m.u; // can delete undefined properties
 	assert.throws(function () { delete m.n }, /TypeError.*expecting n to be null, got undefined/, "delete should differenciate null and undefined");
 	delete m.x // can delete optional properties
-	M.sealed = true;
-	assert.throws(function () { delete m.unknown }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot delete property out of model definition");
 
 })
 
@@ -1162,9 +1152,6 @@ QUnit.test("defineProperty trap", function (assert) {
 	assert.throws(function () { Object.defineProperty(m, "u", { value: "test" }) }, /TypeError.*expecting u to be undefined/, "check type after defineProperty");
 	assert.throws(function () { Object.defineProperty(m, "n", { value: undefined }) }, /TypeError.*expecting n to be null, got undefined/, "defineProperty should differenciate null and undefined");
 	Object.defineProperty(m, "x", { value: undefined }) // can define optional properties
-	ObjectModel.prototype.sealed = true;
-	assert.throws(function () { Object.defineProperty(m, "unknown", { value: "test" }) }, /TypeError.*property unknown is not declared in the sealed model definition/, "cannot define property out of model definition");
-	ObjectModel.prototype.sealed = false;
 
 })
 
@@ -1246,11 +1233,11 @@ QUnit.test("class constructors", function (assert) {
 	const ann = new Person({ firstName: "Ann", lastName: "Smith" });
 
 	const couple = new Lovers({
-		husband: joe, // object duck typed
+		husband: joe, // object autocasted
 		wife: ann, // object model
 	});
 
-	assert.ok(couple.husband instanceof Person, "duck tying works with class-based models");
+	assert.ok(couple.husband instanceof Person, "autocasting works with class-based models");
 
 	assert.equal(Person.test({ firstName: 0, lastName: "" }), false, `test method with class-based models`);
 
@@ -1269,102 +1256,12 @@ QUnit.test("class constructors", function (assert) {
 	const SubOM = BaseClass.extend({ test: [Boolean] }).assert(o => o.test)
 	class SubClass extends SubOM { }
 
-	SubClass.validate({ test: false }, () => { });
+	SubClass.test({ test: false }, () => { });
 
 	assert.equal(SubClass.errors.length, 0, "class-based models errors are cleaned up properly 1/4")
 	assert.equal(SubOM.errors.length, 0, "class-based models errors are cleaned up properly 2/4")
 	assert.equal(BaseClass.errors.length, 0, "class-based models errors are cleaned up properly 3/4")
 	assert.equal(BaseOM.errors.length, 0, "class-based models errors are cleaned up properly 4/4")
-})
-
-QUnit.test("Sealed models", function (assert) {
-	const Dependency = ObjectModel({
-		name: String,
-		subobj: { subname: String }
-	}, { sealed: true });
-
-	const Package = ObjectModel({
-		name: String,
-		data: {
-			description: String,
-			hard_dependencies: {
-				one: Dependency,
-				two: Dependency,
-			}
-		}
-	});
-
-	assert.throws(function () {
-		new Package({
-			name: "Test item",
-			data: {
-				description: "A test item",
-				hard_dependencies: {
-					one: {
-						name: "module 1",
-						subobj: { subname: "submodule 1" },
-						bad_attr: false
-					},
-					two: {
-						name: "module 2",
-						subobj: { subname: "submodule 2" },
-					}
-				}
-			}
-		});
-	}, /TypeError.*bad_attr/, "prevent undeclared props on initial assignment of sealed object model")
-
-	assert.throws(function () {
-		new Package({
-			name: "Test item",
-			data: {
-				description: "A test item",
-				hard_dependencies: {
-					one: {
-						name: "module 1",
-						subobj: { subname: "submodule 1" }
-					},
-					two: {
-						name: "module 2",
-						subobj: { subname: "submodule 2", bad_attr: false },
-					}
-				}
-			}
-		});
-	}, /TypeError.*bad_attr/, "prevent nested undeclared props on initial assignment of sealed object model")
-
-	const test_item = new Package({
-		name: "Test item",
-		data: {
-			description: "A test item",
-			hard_dependencies: {
-				one: {
-					name: "module 1",
-					subobj: { subname: "submodule 1" }
-				},
-				two: {
-					name: "module 2",
-					subobj: { subname: "submodule 2" },
-				}
-			}
-		}
-	});
-
-	assert.throws(function () {
-		test_item.data.hard_dependencies.one.bad_attr = true
-	}, /TypeError.*bad_attr/, "prevent undeclared props on post mutation of sealed object model")
-	assert.equal(test_item.data.hard_dependencies.one.bad_attr, undefined)
-
-	assert.throws(function () {
-		test_item.data.hard_dependencies.two.subobj.bad_attr = true
-	}, /TypeError.*bad_attr/, "prevent nested undeclared props on post mutation of sealed object model")
-	assert.equal(test_item.data.hard_dependencies.two.subobj.bad_attr, undefined)
-
-	Dependency.sealed = false;
-	test_item.data.hard_dependencies.one.bad_attr = true
-	assert.equal(test_item.data.hard_dependencies.one.bad_attr, true, "undeclared prop in unsealed model")
-	test_item.data.hard_dependencies.two.subobj.bad_attr = true
-	assert.equal(test_item.data.hard_dependencies.two.subobj.bad_attr, true, "undeclared nested prop in unsealed model")
 })
 
 QUnit.test("Null-safe object traversal", function (assert) {
@@ -1376,7 +1273,7 @@ QUnit.test("Null-safe object traversal", function (assert) {
 		}
 	});
 
-	const config = Config({ local: undefined }); // object duck typed
+	const config = Config({ local: undefined }); // object autocasted
 
 	assert.strictEqual(config.local.time.format, undefined, "null-safe object traversal getter")
 	config.local.time.format = "12h";

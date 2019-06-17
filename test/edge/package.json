@@ -1,0 +1,18 @@
+{
+  "name": "edge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel ../../dist/object-model.js -o object-model.transpiled.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "core-js": "^3.1.4",
+    "regenerator-runtime": "^0.13.2"
+  }
+}

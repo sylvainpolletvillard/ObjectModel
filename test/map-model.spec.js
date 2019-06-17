@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof Dict.extend === "function", "test Map model method extend");
 	assert.ok(typeof Dict.assert === "function", "test Map model method assert");
 	assert.ok(typeof Dict.test === "function", "test Map model method test");
-	assert.ok(typeof Dict.validate === "function", "test Map model method validate");
 	assert.ok(Dict.definition.key === String, "test Map model prop definition 1/2");
 	assert.ok(Dict.definition.value === Number, "test Map model prop definition 2/2");
 	assert.ok(typeof Dict.assertions === "object", "test Map model prop assertions");
@@ -135,7 +134,7 @@ QUnit.test("Child map models in object models", function (assert) {
 
 });
 
-QUnit.test("defaults values", function (assert) {
+QUnit.test("default values", function (assert) {
 
 	const M = MapModel(Number, String).defaultTo(new Map([[1, "one"], [2, "two"]]));
 	const a = M();
@@ -181,8 +180,8 @@ QUnit.test("assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const X = ObjectModel({ x: Number }).defaults({ x: 5 })
-	const Y = ObjectModel({ y: [Number] }).defaults({ y: 7 });
+	const X = ObjectModel({ x: Number }).defaultTo({ x: 5 })
+	const Y = ObjectModel({ y: [Number] }).defaultTo({ y: 7 });
 	const M = MapModel(X, Y);
 	const m = M([[{ x: 9 }, {}]]);
 

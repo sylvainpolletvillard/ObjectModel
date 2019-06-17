@@ -6,12 +6,11 @@ export const
 	has = (o, prop) => o.hasOwnProperty(prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
-	isObject = o => typeof o === "object",
-	isPlainObject = o => o && isObject(o) && getProto(o) === Object.prototype,
+	isObject = o => o && typeof o === "object",
+	isPlainObject = o => isObject(o) && getProto(o) === Object.prototype,
 	isIterable = x => x && isFunction(x[Symbol.iterator]),
 
-	proxifyFn = (fn, apply) => new Proxy(fn, { apply }),
-	proxifyModel = (val, model, traps) => new Proxy(val, Object.assign({ getPrototypeOf: () => model.prototype }, traps)),
+	proxify = (val, traps) => new Proxy(val, traps),
 
 	merge = (target, src = {}) => {
 		for (let key in src) {
@@ -29,11 +28,6 @@ export const
 
 	define = (obj, key, value, enumerable = false) => {
 		Object.defineProperty(obj, key, { value, enumerable, writable: true, configurable: true })
-	},
-
-	setConstructor = (model, constructor) => {
-		setProto(model, constructor.prototype)
-		define(model, "constructor", constructor)
 	},
 
 	extend = (child, parent, props) => {

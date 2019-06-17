@@ -1,4 +1,4 @@
-import { Model, BasicModel, ObjectModel, _original } from "./object-model.js"
+import { _original, Model, Any, BasicModel, ObjectModel } from "./object-model.js"
 import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
@@ -6,22 +6,21 @@ import FunctionModel from "./function-model.js"
 import { getProto, is, isFunction, isPlainObject } from "./helpers.js"
 
 const styles = {
-	list: `list-style-type: none; padding: 0; margin: 0;`,
-	listItem: `padding: 0 0 0 1em;`,
-	model: `color: #3e999f;`,
-	sealedModel: `color: #3e999f; font-weight: bold`,
-	instance: `color: #718c00; font-style: italic`,
-	function: `color: #4271AE`,
-	string: `color: #C41A16`,
-	number: `color: #1C00CF`,
-	boolean: `color: #AA0D91`,
-	property: `color: #8959a8`,
-	private: `color: #C19ED8`,
-	constant: `color: #8959a8; font-weight: bold`,
-	privateConstant: `color: #C19ED8; font-weight: bold`,
-	null: `color: #8e908c`,
-	undeclared: `color: #C0C0C0;`,
-	proto: `color: #B871BD; font-style: italic`
+	list: "list-style-type: none; padding: 0; margin: 0;",
+	listItem: "padding: 0 0 0 1em;",
+	model: "color: #3e999f;",
+	instance: "color: #718c00; font-style: italic",
+	function: "color: #4271AE",
+	string: "color: #C41A16",
+	number: "color: #1C00CF",
+	boolean: "color: #AA0D91",
+	property: "color: #8959a8",
+	private: "color: #C19ED8",
+	constant: "color: #8959a8; font-weight: bold",
+	privateConstant: "color: #C19ED8; font-weight: bold",
+	null: "color: #8e908c",
+	undeclared: "color: #C0C0C0;",
+	proto: "color: #B871BD; font-style: italic"
 };
 
 const getModel = (instance) => {
@@ -55,9 +54,9 @@ const format = (x, config = {}) => {
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {
 			def.push(format(x[i], config))
-			if (i < x.length - 1) def.push(' or ')
+			if (i < x.length - 1) def.push(" or ")
 		}
-		return span('', ...def)
+		return span("", ...def)
 	}
 
 	if (isPlainObject(x))
@@ -66,15 +65,15 @@ const format = (x, config = {}) => {
 	if (isFunction(x) && !is(Model, x) && config.isModelDefinition)
 		return span(styles.function, x.name || x.toString());
 
-	return ['object', { object: x, config }]
+	return ["object", { object: x, config }]
 }
 
-const formatObject = (o, model, config) => span('',
-	'{',
-	['ol', { style: styles.list }, ...Object.keys(o).map(prop =>
-		['li', { style: styles.listItem }, span(styles.property, prop), ': ', format(o[prop], config)])
+const formatObject = (o, model, config) => span("",
+	"{",
+	["ol", { style: styles.list }, ...Object.keys(o).map(prop =>
+		["li", { style: styles.listItem }, span(styles.property, prop), ": ", format(o[prop], config)])
 	],
-	'}'
+	"}"
 )
 
 const formatModel = model => {
@@ -93,7 +92,7 @@ const formatModel = model => {
 	}
 
 	if (model.assertions.length > 0) {
-		parts.push("\n(assertions: ", ...formatList(model.assertions, f => ['object', { object: f }]), ")")
+		parts.push("\n(assertions: ", ...formatList(model.assertions, f => ["object", { object: f }]), ")")
 	}
 
 	return span(styles.model, ...parts)
@@ -101,8 +100,14 @@ const formatModel = model => {
 
 const ModelFormatter = {
 	header(x, config = {}) {
+		if (x === Any)
+			return span(styles.model, "Any")
+
+		if (is(Any.remaining, x))
+			return span(styles.model, "...", format(x.definition, { isModelDefinition: true }))
+
 		if (is(ObjectModel, x))
-			return span(x.sealed ? styles.sealedModel : styles.model, x.name)
+			return span(styles.model, x.name)
 
 		if (is(Model, x)) {
 			return formatModel(x)
@@ -117,12 +122,12 @@ const ModelFormatter = {
 		return is(ObjectModel, x)
 	},
 	body(model) {
-		return span('',
-			'{',
-			['ol', { style: styles.list }, ...Object.keys(model.definition).map(prop => {
+		return span("",
+			"{",
+			["ol", { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
 					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.prototype.hasOwnProperty(prop),
+					hasDefault = model.default && model.default.hasOwnProperty(prop),
 					style = styles.property;
 
 				if (isPrivate) {
@@ -131,12 +136,12 @@ const ModelFormatter = {
 					style = styles.constant
 				}
 
-				return ['li', { style: styles.listItem },
-					span(style, prop), ': ', format(model.definition[prop], { isModelDefinition: true }),
-					hasDefault ? span(styles.proto, ' = ', format(model.prototype[prop])) : ''
+				return ["li", { style: styles.listItem },
+					span(style, prop), ": ", format(model.definition[prop], { isModelDefinition: true }),
+					hasDefault ? span(styles.proto, " = ", format(model.default[prop])) : ""
 				]
 			})],
-			'}'
+			"}"
 		)
 	}
 }
@@ -149,7 +154,7 @@ const ModelInstanceFormatter = {
 
 		let model = getModel(x);
 		if (is(Model, model)) {
-			let parts = is(ObjectModel, model) ? [model.name] : [['object', { object: x[_original] }], ` (${model.name})`];
+			let parts = is(ObjectModel, model) ? [model.name] : [["object", { object: x[_original] }], ` (${model.name})`];
 			return span(styles.instance, ...parts)
 		}
 
@@ -161,10 +166,10 @@ const ModelInstanceFormatter = {
 	body(x) {
 		const model = getModel(x)
 		const o = x[_original] || x;
-		return span('',
-			'{',
+		return span("",
+			"{",
 			[
-				'ol',
+				"ol",
 				{ style: styles.list },
 				...Object.keys(o).map(prop => {
 					let isPrivate = model.conventionForPrivate(prop),
@@ -180,15 +185,15 @@ const ModelInstanceFormatter = {
 						style = styles.constant
 					}
 
-					return ['li', { style: styles.listItem },
-						span(style, prop), ': ', format(o[prop], { isInstanceProperty: true })
+					return ["li", { style: styles.listItem },
+						span(style, prop), ": ", format(o[prop], { isInstanceProperty: true })
 					]
 				}),
-				['li', { style: styles.listItem },
-					span(styles.proto, '__proto__', ': ', ['object', { object: getProto(x) }])
+				["li", { style: styles.listItem },
+					span(styles.proto, "__proto__", ": ", ["object", { object: getProto(x) }])
 				]
 			],
-			'}'
+			"}"
 		)
 	}
 }

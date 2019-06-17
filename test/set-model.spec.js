@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof MySet.extend === "function", "test Set model method extend");
 	assert.ok(typeof MySet.assert === "function", "test Set model method assert");
 	assert.ok(typeof MySet.test === "function", "test Set model method test");
-	assert.ok(typeof MySet.validate === "function", "test Set model method validate");
 	assert.ok(MySet.definition === String, "test Set model prop definition");
 	assert.ok(typeof MySet.assertions === "object", "test Set model prop assertions");
 
@@ -175,7 +174,7 @@ QUnit.test("assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+	const N = ObjectModel({ x: Number, y: [Number] }).defaultTo({ x: 5, y: 7 });
 	const S = SetModel(N);
 	const s = S([{ x: 9 }]);
 

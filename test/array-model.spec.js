@@ -13,7 +13,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(typeof Arr.extend === "function", "test Array model method extend");
 	assert.ok(typeof Arr.assert === "function", "test Array model method assert");
 	assert.ok(typeof Arr.test === "function", "test Array model method test");
-	assert.ok(typeof Arr.validate === "function", "test Array model method validate");
 	assert.ok(Arr.definition === Number, "test Array model prop definition");
 	assert.ok(typeof Arr.assertions === "object", "test Array model prop assertions");
 
@@ -129,18 +128,22 @@ QUnit.test("Child array models in object models", function (assert) {
 
 });
 
-QUnit.test("defaults values", function (assert) {
+QUnit.test("default values", function (assert) {
 
 	const ArrModel = ArrayModel([Number, String]).defaultTo([]);
 	const a = ArrModel();
 
 	assert.ok(a instanceof Array && a.length === 0, "Array model default value");
+	a.push(1, 2);
+
+	const b = ArrModel();
+	assert.ok(b instanceof Array && b.length === 0, "Avoid default value common reference issue for Array models");
 
 	ArrModel.default.push(1, 2, 3);
 
-	const b = ArrModel();
+	const c = ArrModel();
 
-	assert.ok(b.length === 3 && b.join(";") === "1;2;3", "array model default value is mutable array");
+	assert.ok(c.length === 3 && c.join(";") === "1;2;3", "array model default value is mutable array");
 
 	ArrModel.default = "nope";
 
@@ -177,7 +180,7 @@ QUnit.test("Assertions", function (assert) {
 
 QUnit.test("Automatic model casting", function (assert) {
 
-	const N = ObjectModel({ x: Number, y: [Number] }).defaults({ x: 5, y: 7 });
+	const N = ObjectModel({ x: Number, y: [Number] }).defaultTo({ x: 5, y: 7 });
 	const Arr = ArrayModel(N);
 	const a = Arr([{ x: 9 }]);
 
@@ -274,17 +277,17 @@ QUnit.test("delete key", function (assert) {
 
 })
 
-QUnit.test("Arraymodel as ObjectModel defaults", function (assert) {
+QUnit.test("Arraymodel as ObjectModel default prop", function (assert) {
 	class OM extends ObjectModel({
 		a: ArrayModel(Number)
-	}).defaults({
+	}).defaultTo({
 		a: []
 	}) { }
 
 	let o = new OM();
 
-	assert.ok(Array.isArray(o.a), "ArrayModel works as ObjectModel defaults")
+	assert.ok(Array.isArray(o.a), "ArrayModel works as ObjectModel default prop")
 	o.a.push(1, 2, 3)
-	assert.equal(o.a.length, 3, "ArrayModel as ObjectModel defaults can be mutated")
+	assert.equal(o.a.length, 3, "ArrayModel as ObjectModel default prop can be mutated")
 
 })

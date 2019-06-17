@@ -1,5 +1,5 @@
 import {
-	_validate, cast, checkAssertions, checkDefinition,
+	_check, cast, checkAssertions, checkDefinition,
 	extendDefinition, extendModel, formatDefinition, Model, stackError
 } from "./object-model.js"
 import { initListModel } from "./list-model.js"
@@ -27,7 +27,7 @@ extend(SetModel, Model, {
 		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	[_validate](set, path, errors, stack) {
+	[_check](set, path, errors, stack) {
 		if (is(Set, set)) {
 			for (let item of set.values()) {
 				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack)

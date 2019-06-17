@@ -165,23 +165,25 @@
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip"
-							href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha.zip">object-model-4.0.0-alpha.zip</a>
+						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0-alpha.zip">object-model-4.0.0-alpha.zip</a>
 					</li>
 				</ul>
 
 				<h3>Changelog and previous releases</h3>
 
-				<p><strong>Note: ObjectModel only targets ES2015-compliant environments since v3.0.</strong></p>
-				<p>If you need to support older browsers, please use the <a href="docs/v2">2.x version</a> instead.</p>
+				<p><strong>Note: ObjectModel is shipped in ESM format and use the latest ECMAScript version since
+						v4.0.</strong></p>
 
-				<p>Take a look at
+				<p>Please take a look at
 					<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank"
 						rel="noopener">Github Releases</a>
-					and <a href="#common-questions">Browsers/Node support</a> section for more information.
+					and <a href="#common-questions">Browsers/Node support</a> section for more information about
+					browser/Node support for each version.
 				</p>
-			</div>
 
+				<p>If you need to support older browsers, you will have to either use a transpiler or use
+					<a target="_blank" href="docs/v3/">an older version</a> of the library instead.</p>
+			</div>
 			<div>
 				<h2>Support</h2>
 				<p>Please report bugs on the
@@ -461,7 +463,9 @@ if(new_config.local.time.format === "12h"){ hour %= 12; }
 				<p>For object models, the <code>defaultTo</code> method can be used to specify default values for some
 					properties of your object models. If these are not defined at object instanciation, their default
 					value will be assigned. You can also put them in the model prototype if you prefer to rely on
-					prototypal inheritance.</p>
+					<a rel="external" target="_blank"
+						href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">prototypal
+						inheritance</a>.</p>
 			</div>
 
 			<div class="panel panel1">
@@ -1191,13 +1195,13 @@ console.log(Integer.name) // "Integer"</code></pre>
 			<h2>Full API</h2>
 			<h3>Imported from objectmodel root scope</h3>
 			<dl>
-				<dt><a href="#doc-model">Model</a> <code>Model(definition, params)</code></dt>
+				<dt><a href="#doc-model">Model</a> <code>Model(definition)</code></dt>
 				<dd>Constructor alias for basic and object models</dd>
 
 				<dt><a href="#doc-basic-model">BasicModel</a> <code>BasicModel(definition)</code></dt>
 				<dd>Constructor for basic models</dd>
 
-				<dt><a href="#doc-object-model">ObjectModel</a> <code>ObjectModel(definition, params)</code></dt>
+				<dt><a href="#doc-object-model">ObjectModel</a> <code>ObjectModel(definition)</code></dt>
 				<dd>Constructor for object models</dd>
 
 				<dt><a href="#doc-array-model">ArrayModel</a> <code>ArrayModel(itemDefinition)</code></dt>
@@ -1291,17 +1295,20 @@ console.log(Integer.name) // "Integer"</code></pre>
 				<p>This library is <a href="test/" target="_blank">unit tested</a> against these browsers and Node.js
 					versions, depending of the version of Object Model:</p>
 				<dl>
-					<dt><a href="docs/v1">v1.x</a></dt>
+					<dt><a href="docs/v1/">v1.x</a></dt>
 					<dd>Chrome 29+, Firefox 24+, Edge, Internet Explorer 9+, Opera 20+, Safari 5.1+, Node.js 4.0+</dd>
-					<dt><a href="docs/v2">v2.x</a></dt>
+					<dt><a href="docs/v2/">v2.x</a></dt>
 					<dd>Support for IE < 11 had to be dropped in v2 because it required many hacks and was holding back
-							other browsers. Otherwise, same support than v1.</dd> <dt>v3.x</dt>
+							other browsers. Otherwise, same support than v1.</dd> <dt><a href="docs/v3/">v3.x</a></dt>
 					<dd>ObjectModel v3 is built around ES6 Proxies, so requires modern environments :
 						Edge 14+, Firefox 47+, Chrome 50+, Safari 10+, Node 6.0+.</dd>
 					<dt>v4.x</dt>
 					<dd>Support for Node 6-7 has been dropped in v4. Use a transpiler like Babel to target the same
 						environments than v3.</dd>
 				</dl>
+				<p>More information about these changes between major versions on the
+					<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">
+						Github Releases</a> page</p>
 			</details>
 
 			<details>

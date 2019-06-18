@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>QUnit - ObjectModel unit tests</title>
+	<link rel="stylesheet" href="lib/qunit.css">
+	<script src="lib/qunit.js"></script>
+	<script src="https://umd.cdn.pika.dev/objectmodel/v4"></script>
+	<script>
+		Object.assign(window, unknown) // TEMP: find out why modules are exported as "unknown" by pika CDN
+	</script>
+	<script src="model.spec.js"></script>
+	<script src="basic-model.spec.js"></script>
+	<script src="any-model.spec.js"></script>
+	<script src="object-model.spec.js"></script>
+	<script src="array-model.spec.js"></script>
+	<script src="function-model.spec.js"></script>
+	<script src="map-model.spec.js"></script>
+	<script src="set-model.spec.js"></script>
+</head>
+
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+</body>
+
+</html>

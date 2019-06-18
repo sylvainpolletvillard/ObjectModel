@@ -157,45 +157,57 @@
 				<h3>Current version: v<span class="version">4.0.0</span></h3>
 				<ul>
 					<li>
-						From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">NPM</a>:
+						From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">
+							<abbr title="Node Package Manager">npm</abbr></a>:
 						<code>npm install objectmodel</code>
 					</li>
-					<li>From CDN: <a href="https://unpkg.com/objectmodel" rel="noopener">unpkg.com/objectmodel</a></li>
+					<li>From <abbr title="Content Delivery Network">CDN</abbr>:
+						<a href="http://cdn.pika.dev/objectmodel" rel="noopener">cdn.pika.dev/objectmodel</a>
+					</li>
 					<li>Minified bundle (<strong class="size-gzip">3.94 KB</strong> gzipped) :
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0.zip">object-model-4.0.0.zip</a>
+						<a class="link-zip"
+							href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.0.0.zip">object-model-4.0.0.zip</a>
 					</li>
 				</ul>
 
-				<h3>Changelog and previous releases</h3>
+				<h3>Previous versions</h3>
 
-				<p><strong>Note: ObjectModel is shipped in ESM format and use the latest ECMAScript version since
-						v4.0.</strong></p>
-
-				<p>Please take a look at
+				<p>If you need to support older browsers, you may have to use an older version of the library instead.
+					Please take a look at the <a href="#common-questions"
+						onclick="document.getElementById('browser-support').parentNode.open=true">
+						Browsers/Node support</a>
+					section for more information about browser/Node support for each version.
+				</p>
+				<p>Full changelog between versions is available on the
 					<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank"
 						rel="noopener">Github Releases</a>
-					and <a href="#common-questions">Browsers/Node support</a> section for more information about
-					browser/Node support for each version.
-				</p>
+					page.</p>
 
-				<p>If you need to support older browsers, you will have to either use a transpiler or use
-					<a target="_blank" href="docs/v3/">an older version</a> of the library instead.</p>
 			</div>
 			<div>
-				<h2>Support</h2>
-				<p>Please report bugs on the
-					<a href="https://github.com/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">
-						GitHub repository
-					</a>.
+				<h2>Usage</h2>
+				<p>Since v4.0, ObjectModel is shipped in <abbr title="ECMAScript module">ESM</abbr> format, and written
+					in modern JavaScript (ES2018).</strong></p>
+
+				<div class="panel">
+					<pre><code class="language-javascript">import { Model } from "objectmodel"</code></pre>
+				</div>
+
+				<p>Not all environments support <abbr title="ECMAScript modules">ESM</abbr> yet, so you should configure
+					a transpiler/bundler such as
+					Babel/Webpack for your project. If you just want a ready-to-use
+					<abbr title="Universal Module Definition">UMD</abbr> version, you can use a transpiling service
+					such as <a href="http://pika.dev" target="_blank" rel="noopener">pika.dev</a> or
+					<a href="http://unpkg.com" target="_blank" rel="noopener">unpkg.com</a> like this:
 				</p>
-				<p>You can also ask for support on the
-					<a href="https://gitter.im/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">
-						Gitter channel
-					</a>.
-				</p>
+
+				<div class="panel">
+					<pre><code class="language-html">&lt;script src="https://umd.cdn.pika.dev/objectmodel/v4"&gt;&lt;/script&gt;</code>
+<code class="language-js">const { Model } = objectmodel</code></pre>
+				</div>
 			</div>
 		</section>
 
@@ -463,7 +475,7 @@ if(new_config.local.time.format === "12h"){ hour %= 12; }
 				<p>For object models, the <code>defaultTo</code> method can be used to specify default values for some
 					properties of your object models. If these are not defined at object instanciation, their default
 					value will be assigned. You can also put them in the model prototype if you prefer to rely on
-					<a rel="external" target="_blank"
+					<a rel="noopener" target="_blank"
 						href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">prototypal
 						inheritance</a>.</p>
 			</div>
@@ -1511,6 +1523,12 @@ PromiseOf(Number)(p).then(n => {
 			<p>Please check the documentation twice, then open an issue on the
 				<a href="https://github.com/sylvainpolletvillard/ObjectModel/issues" target="_blank"
 					rel="noopener">Github repository</a>
+			</p>
+			<p>
+				You can also ask for support on the
+				<a href="https://gitter.im/sylvainpolletvillard/ObjectModel" target="_blank" rel="noopener">
+					Gitter channel
+				</a>.
 			</p>
 		</section>
 

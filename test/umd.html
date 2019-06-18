@@ -7,9 +7,7 @@
 	<link rel="stylesheet" href="lib/qunit.css">
 	<script src="lib/qunit.js"></script>
 	<script src="https://umd.cdn.pika.dev/objectmodel/v4"></script>
-	<script>
-		Object.assign(window, unknown) // TEMP: find out why modules are exported as "unknown" by pika CDN
-	</script>
+	<script>const { Model, BasicModel, ObjectModel, ArrayModel, FunctionModel, MapModel, SetModel, Any } = objectmodel</script>
 	<script src="model.spec.js"></script>
 	<script src="basic-model.spec.js"></script>
 	<script src="any-model.spec.js"></script>

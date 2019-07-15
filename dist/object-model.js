@@ -1,11 +1,11 @@
-// ObjectModel v4.0.0 - http://objectmodel.js.org
+// ObjectModel v4.0.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
 	getProto = Object.getPrototypeOf,
 	setProto = Object.setPrototypeOf,
 
-	has = (o, prop) => o.hasOwnProperty(prop),
+	has = (o, prop) => Object.prototype.hasOwnProperty.call(o, prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
 	isObject = o => o && typeof o === "object",
@@ -877,7 +877,7 @@ const ModelFormatter = {
 			["ol", { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
 					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.default && model.default.hasOwnProperty(prop),
+					hasDefault = model.default && has(model.default, prop),
 					style = styles.property;
 
 				if (isPrivate) {

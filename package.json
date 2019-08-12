@@ -34,6 +34,7 @@
   },
   "main": "dist/object-model.js",
   "module": "src/index.js",
+  "type": "module",
   "types": "types/index.d.ts",
   "keywords": [
     "typed",

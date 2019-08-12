@@ -3,7 +3,7 @@ import ArrayModel from "./array-model.js"
 import SetModel from "./set-model.js"
 import MapModel from "./map-model.js"
 import FunctionModel from "./function-model.js"
-import { getProto, is, isFunction, isPlainObject } from "./helpers.js"
+import { getProto, has, is, isFunction, isPlainObject } from "./helpers.js"
 
 const styles = {
 	list: "list-style-type: none; padding: 0; margin: 0;",
@@ -127,7 +127,7 @@ const ModelFormatter = {
 			["ol", { style: styles.list }, ...Object.keys(model.definition).map(prop => {
 				let isPrivate = model.conventionForPrivate(prop),
 					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.default && model.default.hasOwnProperty(prop),
+					hasDefault = model.default && has(model.default, prop),
 					style = styles.property;
 
 				if (isPrivate) {

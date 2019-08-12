@@ -3,7 +3,7 @@ export const
 	getProto = Object.getPrototypeOf,
 	setProto = Object.setPrototypeOf,
 
-	has = (o, prop) => o.hasOwnProperty(prop),
+	has = (o, prop) => Object.prototype.hasOwnProperty.call(o, prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
 	isObject = o => o && typeof o === "object",

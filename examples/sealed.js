@@ -9,7 +9,7 @@ const SealedModel = def => {
 		Object.keys(obj).map(key => {
 			let val = obj[key],
 				subpath = path ? path + '.' + key : key
-			if (!def.hasOwnProperty(key)) {
+			if (!Object.prototype.hasOwnProperty.call(def, key)) {
 				undeclaredProps.push(subpath)
 			} else if (val && typeof val === "object" && Object.getPrototypeOf(val) === Object.prototype) {
 				checkUndeclaredProps(val, def[key], undeclaredProps, subpath)

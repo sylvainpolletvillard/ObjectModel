@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
@@ -23,14 +23,14 @@
     "test": "qunit test/esm-loader.js"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
+    "eslint": "^6.0.1",
     "esm": "^3.2.25",
     "filesize": "^4.1.2",
     "gzip-size": "^5.1.1",
     "npm-run-all": "^4.1.5",
     "qunit": "^2.9.2",
-    "rollup": "^1.15.6",
-    "rollup-plugin-terser": "^5.0.0"
+    "rollup": "^1.17.0",
+    "rollup-plugin-terser": "^5.1.1"
   },
   "main": "dist/object-model.js",
   "module": "src/index.js",

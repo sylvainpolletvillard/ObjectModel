@@ -1,0 +1,5 @@
+{
+    "dependencies": {
+        "objectmodel": "^4.0.1"
+    }
+}

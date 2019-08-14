@@ -1,4 +1,4 @@
-examples/common.js
+docs/examples/common.js
 dist
 test/lib
 docs/**/lib

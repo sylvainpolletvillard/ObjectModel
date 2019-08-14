@@ -985,7 +985,7 @@ joannaGrades.set("videogames", "A")</code>
 
 			<div class="panel panel1">
 				<span class="legend">Model</span>
-				<pre><code class="language-javascript">import { SetModel } from "objectmodel";
+				<pre><code class="language-javascript">import { SetModel, Model } from "objectmodel";
 
 const Course = Model([ "math", "english", "history" ])
 
@@ -997,7 +997,7 @@ const FavoriteCourses = SetModel(Course)
 				<span class="legend">Instance</span>
 				<pre><code class="language-javascript">const joannaFavorites = FavoriteCourses([ "math", "english" ])
 
-joannaGrades.add("sleeping")</code>
+joannaFavorites.add("sleeping")</code>
 <code class="language-none exception">TypeError: expecting Set value to be "math" or "english" or "history", got String "sleeping"</code></pre>
 			</div>
 		</section>

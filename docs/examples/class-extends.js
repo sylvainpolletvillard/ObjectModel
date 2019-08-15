@@ -8,14 +8,14 @@ class Person extends ObjectModel({ name: String, female: Boolean }) {
 }
 
 class Mother extends Person.extend({ female: true, child: Person }) {
-  constructor({ name, female, child }) {
-    super({ name: `Mrs ${name}`, female, child });
+  constructor({ name, female = true, child }) {
+    super({ name: `Mama ${name}`, female, child });
   }
 }
 
 let joe = new Person({ name: "Joe", female: false });
 let joanna = new Person({ name: "Joanna", female: true });
-let ann = new Mother({ name: "Ann", female: true, child: joanna });
+let ann = new Mother({ name: "Ann", child: joanna });
 
 console.log(joe.name); // Mr Joe
 console.log(ann.name); // Mrs Ann

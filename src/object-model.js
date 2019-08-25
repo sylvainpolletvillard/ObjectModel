@@ -171,7 +171,7 @@ export const
 		if (isFunction(obj)) return obj.name || obj.toString()
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
-		if (obj.toString !== Object.prototype.toString) return obj.toString()
+		if (obj.toString && obj.toString !== Object.prototype.toString) return obj.toString()
 		if (isObject(obj)) {
 			let props = Object.keys(obj),
 				indent = "\t".repeat(stack.length)

@@ -1,4 +1,4 @@
-// ObjectModel v4.0.1 - http://objectmodel.js.org
+// ObjectModel v4.0.2 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
@@ -211,7 +211,7 @@ const
 		if (isFunction(obj)) return obj.name || obj.toString()
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
-		if (obj.toString !== Object.prototype.toString) return obj.toString()
+		if (obj.toString && obj.toString !== Object.prototype.toString) return obj.toString()
 		if (isObject(obj)) {
 			let props = Object.keys(obj),
 				indent = "\t".repeat(stack.length);

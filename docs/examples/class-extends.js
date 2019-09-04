@@ -1,16 +1,16 @@
 import { ObjectModel } from "objectmodel";
 
 class Person extends ObjectModel({ name: String, female: Boolean }) {
-  constructor({ name, female }) {
-    if (!female) name = `Mr ${name}`;
-    super({ name, female });
-  }
+	constructor({ name, female }) {
+		if (!female) name = `Mr ${name}`;
+		super({ name, female });
+	}
 }
 
 class Mother extends Person.extend({ female: true, child: Person }) {
-  constructor({ name, female = true, child }) {
-    super({ name: `Mama ${name}`, female, child });
-  }
+	constructor({ name, female = true, child }) {
+		super({ name: `Mama ${name}`, female, child });
+	}
 }
 
 let joe = new Person({ name: "Joe", female: false });

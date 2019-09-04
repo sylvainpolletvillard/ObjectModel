@@ -1,11 +1,11 @@
 import { ObjectModel } from "objectmodel";
 
 const Animation = new ObjectModel({
-  // can be a Number or a String
-  delay: [Number, String],
+	// can be a Number or a String
+	delay: [Number, String],
 
-  // optional property which can be a Boolean or a String
-  easing: [Boolean, String, undefined]
+	// optional property which can be a Boolean or a String
+	easing: [Boolean, String, undefined]
 });
 
 const opening = new Animation({ delay: 300 }); // easing is optional

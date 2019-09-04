@@ -1,16 +1,16 @@
 import { ObjectModel } from "objectmodel";
 
 const Order = new ObjectModel({
-  product: {
-    name: String,
-    quantity: Number
-  },
-  orderDate: Date
+	product: {
+		name: String,
+		quantity: Number
+	},
+	orderDate: Date
 });
 
 const myOrder = new Order({
-  product: { name: "Apple Pie", quantity: 1 },
-  orderDate: new Date()
+	product: { name: "Apple Pie", quantity: 1 },
+	orderDate: new Date()
 });
 
 myOrder.product.quantity = 2; // no exceptions thrown

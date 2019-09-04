@@ -1,18 +1,18 @@
 import { Model, ObjectModel } from "objectmodel";
 
 const Circle = ObjectModel({
-  radius: Number, // public
-  _index: Number, // private
-  UNIT: ["px", "cm"], // constant
-  _ID: [Number] // private and constant
+	radius: Number, // public
+	_index: Number, // private
+	UNIT: ["px", "cm"], // constant
+	_ID: [Number] // private and constant
 }).defaultTo({
-  _index: 0,
-  getIndex() {
-    return this._index;
-  },
-  setIndex(value) {
-    this._index = value;
-  }
+	_index: 0,
+	getIndex() {
+		return this._index;
+	},
+	setIndex(value) {
+		this._index = value;
+	}
 });
 
 let c = new Circle({ radius: 120, UNIT: "px", _ID: 1 });

@@ -5,14 +5,14 @@ let N = BasicModel(Number).defaultTo(1);
 console.log(N(5) + N());
 
 const FileInfo = ObjectModel({
-  name: String,
-  size: [Number],
-  creationDate: [Date],
-  writable: Boolean
+	name: String,
+	size: [Number],
+	creationDate: [Date],
+	writable: Boolean
 }).defaultTo({
-  name: "Untitled file",
-  size: 0,
-  writable: true
+	name: "Untitled file",
+	size: 0,
+	writable: true
 });
 
 let file = new FileInfo({ writable: false });

@@ -4,8 +4,8 @@ const Cards = new ArrayModel([Number, "J", "Q", "K"]);
 
 // Hand is an array of 2 Numbers, J, Q, or K
 const Hand = Cards.extend().assert(
-  a => a.length === 2,
-  "should have two cards"
+	a => a.length === 2,
+	"should have two cards"
 );
 
 const myHand = Hand([7, "K"]);

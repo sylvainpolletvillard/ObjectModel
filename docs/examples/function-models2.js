@@ -1,20 +1,20 @@
 import { ObjectModel, FunctionModel } from "objectmodel";
 
 const Person = ObjectModel({
-  name: String,
-  // function without arguments returning a String
-  sayMyName: FunctionModel().return(String)
+	name: String,
+	// function without arguments returning a String
+	sayMyName: FunctionModel().return(String)
 }).defaultTo({
-  sayMyName: function() {
-    return "my name is " + this.name;
-  }
+	sayMyName: function() {
+		return "my name is " + this.name;
+	}
 });
 
 // takes one Person as argument, returns a String
 Person.prototype.greet = FunctionModel(Person).return(String)(function(
-  otherguy
+	otherguy
 ) {
-  return "Hello " + otherguy.name + ", " + this.sayMyName();
+	return "Hello " + otherguy.name + ", " + this.sayMyName();
 });
 
 const joe = new Person({ name: "Joe" });

@@ -1,8 +1,8 @@
 import { ObjectModel } from "objectmodel";
 
 const User = ObjectModel({
-  email: String, // mandatory
-  name: [String] // optional
+	email: String, // mandatory
+	name: [String] // optional
 });
 
 const stan = User({ email: "stan@smith.com" }); // no exceptions

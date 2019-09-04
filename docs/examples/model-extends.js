@@ -1,13 +1,13 @@
 import { ObjectModel } from "objectmodel";
 
 const Person = ObjectModel({
-  name: String,
-  female: Boolean
+	name: String,
+	female: Boolean
 });
 
 const Mother = Person.extend({
-  female: true,
-  child: Person
+	female: true,
+	child: Person
 });
 
 let joe = new Person({ name: "Joe", female: false });

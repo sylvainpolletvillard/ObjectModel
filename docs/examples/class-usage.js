@@ -1,9 +1,9 @@
 import { Model } from "objectmodel";
 
 class Character extends Model({ lastName: String, firstName: String }) {
-  get fullName() {
-    return `${this.firstName} ${this.lastName}`;
-  }
+	get fullName() {
+		return `${this.firstName} ${this.lastName}`;
+	}
 }
 
 const rick = new Character({ lastName: "Sanchez", firstName: "Rick" });

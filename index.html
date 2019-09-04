@@ -14,7 +14,10 @@
 	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-74235687-2"></script>
 	<script>
 		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
+
+		function gtag() {
+			dataLayer.push(arguments);
+		}
 		gtag('js', new Date());
 
 		gtag('config', 'UA-74235687-2');
@@ -518,7 +521,8 @@ if(new_config.local.time.format === "12h"){ hour %= 12; }
 				<p>Nested properties definitions can be models too, so you can compose structures of models.</p>
 				<p>When a property value matches a model definition, the value is automatically replaced by an instance
 					of the corresponding model. This mechanic is referred as <strong>autocasting</strong> and can be
-					compared to <a href="https://en.wikipedia.org/wiki/Duck_typing" target="_blank" class="no-hl">
+					compared to <a href="https://en.wikipedia.org/wiki/Duck_typing" target="_blank" rel="noopener"
+						class="no-hl">
 						duck typing
 					</a>.
 					Autocasting works for object models properties, but also for Array/Map/Set models items when
@@ -1029,7 +1033,8 @@ const Serializer = FunctionModel(Any).return(String);</code></pre>
 					parameters definition to specify a function that can take <i>any</i> amount of parameters.
 					<code>...Any</code> is a straight-forward syntax for functions already using the ES6
 					<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters"
-						target="_blank">rest operator</a>, but you can use <code>Any.remaining</code> as an alias to
+						target="_blank" rel="noopener">rest operator</a>, but you can use <code>Any.remaining</code> as
+					an alias to
 					<code>...Any</code> if you prefer.</p>
 				<p>The remaining parameters can be checked against a definition passed as argument
 					(<code>...Any(def)</code> or <code>Any.remaining(def)</code>). That definition defaults to
@@ -1179,12 +1184,15 @@ new Student({ name: "Joanna", course: "math", grade: 50 });</code></pre>
 
 			<div>
 				<figure style="display: inline-block; vertical-align: top">
-					<img class="lazy" data-src="docs/res/custom-formatters-chrome-settings.jpg">
+					<img class="lazy" alt="Enabling custom formatters in Chrome"
+						data-src="docs/res/custom-formatters-chrome-settings.jpg">
 				</figure>
 
 				<figure style="display: inline-block; vertical-align: top">
-					<img class="lazy" data-src="docs/res/custom-formatters-before.jpg">
-					<img class="lazy" data-src="docs/res/custom-formatters-after.jpg">
+					<img class="lazy" alt="Screenshot without custom formatters"
+						data-src="docs/res/custom-formatters-before.jpg">
+					<img class="lazy" alt="Screenshot with custom formatters"
+						data-src="docs/res/custom-formatters-after.jpg">
 				</figure>
 			</div>
 
@@ -1220,7 +1228,7 @@ console.log(Integer.name) // "Integer"</code></pre>
 				<dd>Constructor for array models</dd>
 
 				<dt><a href="#doc-function-model">FunctionModel</a> <code>FunctionModel(definitionArgument1,
-				definitionArgument2, ...)</code></dt>
+						definitionArgument2, ...)</code></dt>
 				<dd>Constructor for function models</dd>
 
 				<dt><a href="#doc-map-model">MapModel</a> <code>MapModel(keyDefinition, valueDefinition)</code></dt>
@@ -1319,7 +1327,8 @@ console.log(Integer.name) // "Integer"</code></pre>
 						environments than v3.</dd>
 				</dl>
 				<p>More information about these changes between major versions on the
-					<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank">
+					<a href="https://github.com/sylvainpolletvillard/ObjectModel/releases" target="_blank"
+						rel="noopener">
 						Github Releases</a> page</p>
 			</details>
 
@@ -1540,25 +1549,19 @@ PromiseOf(Number)(p).then(n => {
 					<a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fobjectmodel.js.org&t=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript"
 						title="Share on Facebook" target="_blank" rel="noopener"
 						onclick="window.open(this.href); return false;">
-						<img class="lazy" data-src="docs/res/facebook.svg" width="48" height="48">
+						<img class="lazy" alt="Facebook" data-src="docs/res/facebook.svg" width="48" height="48">
 					</a>
 				</li>
 				<li>
 					<a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fobjectmodel.js.org&text=ObjectModel%3A%20Model%20Definition%20and%20Runtime%20Type%20Checking%20for%20JavaScript%20-%20http%3A//objectmodel.js.org"
 						target="_blank" rel="noopener" title="Tweet" onclick="window.open(this.href); return false;">
-						<img class="lazy" data-src="docs/res/twitter.svg" width="48" height="48">
-					</a>
-				</li>
-				<li>
-					<a href="https://plus.google.com/share?url=http%3A%2F%2Fobjectmodel.js.org" target="_blank"
-						title="Share on Google+" onclick="window.open(this.href); return false;">
-						<img class="lazy" data-src="docs/res/googleplus.svg" width="48" height="48">
+						<img class="lazy" alt="Twitter" data-src="docs/res/twitter.svg" width="48" height="48">
 					</a>
 				</li>
 				<li>
 					<a href="https://gitter.im/sylvainpolletvillard/ObjectModel?utm_source=website" target="_blank"
 						rel="noopener" title="Chat on Gitter">
-						<img class="lazy" data-src="docs/res/gitter.svg" width="48" height="48">
+						<img class="lazy" alt="Gitter" data-src="docs/res/gitter.svg" width="48" height="48">
 					</a>
 				</li>
 			</ul>

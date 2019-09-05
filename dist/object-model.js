@@ -1,4 +1,4 @@
-// ObjectModel v4.0.2 - http://objectmodel.js.org
+// ObjectModel v4.0.3 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],

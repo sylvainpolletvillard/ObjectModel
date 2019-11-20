@@ -4,5 +4,6 @@ test/lib
 docs/**/lib
 docs/v1
 docs/v2
+docs/node_modules
 *.compiled.js
 *.html

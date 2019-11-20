@@ -17,18 +17,18 @@
     "watch:js": "npm run build:js -- --watch",
     "watch:min": "npm run build:min -- --watch",
     "info": "npm-run-all info:*",
-    "info:banner": "node build/add-banner",
-    "info:docs": "node build/update-docs",
+    "info:banner": "node build/add-banner.cjs",
+    "info:docs": "node build/update-docs.cjs",
     "lint": "eslint . --fix",
     "test": "qunit test/esm-loader.js"
   },
   "devDependencies": {
     "eslint": "^6.3.0",
     "esm": "^3.2.25",
-    "filesize": "^4.1.2",
+    "filesize": "^6.0.1",
     "gzip-size": "^5.1.1",
     "npm-run-all": "^4.1.5",
-    "qunit": "^2.9.2",
+    "qunit": "^2.9.3",
     "rollup": "^1.20.3",
     "rollup-plugin-terser": "^5.1.1"
   },

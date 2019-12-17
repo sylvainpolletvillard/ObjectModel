@@ -234,8 +234,8 @@ QUnit.test("Other traps", function (assert) {
 })
 
 QUnit.test("toString", function (assert) {
-	assert.equal(ArrayModel(Number).toString(), "Array of Number")
-	assert.equal(ArrayModel([String, 42]).toString(), "Array of (String or 42)")
+	assert.equal(ArrayModel(Number).toString(), "Array of Number", "ArrayModels toString for basic elements")
+	assert.equal(ArrayModel([String, 42]).toString(), "Array of String or 42", "ArrayModels toString for union type elements")
 })
 
 QUnit.test("Dynamic definition", function (assert) {

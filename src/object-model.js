@@ -55,8 +55,7 @@ export const
 		if (nbErrors > 0) {
 			let errors = model.errors.map(err => {
 				if (!err.message) {
-					let def = [].concat(err.expected)
-					err.message = "expecting " + (err.path ? err.path + " to be " : "") + def.map(d => format(d)).join(" or ")
+					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 				}
 				return err
@@ -82,7 +81,7 @@ export const
 
 	formatDefinition = (def, stack) => {
 		let parts = parseDefinition(def).map(d => format(d, stack))
-		return parts.length > 1 ? `(${parts.join(" or ")})` : parts[0]
+		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
 
 	extendDefinition = (def, newParts = []) => {
@@ -332,7 +331,7 @@ Object.assign(Model.prototype, {
 	conventionForPrivate: key => key[0] === "_",
 
 	toString(stack) {
-		return formatDefinition(this.definition, stack)
+		return has(this, "name") ? this.name : formatDefinition(this.definition, stack)
 	},
 
 	as(name) {

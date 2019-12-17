@@ -935,12 +935,17 @@ QUnit.test("test method", function (assert) {
 		country: BasicModel(String).assert(assertFunction, "Country must be GB")
 	});
 
+	const PositiveNumber = BasicModel(Number)
+		.assert(function isPositive(n) { return n > 0 }, "expected assertion description")
+		.as('PositiveNumber');
+
 	const gbAddress = { city: "London", country: "GB" };
 	const frAddress = { city: "Paris", country: "FR" };
 
 	const Order = new ObjectModel({
 		sku: String,
-		address: Address
+		address: Address,
+		quantity: [PositiveNumber]
 	});
 
 	const gbOrder = { sku: "ABC123", address: gbAddress };
@@ -951,7 +956,7 @@ QUnit.test("test method", function (assert) {
 		new Order(frOrder);
 	}, "should validate sub-objects assertions");
 
-	const errors = [];
+	let errors = [];
 	Order.test(frOrder, function (err) {
 		errors.push(...err);
 	});
@@ -961,6 +966,18 @@ QUnit.test("test method", function (assert) {
 	assert.equal(errors[0].received, "FR", "check assertion error received parameter");
 	assert.equal(errors[0].path, "address.country", "check assertion error path parameter");
 	assert.equal(errors[0].message, 'assertion "Country must be GB" returned false for address.country = "FR"', "check assertion error message parameter");
+
+	gbOrder.quantity = -1
+	errors = [];
+	Order.test(gbOrder, function (err) {
+		errors.push(...err);
+	});
+
+	assert.equal(errors.length, 1, "should throw exactly one error here")
+	assert.equal(errors[0].expected[0], PositiveNumber, "check assertion error expected parameter");
+	assert.equal(errors[0].received, "-1", "check assertion error received parameter");
+	assert.equal(errors[0].path, "quantity", "check assertion error path parameter");
+	assert.equal(errors[0].message, `expecting quantity to be PositiveNumber or undefined or null, got Number -1`, "check assertion error message parameter");
 
 });
 

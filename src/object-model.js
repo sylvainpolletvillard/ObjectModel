@@ -105,6 +105,10 @@ export const
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 			return obj // if found twice in call stack, cycle detected, skip validation
 
+		if (Array.isArray(def) && def.length === 1 && obj != null) {
+			def = def[0] // shorten validation path for optionals
+		}
+
 		if (is(Model, def)) {
 			if (shouldCast) obj = cast(obj, def)
 			def[_check](obj, path, errors, stack.concat(def))

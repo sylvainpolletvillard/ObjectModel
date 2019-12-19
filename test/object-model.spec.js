@@ -116,7 +116,7 @@ QUnit.test("behaviour for properties", function (assert) {
 			female: "false"
 		});
 	}, /TypeError.*expecting female to be Boolean.*got String "false"/,
-	"invalid prop at object model instanciation");
+		"invalid prop at object model instanciation");
 
 	joe = Person({
 		name: "Joe",
@@ -917,8 +917,8 @@ QUnit.test("Assertions", function (assert) {
 	assert.throws(function () {
 		new AssertObject({ name: undefined });
 	},
-	/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
-	"assertions catch exceptions on Object models");
+		/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
+		"assertions catch exceptions on Object models");
 
 });
 
@@ -935,8 +935,9 @@ QUnit.test("test method", function (assert) {
 		country: BasicModel(String).assert(assertFunction, "Country must be GB")
 	});
 
+	function isPositive(n) { return n > 0 }
 	const PositiveNumber = BasicModel(Number)
-		.assert(function isPositive(n) { return n > 0 }, "expected assertion description")
+		.assert(isPositive, "expected assertion description")
 		.as('PositiveNumber');
 
 	const gbAddress = { city: "London", country: "GB" };
@@ -974,10 +975,10 @@ QUnit.test("test method", function (assert) {
 	});
 
 	assert.equal(errors.length, 1, "should throw exactly one error here")
-	assert.equal(errors[0].expected[0], PositiveNumber, "check assertion error expected parameter");
+	assert.equal(errors[0].expected, isPositive, "check assertion error expected parameter");
 	assert.equal(errors[0].received, "-1", "check assertion error received parameter");
 	assert.equal(errors[0].path, "quantity", "check assertion error path parameter");
-	assert.equal(errors[0].message, `expecting quantity to be PositiveNumber or undefined or null, got Number -1`, "check assertion error message parameter");
+	assert.equal(errors[0].message, `assertion "expected assertion description" returned false for quantity = -1`, "check assertion error message parameter");
 
 });
 
@@ -1123,7 +1124,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
 		.test(consoleMock.lastArgs.warn[0]),
-	"should warn about ambiguous model for object sub prop"
+		"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
 	assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");

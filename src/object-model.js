@@ -74,7 +74,7 @@ export const
 			Object.keys(def).map(key => { def[key] = parseDefinition(def[key]) })
 		}
 		else if (!Array.isArray(def)) return [def]
-		else if (def.length === 1) return [...def, undefined, null]
+		else if (def.length === 1) return [def[0], undefined, null]
 
 		return def
 	},
@@ -83,6 +83,8 @@ export const
 		let parts = parseDefinition(def).map(d => format(d, stack))
 		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
+
+	formatAssertions = fns => fns.length ? `(${fns.map(f => f.name || f.description || f)})` : "",
 
 	extendDefinition = (def, newParts = []) => {
 		newParts = [].concat(newParts)
@@ -335,7 +337,7 @@ Object.assign(Model.prototype, {
 	conventionForPrivate: key => key[0] === "_",
 
 	toString(stack) {
-		return has(this, "name") ? this.name : formatDefinition(this.definition, stack)
+		return has(this, "name") ? this.name : formatDefinition(this.definition, stack) + formatAssertions(this.assertions)
 	},
 
 	as(name) {

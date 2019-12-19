@@ -142,12 +142,21 @@ QUnit.test("Assertions", function (assert) {
 
 	new AssertBasic(0);
 
-	assert.throws(function () {
-		new AssertBasic();
-	},
-	/assertion "may throw exception" returned TypeError.*for value undefined/,
-	"assertions catch exceptions on Basic models"
+	assert.throws(
+		function () {
+			new AssertBasic();
+		},
+		/assertion "may throw exception" returned TypeError.*for value undefined/,
+		"assertions catch exceptions on Basic models"
 	);
+
+	assert.equal(PrimeNumber.toString(), "Number(isFinite,isInteger,isPrime)", "test assertions format for named functions")
+	PrimeNumber.as("PrimeNumber");
+	assert.equal(PrimeNumber.toString(), "PrimeNumber", "test named model format with assertions")
+
+	assert.equal(AssertBasic.toString(), "Number(may throw exception)", "test format anonymous assertions with descriptions")
+	const NonNullNumber = BasicModel(Number).assert(n => !!n)
+	assert.equal(NonNullNumber.toString(), "Number(n => !!n)", "test format anonymous assertions without descriptions")
 
 });
 

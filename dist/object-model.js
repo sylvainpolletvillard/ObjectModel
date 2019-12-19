@@ -1,4 +1,4 @@
-// ObjectModel v4.0.4 - http://objectmodel.js.org
+// ObjectModel v4.0.5 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
@@ -114,7 +114,7 @@ const
 			Object.keys(def).map(key => { def[key] = parseDefinition(def[key]); });
 		}
 		else if (!Array.isArray(def)) return [def]
-		else if (def.length === 1) return [...def, undefined, null]
+		else if (def.length === 1) return [def[0], undefined, null]
 
 		return def
 	},
@@ -123,6 +123,8 @@ const
 		let parts = parseDefinition(def).map(d => format(d, stack));
 		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
+
+	formatAssertions = fns => fns.length ? `(${fns.map(f => f.name || f.description || f)})` : "",
 
 	extendDefinition = (def, newParts = []) => {
 		newParts = [].concat(newParts);
@@ -144,6 +146,10 @@ const
 		let indexFound = stack.indexOf(def);
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 			return obj // if found twice in call stack, cycle detected, skip validation
+
+		if (Array.isArray(def) && def.length === 1 && obj != null) {
+			def = def[0]; // shorten validation path for optionals
+		}
 
 		if (is(Model, def)) {
 			if (shouldCast) obj = cast(obj, def);
@@ -371,7 +377,7 @@ Object.assign(Model.prototype, {
 	conventionForPrivate: key => key[0] === "_",
 
 	toString(stack) {
-		return has(this, "name") ? this.name : formatDefinition(this.definition, stack)
+		return has(this, "name") ? this.name : formatDefinition(this.definition, stack) + formatAssertions(this.assertions)
 	},
 
 	as(name) {

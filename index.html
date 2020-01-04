@@ -1387,6 +1387,36 @@ const joe = User.create({ firstName: "Joe", lastName: "Dalton" });</code></pre>
 			</details>
 
 			<details>
+				<summary>Is there a way to compute default values ?</summary>
+				<div class="grid doc-code">
+					<div class="doc">
+						<p>Computed default values are not really default values in the sense that these values are
+							different from one instance to another, and computed at instanciation time. On the other
+							hand, this computation logic is the same for all instances. So this computation logic should
+							be declared as a getter/setter in the model prototype.</p>
+						<p>One could have different expectations regarding whether these values are computed <i>once at instanciation</i> or <i>at every property read</i>. But this <i>once at instanciation</i> behaviour can also be implemented with a getter using another undeclared private property as cache, as shown in this code example.</p>
+						<p>See <a href="https://github.com/sylvainpolletvillard/ObjectModel/issues/107" target="_blank"
+								rel="external">issue #107</a> for more information.</p>
+					</div>
+					<div class="panel">
+						<pre><code class="language-javascript">const T = new ObjectModel({
+    id: String
+});
+
+T.prototype = {
+    get id() {
+        if(this._id === undefined) this._id = generateUID()
+        return this._id
+    },
+    set id(newId){
+        this._id = newId
+    }
+};</code></pre>
+					</div>
+				</div>
+			</details>
+
+			<details>
 				<summary>How do I prevent adding undeclared properties to my object models ?</summary>
 				<p>This feature, previously known as <b>sealed models</b>, has been removed from the library since v4.x.
 					It is now available as a custom model

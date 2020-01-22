@@ -1,7 +1,7 @@
 import {
 	bettertypeof, define, extend, getProto, has,
 	is, isFunction, isObject, isPlainObject, isString,
-	merge, proxify, setProto
+	merge, ObjectProto, proxify, setProto
 } from "./helpers.js"
 
 export const
@@ -177,7 +177,7 @@ export const
 		if (isFunction(obj)) return obj.name || obj.toString()
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
-		if (obj.toString && obj.toString !== Object.prototype.toString) return obj.toString()
+		if (obj.toString && obj.toString !== ObjectProto.toString) return obj.toString()
 		if (isObject(obj)) {
 			const props = Object.keys(obj),
 				indent = "\t".repeat(stack.length)
@@ -260,7 +260,7 @@ export const
 		})
 
 		return {
-			getPrototypeOf: obj => path ? Object.prototype : getProto(obj),
+			getPrototypeOf: obj => path ? ObjectProto : getProto(obj),
 
 			get(o, key) {
 				if (key === _original) return o

@@ -1,14 +1,15 @@
 export const
-	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
+	ObjectProto = Object.prototype,
+	bettertypeof = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
 	getProto = Object.getPrototypeOf,
 	setProto = Object.setPrototypeOf,
 
-	has = (o, prop) => Object.prototype.hasOwnProperty.call(o, prop),
+	has = (o, prop) => ObjectProto.hasOwnProperty.call(o, prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
 	isObject = o => o && typeof o === "object",
 	isString = s => typeof s === "string",
-	isPlainObject = o => isObject(o) && getProto(o) === Object.prototype,
+	isPlainObject = o => isObject(o) && getProto(o) === ObjectProto,
 	isIterable = x => x && isFunction(x[Symbol.iterator]),
 
 	proxify = (val, traps) => new Proxy(val, traps),

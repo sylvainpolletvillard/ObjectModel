@@ -7,6 +7,7 @@ export const
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
 	isObject = o => o && typeof o === "object",
+	isString = s => typeof s === "string",
 	isPlainObject = o => isObject(o) && getProto(o) === Object.prototype,
 	isIterable = x => x && isFunction(x[Symbol.iterator]),
 

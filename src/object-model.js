@@ -1,5 +1,6 @@
 import {
-	bettertypeof, define, extend, getProto, has, is, isFunction, isObject, isPlainObject,
+	bettertypeof, define, extend, getProto, has,
+	is, isFunction, isObject, isPlainObject, isString,
 	merge, proxify, setProto
 } from "./helpers.js"
 
@@ -168,7 +169,7 @@ export const
 	format = (obj, stack = []) => {
 		if (stack.length > 15 || stack.includes(obj)) return "..."
 		if (obj === null || obj === undefined) return String(obj)
-		if (typeof obj === "string") return `"${obj}"`
+		if (isString(obj)) return `"${obj}"`
 		if (is(Model, obj)) return obj.toString(stack)
 
 		stack.unshift(obj)
@@ -264,7 +265,7 @@ export const
 			get(o, key) {
 				if (key === _original) return o
 
-				if (typeof key !== "string") return Reflect.get(o, key)
+				if (!isString(key)) return Reflect.get(o, key)
 
 				const newPath = formatPath(path, key)
 				const defPart = def[key]

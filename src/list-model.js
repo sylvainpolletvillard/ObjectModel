@@ -9,14 +9,14 @@ export const initListModel = (base, constructor, def, init, clone, mutators, oth
 		get(l, key) {
 			if (key === _original) return l
 
-			let val = l[key]
+			const val = l[key]
 			return isFunction(val) ? proxify(val, {
 				apply(fn, ctx, args) {
 					if (has(mutators, key)) {
 						// indexes of arguments to check def + cast
-						let [begin, end = args.length - 1, getArgDef] = mutators[key]
+						const [begin, end = args.length - 1, getArgDef] = mutators[key]
 						for (let i = begin; i <= end; i++) {
-							let argDef = getArgDef ? getArgDef(i) : model.definition
+							const argDef = getArgDef ? getArgDef(i) : model.definition
 							args[i] = checkDefinition(
 								args[i],
 								argDef,
@@ -28,7 +28,7 @@ export const initListModel = (base, constructor, def, init, clone, mutators, oth
 						}
 
 						if (model.assertions.length > 0) {
-							let testingClone = clone(l)
+							const testingClone = clone(l)
 							fn.apply(testingClone, args)
 							checkAssertions(testingClone, model, `after ${key} mutation`)
 						}

@@ -6,19 +6,19 @@ import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
 export default function MapModel(initialKeyDefinition, initialValueDefinition) {
-	let getDef = i => i === 0 ? model.definition.key : model.definition.value,
-		model = initListModel(
-			Map,
-			MapModel,
-			{ key: initialKeyDefinition, value: initialValueDefinition },
-			it => isIterable(it) ? new Map([...it].map(pair => pair.map((x, i) => cast(x, getDef(i))))) : it,
-			map => new Map(map),
-			{
-				"set": [0, 1, getDef],
-				"delete": [],
-				"clear": []
-			}
-		)
+	const getDef = i => i === 0 ? model.definition.key : model.definition.value;
+	const model = initListModel(
+		Map,
+		MapModel,
+		{ key: initialKeyDefinition, value: initialValueDefinition },
+		it => isIterable(it) ? new Map([...it].map(pair => pair.map((x, i) => cast(x, getDef(i))))) : it,
+		map => new Map(map),
+		{
+			"set": [0, 1, getDef],
+			"delete": [],
+			"clear": []
+		}
+	)
 
 	return model
 }

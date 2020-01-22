@@ -27,7 +27,7 @@ const getModel = (instance) => {
 	if (instance === undefined || instance === null)
 		return null
 
-	let proto = getProto(instance);
+	const proto = getProto(instance);
 	if (!proto || !proto.constructor || !is(Model, proto.constructor))
 		return null
 
@@ -50,7 +50,7 @@ const format = (x, config = {}) => {
 		return span(styles.string, `"${x}"`);
 
 	if (Array.isArray(x) && config.isModelDefinition) {
-		let def = [];
+		const def = [];
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {
 			def.push(format(x[i], config))
@@ -125,10 +125,10 @@ const ModelFormatter = {
 		return span("",
 			"{",
 			["ol", { style: styles.list }, ...Object.keys(model.definition).map(prop => {
-				let isPrivate = model.conventionForPrivate(prop),
-					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.default && has(model.default, prop),
-					style = styles.property;
+				const isPrivate = model.conventionForPrivate(prop)
+				const isConstant = model.conventionForConstant(prop)
+				const hasDefault = model.default && has(model.default, prop);
+				let style = styles.property;
 
 				if (isPrivate) {
 					style = isConstant ? styles.privateConstant : styles.private
@@ -152,9 +152,9 @@ const ModelInstanceFormatter = {
 			return format(x, config)
 		}
 
-		let model = getModel(x);
+		const model = getModel(x);
 		if (is(Model, model)) {
-			let parts = is(ObjectModel, model) ? [model.name] : [["object", { object: x[_original] }], ` (${model.name})`];
+			const parts = is(ObjectModel, model) ? [model.name] : [["object", { object: x[_original] }], ` (${model.name})`];
 			return span(styles.instance, ...parts)
 		}
 
@@ -172,10 +172,10 @@ const ModelInstanceFormatter = {
 				"ol",
 				{ style: styles.list },
 				...Object.keys(o).map(prop => {
-					let isPrivate = model.conventionForPrivate(prop),
-						isConstant = model.conventionForConstant(prop),
-						isDeclared = prop in model.definition,
-						style = styles.property;
+					const isPrivate = model.conventionForPrivate(prop)
+					const isConstant = model.conventionForConstant(prop)
+					const isDeclared = prop in model.definition;
+					let style = styles.property;
 
 					if (!isDeclared) {
 						style = styles.undeclared

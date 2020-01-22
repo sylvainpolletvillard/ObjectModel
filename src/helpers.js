@@ -15,7 +15,7 @@ export const
 	merge = (target, src = {}) => {
 		for (let key in src) {
 			if (isPlainObject(src[key])) {
-				let o = {}
+				const o = {}
 				merge(o, target[key])
 				merge(o, src[key])
 				target[key] = o

@@ -9,7 +9,7 @@ export const
 	_original = Symbol(), // used to bypass proxy
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
-		let model = function (val = model.default, mode) {
+		const model = function (val = model.default, mode) {
 			if (useNew && !is(model, this)) return new model(val)
 			if (init) val = init(val, model, this)
 
@@ -51,9 +51,9 @@ export const
 	},
 
 	unstackErrors = (model, collector = model.errorCollector) => {
-		let nbErrors = model.errors.length
+		const nbErrors = model.errors.length
 		if (nbErrors > 0) {
-			let errors = model.errors.map(err => {
+			const errors = model.errors.map(err => {
 				if (!err.message) {
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
@@ -80,7 +80,7 @@ export const
 	},
 
 	formatDefinition = (def, stack) => {
-		let parts = parseDefinition(def).map(d => format(d, stack))
+		const parts = parseDefinition(def).map(d => format(d, stack))
 		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
 
@@ -103,7 +103,7 @@ export const
 	},
 
 	checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
-		let indexFound = stack.indexOf(def)
+		const indexFound = stack.indexOf(def)
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 			return obj // if found twice in call stack, cycle detected, skip validation
 
@@ -117,12 +117,12 @@ export const
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
-				let val = obj ? obj[key] : undefined
+				const val = obj ? obj[key] : undefined
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
 			})
 		}
 		else {
-			let pdef = parseDefinition(def)
+			const pdef = parseDefinition(def)
 			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
 				return shouldCast ? cast(obj, def) : obj
 			}
@@ -137,7 +137,7 @@ export const
 		if (def === Any) return true
 		if (obj == null) return obj === def
 		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
-			let errors = []
+			const errors = []
 			checkDefinition(obj, def, path, errors, stack, shouldCast)
 			return !errors.length
 		}
@@ -157,7 +157,7 @@ export const
 				result = err
 			}
 			if (result !== true) {
-				let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
+				const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 					`assertion "${assertion.description}" returned ${format(assertionResult)} `
 					+ `for ${path ? path + " =" : "value"} ${format(value)}`
 				stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path))
@@ -178,7 +178,7 @@ export const
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
 		if (obj.toString && obj.toString !== Object.prototype.toString) return obj.toString()
 		if (isObject(obj)) {
-			let props = Object.keys(obj),
+			const props = Object.keys(obj),
 				indent = "\t".repeat(stack.length)
 			return `{${props.map(
 				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
@@ -191,11 +191,11 @@ export const
 	formatPath = (path, key) => path ? path + "." + key : key,
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
-		let newPath = formatPath(path, key),
-			isPrivate = model.conventionForPrivate(key),
-			isConstant = model.conventionForConstant(key),
-			isOwnProperty = has(o, key),
-			initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
+		const newPath = formatPath(path, key),
+			  isPrivate = model.conventionForPrivate(key),
+			  isConstant = model.conventionForConstant(key),
+			  isOwnProperty = has(o, key),
+			  initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
@@ -204,7 +204,7 @@ export const
 		if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
 
-		let nbErrors = model.errors.length
+		const nbErrors = model.errors.length
 		if (nbErrors) {
 			if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor)
 			else delete o[key] // back to the initial property defined in prototype chain
@@ -223,8 +223,8 @@ export const
 		if (!obj || isPlainObject(defNode) || is(BasicModel, defNode) || isModelInstance(obj))
 			return obj // no value or not leaf or already a model instance
 
-		let def = parseDefinition(defNode),
-			suitableModels = []
+		const def = parseDefinition(defNode),
+			  suitableModels = []
 
 		for (let part of def) {
 			if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
@@ -252,7 +252,7 @@ export const
 		const grantPrivateAccess = f => proxify(f, {
 			apply(fn, ctx, args) {
 				privateAccess = true
-				let result = Reflect.apply(fn, ctx, args)
+				const result = Reflect.apply(fn, ctx, args)
 				privateAccess = false
 				return result
 			}
@@ -266,8 +266,8 @@ export const
 
 				if (typeof key !== "string") return Reflect.get(o, key)
 
-				let newPath = formatPath(path, key),
-					defPart = def[key]
+				const newPath = formatPath(path, key)
+				const defPart = def[key]
 
 				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model)
@@ -361,8 +361,8 @@ Object.assign(Model.prototype, {
 			model = getProto(model)
 		}
 
-		let initialErrorCollector = model.errorCollector,
-			failed
+		const initialErrorCollector = model.errorCollector
+		let failed
 
 		model.errorCollector = errors => {
 			failed = true
@@ -376,7 +376,7 @@ Object.assign(Model.prototype, {
 	},
 
 	errorCollector(errors) {
-		let e = new TypeError(errors.map(e => e.message).join("\n"))
+		const e = new TypeError(errors.map(e => e.message).join("\n"))
 		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, "") // blackbox objectmodel in stacktrace
 		throw e
 	},
@@ -395,7 +395,7 @@ export function BasicModel(def) {
 
 extend(BasicModel, Model, {
 	extend(...newParts) {
-		let child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
+		const child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this)
 		for (let part of newParts) {
 			if (is(BasicModel, part)) child.assertions.push(...part.assertions)
 		}
@@ -410,7 +410,7 @@ export function ObjectModel(def) {
 
 extend(ObjectModel, Model, {
 	defaultTo(obj) {
-		let def = this.definition
+		const def = this.definition
 		for (let key in obj) {
 			if (has(def, key)) {
 				obj[key] = checkDefinition(obj[key], def[key], key, this.errors, [], true)
@@ -426,10 +426,10 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts) {
-		let definition = { ...this.definition },
-			proto = { ...this.prototype },
-			defaults = { ...this.default },
-			newAssertions = []
+		const definition = { ...this.definition }
+		const proto = { ...this.prototype }
+		const defaults = { ...this.default }
+		const newAssertions = []
 
 		for (let part of newParts) {
 			if (is(Model, part)) {
@@ -441,7 +441,7 @@ extend(ObjectModel, Model, {
 			if (isObject(part)) merge(definition, part)
 		}
 
-		let submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults)
+		const submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults)
 		submodel.assertions = [...this.assertions, ...newAssertions]
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class
@@ -453,8 +453,7 @@ extend(ObjectModel, Model, {
 
 	[_check](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {
-			let def = this.definition
-			checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast)
+			checkDefinition(obj[_original] || obj, this.definition, path, errors, stack, shouldCast)
 		}
 		else stackError(errors, this, obj, path)
 
@@ -464,7 +463,9 @@ extend(ObjectModel, Model, {
 
 export const Any = proxify(BasicModel(), {
 	apply(target, ctx, [def]) {
-		return Object.assign(Object.create(Any), { definition: def })
+		const anyOf = Object.create(Any)
+		anyOf.definition = def;
+		return anyOf
 	}
 })
 Any.definition = Any

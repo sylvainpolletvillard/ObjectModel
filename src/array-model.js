@@ -6,7 +6,7 @@ import { initListModel } from "./list-model.js"
 import { extend } from "./helpers.js"
 
 export default function ArrayModel(initialDefinition) {
-	let model = initListModel(
+	const model = initListModel(
 		Array,
 		ArrayModel,
 		initialDefinition,
@@ -55,15 +55,15 @@ extend(ArrayModel, Model, {
 	}
 })
 
-let controlMutation = (model, array, key, value, applyMutation, canBeExtended) => {
-	let path = `Array[${key}]`
-	let isInDef = (+key >= 0 && (canBeExtended || key in array))
+const controlMutation = (model, array, key, value, applyMutation, canBeExtended) => {
+	const path = `Array[${key}]`
+	const isInDef = (+key >= 0 && (canBeExtended || key in array))
 	if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true)
 
-	let testArray = [...array]
+	const testArray = [...array]
 	applyMutation(testArray)
 	checkAssertions(testArray, model, path)
-	let isSuccess = !unstackErrors(model)
+	const isSuccess = !unstackErrors(model)
 	if (isSuccess) applyMutation(array, value)
 	return isSuccess
 }

@@ -6,7 +6,7 @@ import { initListModel } from "./list-model.js"
 import { extend, is, isIterable } from "./helpers.js"
 
 export default function SetModel(initialDefinition) {
-	let model = initListModel(
+	const model = initListModel(
 		Set,
 		SetModel,
 		initialDefinition,

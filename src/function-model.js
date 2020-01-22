@@ -13,12 +13,12 @@ export default function FunctionModel(...argsDef) {
 		},
 
 		apply(fn, ctx, args) {
-			let def = model.definition,
-				remainingArgDef = def.arguments.find(argDef => is(Any.remaining, argDef)),
-				nbArgsToCheck = remainingArgDef ? Math.max(args.length, def.arguments.length - 1) : def.arguments.length
+			const def = model.definition
+			const remainingArgDef = def.arguments.find(argDef => is(Any.remaining, argDef))
+			const nbArgsToCheck = remainingArgDef ? Math.max(args.length, def.arguments.length - 1) : def.arguments.length
 
 			for (let i = 0; i < nbArgsToCheck; i++) {
-				let argDef = remainingArgDef && i >= def.arguments.length - 1 ? remainingArgDef.definition : def.arguments[i]
+				const argDef = remainingArgDef && i >= def.arguments.length - 1 ? remainingArgDef.definition : def.arguments[i]
 				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true)
 			}
 
@@ -54,9 +54,9 @@ extend(FunctionModel, Model, {
 	},
 
 	extend(newArgs, newReturns) {
-		let args = this.definition.arguments,
-			mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
-			mixedReturns = extendDefinition(this.definition.return, newReturns)
+		const args = this.definition.arguments,
+			  mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
+			  mixedReturns = extendDefinition(this.definition.return, newReturns)
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 

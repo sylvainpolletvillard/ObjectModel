@@ -276,19 +276,21 @@ export const
 					return
 				}
 
-				if (o[key] && has(o, key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
-					o[key] = cast(o[key], defPart) // cast nested models
+				let value = o[key]
+
+				if (value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
+					o[key] = value = cast(value, defPart) // cast nested models
 				}
 
-				if (isFunction(o[key]) && key !== "constructor" && !privateAccess) {
-					return grantPrivateAccess(o[key])
+				if (isFunction(value) && key !== "constructor" && !privateAccess) {
+					return grantPrivateAccess(value)
 				}
 
-				if (isPlainObject(defPart) && !o[key]) {
-					o[key] = {} // null-safe traversal
+				if (isPlainObject(defPart) && !value) {
+					o[key] = value = {} // null-safe traversal
 				}
 
-				return getProp(o[key], model, defPart, newPath, privateAccess)
+				return getProp(value, model, defPart, newPath, privateAccess)
 			},
 
 			set(o, key, val) {

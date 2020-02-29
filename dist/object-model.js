@@ -1,15 +1,17 @@
-// ObjectModel v4.0.5 - http://objectmodel.js.org
+// ObjectModel v4.0.6 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
-	bettertypeof = x => Object.prototype.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
+	ObjectProto = Object.prototype,
+	bettertypeof = x => ObjectProto.toString.call(x).match(/\s([a-zA-Z]+)/)[1],
 	getProto = Object.getPrototypeOf,
 	setProto = Object.setPrototypeOf,
 
-	has = (o, prop) => Object.prototype.hasOwnProperty.call(o, prop),
+	has = (o, prop) => ObjectProto.hasOwnProperty.call(o, prop),
 	is = (Constructor, obj) => obj instanceof Constructor,
 	isFunction = f => typeof f === "function",
 	isObject = o => o && typeof o === "object",
-	isPlainObject = o => isObject(o) && getProto(o) === Object.prototype,
+	isString = s => typeof s === "string",
+	isPlainObject = o => isObject(o) && getProto(o) === ObjectProto,
 	isIterable = x => x && isFunction(x[Symbol.iterator]),
 
 	proxify = (val, traps) => new Proxy(val, traps),
@@ -17,7 +19,7 @@ const
 	merge = (target, src = {}) => {
 		for (let key in src) {
 			if (isPlainObject(src[key])) {
-				let o = {};
+				const o = {};
 				merge(o, target[key]);
 				merge(o, src[key]);
 				target[key] = o;
@@ -49,7 +51,7 @@ const
 	_original = Symbol(), // used to bypass proxy
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
-		let model = function (val = model.default, mode) {
+		const model = function (val = model.default, mode) {
 			if (useNew && !is(model, this)) return new model(val)
 			if (init) val = init(val, model, this);
 
@@ -91,9 +93,9 @@ const
 	},
 
 	unstackErrors = (model, collector = model.errorCollector) => {
-		let nbErrors = model.errors.length;
+		const nbErrors = model.errors.length;
 		if (nbErrors > 0) {
-			let errors = model.errors.map(err => {
+			const errors = model.errors.map(err => {
 				if (!err.message) {
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
@@ -120,7 +122,7 @@ const
 	},
 
 	formatDefinition = (def, stack) => {
-		let parts = parseDefinition(def).map(d => format(d, stack));
+		const parts = parseDefinition(def).map(d => format(d, stack));
 		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
 
@@ -143,7 +145,7 @@ const
 	},
 
 	checkDefinition = (obj, def, path, errors, stack, shouldCast) => {
-		let indexFound = stack.indexOf(def);
+		const indexFound = stack.indexOf(def);
 		if (indexFound !== -1 && stack.indexOf(def, indexFound + 1) !== -1)
 			return obj // if found twice in call stack, cycle detected, skip validation
 
@@ -157,12 +159,12 @@ const
 		}
 		else if (isPlainObject(def)) {
 			Object.keys(def).map(key => {
-				let val = obj ? obj[key] : undefined;
+				const val = obj ? obj[key] : undefined;
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast);
 			});
 		}
 		else {
-			let pdef = parseDefinition(def);
+			const pdef = parseDefinition(def);
 			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
 				return shouldCast ? cast(obj, def) : obj
 			}
@@ -177,7 +179,7 @@ const
 		if (def === Any) return true
 		if (obj == null) return obj === def
 		if (isPlainObject(def) || is(Model, def)) { // object or model as part of union type
-			let errors = [];
+			const errors = [];
 			checkDefinition(obj, def, path, errors, stack, shouldCast);
 			return !errors.length
 		}
@@ -197,7 +199,7 @@ const
 				result = err;
 			}
 			if (result !== true) {
-				let onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
+				const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
 					`assertion "${assertion.description}" returned ${format(assertionResult)} `
 					+ `for ${path ? path + " =" : "value"} ${format(value)}`;
 				stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
@@ -208,7 +210,7 @@ const
 	format = (obj, stack = []) => {
 		if (stack.length > 15 || stack.includes(obj)) return "..."
 		if (obj === null || obj === undefined) return String(obj)
-		if (typeof obj === "string") return `"${obj}"`
+		if (isString(obj)) return `"${obj}"`
 		if (is(Model, obj)) return obj.toString(stack)
 
 		stack.unshift(obj);
@@ -216,9 +218,9 @@ const
 		if (isFunction(obj)) return obj.name || obj.toString()
 		if (is(Map, obj) || is(Set, obj)) return format([...obj])
 		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
-		if (obj.toString && obj.toString !== Object.prototype.toString) return obj.toString()
+		if (obj.toString && obj.toString !== ObjectProto.toString) return obj.toString()
 		if (isObject(obj)) {
-			let props = Object.keys(obj),
+			const props = Object.keys(obj),
 				indent = "\t".repeat(stack.length);
 			return `{${props.map(
 				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
@@ -231,11 +233,11 @@ const
 	formatPath = (path, key) => path ? path + "." + key : key,
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
-		let newPath = formatPath(path, key),
-			isPrivate = model.conventionForPrivate(key),
-			isConstant = model.conventionForConstant(key),
-			isOwnProperty = has(o, key),
-			initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
+		const newPath = formatPath(path, key),
+			  isPrivate = model.conventionForPrivate(key),
+			  isConstant = model.conventionForConstant(key),
+			  isOwnProperty = has(o, key),
+			  initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model);
@@ -244,7 +246,7 @@ const
 		if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, []);
 		checkAssertions(o, model, newPath);
 
-		let nbErrors = model.errors.length;
+		const nbErrors = model.errors.length;
 		if (nbErrors) {
 			if (isOwnProperty) Object.defineProperty(o, key, initialPropDescriptor);
 			else delete o[key]; // back to the initial property defined in prototype chain
@@ -263,8 +265,8 @@ const
 		if (!obj || isPlainObject(defNode) || is(BasicModel, defNode) || isModelInstance(obj))
 			return obj // no value or not leaf or already a model instance
 
-		let def = parseDefinition(defNode),
-			suitableModels = [];
+		const def = parseDefinition(defNode),
+			  suitableModels = [];
 
 		for (let part of def) {
 			if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
@@ -292,22 +294,22 @@ const
 		const grantPrivateAccess = f => proxify(f, {
 			apply(fn, ctx, args) {
 				privateAccess = true;
-				let result = Reflect.apply(fn, ctx, args);
+				const result = Reflect.apply(fn, ctx, args);
 				privateAccess = false;
 				return result
 			}
 		});
 
 		return {
-			getPrototypeOf: obj => path ? Object.prototype : getProto(obj),
+			getPrototypeOf: obj => path ? ObjectProto : getProto(obj),
 
 			get(o, key) {
 				if (key === _original) return o
 
-				if (typeof key !== "string") return Reflect.get(o, key)
+				if (!isString(key)) return Reflect.get(o, key)
 
-				let newPath = formatPath(path, key),
-					defPart = def[key];
+				const newPath = formatPath(path, key);
+				const defPart = def[key];
 
 				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model);
@@ -315,19 +317,21 @@ const
 					return
 				}
 
-				if (o[key] && has(o, key) && !isPlainObject(defPart) && !isModelInstance(o[key])) {
-					o[key] = cast(o[key], defPart); // cast nested models
+				let value = o[key];
+
+				if (value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
+					o[key] = value = cast(value, defPart); // cast nested models
 				}
 
-				if (isFunction(o[key]) && key !== "constructor" && !privateAccess) {
-					return grantPrivateAccess(o[key])
+				if (isFunction(value) && key !== "constructor" && !privateAccess) {
+					return grantPrivateAccess(value)
 				}
 
-				if (isPlainObject(defPart) && !o[key]) {
-					o[key] = {}; // null-safe traversal
+				if (isPlainObject(defPart) && !value) {
+					o[key] = value = {}; // null-safe traversal
 				}
 
-				return getProp(o[key], model, defPart, newPath, privateAccess)
+				return getProp(value, model, defPart, newPath, privateAccess)
 			},
 
 			set(o, key, val) {
@@ -401,8 +405,8 @@ Object.assign(Model.prototype, {
 			model = getProto(model);
 		}
 
-		let initialErrorCollector = model.errorCollector,
-			failed;
+		const initialErrorCollector = model.errorCollector;
+		let failed;
 
 		model.errorCollector = errors => {
 			failed = true;
@@ -416,7 +420,7 @@ Object.assign(Model.prototype, {
 	},
 
 	errorCollector(errors) {
-		let e = new TypeError(errors.map(e => e.message).join("\n"));
+		const e = new TypeError(errors.map(e => e.message).join("\n"));
 		e.stack = e.stack.replace(/\n.*object-model(.|\n)*object-model.*/, ""); // blackbox objectmodel in stacktrace
 		throw e
 	},
@@ -435,7 +439,7 @@ function BasicModel(def) {
 
 extend(BasicModel, Model, {
 	extend(...newParts) {
-		let child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this);
+		const child = extendModel(new BasicModel(extendDefinition(this.definition, newParts)), this);
 		for (let part of newParts) {
 			if (is(BasicModel, part)) child.assertions.push(...part.assertions);
 		}
@@ -450,7 +454,7 @@ function ObjectModel(def) {
 
 extend(ObjectModel, Model, {
 	defaultTo(obj) {
-		let def = this.definition;
+		const def = this.definition;
 		for (let key in obj) {
 			if (has(def, key)) {
 				obj[key] = checkDefinition(obj[key], def[key], key, this.errors, [], true);
@@ -466,10 +470,10 @@ extend(ObjectModel, Model, {
 	},
 
 	extend(...newParts) {
-		let definition = { ...this.definition },
-			proto = { ...this.prototype },
-			defaults = { ...this.default },
-			newAssertions = [];
+		const definition = { ...this.definition };
+		const proto = { ...this.prototype };
+		const defaults = { ...this.default };
+		const newAssertions = [];
 
 		for (let part of newParts) {
 			if (is(Model, part)) {
@@ -481,7 +485,7 @@ extend(ObjectModel, Model, {
 			if (isObject(part)) merge(definition, part);
 		}
 
-		let submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults);
+		const submodel = extendModel(new ObjectModel(definition), this, proto).defaultTo(defaults);
 		submodel.assertions = [...this.assertions, ...newAssertions];
 
 		if (getProto(this) !== ObjectModel.prototype) { // extended class
@@ -493,8 +497,7 @@ extend(ObjectModel, Model, {
 
 	[_check](obj, path, errors, stack, shouldCast) {
 		if (isObject(obj)) {
-			let def = this.definition;
-			checkDefinition(obj[_original] || obj, def, path, errors, stack, shouldCast);
+			checkDefinition(obj[_original] || obj, this.definition, path, errors, stack, shouldCast);
 		}
 		else stackError(errors, this, obj, path);
 
@@ -504,7 +507,9 @@ extend(ObjectModel, Model, {
 
 const Any = proxify(BasicModel(), {
 	apply(target, ctx, [def]) {
-		return Object.assign(Object.create(Any), { definition: def })
+		const anyOf = Object.create(Any);
+		anyOf.definition = def;
+		return anyOf
 	}
 });
 Any.definition = Any;
@@ -523,14 +528,14 @@ const initListModel = (base, constructor, def, init, clone, mutators, otherTraps
 		get(l, key) {
 			if (key === _original) return l
 
-			let val = l[key];
+			const val = l[key];
 			return isFunction(val) ? proxify(val, {
 				apply(fn, ctx, args) {
 					if (has(mutators, key)) {
 						// indexes of arguments to check def + cast
-						let [begin, end = args.length - 1, getArgDef] = mutators[key];
+						const [begin, end = args.length - 1, getArgDef] = mutators[key];
 						for (let i = begin; i <= end; i++) {
-							let argDef = getArgDef ? getArgDef(i) : model.definition;
+							const argDef = getArgDef ? getArgDef(i) : model.definition;
 							args[i] = checkDefinition(
 								args[i],
 								argDef,
@@ -542,7 +547,7 @@ const initListModel = (base, constructor, def, init, clone, mutators, otherTraps
 						}
 
 						if (model.assertions.length > 0) {
-							let testingClone = clone(l);
+							const testingClone = clone(l);
 							fn.apply(testingClone, args);
 							checkAssertions(testingClone, model, `after ${key} mutation`);
 						}
@@ -558,7 +563,7 @@ const initListModel = (base, constructor, def, init, clone, mutators, otherTraps
 };
 
 function ArrayModel(initialDefinition) {
-	let model = initListModel(
+	const model = initListModel(
 		Array,
 		ArrayModel,
 		initialDefinition,
@@ -607,21 +612,21 @@ extend(ArrayModel, Model, {
 	}
 });
 
-let controlMutation$1 = (model, array, key, value, applyMutation, canBeExtended) => {
-	let path = `Array[${key}]`;
-	let isInDef = (+key >= 0 && (canBeExtended || key in array));
+const controlMutation$1 = (model, array, key, value, applyMutation, canBeExtended) => {
+	const path = `Array[${key}]`;
+	const isInDef = (+key >= 0 && (canBeExtended || key in array));
 	if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true);
 
-	let testArray = [...array];
+	const testArray = [...array];
 	applyMutation(testArray);
 	checkAssertions(testArray, model, path);
-	let isSuccess = !unstackErrors(model);
+	const isSuccess = !unstackErrors(model);
 	if (isSuccess) applyMutation(array, value);
 	return isSuccess
 };
 
 function SetModel(initialDefinition) {
-	let model = initListModel(
+	const model = initListModel(
 		Set,
 		SetModel,
 		initialDefinition,
@@ -657,19 +662,19 @@ extend(SetModel, Model, {
 });
 
 function MapModel(initialKeyDefinition, initialValueDefinition) {
-	let getDef = i => i === 0 ? model.definition.key : model.definition.value,
-		model = initListModel(
-			Map,
-			MapModel,
-			{ key: initialKeyDefinition, value: initialValueDefinition },
-			it => isIterable(it) ? new Map([...it].map(pair => pair.map((x, i) => cast(x, getDef(i))))) : it,
-			map => new Map(map),
-			{
-				"set": [0, 1, getDef],
-				"delete": [],
-				"clear": []
-			}
-		);
+	const getDef = i => i === 0 ? model.definition.key : model.definition.value;
+	const model = initListModel(
+		Map,
+		MapModel,
+		{ key: initialKeyDefinition, value: initialValueDefinition },
+		it => isIterable(it) ? new Map([...it].map(pair => pair.map((x, i) => cast(x, getDef(i))))) : it,
+		map => new Map(map),
+		{
+			"set": [0, 1, getDef],
+			"delete": [],
+			"clear": []
+		}
+	);
 
 	return model
 }
@@ -708,12 +713,12 @@ function FunctionModel(...argsDef) {
 		},
 
 		apply(fn, ctx, args) {
-			let def = model.definition,
-				remainingArgDef = def.arguments.find(argDef => is(Any.remaining, argDef)),
-				nbArgsToCheck = remainingArgDef ? Math.max(args.length, def.arguments.length - 1) : def.arguments.length;
+			const def = model.definition;
+			const remainingArgDef = def.arguments.find(argDef => is(Any.remaining, argDef));
+			const nbArgsToCheck = remainingArgDef ? Math.max(args.length, def.arguments.length - 1) : def.arguments.length;
 
 			for (let i = 0; i < nbArgsToCheck; i++) {
-				let argDef = remainingArgDef && i >= def.arguments.length - 1 ? remainingArgDef.definition : def.arguments[i];
+				const argDef = remainingArgDef && i >= def.arguments.length - 1 ? remainingArgDef.definition : def.arguments[i];
 				args[i] = checkDefinition(args[i], argDef, `arguments[${i}]`, model.errors, [], true);
 			}
 
@@ -749,9 +754,9 @@ extend(FunctionModel, Model, {
 	},
 
 	extend(newArgs, newReturns) {
-		let args = this.definition.arguments,
-			mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
-			mixedReturns = extendDefinition(this.definition.return, newReturns);
+		const args = this.definition.arguments,
+			  mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
+			  mixedReturns = extendDefinition(this.definition.return, newReturns);
 		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
 	},
 
@@ -782,7 +787,7 @@ const getModel = (instance) => {
 	if (instance === undefined || instance === null)
 		return null
 
-	let proto = getProto(instance);
+	const proto = getProto(instance);
 	if (!proto || !proto.constructor || !is(Model, proto.constructor))
 		return null
 
@@ -805,7 +810,7 @@ const format$1 = (x, config = {}) => {
 		return span(styles.string, `"${x}"`);
 
 	if (Array.isArray(x) && config.isModelDefinition) {
-		let def = [];
+		const def = [];
 		if (x.length === 1) x.push(undefined, null);
 		for (let i = 0; i < x.length; i++) {
 			def.push(format$1(x[i], config));
@@ -880,10 +885,10 @@ const ModelFormatter = {
 		return span("",
 			"{",
 			["ol", { style: styles.list }, ...Object.keys(model.definition).map(prop => {
-				let isPrivate = model.conventionForPrivate(prop),
-					isConstant = model.conventionForConstant(prop),
-					hasDefault = model.default && has(model.default, prop),
-					style = styles.property;
+				const isPrivate = model.conventionForPrivate(prop);
+				const isConstant = model.conventionForConstant(prop);
+				const hasDefault = model.default && has(model.default, prop);
+				let style = styles.property;
 
 				if (isPrivate) {
 					style = isConstant ? styles.privateConstant : styles.private;
@@ -907,9 +912,9 @@ const ModelInstanceFormatter = {
 			return format$1(x, config)
 		}
 
-		let model = getModel(x);
+		const model = getModel(x);
 		if (is(Model, model)) {
-			let parts = is(ObjectModel, model) ? [model.name] : [["object", { object: x[_original] }], ` (${model.name})`];
+			const parts = is(ObjectModel, model) ? [model.name] : [["object", { object: x[_original] }], ` (${model.name})`];
 			return span(styles.instance, ...parts)
 		}
 
@@ -927,10 +932,10 @@ const ModelInstanceFormatter = {
 				"ol",
 				{ style: styles.list },
 				...Object.keys(o).map(prop => {
-					let isPrivate = model.conventionForPrivate(prop),
-						isConstant = model.conventionForConstant(prop),
-						isDeclared = prop in model.definition,
-						style = styles.property;
+					const isPrivate = model.conventionForPrivate(prop);
+					const isConstant = model.conventionForConstant(prop);
+					const isDeclared = prop in model.definition;
+					let style = styles.property;
 
 					if (!isDeclared) {
 						style = styles.undeclared;

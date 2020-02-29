@@ -116,7 +116,7 @@ QUnit.test("behaviour for properties", function (assert) {
 			female: "false"
 		});
 	}, /TypeError.*expecting female to be Boolean.*got String "false"/,
-		"invalid prop at object model instanciation");
+	"invalid prop at object model instanciation");
 
 	joe = Person({
 		name: "Joe",
@@ -917,8 +917,8 @@ QUnit.test("Assertions", function (assert) {
 	assert.throws(function () {
 		new AssertObject({ name: undefined });
 	},
-		/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
-		"assertions catch exceptions on Object models");
+	/assertion "may throw exception" returned TypeError.*for value {\s+name: undefined\s+}/,
+	"assertions catch exceptions on Object models");
 
 });
 
@@ -1124,7 +1124,7 @@ QUnit.test("Automatic model casting", function (assert) {
 
 	assert.ok(/Ambiguous model for[\s\S]*?name: "dunno"[\s\S]*?other1: \[Boolean][\s\S]*?other2: \[Number]/
 		.test(consoleMock.lastArgs.warn[0]),
-		"should warn about ambiguous model for object sub prop"
+	"should warn about ambiguous model for object sub prop"
 	);
 	assert.ok(c.foo.bar.name === "dunno", "should preserve values even when ambiguous model cast");
 	assert.ok(!(c.foo.bar instanceof Type1 || c.foo.bar instanceof Type2), "should not cast when ambiguous model");
@@ -1209,6 +1209,7 @@ QUnit.test("ownKeys/has trap", function (assert) {
 QUnit.test("class constructors", function (assert) {
 
 	const PersonModel = ObjectModel({ firstName: String, lastName: String, fullName: String })
+
 	class Person extends PersonModel {
 		constructor({ firstName, lastName }) {
 			const fullName = `${firstName} ${lastName}`
@@ -1269,7 +1270,13 @@ QUnit.test("class constructors", function (assert) {
 	assert.throws(function () { x.setId("32") }, /TypeError/, "class setters methods should provide type checking");
 
 	const BaseOM = ObjectModel({})
-	class BaseClass extends BaseOM { }
+	let getterRequiringNoValidationCallCount = 0;
+	class BaseClass extends BaseOM {
+		get getterRequiringNoValidation() {
+			getterRequiringNoValidationCallCount++;
+			return true;
+		}
+	}
 
 	const SubOM = BaseClass.extend({ test: [Boolean] }).assert(o => o.test)
 	class SubClass extends SubOM { }
@@ -1280,6 +1287,10 @@ QUnit.test("class constructors", function (assert) {
 	assert.equal(SubOM.errors.length, 0, "class-based models errors are cleaned up properly 2/4")
 	assert.equal(BaseClass.errors.length, 0, "class-based models errors are cleaned up properly 3/4")
 	assert.equal(BaseOM.errors.length, 0, "class-based models errors are cleaned up properly 4/4")
+
+	let bm = new BaseClass({});
+	bm.getterRequired = bm.getterRequiringNoValidation;
+	assert.equal(getterRequiringNoValidationCallCount, 1, "class getter requiring no validation only get once per call")
 })
 
 QUnit.test("Null-safe object traversal", function (assert) {

@@ -20,7 +20,7 @@
     "info:banner": "node build/add-banner.cjs",
     "info:docs": "node build/update-docs.cjs",
     "lint": "eslint . --fix",
-    "test": "qunit test/esm-loader.cjs"
+    "test": "qunit test/esm-loader.js"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

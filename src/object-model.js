@@ -268,9 +268,10 @@ export const
 				if (!isString(key)) return Reflect.get(o, key)
 
 				const newPath = formatPath(path, key)
+				const inDef = has(def, key)
 				const defPart = def[key]
 
-				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
+				if (!privateAccess && inDef && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model)
 					unstackErrors(model)
 					return
@@ -278,7 +279,7 @@ export const
 
 				let value = o[key]
 
-				if (value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
+				if (inDef && value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
 					o[key] = value = cast(value, defPart) // cast nested models
 				}
 

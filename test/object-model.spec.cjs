@@ -1,5 +1,4 @@
 /* global QUnit, Model, BasicModel, ArrayModel, ObjectModel */
-
 QUnit.module("Object Models");
 
 const consoleMock = (function (console) {
@@ -30,8 +29,7 @@ const consoleMock = (function (console) {
 	}
 })(console);
 
-QUnit.test("constructor && proto", function (assert) {
-
+QUnit.test("constructor && proto", async function (assert) {
 	assert.ok(ObjectModel instanceof Function, "ObjectModel instanceof Function");
 
 	const EmptyObjectModel = ObjectModel({});

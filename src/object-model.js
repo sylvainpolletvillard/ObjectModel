@@ -193,10 +193,10 @@ export const
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		const newPath = formatPath(path, key),
-			  isPrivate = model.conventionForPrivate(key),
-			  isConstant = model.conventionForConstant(key),
-			  isOwnProperty = has(o, key),
-			  initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
+			isPrivate = model.conventionForPrivate(key),
+			isConstant = model.conventionForConstant(key),
+			isOwnProperty = has(o, key),
+			initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key)
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
@@ -225,7 +225,7 @@ export const
 			return obj // no value or not leaf or already a model instance
 
 		const def = parseDefinition(defNode),
-			  suitableModels = []
+			suitableModels = []
 
 		for (let part of def) {
 			if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
@@ -260,8 +260,6 @@ export const
 		})
 
 		return {
-			getPrototypeOf: obj => path ? ObjectProto : getProto(obj),
-
 			get(o, key) {
 				if (key === _original) return o
 

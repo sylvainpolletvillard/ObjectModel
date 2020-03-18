@@ -1,4 +1,4 @@
-// ObjectModel v4.0.6 - http://objectmodel.js.org
+// ObjectModel v4.1.0 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -113,7 +113,7 @@ const
 
 	parseDefinition = (def) => {
 		if (isPlainObject(def)) {
-			Object.keys(def).map(key => { def[key] = parseDefinition(def[key]); });
+			for (let key in def) { def[key] = parseDefinition(def[key]); }
 		}
 		else if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
@@ -129,10 +129,8 @@ const
 	formatAssertions = fns => fns.length ? `(${fns.map(f => f.name || f.description || f)})` : "",
 
 	extendDefinition = (def, newParts = []) => {
-		newParts = [].concat(newParts);
 		if (newParts.length > 0) {
-			def = newParts
-				.reduce((def, ext) => def.concat(ext), [].concat(def)) // clone to lose ref
+			def = [].concat(def, ...[].concat(newParts))// clone to lose ref
 				.filter((value, index, self) => self.indexOf(value) === index); // remove duplicates
 		}
 
@@ -158,10 +156,10 @@ const
 			def[_check](obj, path, errors, stack.concat(def));
 		}
 		else if (isPlainObject(def)) {
-			Object.keys(def).map(key => {
+			for (let key in def) {
 				const val = obj ? obj[key] : undefined;
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast);
-			});
+			}
 		}
 		else {
 			const pdef = parseDefinition(def);
@@ -234,15 +232,15 @@ const
 
 	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
 		const newPath = formatPath(path, key),
-			  isPrivate = model.conventionForPrivate(key),
-			  isConstant = model.conventionForConstant(key),
-			  isOwnProperty = has(o, key),
-			  initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
+			isPrivate = model.conventionForPrivate(key),
+			isConstant = model.conventionForConstant(key),
+			isOwnProperty = has(o, key),
+			initialPropDescriptor = isOwnProperty && Object.getOwnPropertyDescriptor(o, key);
 
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model);
 
-		applyMutation(newPath);
+		applyMutation();
 		if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, []);
 		checkAssertions(o, model, newPath);
 
@@ -266,7 +264,7 @@ const
 			return obj // no value or not leaf or already a model instance
 
 		const def = parseDefinition(defNode),
-			  suitableModels = [];
+			suitableModels = [];
 
 		for (let part of def) {
 			if (is(Model, part) && !is(BasicModel, part) && part.test(obj))
@@ -301,17 +299,16 @@ const
 		});
 
 		return {
-			getPrototypeOf: obj => path ? ObjectProto : getProto(obj),
-
 			get(o, key) {
 				if (key === _original) return o
 
 				if (!isString(key)) return Reflect.get(o, key)
 
 				const newPath = formatPath(path, key);
+				const inDef = has(def, key);
 				const defPart = def[key];
 
-				if (!privateAccess && key in def && model.conventionForPrivate(key)) {
+				if (!privateAccess && inDef && model.conventionForPrivate(key)) {
 					cannot(`access to private property ${newPath}`, model);
 					unstackErrors(model);
 					return
@@ -319,8 +316,8 @@ const
 
 				let value = o[key];
 
-				if (value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
-					o[key] = value = cast(value, defPart); // cast nested models
+				if (inDef && value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
+					Reflect.set(o, key, value = cast(value, defPart)); // cast nested models
 				}
 
 				if (isFunction(value) && key !== "constructor" && !privateAccess) {
@@ -335,9 +332,7 @@ const
 			},
 
 			set(o, key, val) {
-				return controlMutation(model, def, path, o, key, privateAccess,
-					newPath => Reflect.set(o, key, getProp(val, model, def[key], newPath))
-				)
+				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.set(o, key, cast(val, def[key])))
 			},
 
 			deleteProperty(o, key) {

@@ -88,10 +88,8 @@ export const
 	formatAssertions = fns => fns.length ? `(${fns.map(f => f.name || f.description || f)})` : "",
 
 	extendDefinition = (def, newParts = []) => {
-		newParts = [].concat(newParts)
 		if (newParts.length > 0) {
-			def = newParts
-				.reduce((def, ext) => def.concat(ext), [].concat(def)) // clone to lose ref
+			def = [].concat(def, ...[].concat(newParts))// clone to lose ref
 				.filter((value, index, self) => self.indexOf(value) === index) // remove duplicates
 		}
 

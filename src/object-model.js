@@ -72,7 +72,7 @@ export const
 
 	parseDefinition = (def) => {
 		if (isPlainObject(def)) {
-			Object.keys(def).map(key => { def[key] = parseDefinition(def[key]) })
+			for (let key in def) { def[key] = parseDefinition(def[key]) }
 		}
 		else if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
@@ -117,10 +117,10 @@ export const
 			def[_check](obj, path, errors, stack.concat(def))
 		}
 		else if (isPlainObject(def)) {
-			Object.keys(def).map(key => {
+			for (let key in def) {
 				const val = obj ? obj[key] : undefined
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
-			})
+			}
 		}
 		else {
 			const pdef = parseDefinition(def)
@@ -201,7 +201,7 @@ export const
 		if (key in def && ((isPrivate && !privateAccess) || (isConstant && o[key] !== undefined)))
 			cannot(`modify ${isPrivate ? "private" : "constant"} property ${key}`, model)
 
-		applyMutation(newPath)
+		applyMutation()
 		if (has(def, key)) checkDefinition(o[key], def[key], newPath, model.errors, [])
 		checkAssertions(o, model, newPath)
 
@@ -278,7 +278,7 @@ export const
 				let value = o[key]
 
 				if (inDef && value && has(o, key) && !isPlainObject(defPart) && !isModelInstance(value)) {
-					o[key] = value = cast(value, defPart) // cast nested models
+					Reflect.set(o, key, value = cast(value, defPart)) // cast nested models
 				}
 
 				if (isFunction(value) && key !== "constructor" && !privateAccess) {
@@ -293,9 +293,7 @@ export const
 			},
 
 			set(o, key, val) {
-				return controlMutation(model, def, path, o, key, privateAccess,
-					newPath => Reflect.set(o, key, getProp(val, model, def[key], newPath))
-				)
+				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.set(o, key, cast(val, def[key])))
 			},
 
 			deleteProperty(o, key) {

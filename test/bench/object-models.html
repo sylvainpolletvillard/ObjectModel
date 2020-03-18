@@ -1,0 +1,88 @@
+<html>
+
+<head>
+    <title>Benchmark: Object Models</title>
+</head>
+
+<body>
+    <h1>Benchmark: Object Models</h1>
+</body>
+
+<script src="bench-lib.js"></script>
+
+<script type="module">
+    import { Model, BasicModel, ObjectModel, ArrayModel } from "../../src/index.js"
+
+    function benchComposition() {
+        const Person = ObjectModel({
+            name: String,
+            age: [Number, Date],
+            female: [Boolean],
+            address: {
+                work: {
+                    city: [String]
+                }
+            }
+        });
+
+        const Family = ObjectModel({
+            father: Person,
+            mother: Person.extend({ female: true }),
+            children: ArrayModel(Person),
+            grandparents: [ArrayModel(Person).assert(function (persons) {
+                return persons && persons.length <= 4
+            })]
+        });
+
+        const joe = Person({
+            name: "Joe",
+            age: 42,
+            female: false
+        });
+
+
+        const ann = new Person({
+            female: true,
+            age: joe.age - 5,
+            name: joe.name + "'s wife"
+        });
+
+        let joefamily = new Family({
+            father: joe,
+            mother: ann,
+            children: [],
+            grandparents: []
+        });
+
+        const duckmother = {
+            female: true,
+            age: joe.age - 5,
+            name: joe.name + "'s wife"
+        };
+
+        joefamily = new Family({
+            father: joe,
+            mother: duckmother,
+            children: []
+        });
+
+        Person.test(duckmother);
+
+        joefamily.mother.name = "Daisy";
+        try {
+            joefamily.mother.female = "Quack !";
+        } catch (e) { }
+    }
+
+    bench([
+        {
+            description: `Bench composed Object Models`,
+            nbIter: 100,
+            run() {
+                benchComposition();
+            }
+        }
+    ])
+</script>
+
+</html>

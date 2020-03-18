@@ -3,6 +3,7 @@ module.exports = {
 		require("postcss-import"),
 		require("postcss-simple-vars"),
 		require("postcss-nested"),
+		require("postcss-scrollbar"),
 		require("css-prefers-color-scheme/postcss"),
 		require("autoprefixer"),
 		require("postcss-normalize")({ forceImport: true }),

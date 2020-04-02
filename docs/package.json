@@ -25,7 +25,7 @@
 		"postcss-normalize": "^8.0.1",
 		"postcss-scrollbar": "^0.3.0",
 		"postcss-simple-vars": "^5.0.2",
-		"rollup": "^2.1.0",
+		"rollup": "^2.3.2",
 		"rollup-plugin-babel": "^4.4.0"
 	}
 }

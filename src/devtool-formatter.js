@@ -50,13 +50,7 @@ const format = (x, config = {}) => {
 		return span(styles.string, `"${x}"`);
 
 	if (Array.isArray(x) && config.isModelDefinition) {
-		const def = [];
-		if (x.length === 1) x.push(undefined, null);
-		for (let i = 0; i < x.length; i++) {
-			def.push(format(x[i], config))
-			if (i < x.length - 1) def.push(" or ")
-		}
-		return span("", ...def)
+		return span("", ...x.flatMap(part => [format(part, config), " or "]).slice(0, -1))
 	}
 
 	if (isPlainObject(x))
@@ -77,17 +71,18 @@ const formatObject = (o, model, config) => span("",
 )
 
 const formatModel = model => {
-	const parts = [],
+	const
 		cfg = { isModelDefinition: true },
 		def = model.definition,
-		formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
+		formatList = (list, map) => list.flatMap(e => [map(e), ", "]).slice(0, -1);
+	let parts = []
 
-	if (is(BasicModel, model)) parts.push(format(def, cfg))
-	if (is(ArrayModel, model)) parts.push("Array of ", format(def, cfg))
-	if (is(SetModel, model)) parts.push("Set of ", format(def, cfg))
-	if (is(MapModel, model)) parts.push("Map of ", format(def.key, cfg), " : ", format(def.value, cfg))
+	if (is(BasicModel, model)) parts = [format(def, cfg)]
+	if (is(ArrayModel, model)) parts = ["Array of ", format(def, cfg)]
+	if (is(SetModel, model)) parts = ["Set of ", format(def, cfg)]
+	if (is(MapModel, model)) parts = ["Map of ", format(def.key, cfg), " : ", format(def.value, cfg)]
 	if (is(FunctionModel, model)) {
-		parts.push("Function(", ...formatList(def.arguments, arg => format(arg, cfg)), ")")
+		parts = ["Function(", ...formatList(def.arguments, arg => format(arg, cfg)), ")"]
 		if ("return" in def) parts.push(" => ", format(def.return, cfg))
 	}
 

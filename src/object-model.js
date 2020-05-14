@@ -72,6 +72,7 @@ export const
 
 	parseDefinition = (def) => {
 		if (isPlainObject(def)) {
+			def = {}
 			for (let key in def) { def[key] = parseDefinition(def[key]) }
 		}
 		else if (!Array.isArray(def)) return [def]

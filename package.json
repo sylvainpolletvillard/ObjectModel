@@ -11,7 +11,7 @@
   },
   "scripts": {
     "prepare": "cjyes",
-    "build": "npm-run-all build:* && npm run info",
+    "build": "npm-run-all build:* && npm run info && cjyes",
     "build:js": "rollup -c",
     "build:min": "rollup -c --environment BUILD:production",
     "watch": "npm-run-all --parallel watch:*",

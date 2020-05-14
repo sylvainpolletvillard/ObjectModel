@@ -210,7 +210,7 @@ QUnit.test("Custom error collectors", function (assert) {
 
 QUnit.test("Extensions", function (assert) {
 
-	var PositiveInteger = BasicModel(Number)
+	const PositiveInteger = BasicModel(Number)
 		.assert(Number.isInteger)
 		.assert(n => n >= 0, "should be greater or equal to zero")
 
@@ -221,10 +221,44 @@ QUnit.test("Extensions", function (assert) {
 		return n > 1;
 	}
 
-	var PrimeNumber = PositiveInteger.extend().assert(isPrime);
+	const PrimeNumber = PositiveInteger.extend().assert(isPrime);
 
 	assert.equal(PrimeNumber.definition, Number, "Extension retrieve original definition");
 	assert.equal(PrimeNumber.assertions.length, 3, "Extension can add assertions");
 	assert.equal(PositiveInteger.assertions.length, 2, "Extension assertions are not added to original model");
 
+})
+
+QUnit.test("Object definitions behaviour", function (assert) {
+	const foo = BasicModel({ foo: String })
+	assert.equal(typeof foo.definition, "object", "Object definition can be passed to BasicModel")
+	assert.equal(foo({ foo: "bar" }).foo, "bar", "BasicModel with object definition is valid")
+	assert.throws(
+		function () {
+			foo({ foo: 123 })
+		},
+		/TypeError.*expecting foo to be String, got Number 123/,
+		"BasicModel with object definition has invalid prop value"
+	);
+	assert.throws(
+		function () {
+			foo("bar")
+		},
+		/TypeError.*expecting foo to be String, got undefined/,
+		"BasicModel with object definition has invalid type"
+	);
+	assert.throws(
+		function () {
+			BasicModel({ foo: String })("bar")
+		},
+		/TypeError.*expecting foo to be String, got undefined/,
+		"BasicModel with object definition has invalid type"
+	);
+	assert.throws(
+		function () {
+			foo(123)
+		},
+		/TypeError.*expecting foo to be String, got undefined/,
+		"BasicModel with object definition has invalid type"
+	);
 })

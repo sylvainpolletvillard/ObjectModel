@@ -1,4 +1,4 @@
-// ObjectModel v4.1.0 - http://objectmodel.js.org
+// ObjectModel v4.2.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -113,6 +113,7 @@ const
 
 	parseDefinition = (def) => {
 		if (isPlainObject(def)) {
+			def = {};
 			for (let key in def) { def[key] = parseDefinition(def[key]); }
 		}
 		else if (!Array.isArray(def)) return [def]
@@ -805,13 +806,7 @@ const format$1 = (x, config = {}) => {
 		return span(styles.string, `"${x}"`);
 
 	if (Array.isArray(x) && config.isModelDefinition) {
-		const def = [];
-		if (x.length === 1) x.push(undefined, null);
-		for (let i = 0; i < x.length; i++) {
-			def.push(format$1(x[i], config));
-			if (i < x.length - 1) def.push(" or ");
-		}
-		return span("", ...def)
+		return span("", ...x.flatMap(part => [format$1(part, config), " or "]).slice(0, -1))
 	}
 
 	if (isPlainObject(x))
@@ -832,17 +827,18 @@ const formatObject = (o, model, config) => span("",
 );
 
 const formatModel = model => {
-	const parts = [],
+	const
 		cfg = { isModelDefinition: true },
 		def = model.definition,
-		formatList = (list, map) => list.reduce((r, e) => [...r, map(e), ", "], []).slice(0, 2 * list.length - 1);
+		formatList = (list, map) => list.flatMap(e => [map(e), ", "]).slice(0, -1);
+	let parts = [];
 
-	if (is(BasicModel, model)) parts.push(format$1(def, cfg));
-	if (is(ArrayModel, model)) parts.push("Array of ", format$1(def, cfg));
-	if (is(SetModel, model)) parts.push("Set of ", format$1(def, cfg));
-	if (is(MapModel, model)) parts.push("Map of ", format$1(def.key, cfg), " : ", format$1(def.value, cfg));
+	if (is(BasicModel, model)) parts = [format$1(def, cfg)];
+	if (is(ArrayModel, model)) parts = ["Array of ", format$1(def, cfg)];
+	if (is(SetModel, model)) parts = ["Set of ", format$1(def, cfg)];
+	if (is(MapModel, model)) parts = ["Map of ", format$1(def.key, cfg), " : ", format$1(def.value, cfg)];
 	if (is(FunctionModel, model)) {
-		parts.push("Function(", ...formatList(def.arguments, arg => format$1(arg, cfg)), ")");
+		parts = ["Function(", ...formatList(def.arguments, arg => format$1(arg, cfg)), ")"];
 		if ("return" in def) parts.push(" => ", format$1(def.return, cfg));
 	}
 

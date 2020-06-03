@@ -19,7 +19,7 @@ export interface Model {
 
 	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
 
-	errorCollector(errors: ModelError[]);
+	errorCollector(errors: ModelError[]): void;
 
 	assert(assertion: Assertion, description?: string | Function): this;
 

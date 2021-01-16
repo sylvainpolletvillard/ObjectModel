@@ -11,21 +11,21 @@
 		"watch:css": "npm run build:css -- --watch"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.8.7",
-		"@babel/preset-env": "^7.8.7",
-		"autoprefixer": "^9.7.4",
-		"browserslist": "^4.9.1",
+		"@babel/core": "^7.12.10",
+		"@babel/preset-env": "^7.12.11",
+		"autoprefixer": "^10.2.1",
+		"browserslist": "^4.16.1",
 		"css-prefers-color-scheme": "^4.0.0",
 		"cssnano": "^4.1.10",
 		"npm-run-all": "^4.1.5",
-		"postcss": "^7.0.27",
-		"postcss-cli": "^7.1.0",
-		"postcss-import": "^12.0.1",
-		"postcss-nested": "^4.2.1",
-		"postcss-normalize": "^8.0.1",
+		"postcss": "^8.2.4",
+		"postcss-cli": "^8.3.1",
+		"postcss-import": "^14.0.0",
+		"postcss-nested": "^5.0.3",
+		"postcss-normalize": "^9.0.0",
 		"postcss-scrollbar": "^0.3.0",
-		"postcss-simple-vars": "^5.0.2",
-		"rollup": "^2.3.2",
+		"postcss-simple-vars": "^6.0.2",
+		"rollup": "^2.36.2",
 		"rollup-plugin-babel": "^4.4.0"
 	}
 }

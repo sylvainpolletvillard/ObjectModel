@@ -127,7 +127,7 @@ export interface ModelError {
 	path: string;
 }
 
-exort const Any: any;
+export const Any: any;
 export const Model: ModelConstructor;
 export const BasicModel: BasicModelConstructor;
 export const ObjectModel: ObjectModelConstructor;

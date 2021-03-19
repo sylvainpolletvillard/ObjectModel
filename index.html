@@ -156,7 +156,7 @@
 
 			<div id="download">
 				<h2>Download</h2>
-				<h3>Current version: v<span class="version">4.2.2</span></h3>
+				<h3>Current version: v<span class="version">4.2.3</span></h3>
 				<ul>
 					<li>
 						From <a href="https://www.npmjs.com/package/objectmodel" target="_blank" rel="noopener">
@@ -171,7 +171,7 @@
 						<a href="dist/object-model.min.js">object-model.min.js</a>
 					</li>
 					<li>Source files :
-						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.2.2.zip">object-model-4.2.2.zip</a>
+						<a class="link-zip" href="https://github.com/sylvainpolletvillard/ObjectModel/archive/v4.2.3.zip">object-model-4.2.3.zip</a>
 					</li>
 				</ul>
 
@@ -1032,11 +1032,9 @@ const Serializer = FunctionModel(Any).return(String);</code></pre>
 					parameters definition to specify a function that can take <i>any</i> amount of parameters.
 					<code>...Any</code> is a straight-forward syntax for functions already using the ES6
 					<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters"
-						target="_blank" rel="noopener">rest operator</a>, but you can use <code>Any.remaining</code> as
-					an alias to
-					<code>...Any</code> if you prefer.</p>
+						target="_blank" rel="noopener">rest operator</a>.</p>
 				<p>The remaining parameters can be checked against a definition passed as argument
-					(<code>...Any(def)</code> or <code>Any.remaining(def)</code>). That definition defaults to
+					(<code>...Any(def)</code>. That definition defaults to
 					<code>Any</code> if not specified.</p>
 			</div>
 

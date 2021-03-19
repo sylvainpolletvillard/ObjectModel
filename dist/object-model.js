@@ -1,4 +1,4 @@
-// ObjectModel v4.2.2 - http://objectmodel.js.org
+// ObjectModel v4.2.3 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,

@@ -1,4 +1,4 @@
-// ObjectModel v4.2.3 - http://objectmodel.js.org
+// ObjectModel v4.3.0 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -49,6 +49,7 @@ const
 	_check = Symbol(),
 	_checked = Symbol(), // used to skip validation at instanciation for perf
 	_original = Symbol(), // used to bypass proxy
+	CHECK_ONCE = Symbol(),
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
 		const model = function (val = model.default, mode) {
@@ -56,7 +57,7 @@ const
 			if (init) val = init(val, model, this);
 
 			if (mode === _checked || check(model, val))
-				return getTraps ? proxify(val, getTraps(model)) : val
+				return getTraps && mode !== CHECK_ONCE ? proxify(val, getTraps(model)) : val
 		};
 
 		if (parent) extend(model, parent);
@@ -98,7 +99,7 @@ const
 			const errors = model.errors.map(err => {
 				if (!err.message) {
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
-						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received);
+						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format$1(err.received);
 				}
 				return err
 			});
@@ -123,7 +124,7 @@ const
 	},
 
 	formatDefinition = (def, stack) => {
-		const parts = parseDefinition(def).map(d => format(d, stack));
+		const parts = parseDefinition(def).map(d => format$1(d, stack));
 		return parts.length > 1 ? parts.join(" or ") : parts[0]
 	},
 
@@ -199,14 +200,14 @@ const
 			}
 			if (result !== true) {
 				const onFail = isFunction(assertion.description) ? assertion.description : (assertionResult, value) =>
-					`assertion "${assertion.description}" returned ${format(assertionResult)} `
-					+ `for ${path ? path + " =" : "value"} ${format(value)}`;
+					`assertion "${assertion.description}" returned ${format$1(assertionResult)} `
+					+ `for ${path ? path + " =" : "value"} ${format$1(value)}`;
 				stackError(errors, assertion, obj, path, onFail.call(model, result, obj, path));
 			}
 		}
 	},
 
-	format = (obj, stack = []) => {
+	format$1 = (obj, stack = []) => {
 		if (stack.length > 15 || stack.includes(obj)) return "..."
 		if (obj === null || obj === undefined) return String(obj)
 		if (isString(obj)) return `"${obj}"`
@@ -215,14 +216,14 @@ const
 		stack.unshift(obj);
 
 		if (isFunction(obj)) return obj.name || obj.toString()
-		if (is(Map, obj) || is(Set, obj)) return format([...obj])
-		if (Array.isArray(obj)) return `[${obj.map(item => format(item, stack)).join(", ")}]`
+		if (is(Map, obj) || is(Set, obj)) return format$1([...obj])
+		if (Array.isArray(obj)) return `[${obj.map(item => format$1(item, stack)).join(", ")}]`
 		if (obj.toString && obj.toString !== ObjectProto.toString) return obj.toString()
 		if (isObject(obj)) {
 			const props = Object.keys(obj),
 				indent = "\t".repeat(stack.length);
 			return `{${props.map(
-				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
+				key => `\n${indent + key}: ${format$1(obj[key], [...stack])}`
 			).join(", ")} ${props.length ? `\n${indent.slice(1)}` : ""}}`
 		}
 
@@ -231,7 +232,7 @@ const
 
 	formatPath = (path, key) => path ? path + "." + key : key,
 
-	controlMutation = (model, def, path, o, key, privateAccess, applyMutation) => {
+	controlMutation$1 = (model, def, path, o, key, privateAccess, applyMutation) => {
 		const newPath = formatPath(path, key),
 			isPrivate = model.conventionForPrivate(key),
 			isConstant = model.conventionForConstant(key),
@@ -278,7 +279,7 @@ const
 		}
 
 		if (suitableModels.length > 1)
-			console.warn(`Ambiguous model for value ${format(obj)}, could be ${suitableModels.join(" or ")}`);
+			console.warn(`Ambiguous model for value ${format$1(obj)}, could be ${suitableModels.join(" or ")}`);
 
 		return obj
 	},
@@ -333,15 +334,15 @@ const
 			},
 
 			set(o, key, val) {
-				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.set(o, key, cast(val, def[key])))
+				return controlMutation$1(model, def, path, o, key, privateAccess, () => Reflect.set(o, key, cast(val, def[key])))
 			},
 
 			deleteProperty(o, key) {
-				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.deleteProperty(o, key))
+				return controlMutation$1(model, def, path, o, key, privateAccess, () => Reflect.deleteProperty(o, key))
 			},
 
 			defineProperty(o, key, args) {
-				return controlMutation(model, def, path, o, key, privateAccess, () => Reflect.defineProperty(o, key, args))
+				return controlMutation$1(model, def, path, o, key, privateAccess, () => Reflect.defineProperty(o, key, args))
 			},
 
 			has(o, key) {
@@ -421,13 +422,14 @@ Object.assign(Model.prototype, {
 		throw e
 	},
 
-	assert(assertion, description = format(assertion)) {
+	assert(assertion, description = format$1(assertion)) {
 		define(assertion, "description", description);
 		this.assertions = this.assertions.concat(assertion);
 		return this
 	}
 });
 
+Model.CHECK_ONCE = CHECK_ONCE;
 
 function BasicModel(def) {
 	return initModel(def, BasicModel)
@@ -462,7 +464,7 @@ extend(ObjectModel, Model, {
 	},
 
 	toString(stack) {
-		return format(this.definition, stack)
+		return format$1(this.definition, stack)
 	},
 
 	extend(...newParts) {
@@ -578,11 +580,11 @@ function ArrayModel(initialDefinition) {
 		},
 		{
 			set(arr, key, val) {
-				return controlMutation$1(model, arr, key, val, (a, v) => a[key] = v, true)
+				return controlMutation(model, arr, key, val, (a, v) => a[key] = v, true)
 			},
 
 			deleteProperty(arr, key) {
-				return controlMutation$1(model, arr, key, undefined, a => delete a[key])
+				return controlMutation(model, arr, key, undefined, a => delete a[key])
 			}
 		}
 	);
@@ -608,7 +610,7 @@ extend(ArrayModel, Model, {
 	}
 });
 
-const controlMutation$1 = (model, array, key, value, applyMutation, canBeExtended) => {
+const controlMutation = (model, array, key, value, applyMutation, canBeExtended) => {
 	const path = `Array[${key}]`;
 	const isInDef = (+key >= 0 && (canBeExtended || key in array));
 	if (isInDef) value = checkDefinition(value, model.definition, path, model.errors, [], true);
@@ -685,7 +687,7 @@ extend(MapModel, Model, {
 			path = path || "Map";
 			for (let [key, value] of map) {
 				checkDefinition(key, this.definition.key, `${path} key`, errors, stack);
-				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack);
+				checkDefinition(value, this.definition.value, `${path}[${format$1(key)}]`, errors, stack);
 			}
 		} else stackError(errors, this, map, path);
 
@@ -792,7 +794,7 @@ const getModel = (instance) => {
 
 const span = (style, ...children) => ["span", { style }, ...children];
 
-const format$1 = (x, config = {}) => {
+const format = (x, config = {}) => {
 	if (x === null || x === undefined)
 		return span(styles.null, "" + x);
 
@@ -806,7 +808,7 @@ const format$1 = (x, config = {}) => {
 		return span(styles.string, `"${x}"`);
 
 	if (Array.isArray(x) && config.isModelDefinition) {
-		return span("", ...x.flatMap(part => [format$1(part, config), " or "]).slice(0, -1))
+		return span("", ...x.flatMap(part => [format(part, config), " or "]).slice(0, -1))
 	}
 
 	if (isPlainObject(x))
@@ -821,7 +823,7 @@ const format$1 = (x, config = {}) => {
 const formatObject = (o, model, config) => span("",
 	"{",
 	["ol", { style: styles.list }, ...Object.keys(o).map(prop =>
-		["li", { style: styles.listItem }, span(styles.property, prop), ": ", format$1(o[prop], config)])
+		["li", { style: styles.listItem }, span(styles.property, prop), ": ", format(o[prop], config)])
 	],
 	"}"
 );
@@ -833,13 +835,13 @@ const formatModel = model => {
 		formatList = (list, map) => list.flatMap(e => [map(e), ", "]).slice(0, -1);
 	let parts = [];
 
-	if (is(BasicModel, model)) parts = [format$1(def, cfg)];
-	if (is(ArrayModel, model)) parts = ["Array of ", format$1(def, cfg)];
-	if (is(SetModel, model)) parts = ["Set of ", format$1(def, cfg)];
-	if (is(MapModel, model)) parts = ["Map of ", format$1(def.key, cfg), " : ", format$1(def.value, cfg)];
+	if (is(BasicModel, model)) parts = [format(def, cfg)];
+	if (is(ArrayModel, model)) parts = ["Array of ", format(def, cfg)];
+	if (is(SetModel, model)) parts = ["Set of ", format(def, cfg)];
+	if (is(MapModel, model)) parts = ["Map of ", format(def.key, cfg), " : ", format(def.value, cfg)];
 	if (is(FunctionModel, model)) {
-		parts = ["Function(", ...formatList(def.arguments, arg => format$1(arg, cfg)), ")"];
-		if ("return" in def) parts.push(" => ", format$1(def.return, cfg));
+		parts = ["Function(", ...formatList(def.arguments, arg => format(arg, cfg)), ")"];
+		if ("return" in def) parts.push(" => ", format(def.return, cfg));
 	}
 
 	if (model.assertions.length > 0) {
@@ -855,7 +857,7 @@ const ModelFormatter = {
 			return span(styles.model, "Any")
 
 		if (is(Any.remaining, x))
-			return span(styles.model, "...", format$1(x.definition, { isModelDefinition: true }))
+			return span(styles.model, "...", format(x.definition, { isModelDefinition: true }))
 
 		if (is(ObjectModel, x))
 			return span(styles.model, x.name)
@@ -865,7 +867,7 @@ const ModelFormatter = {
 		}
 
 		if (config.isModelDefinition && isPlainObject(x))
-			return format$1(x, config)
+			return format(x, config)
 
 		return null;
 	},
@@ -888,8 +890,8 @@ const ModelFormatter = {
 				}
 
 				return ["li", { style: styles.listItem },
-					span(style, prop), ": ", format$1(model.definition[prop], { isModelDefinition: true }),
-					hasDefault ? span(styles.proto, " = ", format$1(model.default[prop])) : ""
+					span(style, prop), ": ", format(model.definition[prop], { isModelDefinition: true }),
+					hasDefault ? span(styles.proto, " = ", format(model.default[prop])) : ""
 				]
 			})],
 			"}"
@@ -900,7 +902,7 @@ const ModelFormatter = {
 const ModelInstanceFormatter = {
 	header(x, config = {}) {
 		if (config.isInstanceProperty && isPlainObject(x)) {
-			return format$1(x, config)
+			return format(x, config)
 		}
 
 		const model = getModel(x);
@@ -937,7 +939,7 @@ const ModelInstanceFormatter = {
 					}
 
 					return ["li", { style: styles.listItem },
-						span(style, prop), ": ", format$1(o[prop], { isInstanceProperty: true })
+						span(style, prop), ": ", format(o[prop], { isInstanceProperty: true })
 					]
 				}),
 				["li", { style: styles.listItem },

@@ -28,6 +28,7 @@ export interface Model {
 export interface ModelConstructor {
 	(definition: any): ObjectModel;
 	new(definition: any): ObjectModel;
+	CHECK_ONCE: symbol;
 }
 
 export interface BasicModel extends Model {

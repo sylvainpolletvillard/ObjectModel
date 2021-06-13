@@ -16,7 +16,6 @@ QUnit.test("constructor && proto", function (assert) {
 	assert.ok(Arr.definition === Number, "test Array model prop definition");
 	assert.ok(typeof Arr.assertions === "object", "test Array model prop assertions");
 
-
 	assert.ok(ArrayModel(undefined) instanceof ArrayModel, "ArrayModel can receive undefined as argument");
 });
 

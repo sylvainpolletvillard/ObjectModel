@@ -8,6 +8,7 @@ export const
 	_check = Symbol(),
 	_checked = Symbol(), // used to skip validation at instanciation for perf
 	_original = Symbol(), // used to bypass proxy
+	CHECK_ONCE = Symbol(),
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
 		const model = function (val = model.default, mode) {
@@ -15,7 +16,7 @@ export const
 			if (init) val = init(val, model, this)
 
 			if (mode === _checked || check(model, val))
-				return getTraps ? proxify(val, getTraps(model)) : val
+				return getTraps && mode !== CHECK_ONCE ? proxify(val, getTraps(model)) : val
 		}
 
 		if (parent) extend(model, parent)
@@ -387,6 +388,7 @@ Object.assign(Model.prototype, {
 	}
 })
 
+Model.CHECK_ONCE = CHECK_ONCE
 
 export function BasicModel(def) {
 	return initModel(def, BasicModel)

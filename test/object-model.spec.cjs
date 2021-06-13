@@ -1306,3 +1306,23 @@ QUnit.test("Null-safe object traversal", function (assert) {
 	config.local.time.format = "12h";
 	assert.strictEqual(config.local.time.format, "12h", "null-safe object traversal setter")
 })
+
+QUnit.test("Check once mode", function(assert){
+	const Address = Model({ city: String, street: { name: String, number: Number }})
+	assert.throws(function () {
+		Address({ city: "Paris", street: { name: null, number: 12 }}, Model.CHECK_ONCE)
+	}, /TypeError.*expecting street.name to be String/, "check once mode still checks at instanciation")
+	const a = new Address({ city: "Paris", street: { name: "Champs-Elysees", number: 12 }}, Model.CHECK_ONCE)
+	a.street.name = null;
+	assert.strictEqual(a.street.name, null, "check once mode does not check future mutations")
+
+	class Person extends Model({ name: String, age: Number }) {
+		constructor({ name, age }) {
+			super({ name, age }, Model.CHECK_ONCE)
+		}
+	}
+
+	const john = new Person({ name: "John", age: 32 })
+	john.age = "twelve";
+	assert.strictEqual(john.age, "twelve", "check once mode does not check future mutations for extended class-based models")
+})

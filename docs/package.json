@@ -15,7 +15,7 @@
 		"@babel/preset-env": "^7.16.0",
 		"autoprefixer": "^10.4.0",
 		"browserslist": "^4.17.5",
-		"css-prefers-color-scheme": "^5.0.0",
+		"css-prefers-color-scheme": "^6.0.0",
 		"cssnano": "^5.0.9",
 		"npm-run-all": "^4.1.5",
 		"postcss": "^8.3.11",
@@ -23,7 +23,7 @@
 		"postcss-import": "^14.0.2",
 		"postcss-nested": "^5.0.6",
 		"postcss-normalize": "^10.0.1",
-		"postcss-scrollbar": "^0.3.0",
+		"postcss-scrollbar": "^0.5.0",
 		"postcss-simple-vars": "^6.0.3",
 		"rollup": "^2.59.0",
 		"rollup-plugin-babel": "^4.4.0"

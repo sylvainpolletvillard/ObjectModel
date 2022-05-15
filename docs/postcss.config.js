@@ -4,7 +4,7 @@ module.exports = {
 		require("postcss-simple-vars"),
 		require("postcss-nested"),
 		require("postcss-scrollbar"),
-		require("css-prefers-color-scheme/postcss"),
+		require("css-prefers-color-scheme"),
 		require("autoprefixer"),
 		require("postcss-normalize")({ forceImport: true }),
 		require("cssnano")

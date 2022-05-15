@@ -1,12 +1,14 @@
-const fs = require('fs');
-const filesize = require('filesize')
-const getGzipSize = require('gzip-size').sync;
+import fs from 'fs';
+import filesize from 'pretty-bytes';
+import { gzipSizeSync } from 'gzip-size';
 
-const pkg = require('../package.json');
+import pkg from '../package.json' assert { type: 'json' };
 
 function updateIndex(html){
 	const libPath = "./dist/object-model.min.js"
-	const gzipSize = getGzipSize(fs.readFileSync(libPath, 'utf8'));
+	//const gzipSize = gzipSizeFromFileSync(libPath);
+	const gzipSize = gzipSizeSync(fs.readFileSync(libPath, 'utf8'));
+	console.info(`gzip size: ${gzipSize}`)
 
 	console.info(`${pkg.name} v${pkg.version}: ${filesize(gzipSize)} minified and gzipped`)
 

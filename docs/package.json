@@ -11,8 +11,6 @@
 		"watch:css": "npm run build:css -- --watch"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.16.0",
-		"@babel/preset-env": "^7.16.0",
 		"autoprefixer": "^10.4.0",
 		"browserslist": "^4.17.5",
 		"css-prefers-color-scheme": "^6.0.0",
@@ -25,7 +23,6 @@
 		"postcss-normalize": "^10.0.1",
 		"postcss-scrollbar": "^0.5.0",
 		"postcss-simple-vars": "^6.0.3",
-		"rollup": "^2.59.0",
-		"rollup-plugin-babel": "^4.4.0"
+		"rollup": "^2.59.0"
 	}
 }

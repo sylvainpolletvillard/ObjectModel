@@ -1,4 +1,3 @@
-import babel from "rollup-plugin-babel"
 import { terser } from "rollup-plugin-terser"
 
 export default {
@@ -9,9 +8,6 @@ export default {
 		sourcemap: true
 	},
 	plugins: [
-		babel({
-			presets: [["@babel/env", { modules: false }]]
-		}),
 		terser()
 	]
 }

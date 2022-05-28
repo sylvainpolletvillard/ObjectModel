@@ -11,13 +11,11 @@ const SealedModel = def => {
 		Object.keys(obj).forEach(key => {
 			let val = obj[key],
 				subpath = path ? path + "." + key : key;
-			if (!Object.prototype.hasOwnProperty.call(def, key)) {
+			if(def instanceof Model){
+				// trust nested model props validation
+			} else if (!Object.prototype.hasOwnProperty.call(def, key)) {
 				undeclaredProps.push(subpath);
-			} else if (
-				val &&
-        typeof val === "object" &&
-        Object.getPrototypeOf(val) === Object.prototype
-			) {
+			} else if (val && typeof val === "object" && Object.getPrototypeOf(val) === Object.prototype) {
 				checkUndeclaredProps(val, def[key], undeclaredProps, subpath);
 			}
 		});

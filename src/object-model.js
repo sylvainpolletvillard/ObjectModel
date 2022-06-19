@@ -325,8 +325,8 @@ export const
 	}
 
 
-export function Model(def, params) {
-	return isPlainObject(def) ? new ObjectModel(def, params) : new BasicModel(def)
+export function Model(def) {
+	return isPlainObject(def) ? new ObjectModel(def) : new BasicModel(def)
 }
 
 Object.assign(Model.prototype, {

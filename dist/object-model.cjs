@@ -1,4 +1,4 @@
-// ObjectModel v4.3.0 - http://objectmodel.js.org
+// ObjectModel v4.3.1 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -74,7 +74,8 @@ const
 		if (is(model, obj)) return obj
 
 		if (!isObject(obj) && !isFunction(obj) && obj !== undefined) {
-			stackError(model.errors, Object, obj);
+			// short circuit validation if not receiving an object as expected
+			return obj
 		}
 
 		merge(_this, model.default);

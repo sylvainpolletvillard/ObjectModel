@@ -33,7 +33,8 @@ export const
 		if (is(model, obj)) return obj
 
 		if (!isObject(obj) && !isFunction(obj) && obj !== undefined) {
-			stackError(model.errors, Object, obj)
+			// short circuit validation if not receiving an object as expected
+			return obj
 		}
 
 		merge(_this, model.default)

@@ -1326,3 +1326,22 @@ QUnit.test("Check once mode", function(assert){
 	john.age = "twelve";
 	assert.strictEqual(john.age, "twelve", "check once mode does not check future mutations for extended class-based models")
 })
+
+QUnit.test("Short-circuit validation when not receiving an object as expected", function(assert){
+	const PersonModel = new ObjectModel({
+		FirstName: String,
+		LastName: String,
+	  })
+	const errorsCollected = []
+	PersonModel.errorCollector = function(errors){
+		errorsCollected.push(...errors)
+	}
+	  
+	PersonModel(42)
+	console.log({ errorsCollected})
+	assert.equal(errorsCollected.length, 1, "should only have 1 error")
+	assert.equal(errorsCollected[0].message, `expecting {
+	FirstName: String, 
+	LastName: String 
+}, got Number 42`)
+})

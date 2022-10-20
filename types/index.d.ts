@@ -46,17 +46,17 @@ export interface BasicModelConstructor {
 }
 
 export interface ObjectModel extends Model {
-	(): Object;
-	new(): Object;
-	(object: object): Object;
-	new(object: object): Object;
+	(): object;
+	new(): object;
+	(object: object): object;
+	new(object: object): object;
 
 	extend(...otherDefinitions: Array<Object | ObjectModel>): this;
 }
 
 export interface ObjectModelConstructor {
-	(definition: Object): ObjectModel;
-	new(definition: Object): ObjectModel;
+	(definition: object): ObjectModel;
+	new(definition: object): ObjectModel;
 }
 
 export interface ArrayModel extends Model {

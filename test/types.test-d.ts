@@ -1,6 +1,5 @@
 import {expectType} from 'tsd';
 import { Model, BasicModel, ObjectModel } from "../src/object-model"
-import { FromDefinition } from '../types/definitions';
 
 expectType<number>(BasicModel(Number)(0))
 expectType<number>(Model(Number)(Infinity))
@@ -13,18 +12,16 @@ expectType<boolean>(Model(Boolean)(false))
 
 expectType<string>(BasicModel(/A-Z/)("TEST"))
 
-type T = FromDefinition<["optional"]>
-const M = Model(["optional"])
 
-expectType<"optional" | undefined | null>(BasicModel(["optional"])())
-expectType<Number | undefined | null>(BasicModel([Number])(null))
+expectType<"optional" | undefined | null>(BasicModel(["optional"] as const)())
+expectType<number | undefined | null>(BasicModel([Number])(null))
 
-expectType<"one" | "two">(BasicModel(["one","two"])("one"))
-expectType<Number | String>(BasicModel([Number, String])(2))
-expectType<Boolean | null>(BasicModel([Boolean, null])(false))
-expectType<Date | "never">(BasicModel(["never", Date])("never"))
+expectType<"one" | "two">(BasicModel(["one","two"] as const)("one"))
+expectType<number | string>(BasicModel([Number, String])(2))
+expectType<boolean | null>(BasicModel([Boolean, null])(false))
+expectType<Date | "never">(BasicModel(["never", Date] as const)("never"))
 
-expectType<{ a: number, b: "b" }>(Model({ a: Number, b: "b" }))
+expectType<{ a: number, b: "b" }>(Model({ a: Number, b: "b" })({ a: 1, b:"b" }))
 
 expectType<{
     product: {
@@ -38,4 +35,7 @@ expectType<{
 		quantity: Number,
 	},
 	orderDate: Date
+})({
+    product: { name: "Apple Pie", quantity: 1 },
+	orderDate: new Date()
 }))

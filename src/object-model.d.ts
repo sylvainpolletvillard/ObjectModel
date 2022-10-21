@@ -1,7 +1,7 @@
 import { FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
 import { Assertion, ModelError } from "../types";
 
-export interface Model<D extends ModelDefinition> {
+export interface Model<D> {
 	(value?: any): any;
 
 	definition: D;
@@ -27,12 +27,14 @@ export interface Model<D extends ModelDefinition> {
 }
 
 export interface ModelConstructor {
-	<D extends ModelDefinition>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
-	new<D extends ModelDefinition>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
+	<D>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
+	new<D>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
 	CHECK_ONCE: symbol;
 }
 
-export interface BasicModel<D extends ModelDefinition> extends Model<D> {
+export interface BasicModel<D> extends Model<D> {
+	(): FromDefinition<D>
+	new(): FromDefinition<D>
 	(value: any): FromDefinition<D>
 	new(value: any): FromDefinition<D>
 
@@ -40,11 +42,13 @@ export interface BasicModel<D extends ModelDefinition> extends Model<D> {
 }
 
 export interface BasicModelConstructor {
-	<D extends ModelDefinition>(definition: D): BasicModel<D>
-	new<D extends ModelDefinition>(definition: D): BasicModel<D>;
+	<D>(definition: D): BasicModel<D>
+	new<D>(definition: D): BasicModel<D>;
 }
 
 export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
+	(): FromObjectModelDefinition<D>
+	new(): FromObjectModelDefinition<D>
 	(definition: D): FromObjectModelDefinition<D>;
 	new(definition: D): FromObjectModelDefinition<D>;
 

@@ -1,9 +1,9 @@
 import { ModelDefinition, FromDefinition } from "../types/definitions";
 import { Model } from "./object-model";
 
-export interface ArrayModel<D extends ModelDefinition> extends Model<D> {	
-	(array: FromDefinition<D>[]): FromDefinition<D>[];
-	new(array: FromDefinition<D>[]): FromDefinition<D>[];
+export interface ArrayModel<D> extends Model<D> {	
+	(array: any[]): Array<FromDefinition<D>>;
+	new(array: any[]): Array<FromDefinition<D>>;
 
 	extend(...otherElementDefinitions: any[]): this;
 }

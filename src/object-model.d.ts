@@ -1,4 +1,5 @@
 import { FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
+import { MergeObjects } from '../types/helpers';
 
 export type Assertion = (variable: any) => boolean
 
@@ -59,7 +60,7 @@ export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
 	(value: any): FromObjectModelDefinition<D>;
 	new(value: any): FromObjectModelDefinition<D>;
 
-	extend(...otherDefinitions: (object | ObjectModel<any>)[]): this;
+	extend<Extensions extends (object | ObjectModel<any>)[]>(...ext: [...Extensions]) : MergeObjects<[this, ...Extensions]>;
 }
 
 export interface ObjectModelConstructor {

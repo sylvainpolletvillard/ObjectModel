@@ -1,3 +1,5 @@
+import { ArrayModel } from "../src/array-model"
+
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>
 export type FunctionModelDefinition = any
@@ -6,8 +8,9 @@ export type FromDefinition<T> = T extends StringConstructor | RegExp ? string
                               : T extends NumberConstructor ? number
                               : T extends BooleanConstructor ? boolean
                               : T extends ObjectModelDefinition ? FromObjectModelDefinition<T>
+                              : T extends ArrayModel<infer U> ? Array<FromDefinition<U>>
                               : T extends readonly [...infer U] ? FromUnionDefinition<U>
-                              : T extends any[] ? any // TypeScript can't infer optionals and multiple values for now without "as const", see https://github.com/microsoft/TypeScript/issues/16656					          
+                              : T extends any[] ? Error // TypeScript can't infer optionals and multiple values for now without "as const", see https://github.com/microsoft/TypeScript/issues/16656
                               : T extends new () => infer ConstructorType ? ConstructorType
 					          : T
 

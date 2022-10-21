@@ -12,16 +12,15 @@ expectType<boolean>(Model(Boolean)(false))
 
 expectType<string>(BasicModel(/A-Z/)("TEST"))
 
+expectType<"optional" | undefined | null>(BasicModel(<const>["optional"])())
+expectType<number | undefined | null>(BasicModel(<const>[Number])(null))
 
-expectType<"optional" | undefined | null>(BasicModel(["optional"] as const)())
-expectType<number | undefined | null>(BasicModel([Number])(null))
+expectType<"one" | "two">(BasicModel(<const>["one","two"])("one"))
+expectType<number | string>(BasicModel(<const>[Number, String])(2))
+expectType<boolean | null>(BasicModel(<const>[Boolean, null])(false))
+expectType<Date | "never">(BasicModel(<const>["never", Date])("never"))
 
-expectType<"one" | "two">(BasicModel(["one","two"] as const)("one"))
-expectType<number | string>(BasicModel([Number, String])(2))
-expectType<boolean | null>(BasicModel([Boolean, null])(false))
-expectType<Date | "never">(BasicModel(["never", Date] as const)("never"))
-
-expectType<{ a: number, b: "b" }>(Model({ a: Number, b: "b" })({ a: 1, b:"b" }))
+expectType<{ a: number, b: "b" }>(Model({ a: Number, b: <const>"b" })({ a: 1, b: "b" }))
 
 expectType<{
     product: {

@@ -1,21 +1,20 @@
 import { ObjectModel } from "objectmodel";
 
 const SealedModel = def => {
-	let model = ObjectModel(def);
+	const model = ObjectModel(def);
 	model.sealed = true;
 	model.extend = () => {
 		throw new Error(`Sealed models cannot be extended`);
 	};
 
+	const isPlainObject = obj => typeof obj === "object" && Object.getPrototypeOf(obj) === Object.prototype
 	const checkUndeclaredProps = (obj, def, undeclaredProps, path) => {
 		Object.keys(obj).forEach(key => {
 			let val = obj[key],
 				subpath = path ? path + "." + key : key;
-			if(def instanceof Model){
-				// trust nested model props validation
-			} else if (!Object.prototype.hasOwnProperty.call(def, key)) {
+			if(isPlainObject(def) && !Object.prototype.hasOwnProperty.call(def, key)) {
 				undeclaredProps.push(subpath);
-			} else if (val && typeof val === "object" && Object.getPrototypeOf(val) === Object.prototype) {
+			} else if (isPlainObject(val) && isPlainObject(def)) {
 				checkUndeclaredProps(val, def[key], undeclaredProps, subpath);
 			}
 		});

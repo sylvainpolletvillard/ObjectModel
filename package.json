@@ -21,7 +21,9 @@
     "info:banner": "node build/add-banner.js",
     "info:docs": "node build/update-docs.js",
     "lint": "eslint . --fix",
-    "test": "qunit test/index.cjs"
+    "test": "npm-run-all test:*",
+    "test:unit": "qunit test/index.cjs",
+    "test:tsd": "tsd"
   },
   "devDependencies": {
     "cjyes": "^0.3.1",
@@ -32,7 +34,8 @@
     "pretty-bytes": "^6.0.0",
     "qunit": "^2.19.1",
     "rollup": "^2.75.6",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup-plugin-terser": "^7.0.2",
+    "tsd": "^0.24.1"
   },
   "type": "module",
   "main": "dist/object-model.js",
@@ -41,6 +44,9 @@
     "require": "./dist/object-model.cjs"
   },
   "types": "types/index.d.ts",
+  "tsd": {
+		"directory": "test"
+	},
   "engines": {
     "npm": ">=7.0.0",
     "node": ">=17.5.0"

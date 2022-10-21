@@ -1338,7 +1338,6 @@ QUnit.test("Short-circuit validation when not receiving an object as expected", 
 	}
 	  
 	PersonModel(42)
-	console.log({ errorsCollected})
 	assert.equal(errorsCollected.length, 1, "should only have 1 error")
 	assert.equal(errorsCollected[0].message, `expecting {
 	FirstName: String, 

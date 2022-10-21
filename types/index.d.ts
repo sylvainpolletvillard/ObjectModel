@@ -1,122 +1,64 @@
 // TypeScript definition file for ObjectModel
 
-export interface Model {
-	(value?: any): any;
+import { ModelConstructor, BasicModelConstructor, ObjectModelConstructor } from "../src/object-model";
+import { ModelDefinition, FromDefinition } from "./definitions";
 
-	definition: any;
-	assertions: Assertion[];
-	default: any;
-	name: string;
+export interface ArrayModel<D extends ModelDefinition> extends Model<D> {	
+	(array: FromDefinition<D>[]): FromDefinition<D>[];
+	new(array: FromDefinition<D>[]): FromDefinition<D>[];
 
-	conventionForConstant(variableName: string): boolean;
-	conventionForPrivate(variableName: string): boolean;
-
-	toString(stack?: any[]): string;
-
-	as(name: string): this;
-
-	defaultTo(defaultValue: any): this;
-
-	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
-
-	errorCollector(errors: ModelError[]): void;
-
-	assert(assertion: Assertion, description?: string | Function): this;
-
-}
-
-export interface ModelConstructor {
-	(definition: any): ObjectModel;
-	new(definition: any): ObjectModel;
-	CHECK_ONCE: symbol;
-}
-
-export interface BasicModel extends Model {
-	(): any;
-	new(): any;
-	(value: any): any
-	new(value: any): any
-
-	extend(...otherDefinitions: Array<any>): this;
-}
-
-export interface BasicModelConstructor {
-	(definition: any): BasicModel
-	new(definition: any): BasicModel;
-}
-
-export interface ObjectModel extends Model {
-	(): object;
-	new(): object;
-	(object: object): object;
-	new(object: object): object;
-
-	extend(...otherDefinitions: Array<Object | ObjectModel>): this;
-}
-
-export interface ObjectModelConstructor {
-	(definition: object): ObjectModel;
-	new(definition: object): ObjectModel;
-}
-
-export interface ArrayModel extends Model {
-	<T>(): Array<T>;
-	new <T>(): Array<T>;
-	<T>(array: Array<T>): Array<T>;
-	new <T>(array: Array<T>): Array<T>;
-
-	extend(...otherElementDefinitions: Array<any>): this;
+	extend(...otherElementDefinitions: any[]): this;
 }
 
 export interface ArrayModelConstructor {
-	(itemDefinition: any): ArrayModel;
-	new(itemDefinition: any): ArrayModel;
+	<D extends ModelDefinition>(itemDefinition: D): ArrayModel<D>;
+	new<D extends ModelDefinition>(itemDefinition: D): ArrayModel<D>;
 }
 
-export interface FunctionModel extends Model {
+export interface FunctionModel<Args extends ModelDefinition[], Return extends ModelDefinition> extends Model<{ arguments: Args, return: Return }> {
 	(): Function;
 	new(): Function;
 	(fn: Function): Function;
 	new(fn: Function): Function;
 
-	definition: { arguments: any[], return: any };
+	definition: { arguments: Args, return: Return };
 
-	return(returnValueDefinition: any): FunctionModel;
+	return<R extends ModelDefinition>(returnValueDefinition: any): FunctionModel<Args, R>;
 
-	extend(otherArgsDefinitions: Array<any>, otherReturnValuesDefinitions: Array<any>): this;
+	extend(otherArgsDefinitions: any[], otherReturnValuesDefinitions: any[]): this;
 }
 
 export interface FunctionModelConstructor {
-	(...argumentsDefinitions: any[]): FunctionModel;
-	new(...argumentsDefinitions: any[]): FunctionModel;
+	<Args extends ModelDefinition[]>(...argumentsDefinitions: any[]): FunctionModel<Args, any>;
+	new<Args extends ModelDefinition[]>(...argumentsDefinitions: any[]): FunctionModel<Args, any>;
 }
 
-export interface MapModel extends Model {
+export interface MapModel<Key extends ModelDefinition, Value extends ModelDefinition> extends Model<{ key: Key, value: Value}> {
 	(): Map<any, any>;
 	new(): Map<any, any>;
 	(iterable: Map<any, any> | Array<[any, any]>): Map<any, any>;
 	new(iterable: Map<any, any> | Array<[any, any]>): Map<any, any>;
 
-	extend(otherKeyDefinitions: Array<any>, otherValueDefinitions: Array<any>): this;
+	definition: { key: Key, value: Value };
+
+	extend(otherKeyDefinitions: any[], otherValueDefinitions: any[]): this;
 }
 
 export interface MapModelConstructor {
-	(keyDefinition: any, valueDefinition: any): MapModel;
-	new(keyDefinition: any, valueDefinition: any): MapModel;
+	<Key extends ModelDefinition, Value extends ModelDefinition>(keyDefinition: Key, valueDefinition: Value): MapModel<Key, Value>;
+	new<Key extends ModelDefinition, Value extends ModelDefinition>(keyDefinition: Key, valueDefinition: Value): MapModel<Key, Value>;
 }
 
-export interface SetModel extends Model {
-	(): Set<any>;
-	new(): Set<any>;
-	(set: Set<any> | Array<any>): Set<any>;
-	new(set: Set<any> | Array<any>): Set<any>;
+export interface SetModel<D extends ModelDefinition> extends Model<D> {
+	(set: Set<any> | any[]): Set<any>;
+	new(set: Set<any> | any[]): Set<any>;
 
 	extend(...otherElementDefinitions: Array<any>): this;
 }
 
 export interface SetModelConstructor {
-	(itemDefinition: any): SetModel;
-	new(itemDefinition: any): SetModel;
+	<D extends ModelDefinition>(itemDefinition: D): SetModel<D>;
+	new<D extends ModelDefinition>(itemDefinition: D): SetModel<D>;
 }
 
 export type Assertion = (variable: any) => boolean

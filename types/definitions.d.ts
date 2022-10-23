@@ -1,4 +1,5 @@
 import { ArrayModel } from "../src/array-model"
+import { IsTuple } from "./helpers"
 
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>
@@ -10,7 +11,7 @@ export type FromDefinition<T> = T extends StringConstructor | RegExp ? string
                               : T extends ObjectModelDefinition ? FromObjectModelDefinition<T>
                               : T extends ArrayModel<infer U> ? Array<FromDefinition<U>>
                               : T extends readonly [...infer U] ? FromUnionDefinition<U>
-                              : T extends any[] ? Error // TypeScript can't infer optionals and multiple values for now without "as const", see https://github.com/microsoft/TypeScript/issues/16656
+                              : T extends any[] ? FromDefinition<T[number]> // TypeScript can't infer array literals as tuples for now without <const> assertions, see https://github.com/microsoft/TypeScript/issues/16656
                               : T extends new () => infer ConstructorType ? ConstructorType
 					          : T
 

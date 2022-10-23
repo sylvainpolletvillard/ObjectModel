@@ -1,5 +1,5 @@
 import { FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
-import { MergeObjects } from '../types/helpers';
+import { MergeObjects, TupleToUnion } from '../types/helpers';
 
 export type Assertion = (variable: any) => boolean
 
@@ -43,10 +43,10 @@ export interface ModelConstructor {
 export interface BasicModel<D> extends Model<D> {
 	(): FromDefinition<D>
 	new(): FromDefinition<D>
-	(value: any): FromDefinition<D>
-	new(value: any): FromDefinition<D>
+	(value: FromDefinition<D>): FromDefinition<D>
+	new(value: FromDefinition<D>): FromDefinition<D>
 
-	extend(...otherDefinitions: ModelDefinition[]): this;
+	extend<E extends ModelDefinition[]>(...extensions: E): BasicModel<TupleToUnion<[D, ...E]>>;
 }
 
 export interface BasicModelConstructor {

@@ -1,5 +1,4 @@
 import { ArrayModel } from "../src/array-model"
-import { IsTuple } from "./helpers"
 
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>

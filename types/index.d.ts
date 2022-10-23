@@ -6,7 +6,6 @@ import { MapModelConstructor } from "../src/map-model";
 import { ModelConstructor, BasicModelConstructor, ObjectModelConstructor } from "../src/object-model";
 import { SetModelConstructor } from "../src/set-model";
 
-
 export const Any: any;
 export const Model: ModelConstructor;
 export const BasicModel: BasicModelConstructor;

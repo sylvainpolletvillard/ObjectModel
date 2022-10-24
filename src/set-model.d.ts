@@ -5,7 +5,7 @@ export interface SetModel<D extends ModelDefinition> extends Model<D> {
 	(set: Set<any> | any[]): Set<FromDefinition<D>>;
 	new(set: Set<any> | any[]): Set<FromDefinition<D>>;
 
-	extend(...otherElementDefinitions: Array<any>): this;
+	extend<E extends ModelDefinition[]>(...extensions: E): SetModel<E extends [] ? D : [D, ...E]>
 }
 
 export interface SetModelConstructor {

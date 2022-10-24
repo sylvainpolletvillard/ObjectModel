@@ -10,3 +10,12 @@ const Response = ObjectModel({ r: String })
 const Quiz = MapModel(Question, Response);
 
 expectType<Map<{ q: string }, { r: string }>>(Quiz(new Map([])));
+
+const MapModel1 = MapModel(String, Date)
+const MapModel2 = MapModel1.extend([ ObjectModel({ ref: String }), Number], [ ObjectModel({ date: Date }), String])
+
+expectType<Map<string | number | { ref: string }, Date | string | { date: Date }>>(MapModel2([
+    ["a", new Date()],
+    [2, "b"],
+    [{ ref: "c"}, { date: new Date() }]
+]))

@@ -45,8 +45,8 @@ export interface BasicModel<D> extends Model<D> {
 	new(): FromDefinition<D>
 	(value: FromDefinition<D>): FromDefinition<D>
 	new(value: FromDefinition<D>): FromDefinition<D>
-
-	extend<E extends ModelDefinition[]>(...extensions: E): BasicModel<TupleToUnion<[D, ...E]>>;
+	
+	extend<E extends ModelDefinition[]>(...extensions: E): BasicModel<E extends [] ? D : [D, ...E]>;
 }
 
 export interface BasicModelConstructor {

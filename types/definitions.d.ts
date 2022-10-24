@@ -2,7 +2,6 @@ import { ArrayModel } from "../src/array-model"
 
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>
-export type FunctionModelDefinition = any
 
 export type FromDefinition<T> = T extends StringConstructor | RegExp ? string
                               : T extends NumberConstructor ? number

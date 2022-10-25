@@ -1,18 +1,21 @@
-import {expectType} from 'tsd';
+import {expectError, expectType} from 'tsd';
 import { Model, BasicModel } from "../src/object-model"
 
 expectType<number>(BasicModel(Number)(0))
 expectType<number>(new Model(Number)(Infinity))
+expectError(BasicModel(Number)("0"))
 
 expectType<string>(new BasicModel(String)(""))
 expectType<string>(Model(String)("test"))
+expectError(Model(String)(null))
 
 expectType<boolean>(BasicModel(Boolean)(true))
 expectType<boolean>(new Model(Boolean)(false))
+expectError(new Model(Boolean)(""))
 
 expectType<string>(BasicModel(/A-Z/)("TEST"))
 
-expectType<"optional" | undefined | null>(BasicModel(<const>["optional"])())
+expectType<"optional" | undefined | null>(BasicModel(<const>["optional"])(undefined))
 expectType<number | undefined | null>(new BasicModel(<const>[Number])(null))
 
 expectType<"one" | "two">(BasicModel(<const>["one","two"])("one"))

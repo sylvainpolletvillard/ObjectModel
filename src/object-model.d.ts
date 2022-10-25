@@ -9,12 +9,10 @@ export interface ModelError {
 	received: any;
 	path: string;
 }
-export interface Model<D> {
-	(value?: any): any;
 
+export interface Model<D> {	
 	definition: D;
 	assertions: Assertion[];
-	default?: FromDefinition<D>;
 	name: string;
 
 	conventionForConstant(variableName: string): boolean;
@@ -24,7 +22,7 @@ export interface Model<D> {
 
 	as(name: string): this;
 
-	defaultTo(defaultValue: FromDefinition<D>): this;
+	defaultTo<Default extends FromDefinition<D>>(defaultValue: Default): ModelWithDefault<D,Default>;
 
 	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
 
@@ -34,6 +32,13 @@ export interface Model<D> {
 
 }
 
+export interface ModelWithDefault<D,Default> extends Model<D> {
+	default: Default
+
+	(): Default
+	new(): Default
+}
+
 export interface ModelConstructor {
 	<D>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
 	new<D>(definition: D): D extends ObjectModelDefinition ? ObjectModel<D> : BasicModel<D>;
@@ -41,8 +46,6 @@ export interface ModelConstructor {
 }
 
 export interface BasicModel<D> extends Model<D> {
-	(): FromDefinition<D>
-	new(): FromDefinition<D>
 	(value: FromDefinition<D>): FromDefinition<D>
 	new(value: FromDefinition<D>): FromDefinition<D>
 
@@ -55,8 +58,6 @@ export interface BasicModelConstructor {
 }
 
 export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
-	(): FromObjectModelDefinition<D>
-	new(): FromObjectModelDefinition<D>
 	(value: any): FromObjectModelDefinition<D>;
 	new(value: any): FromObjectModelDefinition<D>;
 

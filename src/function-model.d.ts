@@ -3,7 +3,7 @@ import { Model } from "./object-model";
 
 type FromArgsDef<T> = T extends [infer A, ...infer Rest] ? [FromDefinition<A>, ...FromArgsDef<Rest>] : T
 
-type FunctionSignature<Args extends any[], Return> = {
+export type FunctionSignature<Args extends any[], Return> = {
 	(...args: FromArgsDef<Args>): FromDefinition<Return>
 } 
 

@@ -35,13 +35,6 @@ class Father extends Person.extend({ female: false, child: Person }){
 	}
 }
 
-const Family = ObjectModel({
-	father: Father,
-	mother: Mother,
-	children: ArrayModel(Person), // array of Persons
-	grandparents: ArrayModel(<const>[Mother, Father]) // array of Mothers or Fathers
-});
-
 const joanna = new Person({ name: "Joanna", female: true })
 const joe = new Father({ name: "Joe", child: joanna })
 const ann = new Mother({ name: "Ann", child: joanna })
@@ -53,11 +46,11 @@ const Parents = ArrayModel(<const>[Mother, Father])
 const parents = Parents([joe, ann])
 expectType<(typeof Father | typeof Mother)[]>(parents)
 
-const family = new Family({ father: joe, mother: ann, children: [joanna] })
+const Family = ObjectModel({	
+	children: ArrayModel(Person), // array of Persons
+	parents: ArrayModel(<const>[Mother, Father]) // array of Mothers or Fathers
+});
+const family = new Family({ parents: [joe, ann], children: [joanna] })
 
-expectType<{
-    father: typeof Father,
-    mother: typeof Mother,
-    children: Array<typeof Person>,
-    grandparents: (typeof Father | typeof Mother)[]
-}>(family)
+expectType<(typeof Person)[]>(family.children)
+expectType<(typeof Father | typeof Mother)[]>(family.parents)

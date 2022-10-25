@@ -6,8 +6,8 @@ export interface MapModel<Key extends ModelDefinition, Value extends ModelDefini
 	new(iterable: Map<any, any> | Array<[any, any]>): Map<FromDefinition<Key>, FromDefinition<Value>>;
 
 	definition: { key: Key, value: Value };
-
-	extend(otherKeyDefinitions: any[], otherValueDefinitions: any[]): this;
+	
+	extend<Keys extends ModelDefinition[], Values extends ModelDefinition[]>(otherKeys: Keys, otherValues: Values): MapModel<[Key, ...Keys], [Value, ...Values]>
 }
 
 export interface MapModelConstructor {

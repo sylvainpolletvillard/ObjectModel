@@ -6,7 +6,6 @@ import { BasicModel, ObjectModel } from "../src/object-model"
 
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>
-export type FunctionModelDefinition = any
 
 export type FromDefinition<T> = T extends BasicModel<infer U> ? FromDefinition<U>
                               : T extends ArrayModel<infer U> ? FromDefinition<U>[]

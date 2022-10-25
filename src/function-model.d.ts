@@ -14,8 +14,6 @@ export interface FunctionModel<Args extends ModelDefinition[], Return extends Mo
 	definition: { arguments: Args, return: Return };
 
 	return<R extends ModelDefinition>(returnValueDefinition: R): FunctionModel<Args, R>;
-
-	extend(otherArgsDefinitions: any[], otherReturnValuesDefinitions: any[]): this;
 }
 
 export interface FunctionModelConstructor {

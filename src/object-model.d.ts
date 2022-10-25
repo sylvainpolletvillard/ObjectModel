@@ -22,7 +22,7 @@ export interface Model<D> {
 
 	as(name: string): this;
 
-	defaultTo<Default extends FromDefinition<D>>(defaultValue: Default): ModelWithDefault<D,Default>;
+	defaultTo<Default>(defaultValue: Default): ModelWithDefault<D,Default>;
 
 	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
 

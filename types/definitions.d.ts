@@ -4,22 +4,25 @@ import { MapModel } from "../src/map-model"
 import { SetModel } from "../src/set-model"
 import { BasicModel, ObjectModel } from "../src/object-model"
 
+type Class = abstract new (...args: any) => any
+
 export type ModelDefinition = any
 export type ObjectModelDefinition = Record<string | number | symbol, unknown>
 
 export type FromDefinition<T> = T extends BasicModel<infer U> ? FromDefinition<U>
                               : T extends ArrayModel<infer U> ? FromDefinition<U>[]
-                              : T extends ObjectModel<infer D> ? FromObjectModelDefinition<D>
+                              : T extends ObjectModel<infer D> ? Any.Cast<T,FromObjectModelDefinition<D>>
                               : T extends FunctionModel<infer Args, infer Return> ? FunctionSignature<Args, Return>
-                              : T extends MapModel<infer Key, infer Value> ? Map<FromDefinition<Key>, FromDefinition<Value>>
+                              : T extends MapModel<infer Key, infer Value> ? Any.Cast<T,Map<FromDefinition<Key>, FromDefinition<Value>>>
                               : T extends SetModel<infer U> ? Set<FromDefinition<U>>
                               : T extends StringConstructor | RegExp ? string
                               : T extends NumberConstructor ? number
                               : T extends BooleanConstructor ? boolean
+                              : T extends new () => infer ConstructorType ? ConstructorType
+                              : T extends Class ? InstanceType<T>
                               : T extends ObjectModelDefinition ? FromObjectModelDefinition<T>
                               : T extends readonly [...infer U] ? FromUnionDefinition<U>
                               : T extends any[] ? FromDefinition<T[number]> // TypeScript can't infer array literals as tuples for now without <const> assertions, see https://github.com/microsoft/TypeScript/issues/16656
-                              : T extends new () => infer ConstructorType ? ConstructorType
 					          : T
 
 export type FromObjectModelDefinition<D extends object> = { [K in keyof D]: FromDefinition<D[K]> }
@@ -28,3 +31,13 @@ export type FromUnionDefinition<T extends any[]> = T extends [infer X] ? Optiona
                                                  : FromDefinition<T[number]>
 
 export type Optional<T> = FromDefinition<T> | undefined | null
+
+export type ExtendObjectDefinition<D extends ObjectModelDefinition, E extends (ObjectModelDefinition | ObjectModel<any>)[]> = 
+    E extends [infer F, ...infer Rest extends (ObjectModelDefinition | ObjectModel<any>)[]] 
+        ? F extends ObjectModel<infer FD> 
+            ? ExtendObjectDefinition<D & FD, Rest>
+            : F extends ObjectModelDefinition ? ExtendObjectDefinition<D & FromObjectModelDefinition<F>, Rest> 
+            : never
+        : D
+
+type T = ExtendObjectDefinition<{ name: string, female: boolean }, [ { test: NumberConstructor }, { female: true }]> 

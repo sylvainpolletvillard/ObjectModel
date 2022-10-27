@@ -1,5 +1,4 @@
-import { FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
-import { MergeObjects, TupleToUnion } from '../types/helpers';
+import { ExtendObjectDefinition, FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
 
 export type Assertion = (variable: any) => boolean
 
@@ -61,7 +60,7 @@ export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
 	(value: any): FromObjectModelDefinition<D>;
 	new(value: any): FromObjectModelDefinition<D>;
 
-	extend<Extensions extends (object | ObjectModel<any>)[]>(...ext: [...Extensions]) : MergeObjects<[this, ...Extensions]>;
+	extend<Extensions extends (ObjectModelDefinition | ObjectModel<any>)[]>(...ext: Extensions) : ObjectModel<ExtendObjectDefinition<D, Extensions>>;
 }
 
 export interface ObjectModelConstructor {

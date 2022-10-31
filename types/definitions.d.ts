@@ -41,5 +41,3 @@ export type ExtendObjectDefinition<D extends ObjectModelDefinition, E extends (O
             : F extends ObjectModelDefinition ? ExtendObjectDefinition<D & FromObjectModelDefinition<F>, Rest> 
             : never
         : D
-
-type T = ExtendObjectDefinition<{ name: string, female: boolean }, [ { test: NumberConstructor }, { female: true }]> 

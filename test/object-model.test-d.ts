@@ -20,24 +20,34 @@ expectType<{
 	orderDate: new Date()
 }))
 
+const Person = ObjectModel({ name: String, female: Boolean })
+const Man = Person.extend({ female: false })
+const Mother = Person.extend({ female: true, child: Person })
 
-class Person extends ObjectModel({ name: String, female: Boolean }){
+let joanna = new Person({ name: "Joanna", female: true })
+let joe = new Man({ name: "Joe" })
+let ann = new Mother({ name: "Ann", child: joanna })
+expectType<{ name: string, female: boolean }>(joanna)
+expectType<{ name: string, female: boolean }>(joe)
+expectType<{ name: string, female: boolean }>(ann.child)
+
+class ClassPerson extends ObjectModel({ name: String, female: Boolean }){
 	constructor({ name, female }: { name: string, female: boolean }){
 		if(!female) name = `Mr ${name}`
 		super({ name, female })
 	}
 }
 
-class Mother extends Person.extend({ female: true, child: Person }){
-	constructor({ name, child }: { name: string, child: Person }){
+class ClassMother extends ClassPerson.extend({ female: true, child: ClassPerson }){
+	constructor({ name, child }: { name: string, child: ClassPerson }){
 		super({ name: `Mrs ${name}`, female: true })
         this.child = child
 	}
 }
 
-const joanna = new Person({ name: "Joanna", female: true })
-const ann = new Mother({ name: "Ann", child: joanna })
+joanna = new ClassPerson({ name: "Joanna", female: true })
+ann = new ClassMother({ name: "Ann", child: joanna })
 
-expectType<Mother>(ann)
+expectType<ClassMother>(ann)
 expectType<string>(ann.name)
-expectType<Person>(ann.child)
+expectType<ClassPerson>(ann.child)

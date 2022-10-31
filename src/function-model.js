@@ -53,13 +53,6 @@ extend(FunctionModel, Model, {
 		return this
 	},
 
-	extend(newArgs, newReturns) {
-		const args = this.definition.arguments,
-			  mixedArgs = newArgs.map((a, i) => extendDefinition(i in args ? args[i] : [], newArgs[i])),
-			  mixedReturns = extendDefinition(this.definition.return, newReturns)
-		return extendModel(new FunctionModel(...mixedArgs).return(mixedReturns), this)
-	},
-
 	[_check](f, path, errors) {
 		if (!isFunction(f)) stackError(errors, "Function", f, path)
 	}

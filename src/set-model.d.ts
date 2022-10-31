@@ -2,8 +2,8 @@ import { FromDefinition, ModelDefinition } from "../types/definitions";
 import { Model } from "./object-model";
 
 export interface SetModel<D extends ModelDefinition> extends Model<D> {
-	(set: Set<any> | any[]): Set<FromDefinition<D>>;
-	new(set: Set<any> | any[]): Set<FromDefinition<D>>;
+	(set: Set<FromDefinition<D>> | FromDefinition<D>[]): Set<FromDefinition<D>>;
+	new(set: Set<FromDefinition<D>> | FromDefinition<D>[]): Set<FromDefinition<D>>;
 
 	extend<E extends ModelDefinition[]>(...extensions: E): SetModel<E extends [] ? D : [D, ...E]>
 }

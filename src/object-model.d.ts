@@ -1,6 +1,6 @@
 import { ExtendObjectDefinition, FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
 
-export type Assertion = (variable: any) => boolean
+export type Assertion = (variable: unknown) => boolean
 
 export interface ModelError {
 	message: string;
@@ -57,8 +57,8 @@ export interface BasicModelConstructor {
 }
 
 export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
-	(value: any): FromObjectModelDefinition<D>;
-	new(value: any): FromObjectModelDefinition<D>;
+	(value: Partial<FromObjectModelDefinition<D>>): FromObjectModelDefinition<D>;
+	new(value: Partial<FromObjectModelDefinition<D>>): FromObjectModelDefinition<D>;
 
 	extend<Extensions extends (ObjectModelDefinition | ObjectModel<any>)[]>(...ext: Extensions) : ObjectModel<ExtendObjectDefinition<D, Extensions>>;
 }

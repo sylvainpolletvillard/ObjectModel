@@ -1,6 +1,6 @@
 {
   "name": "objectmodel",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Strong Dynamically Typed Object Modeling for JavaScript",
   "author": "Sylvain Pollet-Villard",
   "license": "MIT",
@@ -45,11 +45,11 @@
   },
   "types": "types/index.d.ts",
   "tsd": {
-		"directory": "test"
-	},
+    "directory": "test"
+  },
   "engines": {
-    "npm": ">=7.0.0",
-    "node": ">=17.5.0"
+    "npm": ">=6.14",
+    "node": ">=13"
   },
   "keywords": [
     "typed",

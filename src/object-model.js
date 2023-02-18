@@ -115,7 +115,7 @@ export const
 
 		if (is(Model, def)) {
 			if (shouldCast) obj = cast(obj, def)
-			def[_check](obj, path, errors, stack.concat(def))
+			def[_check](obj, path, errors, stack.concat(def), shouldCast)
 		}
 		else if (isPlainObject(def)) {
 			for (let key in def) {

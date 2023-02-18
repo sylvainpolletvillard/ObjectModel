@@ -1344,3 +1344,26 @@ QUnit.test("Short-circuit validation when not receiving an object as expected", 
 	LastName: String 
 }, got Number 42`)
 })
+
+QUnit.test("Deep nesting and model defaults", function(assert){
+	const Address = new Model({
+		street: String,
+		number: String,
+	}).defaultTo({
+		number: "unknown number",
+	});
+
+	const Person = new Model({
+		name: String,
+		address: Address,
+	}).defaultTo({
+		name: "Unknown name",
+	});
+
+	const Register = new Model({
+		person: Person,
+	});
+	
+	const reg = new Register({ person: { address: { street: "unknown street" } } });
+	assert.equal(reg.person.address.number, "unknown number", "deep nested models should apply defaults on missing parent")
+})

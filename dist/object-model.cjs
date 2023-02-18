@@ -1,4 +1,4 @@
-// ObjectModel v4.4.1 - http://objectmodel.js.org
+// ObjectModel v4.4.2 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -156,7 +156,7 @@ const
 
 		if (is(Model, def)) {
 			if (shouldCast) obj = cast(obj, def);
-			def[_check](obj, path, errors, stack.concat(def));
+			def[_check](obj, path, errors, stack.concat(def), shouldCast);
 		}
 		else if (isPlainObject(def)) {
 			for (let key in def) {

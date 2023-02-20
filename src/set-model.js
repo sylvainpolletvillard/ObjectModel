@@ -27,10 +27,10 @@ extend(SetModel, Model, {
 		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	[_check](set, path, errors, stack) {
+	[_check](set, path, errors, stack, shouldCast) {
 		if (is(Set, set)) {
 			for (let item of set.values()) {
-				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack)
+				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack, shouldCast)
 			}
 		} else stackError(errors, this, set, path)
 		checkAssertions(set, this, path, errors)

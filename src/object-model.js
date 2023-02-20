@@ -125,7 +125,7 @@ export const
 		}
 		else {
 			const pdef = parseDefinition(def)
-			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
+			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack, shouldCast))) {
 				return shouldCast ? cast(obj, def) : obj
 			}
 
@@ -351,8 +351,8 @@ Object.assign(Model.prototype, {
 		return this
 	},
 
-	[_check](obj, path, errors, stack) {
-		checkDefinition(obj, this.definition, path, errors, stack)
+	[_check](obj, path, errors, stack, shouldCast) {
+		checkDefinition(obj, this.definition, path, errors, stack, shouldCast)
 		checkAssertions(obj, this, path, errors)
 	},
 

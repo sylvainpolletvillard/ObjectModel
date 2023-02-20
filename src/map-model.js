@@ -28,12 +28,12 @@ extend(MapModel, Model, {
 		return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 	},
 
-	[_check](map, path, errors, stack) {
+	[_check](map, path, errors, stack, shouldCast) {
 		if (is(Map, map)) {
 			path = path || "Map"
 			for (let [key, value] of map) {
-				checkDefinition(key, this.definition.key, `${path} key`, errors, stack)
-				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack)
+				checkDefinition(key, this.definition.key, `${path} key`, errors, stack, shouldCast)
+				checkDefinition(value, this.definition.value, `${path}[${format(key)}]`, errors, stack, shouldCast)
 			}
 		} else stackError(errors, this, map, path)
 

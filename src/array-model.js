@@ -42,9 +42,9 @@ extend(ArrayModel, Model, {
 		return "Array of " + formatDefinition(this.definition, stack)
 	},
 
-	[_check](arr, path, errors, stack) {
+	[_check](arr, path, errors, stack, shouldCast) {
 		if (Array.isArray(arr))
-			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack))
+			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, shouldCast))
 		else stackError(errors, this, arr, path)
 
 		checkAssertions(arr, this, path, errors)

@@ -77,7 +77,7 @@ export const
 			def = {}
 			for (let key in def) { def[key] = parseDefinition(def[key]) }
 		}
-		else if (!Array.isArray(def)) return [def]
+		if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
 
 		return def
@@ -347,7 +347,7 @@ Object.assign(Model.prototype, {
 	},
 
 	defaultTo(val) {
-		this.default = val
+		this.default = this(val)
 		return this
 	},
 

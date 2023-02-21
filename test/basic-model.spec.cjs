@@ -97,6 +97,15 @@ QUnit.test("default values", function (assert) {
 
 });
 
+QUnit.test("validate defaut values provided", function (assert) {
+	assert.throws(function () {
+		BasicModel(Number).defaultTo()
+	}, /TypeError.*expecting Number, got undefined*/, "invalid default value provided: undefined");
+	assert.throws(function () {
+		BasicModel(String).defaultTo(666)
+	}, /TypeError.*expecting String, got Number 666*/, "invalid default value provided: wrong type");
+})
+
 QUnit.test("Assertions", function (assert) {
 
 	function isOdd(n) {

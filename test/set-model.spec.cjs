@@ -148,6 +148,15 @@ QUnit.test("defaults values", function (assert) {
 
 })
 
+QUnit.test("validate defaut values provided", function (assert) {
+	assert.throws(function () {
+		SetModel(Number).defaultTo()
+	}, /TypeError.*expecting Set of Number, got undefined*/, "invalid default value provided: undefined");
+	assert.throws(function () {
+		SetModel(Number).defaultTo(new Set(["foo", "bar"]))
+	}, /TypeError.*expecting Set value to be Number, got String \"foo\"*/, "invalid default value provided: wrong type");	
+})
+
 QUnit.test("assertions", function (assert) {
 
 	const SetMax3 = SetModel(String).assert(function maxEntries(set) {

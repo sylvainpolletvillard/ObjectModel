@@ -152,6 +152,15 @@ QUnit.test("default values", function (assert) {
 
 })
 
+QUnit.test("validate defaut values provided", function (assert) {
+	assert.throws(function () {
+		ArrayModel(Number).defaultTo()
+	}, /TypeError.*expecting Array of Number, got undefined*/, "invalid default value provided: undefined");
+	assert.throws(function () {
+		ArrayModel(String).defaultTo("test")
+	}, /TypeError.*expecting Array of String, got String \"test\"*/, "invalid default value provided: wrong type");
+})
+
 QUnit.test("Assertions", function (assert) {
 
 	const ArrayMax3 = ArrayModel(Number).assert(function maxRange(arr) { return arr.length <= 3; });

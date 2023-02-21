@@ -155,6 +155,18 @@ QUnit.test("default values", function (assert) {
 
 })
 
+QUnit.test("validate defaut values provided", function (assert) {
+	assert.throws(function () {
+		MapModel(Number, String).defaultTo()
+	}, /TypeError.*expecting Map of Number : String, got undefined*/, "invalid default value provided: undefined");
+	assert.throws(function () {
+		MapModel(Number, String).defaultTo(new Map([["foo", "bar"]]))
+	}, /TypeError.*expecting Map key to be Number, got String \"foo\"*/, "invalid default value provided: wrong type for key");
+	assert.throws(function () {
+		MapModel(Number, String).defaultTo(new Map([[1,2]]))
+	}, /TypeError.*expecting Map\[1\] to be String, got Number 2*/, "invalid default value provided: wrong type for value");	
+})
+
 QUnit.test("assertions", function (assert) {
 
 	const MapMax3 = MapModel(Number, String).assert(function maxEntries(map) {

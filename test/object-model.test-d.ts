@@ -51,3 +51,32 @@ ann = new ClassMother({ name: "Ann", child: joanna })
 expectType<ClassMother>(ann)
 expectType<string>(ann.name)
 expectType<ClassPerson>(ann.child)
+
+const FileInfo = ObjectModel({
+	name: String,
+	size: [Number],
+	creationDate: [Date],
+	writable: Boolean
+}).defaultTo({
+	name: "Untitled file",
+	size: 0,
+	writable: true
+});
+
+expectType<{
+	name: string,
+	size: number,
+	writable: true
+}>(new FileInfo())
+
+expectType<{
+	name: string,
+	size: number,
+	writable: boolean,
+	creationDate: Date
+}>(new FileInfo({
+	name: "My file",
+	size: 100,
+	writable: false,
+	creationDate: new Date()
+}))

@@ -6,6 +6,12 @@ export interface SetModel<D extends ModelDefinition> extends Model<D> {
 	new(set: Set<FromDefinition<D>> | FromDefinition<D>[]): Set<FromDefinition<D>>;
 
 	extend<E extends ModelDefinition[]>(...extensions: E): SetModel<E extends [] ? D : [D, ...E]>
+	defaultTo<Default extends Set<FromDefinition<D>>>(defaultValue: Default): SetModelWithDefault<D, Default>;
+}
+
+export interface SetModelWithDefault<D, Default> extends SetModel<D> {
+	(): Default
+	new(): Default
 }
 
 export interface SetModelConstructor {

@@ -1,4 +1,4 @@
-import {expectType} from 'tsd';
+import {expectError, expectType} from 'tsd';
 import { ObjectModel } from '../src/object-model';
 import { MapModel } from '../src/map-model';
 
@@ -19,3 +19,8 @@ expectType<Map<string | number | { ref: string }, Date | string | { date: Date }
     [2, "b"],
     [{ ref: "c"}, { date: new Date() }]
 ]))
+
+const M = MapModel(Number, String).defaultTo(new Map([[1, "first"]]))
+expectType<Map<number, string>>(new M())
+expectError(MapModel(Number, String).defaultTo("not a map"))
+expectError(M("not a map"))

@@ -28,3 +28,7 @@ const M2 = M.extend()
 expectType<Date>(M2(new Date()))
 const M3 = M2.extend(String)
 expectType<Date | string>(M3(new Date()))
+
+const N = BasicModel(Number).defaultTo(0)
+expectType<0>(N())
+expectError(N("not a number"))

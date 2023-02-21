@@ -8,6 +8,12 @@ export interface MapModel<Key extends ModelDefinition, Value extends ModelDefini
 	definition: { key: Key, value: Value };
 	
 	extend<Keys extends ModelDefinition[], Values extends ModelDefinition[]>(otherKeys: Keys, otherValues: Values): MapModel<[Key, ...Keys], [Value, ...Values]>
+	defaultTo<Default extends Map<FromDefinition<Key>, FromDefinition<Value>>>(defaultValue: Default): MapModelWithDefault<Key, Value, Default>;
+}
+
+export interface MapModelWithDefault<Key, Value, Default> extends MapModel<Key, Value> {
+	(): Default
+	new(): Default
 }
 
 export interface MapModelConstructor {

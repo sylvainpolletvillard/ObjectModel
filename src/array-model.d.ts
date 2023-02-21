@@ -6,6 +6,12 @@ export interface ArrayModel<D> extends Model<D> {
 	new(array: FromDefinition<D>[]): FromDefinition<D>[];
 
 	extend<E extends ModelDefinition[]>(...extensions: E): ArrayModel<E extends [] ? D : [D, ...E]>
+	defaultTo<Default extends FromDefinition<D>>(defaultValue: Default): ArrayModelWithDefault<D, Default>;
+}
+
+export interface ArrayModelWithDefault<D, Default> extends ArrayModel<D> {
+	(): Default
+	new(): Default
 }
 
 export interface ArrayModelConstructor {

@@ -1,4 +1,4 @@
-// ObjectModel v4.4.2 - http://objectmodel.js.org
+// ObjectModel v4.4.3 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -118,7 +118,7 @@ const
 			def = {};
 			for (let key in def) { def[key] = parseDefinition(def[key]); }
 		}
-		else if (!Array.isArray(def)) return [def]
+		if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
 
 		return def
@@ -166,7 +166,7 @@ const
 		}
 		else {
 			const pdef = parseDefinition(def);
-			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack))) {
+			if (pdef.some(part => checkDefinitionPart(obj, part, path, stack, shouldCast))) {
 				return shouldCast ? cast(obj, def) : obj
 			}
 
@@ -388,12 +388,12 @@ Object.assign(Model.prototype, {
 	},
 
 	defaultTo(val) {
-		this.default = val;
+		this.default = this(val);
 		return this
 	},
 
-	[_check](obj, path, errors, stack) {
-		checkDefinition(obj, this.definition, path, errors, stack);
+	[_check](obj, path, errors, stack, shouldCast) {
+		checkDefinition(obj, this.definition, path, errors, stack, shouldCast);
 		checkAssertions(obj, this, path, errors);
 	},
 
@@ -598,9 +598,9 @@ extend(ArrayModel, Model, {
 		return "Array of " + formatDefinition(this.definition, stack)
 	},
 
-	[_check](arr, path, errors, stack) {
+	[_check](arr, path, errors, stack, shouldCast) {
 		if (Array.isArray(arr))
-			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack));
+			(arr[_original] || arr).forEach((a, i) => checkDefinition(a, this.definition, `${path || "Array"}[${i}]`, errors, stack, shouldCast));
 		else stackError(errors, this, arr, path);
 
 		checkAssertions(arr, this, path, errors);
@@ -646,10 +646,10 @@ extend(SetModel, Model, {
 		return "Set of " + formatDefinition(this.definition, stack)
 	},
 
-	[_check](set, path, errors, stack) {
+	[_check](set, path, errors, stack, shouldCast) {
 		if (is(Set, set)) {
 			for (let item of set.values()) {
-				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack);
+				checkDefinition(item, this.definition, `${path || "Set"} value`, errors, stack, shouldCast);
 			}
 		} else stackError(errors, this, set, path);
 		checkAssertions(set, this, path, errors);
@@ -683,12 +683,12 @@ extend(MapModel, Model, {
 		return `Map of ${formatDefinition(this.definition.key, stack)} : ${formatDefinition(this.definition.value, stack)}`
 	},
 
-	[_check](map, path, errors, stack) {
+	[_check](map, path, errors, stack, shouldCast) {
 		if (is(Map, map)) {
 			path = path || "Map";
 			for (let [key, value] of map) {
-				checkDefinition(key, this.definition.key, `${path} key`, errors, stack);
-				checkDefinition(value, this.definition.value, `${path}[${format$1(key)}]`, errors, stack);
+				checkDefinition(key, this.definition.key, `${path} key`, errors, stack, shouldCast);
+				checkDefinition(value, this.definition.value, `${path}[${format$1(key)}]`, errors, stack, shouldCast);
 			}
 		} else stackError(errors, this, map, path);
 

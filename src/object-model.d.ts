@@ -58,12 +58,12 @@ export interface ObjectModel<D extends ObjectModelDefinition> extends Model<D> {
 	new(value: Partial<FromObjectModelDefinition<D>>): FromObjectModelDefinition<D>;
 
 	extend<Extensions extends (ObjectModelDefinition | ObjectModel<any>)[]>(...ext: Extensions) : ObjectModel<ExtendObjectDefinition<D, Extensions>>;
-	defaultTo<Default extends Partial<FromObjectModelDefinition<D>>>(defaultValue: Default): ObjectModelWithDefault<D, Default>
+	defaultTo<Default extends Partial<FromObjectModelDefinition<D>>>(defaultValue: Default): ObjectModelWithDefault<D>
 }
 
-export interface ObjectModelWithDefault<D extends ObjectModelDefinition, Default> extends ObjectModel<D> {
-	(): Default
-	new(): Default
+export interface ObjectModelWithDefault<D extends ObjectModelDefinition> extends ObjectModel<D> {
+	(): FromObjectModelDefinition<D>
+	new(): FromObjectModelDefinition<D>
 }
 
 export interface ObjectModelConstructor {

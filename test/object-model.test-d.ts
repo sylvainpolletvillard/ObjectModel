@@ -66,7 +66,8 @@ const FileInfo = ObjectModel({
 expectType<{
 	name: string,
 	size: number,
-	writable: true
+	writable: boolean,
+	creationDate: Date
 }>(new FileInfo())
 
 expectType<{
@@ -80,3 +81,7 @@ expectType<{
 	writable: false,
 	creationDate: new Date()
 }))
+
+class ClassWithDefault extends ClassPerson.defaultTo({ name: "Anonymous" }) {}
+
+expectType<ClassWithDefault>(new ClassWithDefault())

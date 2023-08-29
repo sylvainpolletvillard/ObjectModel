@@ -1031,7 +1031,7 @@ QUnit.test("Cyclic detection", function (assert) {
 
 QUnit.test("Custom error collectors", function (assert) {
 
-	assert.expect(11);
+	assert.expect(12);
 
 	let M = ObjectModel({
 		a: {
@@ -1048,6 +1048,7 @@ QUnit.test("Custom error collectors", function (assert) {
 		assert.equal(err.received, false, "check error.received model collector");
 		assert.equal(err.path, "a.b.c", "check error.path model collector");
 		assert.equal(err.message, 'expecting a.b.c to be true, got Boolean false', "check error message model collector");
+		assert.equal(err.model, M)
 	}
 
 	M({

@@ -1,4 +1,4 @@
-// ObjectModel v4.4.4 - http://objectmodel.js.org
+// ObjectModel v4.4.5 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -102,6 +102,7 @@ const
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format$1(err.received);
 				}
+				err.model = model;
 				return err
 			});
 

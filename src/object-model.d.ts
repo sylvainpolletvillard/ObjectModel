@@ -2,7 +2,8 @@ import { ExtendObjectDefinition, FromDefinition, FromObjectModelDefinition, Mode
 
 export type Assertion = (variable: unknown) => boolean
 
-export interface ModelError {
+export interface ModelError<D> {
+	model: Model<D>
 	message: string;
 	expected: any;
 	received: any;
@@ -21,9 +22,9 @@ export interface Model<D> {
 
 	as(name: string): this;
 
-	test(value: any, errorCollector?: (errors: ModelError[]) => void): boolean;
+	test(value: any, errorCollector?: (errors: ModelError<D>[]) => void): boolean;
 
-	errorCollector(errors: ModelError[]): void;
+	errorCollector(errors: ModelError<D>[]): void;
 
 	assert(assertion: Assertion, description?: string | Function): this;
 

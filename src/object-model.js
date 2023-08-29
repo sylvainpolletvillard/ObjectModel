@@ -61,6 +61,7 @@ export const
 					err.message = "expecting " + (err.path ? err.path + " to be " : "") + formatDefinition(err.expected)
 						+ ", got " + (err.received != null ? bettertypeof(err.received) + " " : "") + format(err.received)
 				}
+				err.model = model
 				return err
 			})
 

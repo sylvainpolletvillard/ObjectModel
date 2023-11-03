@@ -1,6 +1,6 @@
 import { ExtendObjectDefinition, FromDefinition, FromObjectModelDefinition, ModelDefinition, ObjectModelDefinition } from '../types/definitions';
 
-export type Assertion<D> = (variable: D) => boolean
+export type Assertion<T> = (variable: T) => boolean
 
 export interface ModelError<D> {
 	model: Model<D>
@@ -12,7 +12,7 @@ export interface ModelError<D> {
 
 export interface Model<D> {	
 	definition: D;
-	assertions: Assertion<D>[];
+	assertions: Assertion<this>[];
 	name: string;
 
 	conventionForConstant(variableName: string): boolean;
@@ -26,7 +26,7 @@ export interface Model<D> {
 
 	errorCollector(errors: ModelError<D>[]): void;
 
-	assert(assertion: Assertion<D>, description?: string | Function): this;
+	assert(assertion: Assertion<this>, description?: string | Function): this;
 
 }
 

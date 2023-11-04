@@ -1,7 +1,7 @@
 import {
 	bettertypeof, define, extend, getProto, has,
 	is, isFunction, isObject, isPlainObject, isString,
-	merge, ObjectProto, proxify, setProto
+	merge, ObjectProto, proxify, setProto, symbolify
 } from "./helpers.js"
 
 export const
@@ -9,6 +9,7 @@ export const
 	_checked = Symbol(), // used to skip validation at instanciation for perf
 	_original = Symbol(), // used to bypass proxy
 	CHECK_ONCE = Symbol(),
+	_refs = new Map(),
 
 	initModel = (def, constructor, parent, init, getTraps, useNew) => {
 		const model = function (val = model.default, mode) {
@@ -386,6 +387,11 @@ Object.assign(Model.prototype, {
 	assert(assertion, description = format(assertion)) {
 		define(assertion, "description", description)
 		this.assertions = this.assertions.concat(assertion)
+		return this
+	},
+
+	ref(key) {
+		_refs.set(symbolify(key), this)
 		return this
 	}
 })

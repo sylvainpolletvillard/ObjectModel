@@ -28,6 +28,7 @@ export interface Model<D> {
 
 	assert(assertion: Assertion, description?: string | Function): this;
 
+	ref(key: Symbol | String): this;
 }
 
 export interface ModelConstructor {

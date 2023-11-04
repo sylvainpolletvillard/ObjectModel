@@ -4,6 +4,7 @@ import { ArrayModelConstructor } from "../src/array-model";
 import { FunctionModelConstructor } from "../src/function-model";
 import { MapModelConstructor } from "../src/map-model";
 import { ModelConstructor, BasicModelConstructor, ObjectModelConstructor } from "../src/object-model";
+import { RefModelConstructor } from "../src/ref-model";
 import { SetModelConstructor } from "../src/set-model";
 
 export const Any: any;
@@ -13,4 +14,5 @@ export const ObjectModel: ObjectModelConstructor;
 export const ArrayModel: ArrayModelConstructor;
 export const FunctionModel: FunctionModelConstructor;
 export const MapModel: MapModelConstructor;
+export const RefModel: RefModelConstructor;
 export const SetModel: SetModelConstructor;

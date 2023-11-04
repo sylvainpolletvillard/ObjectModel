@@ -41,4 +41,6 @@ export const
 			}
 		}), props)
 		setProto(child, parent)
-	}
+	},
+
+	symbolify = (key) => typeof key === 'symbol' ? key : Symbol.for(key)

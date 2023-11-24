@@ -14,3 +14,5 @@ export const ArrayModel: ArrayModelConstructor;
 export const FunctionModel: FunctionModelConstructor;
 export const MapModel: MapModelConstructor;
 export const SetModel: SetModelConstructor;
+
+export { ModelError } from "../src/object-model";

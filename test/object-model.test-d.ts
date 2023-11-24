@@ -3,6 +3,8 @@ import { Model, ObjectModel } from "../src/object-model"
 
 expectType<{ a: number, b: "b" }>(Model({ a: Number, b: <const>"b" })({ a: 1, b: "b" }))
 
+expectType<{ avatar: string | undefined| null }>(new Model({ avatar: <const>[String] })({}))
+
 expectType<{
     product: {
         name: string,

@@ -17,6 +17,7 @@ expectType<string>(BasicModel(/A-Z/)("TEST"))
 
 expectType<"optional" | undefined | null>(BasicModel(<const>["optional"])(undefined))
 expectType<number | undefined | null>(new BasicModel(<const>[Number])(null))
+expectType<string | undefined| null>(new BasicModel(<const>[String])(null))
 
 expectType<"one" | "two">(BasicModel(<const>["one","two"])("one"))
 expectType<number | string>(BasicModel(<const>[Number, String])(2))

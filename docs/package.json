@@ -23,6 +23,6 @@
 		"postcss-normalize": "^10.0.1",
 		"postcss-scrollbar": "^0.5.0",
 		"postcss-simple-vars": "^6.0.3",
-		"rollup": "^2.59.0"
+		"rollup": "^3.29.5"
 	}
 }

@@ -1,5 +1,5 @@
 import {
-	_check, _original, Any, checkAssertions, checkDefinition, extendDefinition, extendModel,
+	_check, _original, Any, checkAssertions, checkDefinition,
 	formatDefinition, initModel, Model, stackError, unstackErrors
 } from "./object-model.js"
 import { extend, is, isFunction } from "./helpers.js"

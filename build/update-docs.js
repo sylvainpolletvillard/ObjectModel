@@ -2,7 +2,7 @@ import fs from 'fs';
 import filesize from 'pretty-bytes';
 import { gzipSizeSync } from 'gzip-size';
 
-import pkg from '../package.json' assert { type: 'json' };
+import pkg from '../package.json' with { type: 'json' };
 
 function updateIndex(html){
 	const libPath = "./dist/object-model.min.js"

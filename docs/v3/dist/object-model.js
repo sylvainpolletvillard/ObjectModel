@@ -2,8 +2,8 @@
 // MIT License - Sylvain Pollet-Villard
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(global = global || self, factory(global.window = global.window || {}));
+		typeof define === 'function' && define.amd ? define(['exports'], factory) :
+			(global = global || self, factory(global.window = global.window || {}));
 }(this, function (exports) { 'use strict';
 
 	const
@@ -202,8 +202,8 @@
 				let props = Object.keys(obj),
 					indent = '\t'.repeat(stack.length);
 				return `{${props.map(
-				key => `\n${indent + key}: ${format(obj[key], [...stack])}`
-			).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
+					key => `\n${indent + key}: ${format(obj[key], [...stack])}`
+				).join(',')} ${props.length ? `\n${indent.slice(1)}` : ''}}`
 			}
 
 			return String(obj)
@@ -753,8 +753,8 @@
 	extend(FunctionModel, Model, {
 		toString(stack = []) {
 			let out = `Function(${this.definition.arguments.map(
-			argDef => formatDefinition(argDef, [...stack])
-		).join(", ")})`;
+				argDef => formatDefinition(argDef, [...stack])
+			).join(", ")})`;
 
 			if ("return" in this.definition) {
 				out += " => " + formatDefinition(this.definition.return, stack);

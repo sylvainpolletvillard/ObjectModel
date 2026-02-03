@@ -1,5 +1,5 @@
 import fs from 'fs';
-import pkg from '../package.json' assert { type: 'json' };
+import pkg from '../package.json' with { type: 'json' };
 
 const banner = `// ObjectModel v${pkg.version} - ${pkg.homepage}
 // ${pkg.license} License - ${pkg.author}`;

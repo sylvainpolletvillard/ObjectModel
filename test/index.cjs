@@ -1,7 +1,7 @@
 QUnit.test("loading module", async t => {
-  const globals = await import("../dist/object-model.min.js")
-  Object.assign(globalThis, globals)
-  t.ok("Model" in globals, "libarary correcty loaded as module");
+	const globals = await import("../dist/object-model.min.js")
+	Object.assign(globalThis, globals)
+	t.ok("Model" in globals, "libarary correcty loaded as module");
 });
 
 require("./model.spec.cjs")

@@ -1,16 +1,16 @@
-import {expectType} from 'tsd';
+import { expectType } from 'tsd';
 import { Model, ObjectModel } from "../src/object-model"
 
 expectType<{ a: number, b: "b" }>(Model({ a: Number, b: <const>"b" })({ a: 1, b: "b" }))
 
-expectType<{ avatar: string | undefined| null }>(new Model({ avatar: <const>[String] })({}))
+expectType<{ avatar: string | undefined | null }>(new Model({ avatar: <const>[String] })({}))
 
 expectType<{
-    product: {
-        name: string,
-        quantity: number
-    },
-    orderDate: Date
+	product: {
+		name: string,
+		quantity: number
+	},
+	orderDate: Date
 }>(new ObjectModel({
 	product: {
 		name: String,
@@ -18,7 +18,7 @@ expectType<{
 	},
 	orderDate: Date
 })({
-    product: { name: "Apple Pie", quantity: 1 },
+	product: { name: "Apple Pie", quantity: 1 },
 	orderDate: new Date()
 }))
 
@@ -33,17 +33,17 @@ expectType<{ name: string, female: boolean }>(joanna)
 expectType<{ name: string, female: boolean }>(joe)
 expectType<{ name: string, female: boolean }>(ann.child)
 
-class ClassPerson extends ObjectModel({ name: String, female: Boolean }){
-	constructor({ name, female }: { name: string, female: boolean }){
-		if(!female) name = `Mr ${name}`
+class ClassPerson extends ObjectModel({ name: String, female: Boolean }) {
+	constructor({ name, female }: { name: string, female: boolean }) {
+		if (!female) name = `Mr ${name}`
 		super({ name, female })
 	}
 }
 
-class ClassMother extends ClassPerson.extend({ female: true, child: ClassPerson }){
-	constructor({ name, child }: { name: string, child: ClassPerson }){
+class ClassMother extends ClassPerson.extend({ female: true, child: ClassPerson }) {
+	constructor({ name, child }: { name: string, child: ClassPerson }) {
 		super({ name: `Mrs ${name}`, female: true })
-        this.child = child
+		this.child = child
 	}
 }
 
@@ -84,6 +84,6 @@ expectType<{
 	creationDate: new Date()
 }))
 
-class ClassWithDefault extends ClassPerson.defaultTo({ name: "Anonymous" }) {}
+class ClassWithDefault extends ClassPerson.defaultTo({ name: "Anonymous" }) { }
 
 expectType<ClassWithDefault>(new ClassWithDefault())

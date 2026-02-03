@@ -27,17 +27,22 @@ export type FromDefinition<T, Depth extends Prev[number] = 5> =
     : T extends any[] ? FromDefinition<T[number], Prev[Depth]> // TypeScript can't infer array literals as tuples for now without <const> assertions, see https://github.com/microsoft/TypeScript/issues/16656
     : T
 
-export type FromObjectModelDefinition<D extends object> = { [K in keyof D]: FromDefinition<D[K]> }
+// TSD fails on this because of : https://github.com/tsdjs/tsd/issues/218
+export type FromObjectModelDefinition<D extends object> = {
+    [K in keyof D as (D[K] extends [infer X] ? never : K)]: FromDefinition<D[K]>
+} & {
+    [K in keyof D as (D[K] extends [infer X] ? K : never)]?: FromDefinition<D[K]>
+}
 
 export type FromUnionDefinition<T extends any[]> = T extends [infer X] ? Optional<X>
-                                                 : FromDefinition<T[number]>
+    : FromDefinition<T[number]>
 
 export type Optional<T> = FromDefinition<T> | undefined | null
 
-export type ExtendObjectDefinition<D extends ObjectModelDefinition, E extends (ObjectModelDefinition | ObjectModel<any>)[]> = 
-    E extends [infer F, ...infer Rest extends (ObjectModelDefinition | ObjectModel<any>)[]] 
-        ? F extends ObjectModel<infer FD> 
-            ? ExtendObjectDefinition<D & FD, Rest>
-            : F extends ObjectModelDefinition ? ExtendObjectDefinition<D & FromObjectModelDefinition<F>, Rest> 
-            : never
-        : D
+export type ExtendObjectDefinition<D extends ObjectModelDefinition, E extends (ObjectModelDefinition | ObjectModel<any>)[]> =
+    E extends [infer F, ...infer Rest extends (ObjectModelDefinition | ObjectModel<any>)[]]
+    ? F extends ObjectModel<infer FD>
+    ? ExtendObjectDefinition<D & FD, Rest>
+    : F extends ObjectModelDefinition ? ExtendObjectDefinition<D & FromObjectModelDefinition<F>, Rest>
+    : never
+    : D

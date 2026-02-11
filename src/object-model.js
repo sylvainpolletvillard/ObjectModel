@@ -74,13 +74,8 @@ export const
 	isModelInstance = i => i && getProto(i) && is(Model, getProto(i).constructor),
 
 	parseDefinition = (def) => {
-		if (isPlainObject(def)) {
-			def = {}
-			for (let key in def) { def[key] = parseDefinition(def[key]) }
-		}
 		if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
-
 		return def
 	},
 

@@ -114,10 +114,10 @@ export const
 			def[_check](obj, path, errors, stack.concat(def), shouldCast)
 		}
 		else if (isPlainObject(def)) {
-			for (let key in def) {
+			Object.keys(def).forEach(key => {
 				const val = obj ? obj[key] : undefined
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast)
-			}
+			})
 		}
 		else {
 			const pdef = parseDefinition(def)

@@ -41,9 +41,9 @@
 	"main": "dist/object-model.js",
 	"exports": {
 		"import": "./dist/object-model.js",
-		"require": "./dist/object-model.cjs"
+		"require": "./dist/object-model.cjs",
+    "types": "./types/index.d.ts"
 	},
-	"types": "types/index.d.ts",
 	"tsd": {
 		"directory": "test"
 	},

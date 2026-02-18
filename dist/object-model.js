@@ -1,4 +1,4 @@
-// ObjectModel v4.4.7 - http://objectmodel.js.org
+// ObjectModel v4.4.8 - http://objectmodel.js.org
 // MIT License - Sylvain Pollet-Villard
 const
 	ObjectProto = Object.prototype,
@@ -115,13 +115,8 @@ const
 	isModelInstance = i => i && getProto(i) && is(Model, getProto(i).constructor),
 
 	parseDefinition = (def) => {
-		if (isPlainObject(def)) {
-			def = {};
-			for (let key in def) { def[key] = parseDefinition(def[key]); }
-		}
 		if (!Array.isArray(def)) return [def]
 		else if (def.length === 1) return [def[0], undefined, null]
-
 		return def
 	},
 
@@ -160,10 +155,10 @@ const
 			def[_check](obj, path, errors, stack.concat(def), shouldCast);
 		}
 		else if (isPlainObject(def)) {
-			for (let key in def) {
+			Object.keys(def).forEach(key => {
 				const val = obj ? obj[key] : undefined;
 				checkDefinition(val, def[key], formatPath(path, key), errors, stack, shouldCast);
-			}
+			});
 		}
 		else {
 			const pdef = parseDefinition(def);
